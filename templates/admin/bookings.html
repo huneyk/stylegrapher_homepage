@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}예약 관리{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">예약 관리</h2>
+    
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>예약일</th>
+                            <th>이름</th>
+                            <th>연락처</th>
+                            <th>서비스</th>
+                            <th>희망 예약일시</th>
+                            <th>메시지</th>
+                            <th>상태</th>
+                            <th>관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in bookings %}
+                        <tr>
+                            <td>{{ booking.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ booking.name }}</td>
+                            <td>{{ booking.email }}</td>
+                            <td>{{ booking.service.name if booking.service else '-' }}</td>
+                            <td style="white-space: pre-line;">
+                                {% for datetime in booking.get_datetimes() %}
+                                    {{ datetime }}
+                                {% endfor %}
+                            </td>
+                            <td style="max-width: 200px; white-space: pre-line;">{{ booking.get_message_content() }}</td>
+                            <td>
+                                <span class="badge {% if booking.status == '확정' %}bg-success
+                                             {% elif booking.status == '대기' %}bg-warning
+                                             {% elif booking.status == '취소' %}bg-danger
+                                             {% else %}bg-secondary{% endif %}">
+                                    {{ booking.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" 
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                        상태 변경
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="{{ url_for('admin.update_booking_status', id=booking.id, status='확정') }}">확정</a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('admin.update_booking_status', id=booking.id, status='대기') }}">대기</a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('admin.update_booking_status', id=booking.id, status='취소') }}">취소</a></li>
+                                    </ul>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-danger" 
+                                        onclick="deleteBooking({{ booking.id }})">삭제</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteBooking(id) {
+    if (confirm('정말 이 예약을 삭제하시겠습니까?')) {
+        window.location.href = "{{ url_for('admin.delete_booking', id=0) }}".replace('0', id);
+    }
+}
+</script>
+{% endblock %} 

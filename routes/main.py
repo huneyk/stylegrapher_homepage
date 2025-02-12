@@ -38,6 +38,7 @@ def contact():
     if request.method == 'POST':
         name = request.form.get('name')
         email = request.form.get('contact')
+        service_id = request.form.get('service')
         message = request.form.get('message')
         
         # 희망 예약일시 처리
@@ -46,13 +47,18 @@ def contact():
         datetime_message = "희망 예약일시:\n"
         
         for i, (date, time) in enumerate(zip(dates, times), 1):
-            if date and time:  # 날짜와 시간이 모두 입력된 경우만 추가
+            if date and time:
                 datetime_message += f"{i}순위: {date} {time}\n"
         
-        # 메시지에 희망 예약일시 추가
         full_message = f"{message}\n\n{datetime_message}"
         
-        booking = Booking(name=name, email=email, message=full_message)
+        booking = Booking(
+            name=name,
+            email=email,
+            service_id=service_id,
+            message=full_message,
+            status='대기'
+        )
         db.session.add(booking)
         db.session.commit()
         

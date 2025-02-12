@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, login_user, logout_user
 from extensions import db, login_manager
-from models import Service, Gallery, User, ServiceOption
+from models import Service, Gallery, User, ServiceOption, Booking
 from werkzeug.utils import secure_filename
 import os
 from PIL import Image
@@ -211,3 +211,28 @@ def delete_option(option_id):
     db.session.commit()
     flash('옵션이 삭제되었습니다.')
     return redirect(url_for('admin.list_options', service_id=service_id))
+
+@admin.route('/bookings')
+@login_required
+def list_bookings():
+    bookings = Booking.query.order_by(Booking.created_at.desc()).all()
+    return render_template('admin/bookings.html', bookings=bookings)
+
+@admin.route('/booking/<int:id>/status/<status>')
+@login_required
+def update_booking_status(id, status):
+    booking = Booking.query.get_or_404(id)
+    if status in ['대기', '확정', '취소']:
+        booking.status = status
+        db.session.commit()
+        flash('예약 상태가 업데이트되었습니다.')
+    return redirect(url_for('admin.list_bookings'))
+
+@admin.route('/booking/<int:id>/delete')
+@login_required
+def delete_booking(id):
+    booking = Booking.query.get_or_404(id)
+    db.session.delete(booking)
+    db.session.commit()
+    flash('예약이 삭제되었습니다.')
+    return redirect(url_for('admin.list_bookings'))

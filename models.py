@@ -44,5 +44,23 @@ class Booking(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), nullable=False)
+    service_id = db.Column(db.Integer, db.ForeignKey('service.id', name='fk_booking_service'))
     message = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(20), default='대기')  # 대기, 확정, 취소
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    service = db.relationship('Service', backref='bookings')
+    
+    def get_datetimes(self):
+        # 메시지에서 희망 예약일시 부분만 추출
+        lines = self.message.split('\n')
+        datetimes = []
+        for line in lines:
+            if '순위:' in line:
+                datetimes.append(line.strip())
+        return datetimes
+    
+    def get_message_content(self):
+        # 메시지에서 희망 예약일시를 제외한 내용만 반환
+        parts = self.message.split('\n\n희망 예약일시:')
+        return parts[0] if parts else ''
