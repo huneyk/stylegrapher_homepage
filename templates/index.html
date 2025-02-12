@@ -198,10 +198,10 @@
 
 .fade-text-section {
     background-color: #fff;
-    padding: 0;  /* 패딩 제거 */
+    padding: 3rem 0;  /* 위아래 여백을 3rem으로 통일 */
     text-align: center;
     overflow: hidden;
-    margin-top: -2rem;  /* collage와의 간격 제거 */
+    margin-top: -3rem;  /* collage와의 간격도 3rem으로 조정 */
 }
 
 .fade-text {
@@ -213,7 +213,7 @@
     font-weight: 500;
     font-size: 2.2rem;
     color: #333;
-    margin: 0.3rem 0;  /* 줄 간격 조정 */
+    margin: 0.5rem 0;  /* 텍스트 간격 조정 */
 }
 
 @keyframes fadeIn {
@@ -230,11 +230,13 @@
 /* 반응형 디자인 */
 @media (max-width: 768px) {
     .fade-text-section {
-        margin-top: -1rem;
+        padding: 2rem 0;
+        margin-top: -2rem;
     }
     
     .fade-text h2 {
         font-size: 1.8rem;
+        margin: 0.3rem 0;
     }
 }
 </style>
