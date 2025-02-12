@@ -4,6 +4,7 @@ from extensions import db, login_manager
 from models import Service, Gallery, User, ServiceOption
 from werkzeug.utils import secure_filename
 import os
+from PIL import Image
 
 admin = Blueprint('admin', __name__)
 
@@ -17,8 +18,9 @@ def login():
         user = User.query.filter_by(username=request.form['username']).first()
         if user and user.check_password(request.form['password']):
             login_user(user)
+            flash('로그인되었습니다.')
             return redirect(url_for('admin.dashboard'))
-        flash('Invalid username or password')
+        flash('아이디 또는 비밀번호가 올바르지 않습니다.')
     return render_template('admin/login.html')
 
 @admin.route('/logout')
@@ -52,6 +54,22 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
 
+def resize_image(image_path, size=(1600, 1200)):
+    with Image.open(image_path) as img:
+        # 원본 이미지의 비율 계산
+        width_ratio = size[0] / img.width
+        height_ratio = size[1] / img.height
+        
+        # 더 작은 비율을 사용하여 aspect ratio 유지
+        ratio = min(width_ratio, height_ratio)
+        new_size = (int(img.width * ratio), int(img.height * ratio))
+        
+        # 이미지 리사이즈
+        resized_img = img.resize(new_size, Image.Resampling.LANCZOS)
+        
+        # 저장
+        resized_img.save(image_path, quality=95, optimize=True)
+
 @admin.route('/gallery/upload', methods=['GET', 'POST'])
 @login_required
 def upload_image():
@@ -67,7 +85,11 @@ def upload_image():
             
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+            filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+            
+            # 이미지 리사이즈
+            resize_image(filepath)
             
             gallery = Gallery(
                 image_path=filename,
