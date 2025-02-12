@@ -33,11 +33,19 @@ class ServiceOption(db.Model):
     # Service 모델과의 관계 설정
     service = db.relationship('Service', backref=db.backref('options', lazy=True, cascade="all, delete-orphan"))
 
+class GalleryGroup(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    images = db.relationship('Gallery', backref='group', cascade='all, delete-orphan')
+
 class Gallery(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     image_path = db.Column(db.String(200), nullable=False)
     caption = db.Column(db.String(200))
-    category = db.Column(db.String(50))
+    order = db.Column(db.Integer, default=0)
+    group_id = db.Column(db.Integer, db.ForeignKey('gallery_group.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Booking(db.Model):

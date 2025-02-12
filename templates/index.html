@@ -41,24 +41,79 @@
 
 <!-- Gallery Preview Section -->
 <div class="container py-5">
-    <h2 class="text-center mb-4">갤러리</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>갤러리</h2>
+        <a href="{{ url_for('main.gallery') }}" class="btn btn-outline-warning gallery-more-btn">더보기</a>
+    </div>
     <div class="row g-4">
-        {% if images %}
-            {% for image in images[:6] %}
-            <div class="col-md-4">
-                <div class="card gallery-item">
-                    <img src="{{ url_for('static', filename='uploads/' + image.image_path) }}" 
-                         class="card-img-top" 
-                         alt="{{ image.caption }}">
+        {% for group in gallery_groups %}
+        <div class="col-md-4">
+            <div class="card gallery-preview-item">
+                <div id="previewCarousel{{ group.id }}" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        {% for image in group.images %}
+                        <div class="carousel-item {% if loop.first %}active{% endif %}">
+                            <img src="{{ url_for('static', filename='uploads/' + image.image_path) }}" 
+                                 class="d-block w-100" 
+                                 alt="{{ group.title }}">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if group.images|length > 1 %}
+                    <button class="carousel-control-prev" type="button" 
+                            data-bs-target="#previewCarousel{{ group.id }}" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" 
+                            data-bs-target="#previewCarousel{{ group.id }}" data-bs-slide="next">
+                        <span class="carousel-control-next-icon"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                    {% endif %}
+                </div>
+                <div class="card-body p-2 d-flex align-items-start justify-content-center">
+                    <h5 class="card-title mb-0">{{ group.title }}</h5>
                 </div>
             </div>
-            {% endfor %}
-        {% endif %}
-    </div>
-    <div class="text-center mt-4">
-        <a href="{{ url_for('main.gallery') }}" class="btn btn-primary">더 보기</a>
+        </div>
+        {% endfor %}
     </div>
 </div>
+
+<style>
+.gallery-preview-item .carousel-item img {
+    height: 400px;
+    object-fit: cover;
+}
+.gallery-preview-item {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+.gallery-preview-item:hover {
+    transform: translateY(-5px);
+}
+.gallery-preview-item .card-body {
+    height: 40px;
+    padding-top: 8px !important;  /* 상단 패딩 줄임 */
+}
+.gallery-preview-item .card-title {
+    font-size: 1.2rem;  /* 글자 크기 키움 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+}
+.gallery-more-btn {
+    color: #FFE5B4;
+    border-color: #FFE5B4;
+}
+.gallery-more-btn:hover {
+    color: #fff;
+    background-color: #FFE5B4;
+    border-color: #FFE5B4;
+}
+</style>
 
 <!-- Contact Section -->
 <div class="container py-5">

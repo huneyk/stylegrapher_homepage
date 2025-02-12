@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
-from models import Service, Gallery, Booking, CarouselItem
+from models import Service, Gallery, Booking, CarouselItem, GalleryGroup
 from extensions import db
 import json
 
@@ -9,9 +9,9 @@ main = Blueprint('main', __name__)
 @main.route('/')
 def index():
     services = Service.query.all()
-    images = Gallery.query.all()
+    gallery_groups = GalleryGroup.query.order_by(GalleryGroup.created_at.desc()).limit(3).all()
     carousel_items = CarouselItem.query.order_by(CarouselItem.order).all()
-    return render_template('index.html', services=services, images=images, carousel_items=carousel_items)
+    return render_template('index.html', services=services, gallery_groups=gallery_groups, carousel_items=carousel_items)
 
 @main.route('/services')
 def services():
@@ -31,8 +31,8 @@ def service_detail(service_type):
 
 @main.route('/gallery')
 def gallery():
-    images = Gallery.query.all()
-    return render_template('gallery.html', images=images)
+    gallery_groups = GalleryGroup.query.order_by(GalleryGroup.created_at.desc()).all()
+    return render_template('gallery.html', gallery_groups=gallery_groups)
 
 @main.route('/contact', methods=['GET', 'POST'])
 def contact():

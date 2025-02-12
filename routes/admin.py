@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify
 from flask_login import login_required, login_user, logout_user
 from extensions import db, login_manager
-from models import Service, Gallery, User, ServiceOption, Booking, CarouselItem
+from models import Service, Gallery, User, ServiceOption, Booking, CarouselItem, GalleryGroup
 from werkzeug.utils import secure_filename
 import os
 from PIL import Image
@@ -75,35 +75,58 @@ def resize_image(image_path, size=(1600, 1200)):
 @login_required
 def upload_image():
     if request.method == 'POST':
-        if 'image' not in request.files:
+        if 'images[]' not in request.files:
             flash('이미지를 선택해주세요.')
             return redirect(request.url)
         
-        file = request.files['image']
-        if file.filename == '':
-            flash('이미지를 선택해주세요.')
+        files = request.files.getlist('images[]')
+        if len(files) > 10:
+            flash('최대 10개의 이미지만 업로드할 수 있습니다.')
             return redirect(request.url)
-            
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-            
-            # 이미지 리사이즈
-            resize_image(filepath)
-            
-            gallery = Gallery(
-                image_path=filename,
-                caption=request.form['caption'],
-                category=request.form['category']
-            )
-            db.session.add(gallery)
-            db.session.commit()
-            
-            flash('이미지가 업로드되었습니다.')
-            return redirect(url_for('admin.dashboard'))
+        
+        # 갤러리 그룹 생성
+        gallery_group = GalleryGroup(title=request.form['title'])
+        db.session.add(gallery_group)
+        
+        # 이미지 저장
+        for i, file in enumerate(files):
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+                file.save(filepath)
+                
+                # 이미지 리사이즈
+                resize_image(filepath)
+                
+                # 갤러리 이미지 생성
+                gallery = Gallery(
+                    image_path=filename,
+                    order=i,
+                    group=gallery_group
+                )
+                db.session.add(gallery)
+        
+        db.session.commit()
+        flash('이미지가 업로드되었습니다.')
+        return redirect(url_for('admin.list_gallery'))
             
     return render_template('admin/upload_image.html')
+
+@admin.route('/gallery/delete/<int:group_id>')
+@login_required
+def delete_gallery_group(group_id):
+    group = GalleryGroup.query.get_or_404(group_id)
+    
+    # 이미지 파일 삭제
+    for image in group.images:
+        image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image.image_path)
+        if os.path.exists(image_path):
+            os.remove(image_path)
+    
+    db.session.delete(group)
+    db.session.commit()
+    flash('갤러리가 삭제되었습니다.')
+    return redirect(url_for('admin.list_gallery'))
 
 @admin.route('/services')
 @login_required
@@ -321,3 +344,9 @@ def delete_carousel(id):
     db.session.commit()
     flash('캐러셀 항목이 삭제되었습니다.')
     return redirect(url_for('admin.list_carousel'))
+
+@admin.route('/gallery')
+@login_required
+def list_gallery():
+    gallery_groups = GalleryGroup.query.order_by(GalleryGroup.created_at.desc()).all()
+    return render_template('admin/list_gallery.html', gallery_groups=gallery_groups)
