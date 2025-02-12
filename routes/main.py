@@ -36,18 +36,28 @@ def gallery():
 @main.route('/contact', methods=['GET', 'POST'])
 def contact():
     if request.method == 'POST':
-        # 예약/문의 폼 처리 로직
         name = request.form.get('name')
-        email = request.form.get('email')
+        email = request.form.get('contact')
         message = request.form.get('message')
         
-        booking = Booking(name=name, email=email, message=message)
+        # 희망 예약일시 처리
+        dates = request.form.getlist('date[]')
+        times = request.form.getlist('time[]')
+        datetime_message = "희망 예약일시:\n"
+        
+        for i, (date, time) in enumerate(zip(dates, times), 1):
+            if date and time:  # 날짜와 시간이 모두 입력된 경우만 추가
+                datetime_message += f"{i}순위: {date} {time}\n"
+        
+        # 메시지에 희망 예약일시 추가
+        full_message = f"{message}\n\n{datetime_message}"
+        
+        booking = Booking(name=name, email=email, message=full_message)
         db.session.add(booking)
         db.session.commit()
         
-        flash('문의가 성공적으로 전송되었습니다.')
+        flash('예약 문의가 성공적으로 전송되었습니다.')
         return redirect(url_for('main.contact'))
         
-    # services 변수를 템플릿에 전달
     services = Service.query.all()
     return render_template('booking.html', services=services) 
