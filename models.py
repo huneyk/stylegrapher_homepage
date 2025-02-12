@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
+    username = db.Column(db.String(80), unique=True, nullable=False, name='uq_user_username')
     password_hash = db.Column(db.String(120), nullable=False)
 
     def set_password(self, password):
@@ -17,9 +17,10 @@ class User(UserMixin, db.Model):
 class Service(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text)
-    price = db.Column(db.Integer)
+    description = db.Column(db.Text, nullable=False)
     category = db.Column(db.String(50))
+    details = db.Column(db.Text)  # JSON 형식으로 저장
+    packages = db.Column(db.Text)  # JSON 형식으로 저장
 
 class ServiceOption(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -42,7 +43,6 @@ class Gallery(db.Model):
 class Booking(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    contact = db.Column(db.String(100), nullable=False)
-    service_id = db.Column(db.Integer, db.ForeignKey('service.id'))
-    message = db.Column(db.Text)
+    email = db.Column(db.String(120), nullable=False)
+    message = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

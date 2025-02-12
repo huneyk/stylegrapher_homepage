@@ -2,7 +2,7 @@ import os
 from flask import Flask
 from routes.main import main
 from routes.admin import admin
-from extensions import db, login_manager
+from extensions import db, login_manager, migrate
 from models import User
 from config import Config
 
@@ -13,8 +13,11 @@ def create_app():
     # 업로드 폴더 설정
     app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static/uploads')
     
+    # 확장 기능 초기화
     db.init_app(app)
     login_manager.init_app(app)
+    migrate.init_app(app, db)
+    
     login_manager.login_view = 'admin.login'
     
     # Import blueprints from routes package

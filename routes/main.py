@@ -1,18 +1,32 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 from models import Service, Gallery, Booking
 from extensions import db
+import json
 
 # Create the Blueprint object
 main = Blueprint('main', __name__)
 
 @main.route('/')
 def index():
-    return render_template('index.html')
+    services = Service.query.all()
+    images = Gallery.query.order_by(Gallery.id.desc()).limit(6).all()
+    return render_template('index.html', services=services, images=images)
 
 @main.route('/services')
 def services():
     services = Service.query.all()
     return render_template('services.html', services=services)
+
+@main.route('/service/<int:service_type>')
+def service_detail(service_type):
+    service = Service.query.get_or_404(service_type)
+    # JSON 문자열을 파이썬 객체로 변환
+    details = json.loads(service.details) if service.details else []
+    packages = json.loads(service.packages) if service.packages else []
+    return render_template('service_detail.html', 
+                         service=service, 
+                         details=details,
+                         packages=packages)
 
 @main.route('/gallery')
 def gallery():

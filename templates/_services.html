@@ -1,0 +1,14 @@
+<!-- 공통으로 사용할 서비스 템플릿 -->
+<div class="row g-4">
+    {% for service in services %}
+    <div class="col-md-4">
+        <div class="card h-100 service-card">
+            <div class="card-body text-center">
+                <h3 class="card-title">{{ service.name }}</h3>
+                <p class="card-text">{{ service.description }}</p>
+                <a href="{{ url_for('main.service_detail', service_type=service.id) }}" class="btn btn-primary">자세히 보기</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div> 
