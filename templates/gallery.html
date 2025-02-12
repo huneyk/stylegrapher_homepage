@@ -4,64 +4,113 @@
 
 {% block content %}
 <div class="container py-5">
-    <h1 class="text-center mb-5">갤러리</h1>
-    <div class="row g-4">
-        {% for group in gallery_groups %}
-        <div class="col-md-6">
-            <div class="card gallery-item">
-                <div id="carousel{{ group.id }}" class="carousel slide" data-bs-ride="carousel">
-                    <div class="carousel-indicators">
-                        {% for image in group.images %}
-                        <button type="button" data-bs-target="#carousel{{ group.id }}" 
-                                data-bs-slide-to="{{ loop.index0 }}" 
-                                {% if loop.first %}class="active"{% endif %}></button>
-                        {% endfor %}
-                    </div>
-                    <div class="carousel-inner">
-                        {% for image in group.images %}
-                        <div class="carousel-item {% if loop.first %}active{% endif %}">
-                            <img src="{{ url_for('static', filename='uploads/' + image.image_path) }}" 
-                                 class="d-block w-100" 
-                                 alt="{{ group.title }}">
+    <div class="card outer-gallery-card">
+        <div class="card-body p-4">
+            <div class="card gallery-main-card">
+                <div class="card-body">
+                    <h1 class="text-center mb-5">갤러리</h1>
+                    <div class="row g-4">
+                        {% for group in gallery_groups %}
+                        <div class="col-md-6">
+                            <div class="card gallery-item">
+                                <div id="carousel{{ group.id }}" class="carousel slide" data-bs-ride="carousel">
+                                    <div class="carousel-indicators">
+                                        {% for image in group.images %}
+                                        <button type="button" data-bs-target="#carousel{{ group.id }}" 
+                                                data-bs-slide-to="{{ loop.index0 }}" 
+                                                {% if loop.first %}class="active"{% endif %}></button>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="carousel-inner">
+                                        {% for image in group.images %}
+                                        <div class="carousel-item {% if loop.first %}active{% endif %}">
+                                            <img src="{{ url_for('static', filename='uploads/' + image.image_path) }}" 
+                                                 class="d-block w-100" 
+                                                 alt="{{ group.title }}">
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% if group.images|length > 1 %}
+                                    <button class="carousel-control-prev" type="button" 
+                                            data-bs-target="#carousel{{ group.id }}" data-bs-slide="prev">
+                                        <span class="carousel-control-prev-icon"></span>
+                                        <span class="visually-hidden">Previous</span>
+                                    </button>
+                                    <button class="carousel-control-next" type="button" 
+                                            data-bs-target="#carousel{{ group.id }}" data-bs-slide="next">
+                                        <span class="carousel-control-next-icon"></span>
+                                        <span class="visually-hidden">Next</span>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ group.title }}</h5>
+                                    <p class="card-text text-muted">
+                                        <small>{{ group.images|length }}장의 사진</small>
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                         {% endfor %}
                     </div>
-                    {% if group.images|length > 1 %}
-                    <button class="carousel-control-prev" type="button" 
-                            data-bs-target="#carousel{{ group.id }}" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon"></span>
-                        <span class="visually-hidden">Previous</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" 
-                            data-bs-target="#carousel{{ group.id }}" data-bs-slide="next">
-                        <span class="carousel-control-next-icon"></span>
-                        <span class="visually-hidden">Next</span>
-                    </button>
-                    {% endif %}
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">{{ group.title }}</h5>
-                    <p class="card-text text-muted">
-                        <small>{{ group.images|length }}장의 사진</small>
-                    </p>
                 </div>
             </div>
         </div>
-        {% endfor %}
     </div>
 </div>
 
 <style>
+.outer-gallery-card {
+    border: 1px solid #8B5FBF;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(139, 95, 191, 0.4);
+    background-color: #fff;
+    transition: box-shadow 0.3s ease;
+}
+
+.outer-gallery-card:hover {
+    box-shadow: 0 8px 25px rgba(139, 95, 191, 0.5);
+}
+
+.gallery-main-card {
+    border: 0.5px solid rgba(139, 95, 191, 0.2);
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.3);
+    background-color: #fff;
+}
+
+.gallery-item {
+    border: 0.5px solid rgba(139, 95, 191, 0.2);
+    box-shadow: 0 6px 15px rgba(139, 95, 191, 0.35);
+    transition: transform 0.2s;
+}
+
+.gallery-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(139, 95, 191, 0.45);
+}
+
 .gallery-item .carousel-item img {
     height: 400px;
     object-fit: cover;
 }
-.gallery-item {
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s;
+
+.gallery-item .card-body {
+    padding: 1rem;
 }
-.gallery-item:hover {
-    transform: translateY(-5px);
+
+.gallery-item .card-title {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.gallery-item .carousel-indicators {
+    margin-bottom: 0;
+}
+
+.gallery-item .carousel-control-prev,
+.gallery-item .carousel-control-next {
+    width: 10%;
 }
 </style>
 {% endblock %} 
