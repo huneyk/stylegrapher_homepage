@@ -3,35 +3,228 @@
 {% block title %}홈{% endblock %}
 
 {% block content %}
-<!-- Carousel Section -->
-<div id="mainCarousel" class="carousel slide" data-bs-ride="carousel">
-    <div class="carousel-indicators">
-        {% for item in carousel_items %}
-        <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="{{ loop.index0 }}" 
-                {% if loop.first %}class="active"{% endif %}></button>
-        {% endfor %}
-    </div>
-    <div class="carousel-inner">
-        {% for item in carousel_items %}
-        <div class="carousel-item {% if loop.first %}active{% endif %}">
-            <img src="{{ url_for('static', filename='images/' + item.image_path) }}" 
-                 class="d-block w-100" alt="{{ item.title }}">
-            <div class="carousel-caption">
-                <h1>{{ item.title }}</h1>
-                <p>{{ item.subtitle }}</p>
+<!-- Collage Section -->
+<div class="hero-section position-relative">
+    <div class="collage-container">
+        <div class="row g-0">
+            {% for group in recent_galleries %}
+            <div class="col-md-4">
+                <div class="collage-item">
+                    <div id="heroCarousel{{ loop.index }}" class="carousel slide" data-bs-ride="carousel" data-bs-interval="{{ 3000 + (loop.index0 * 500) }}">
+                        <div class="carousel-inner">
+                            {% for image in group.images %}
+                            <div class="carousel-item {% if loop.first %}active{% endif %}">
+                                <img src="{{ url_for('static', filename='uploads/' + image.image_path) }}" 
+                                     class="d-block w-100" 
+                                     alt="{{ group.title }}">
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="collage-overlay">
+                        <h3>{{ group.title }}</h3>
+                    </div>
+                </div>
             </div>
+            {% endfor %}
         </div>
+    </div>
+    <div class="hero-text-overlay">
+        {% for text in collage_texts %}
+        <div class="typing-text" id="typing{{ text.order }}">{{ text.text }}</div>
         {% endfor %}
     </div>
-    <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon"></span>
-        <span class="visually-hidden">Previous</span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
-        <span class="carousel-control-next-icon"></span>
-        <span class="visually-hidden">Next</span>
-    </button>
 </div>
+
+<style>
+.hero-section {
+    height: 650px;  /* 높이 약간 증가 */
+    overflow: visible;  /* 겹침 허용 */
+    background-color: #fff;
+    position: relative;
+    padding: 2rem 0;
+}
+
+.collage-container {
+    height: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+    perspective: 1000px;  /* 3D 효과를 위한 perspective 추가 */
+}
+
+.row.g-0 {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 25px rgba(65, 26, 75, 0.2);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.row.g-0:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(65, 26, 75, 0.3);
+}
+
+.collage-item {
+    height: 500px;
+    transform-style: preserve-3d;
+    position: relative;
+    transition: transform 0.5s ease;
+}
+
+/* 각 아이템별 기울기 설정 */
+.col-md-4:nth-child(1) .collage-item {
+    transform: rotate(-5deg) translateZ(0);
+    z-index: 1;
+}
+
+.col-md-4:nth-child(2) .collage-item {
+    transform: rotate(3deg) translateZ(0) translateY(-20px);
+    z-index: 2;
+}
+
+.col-md-4:nth-child(3) .collage-item {
+    transform: rotate(-2deg) translateZ(0);
+    z-index: 1;
+}
+
+/* hover 효과 */
+.col-md-4:nth-child(1) .collage-item:hover {
+    transform: rotate(-5deg) translateZ(30px) scale(1.05);
+    z-index: 3;
+}
+
+.col-md-4:nth-child(2) .collage-item:hover {
+    transform: rotate(3deg) translateZ(30px) scale(1.05);
+    z-index: 3;
+}
+
+.col-md-4:nth-child(3) .collage-item:hover {
+    transform: rotate(-2deg) translateZ(30px) scale(1.05);
+    z-index: 3;
+}
+
+.collage-item .carousel {
+    height: 100%;
+    border-radius: 10px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    overflow: hidden;
+}
+
+.collage-item .carousel-item {
+    height: 100%;
+}
+
+.collage-item .carousel-item img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.collage-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(65, 26, 75, 0.7), transparent);
+    padding: 20px;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: 0 0 10px 10px;
+}
+
+.collage-item:hover .collage-overlay {
+    opacity: 1;
+}
+
+.collage-item:hover .carousel-item img {
+    transform: scale(1.05);
+}
+
+.hero-text-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 10;
+    width: 100%;
+}
+
+.typing-text {
+    color: #FFE5B4;
+    font-family: 'Nanum Pen Script', cursive;
+    font-size: 3.5rem;
+    opacity: 0;
+    margin-bottom: 1.5rem;
+    padding: 0.5rem 2rem;
+    display: inline-block;
+    background: rgba(65, 26, 75, 0.85);
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes typewriter {
+    from { 
+        width: 0; 
+        opacity: 0; 
+    }
+    to { 
+        width: auto; 
+        opacity: 1; 
+    }
+}
+
+#typing1 { 
+    animation: typewriter 2s ease-out 1s forwards;
+    transform: rotate(-2deg);
+}
+
+#typing2 { 
+    animation: typewriter 2s ease-out 3s forwards;
+    transform: rotate(1deg);
+}
+
+#typing3 { 
+    animation: typewriter 2s ease-out 5s forwards;
+    transform: rotate(-1deg);
+}
+
+.typing-text:hover {
+    transform: scale(1.05) rotate(0deg) !important;
+    transition: transform 0.3s ease;
+}
+
+/* 반응형 디자인을 위한 미디어 쿼리 */
+@media (max-width: 768px) {
+    .hero-section {
+        height: auto;
+        padding: 1rem 0;
+    }
+    
+    .collage-item {
+        height: 300px;
+        transform: none !important;
+        margin-bottom: 20px;
+    }
+    
+    .collage-item:hover {
+        transform: none !important;
+    }
+    
+    .typing-text {
+        font-size: 2rem;
+        padding: 0.3rem 1rem;
+    }
+    
+    .row.g-0 {
+        margin: 0 15px;
+    }
+}
+</style>
 
 <!-- Services Preview Section -->
 <div class="container py-5">

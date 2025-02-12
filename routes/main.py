@@ -1,17 +1,23 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
-from models import Service, Gallery, Booking, CarouselItem, GalleryGroup
+from models import Service, Gallery, Booking, CarouselItem, GalleryGroup, CollageText
 from extensions import db
 import json
+from sqlalchemy import desc
 
 # Create the Blueprint object
 main = Blueprint('main', __name__)
 
 @main.route('/')
 def index():
+    # 최근 갤러리 이미지 3개 그룹 가져오기
+    recent_galleries = GalleryGroup.query.order_by(desc(GalleryGroup.created_at)).limit(3).all()
     services = Service.query.all()
-    gallery_groups = GalleryGroup.query.order_by(GalleryGroup.created_at.desc()).limit(3).all()
-    carousel_items = CarouselItem.query.order_by(CarouselItem.order).all()
-    return render_template('index.html', services=services, gallery_groups=gallery_groups, carousel_items=carousel_items)
+    collage_texts = CollageText.query.order_by(CollageText.order).all()
+    
+    return render_template('index.html', 
+                         recent_galleries=recent_galleries,
+                         services=services,
+                         collage_texts=collage_texts)
 
 @main.route('/services')
 def services():
