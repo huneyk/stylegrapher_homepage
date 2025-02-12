@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title text-center">{{ service.name }} - 옵션 추가</h2>
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">옵션명</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">설명</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="price" class="form-label">가격</label>
+                            <input type="number" class="form-control" id="price" name="price" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="duration" class="form-label">소요시간</label>
+                            <input type="text" class="form-control" id="duration" name="duration" 
+                                   placeholder="예: 1시간, 30분" required>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">옵션 추가</button>
+                            <a href="{{ url_for('admin.list_options', service_id=service.id) }}" 
+                               class="btn btn-secondary">취소</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

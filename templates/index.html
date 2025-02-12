@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}홈{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Hero Section -->
+    <div class="hero-section text-center py-5 bg-light">
+        <div class="container">
+            <h1 class="display-4 mb-3">Stylegrapher 스타일그래퍼</h1>
+            <p class="lead mb-4">당신만의 특별한 순간을 완성해드립니다</p>
+        </div>
+    </div>
+
+    <!-- Services Preview Section -->
+    <div class="container py-5">
+        <h2 class="text-center mb-4">서비스 안내</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 service-card">
+                    <div class="card-body text-center">
+                        <h3 class="card-title">개인화보</h3>
+                        <p class="card-text">특별한 순간을 아름답게 담아드립니다</p>
+                        <a href="{{ url_for('main.services') }}" class="btn btn-primary">자세히 보기</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 service-card">
+                    <div class="card-body text-center">
+                        <h3 class="card-title">메이크업 레슨</h3>
+                        <p class="card-text">나만의 메이크업 스킬을 배워보세요</p>
+                        <a href="{{ url_for('main.services') }}" class="btn btn-primary">자세히 보기</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 service-card">
+                    <div class="card-body text-center">
+                        <h3 class="card-title">퍼스널 컬러 진단</h3>
+                        <p class="card-text">나에게 어울리는 컬러를 찾아드립니다</p>
+                        <a href="{{ url_for('main.services') }}" class="btn btn-primary">자세히 보기</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gallery Preview Section -->
+    <div class="container py-5">
+        <h2 class="text-center mb-4">갤러리</h2>
+        <div class="row g-4">
+            {% if images %}
+                {% for image in images[:6] %}
+                <div class="col-md-4">
+                    <div class="card gallery-item">
+                        <img src="{{ url_for('static', filename='uploads/' + image.image_path) }}" 
+                             class="card-img-top" 
+                             alt="{{ image.caption }}">
+                    </div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="{{ url_for('main.gallery') }}" class="btn btn-primary">더 보기</a>
+        </div>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="container py-5">
+        <div class="text-center">
+            <h2 class="mb-4">예약 및 문의</h2>
+            <p class="mb-4">궁금하신 점이 있으시다면 언제든 문의해주세요.</p>
+            <a href="{{ url_for('main.contact') }}" class="btn btn-primary btn-lg">문의하기</a>
+        </div>
+    </div>
+</div>
+{% endblock %} 

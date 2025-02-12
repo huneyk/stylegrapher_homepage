@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}서비스{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="text-center mb-5">서비스 안내</h1>
+    <div class="row g-4">
+        {% for service in services %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 service-card">
+                <div class="card-body">
+                    <h2 class="card-title h4">{{ service.name }}</h2>
+                    <p class="card-text">{{ service.description }}</p>
+                    <p class="card-text">
+                        <small class="text-muted">{{ service.category }}</small>
+                    </p>
+                    <p class="card-text fw-bold">{{ service.price }}원</p>
+                    <a href="{{ url_for('main.contact') }}" class="btn btn-primary">예약하기</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}예약{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <h2 class="card-title text-center mb-4">예약하기</h2>
+                    
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-success" role="alert">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">이름</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="contact" class="form-label">연락처</label>
+                            <input type="text" class="form-control" id="contact" name="contact" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="service" class="form-label">서비스 선택</label>
+                            <select class="form-select" id="service" name="service" required>
+                                {% for service in services %}
+                                <option value="{{ service.id }}">{{ service.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">메시지</label>
+                            <textarea class="form-control" id="message" name="message" rows="4"></textarea>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">예약하기</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+<script>
+    Kakao.init('YOUR_KAKAO_JAVASCRIPT_KEY');
+    
+    document.querySelector('form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const name = document.getElementById('name').value;
+        const contact = document.getElementById('contact').value;
+        const service = document.getElementById('service');
+        const serviceName = service.options[service.selectedIndex].text;
+        const message = document.getElementById('message').value;
+
+        const kakaoMessage = `[새로운 예약]
+이름: ${name}
+연락처: ${contact} 
+서비스: ${serviceName}
+메시지: ${message}`;
+
+        Kakao.Link.sendDefault({
+            objectType: 'text',
+            text: kakaoMessage,
+            link: {
+                mobileWebUrl: window.location.href,
+                webUrl: window.location.href
+            }
+        });
+
+        this.submit();
+    });
+</script>
+{% endblock %} 
