@@ -79,3 +79,13 @@ class CarouselItem(db.Model):
     subtitle = db.Column(db.String(200))
     image_path = db.Column(db.String(200), nullable=False)
     order = db.Column(db.Integer, default=0)
+
+class CollageText(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.String(100), nullable=False)
+    order = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<CollageText {self.text}>'

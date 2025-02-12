@@ -9,15 +9,26 @@ main = Blueprint('main', __name__)
 
 @main.route('/')
 def index():
-    # 최근 갤러리 이미지 3개 그룹 가져오기
-    recent_galleries = GalleryGroup.query.order_by(desc(GalleryGroup.created_at)).limit(3).all()
+    # 모든 갤러리 그룹을 최신순으로 가져오기
+    all_galleries = GalleryGroup.query.order_by(desc(GalleryGroup.created_at)).all()
+    
+    # 상위 3개는 collage용
+    recent_galleries = all_galleries[:3] if all_galleries else []
+    
+    # 4-6번째는 하단 갤러리용
+    preview_galleries = all_galleries[3:6] if len(all_galleries) > 3 else []
+    
     services = Service.query.all()
-    collage_texts = CollageText.query.order_by(CollageText.order).all()
+    
+    # 디버깅을 위한 출력
+    print(f"Total galleries: {len(all_galleries)}")
+    print(f"Recent galleries: {len(recent_galleries)}")
+    print(f"Preview galleries: {len(preview_galleries)}")
     
     return render_template('index.html', 
                          recent_galleries=recent_galleries,
-                         services=services,
-                         collage_texts=collage_texts)
+                         preview_galleries=preview_galleries,
+                         services=services)
 
 @main.route('/services')
 def services():

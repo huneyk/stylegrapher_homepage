@@ -3,6 +3,9 @@
 {% block title %}홈{% endblock %}
 
 {% block content %}
+<!-- Google Fonts 추가 -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+
 <!-- Collage Section -->
 <div class="hero-section position-relative">
     <div class="collage-container">
@@ -22,35 +25,37 @@
                         </div>
                     </div>
                     <div class="collage-overlay">
-                        <h3>{{ group.title }}</h3>
+                        <h3 class="gallery-title">{{ group.title }}</h3>
                     </div>
                 </div>
             </div>
             {% endfor %}
         </div>
     </div>
-    <div class="hero-text-overlay">
-        {% for text in collage_texts %}
-        <div class="typing-text" id="typing{{ text.order }}">{{ text.text }}</div>
-        {% endfor %}
+</div>
+
+<!-- Fade Text Section -->
+<div class="fade-text-section">
+    <div class="fade-text">
+        <h2>스타일그래퍼와 함께</h2>
+        <h2>나를 찾아가는 여정</h2>
     </div>
 </div>
 
 <style>
 .hero-section {
-    height: 650px;  /* 높이 약간 증가 */
-    overflow: visible;  /* 겹침 허용 */
+    min-height: 650px;  /* 최소 높이로 변경 */
+    overflow: visible;
     background-color: #fff;
     position: relative;
     padding: 2rem 0;
 }
 
 .collage-container {
-    height: 100%;
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 15px;
-    perspective: 1000px;  /* 3D 효과를 위한 perspective 추가 */
+    perspective: 1000px;
 }
 
 .row.g-0 {
@@ -67,9 +72,9 @@
 }
 
 .collage-item {
-    height: 500px;
-    transform-style: preserve-3d;
     position: relative;
+    padding-top: 133.33%;  /* 3:4 비율 (4/3 * 100) */
+    transform-style: preserve-3d;
     transition: transform 0.5s ease;
 }
 
@@ -106,6 +111,10 @@
 }
 
 .collage-item .carousel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
     height: 100%;
     border-radius: 10px;
     box-shadow: 0 10px 20px rgba(0,0,0,0.2);
@@ -117,8 +126,8 @@
 }
 
 .collage-item .carousel-item img {
-    height: 100%;
     width: 100%;
+    height: 100%;
     object-fit: cover;
     transition: transform 0.3s ease;
 }
@@ -128,85 +137,47 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(to top, rgba(65, 26, 75, 0.7), transparent);
-    padding: 20px;
+    background: linear-gradient(to top, rgba(65, 26, 75, 0.8), transparent);
+    padding: 25px 20px;  /* 패딩 약간 증가 */
     color: white;
     opacity: 0;
     transition: opacity 0.3s ease;
     border-radius: 0 0 10px 10px;
 }
 
+.gallery-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 500;
+    font-size: 1.5rem;
+    letter-spacing: 0.5px;
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    transform: translateY(10px);
+    transition: transform 0.3s ease;
+}
+
 .collage-item:hover .collage-overlay {
     opacity: 1;
 }
 
-.collage-item:hover .carousel-item img {
-    transform: scale(1.05);
+.collage-item:hover .gallery-title {
+    transform: translateY(0);
 }
 
-.hero-text-overlay {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    z-index: 10;
-    width: 100%;
-}
-
+/* 텍스트 관련 스타일 제거 */
+.hero-text-overlay,
 .typing-text {
-    color: #FFE5B4;
-    font-family: 'Nanum Pen Script', cursive;
-    font-size: 3.5rem;
-    opacity: 0;
-    margin-bottom: 1.5rem;
-    padding: 0.5rem 2rem;
-    display: inline-block;
-    background: rgba(65, 26, 75, 0.85);
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-@keyframes typewriter {
-    from { 
-        width: 0; 
-        opacity: 0; 
-    }
-    to { 
-        width: auto; 
-        opacity: 1; 
-    }
-}
-
-#typing1 { 
-    animation: typewriter 2s ease-out 1s forwards;
-    transform: rotate(-2deg);
-}
-
-#typing2 { 
-    animation: typewriter 2s ease-out 3s forwards;
-    transform: rotate(1deg);
-}
-
-#typing3 { 
-    animation: typewriter 2s ease-out 5s forwards;
-    transform: rotate(-1deg);
-}
-
-.typing-text:hover {
-    transform: scale(1.05) rotate(0deg) !important;
-    transition: transform 0.3s ease;
+    display: none;
 }
 
 /* 반응형 디자인을 위한 미디어 쿼리 */
 @media (max-width: 768px) {
     .hero-section {
-        height: auto;
         padding: 1rem 0;
     }
     
     .collage-item {
-        height: 300px;
+        padding-top: 133.33%;  /* 모바일에서도 3:4 비율 유지 */
         transform: none !important;
         margin-bottom: 20px;
     }
@@ -215,134 +186,138 @@
         transform: none !important;
     }
     
-    .typing-text {
-        font-size: 2rem;
-        padding: 0.3rem 1rem;
-    }
-    
     .row.g-0 {
         margin: 0 15px;
+    }
+
+    .gallery-title {
+        font-size: 1.2rem;
+        letter-spacing: 0.3px;
+    }
+}
+
+.fade-text-section {
+    background-color: #fff;
+    padding: 0;  /* 패딩 제거 */
+    text-align: center;
+    overflow: hidden;
+    margin-top: -2rem;  /* collage와의 간격 제거 */
+}
+
+.fade-text {
+    animation: fadeIn 2s ease-in-out forwards;  /* 한 번만 실행되도록 forwards 추가 */
+}
+
+.fade-text h2 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 500;
+    font-size: 2.2rem;
+    color: #333;
+    margin: 0.3rem 0;  /* 줄 간격 조정 */
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .fade-text-section {
+        margin-top: -1rem;
+    }
+    
+    .fade-text h2 {
+        font-size: 1.8rem;
     }
 }
 </style>
 
 <!-- Services Preview Section -->
-<div class="container py-5">
-    <h2 class="text-center mb-4">서비스 안내</h2>
+<div class="container py-0">
     {% include '_services.html' %}
 </div>
-
+<p>
 <!-- Gallery Preview Section -->
 <div class="container py-5">
-    <div class="card outer-gallery-card">
-        <div class="card-body p-4">
-            <div class="card gallery-main-card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h2 class="mb-0">갤러리</h2>
-                        <a href="{{ url_for('main.gallery') }}" class="btn btn-outline-warning gallery-more-btn">더보기</a>
-                    </div>
-                    <div class="row g-4">
-                        {% for group in gallery_groups %}
-                        <div class="col-md-4">
-                            <div class="card gallery-preview-item">
-                                <div id="previewCarousel{{ group.id }}" class="carousel slide" data-bs-ride="carousel">
-                                    <div class="carousel-inner">
-                                        {% for image in group.images %}
-                                        <div class="carousel-item {% if loop.first %}active{% endif %}">
-                                            <img src="{{ url_for('static', filename='uploads/' + image.image_path) }}" 
-                                                 class="d-block w-100" 
-                                                 alt="{{ group.title }}">
-                                        </div>
-                                        {% endfor %}
-                                    </div>
-                                    {% if group.images|length > 1 %}
-                                    <button class="carousel-control-prev" type="button" 
-                                            data-bs-target="#previewCarousel{{ group.id }}" data-bs-slide="prev">
-                                        <span class="carousel-control-prev-icon"></span>
-                                        <span class="visually-hidden">Previous</span>
-                                    </button>
-                                    <button class="carousel-control-next" type="button" 
-                                            data-bs-target="#previewCarousel{{ group.id }}" data-bs-slide="next">
-                                        <span class="carousel-control-next-icon"></span>
-                                        <span class="visually-hidden">Next</span>
-                                    </button>
-                                    {% endif %}
-                                </div>
-                                <div class="card-body p-2 d-flex align-items-start justify-content-center">
-                                    <h5 class="card-title mb-0">{{ group.title }}</h5>
-                                </div>
-                            </div>
+    <h2 class="text-center mb-4">갤러리</h2>
+    <div class="row g-4">
+        {% for group in preview_galleries %}
+        <div class="col-md-4">
+            <div class="card gallery-preview-card h-100">
+                <div id="previewCarousel{{ loop.index }}" class="carousel slide" data-bs-ride="carousel" data-bs-interval="{{ 4000 + (loop.index0 * 500) }}">
+                    <div class="carousel-inner">
+                        {% for image in group.images %}
+                        <div class="carousel-item {% if loop.first %}active{% endif %}">
+                            <img src="{{ url_for('static', filename='uploads/' + image.image_path) }}" 
+                                 class="d-block w-100" 
+                                 alt="{{ group.title }}">
                         </div>
                         {% endfor %}
                     </div>
                 </div>
+                <div class="card-body">
+                    <h5 class="card-title gallery-preview-title">{{ group.title }}</h5>
+                </div>
             </div>
         </div>
+        {% endfor %}
+    </div>
+    <div class="text-center mt-4">
+        <a href="{{ url_for('main.gallery') }}" class="btn btn-outline-primary">더 많은 갤러리 보기</a>
     </div>
 </div>
 
 <style>
-.outer-gallery-card {
-    border: 1px solid #8B5FBF;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(139, 95, 191, 0.4);
-    background-color: #fff;
-    transition: box-shadow 0.3s ease;
-}
-
-.outer-gallery-card:hover {
-    box-shadow: 0 8px 25px rgba(139, 95, 191, 0.5);
-}
-
-.gallery-main-card {
-    border: 0.5px solid rgba(139, 95, 191, 0.2);
+.gallery-preview-card {
+    border: none;
     border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.3);
-    background-color: #fff;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.gallery-preview-item {
-    border: 0.5px solid rgba(139, 95, 191, 0.2);
-    box-shadow: 0 6px 15px rgba(139, 95, 191, 0.35);
-    transition: all 0.3s ease;
-}
-
-.gallery-preview-item:hover {
+.gallery-preview-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(139, 95, 191, 0.45);
+    box-shadow: 0 8px 25px rgba(65, 26, 75, 0.2);
 }
 
-.gallery-preview-item .carousel-item img {
-    height: 400px;
+.gallery-preview-card .carousel {
+    height: 300px;
+}
+
+.gallery-preview-card .carousel-item img {
+    height: 300px;
     object-fit: cover;
 }
 
-.gallery-preview-item .card-body {
-    height: 40px;
-    padding-top: 8px !important;
-}
-
-.gallery-preview-item .card-title {
+.gallery-preview-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 500;
     font-size: 1.2rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    color: #333;
     margin: 0;
+    text-align: center;
 }
 
-.gallery-more-btn {
-    color: #FFE5B4;
-    border-color: #FFE5B4;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(139, 95, 191, 0.2);
-}
-
-.gallery-more-btn:hover {
-    color: #fff;
-    background-color: #FFE5B4;
-    border-color: #FFE5B4;
-    box-shadow: 0 4px 12px rgba(139, 95, 191, 0.3);
+@media (max-width: 768px) {
+    .gallery-preview-card .carousel {
+        height: 200px;
+    }
+    
+    .gallery-preview-card .carousel-item img {
+        height: 200px;
+    }
+    
+    .gallery-preview-title {
+        font-size: 1rem;
+    }
 }
 </style>
 

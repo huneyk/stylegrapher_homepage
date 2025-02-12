@@ -1,7 +1,8 @@
 from app import create_app
 from extensions import db
-from models import User, Service, Gallery, Booking, ServiceOption, CarouselItem
+from models import User, Service, Gallery, Booking, ServiceOption, CarouselItem, GalleryGroup, CollageText
 import json
+from datetime import datetime, UTC
 
 def init_db():
     app = create_app()
@@ -9,6 +10,39 @@ def init_db():
         # 데이터베이스 테이블 생성
         db.drop_all()  # 기존 테이블 삭제
         db.create_all()  # 새로 테이블 생성
+        
+        # 테스트용 갤러리 그룹 생성
+        gallery_groups = [
+            GalleryGroup(title='웨딩 포토 1', created_at=datetime.now(UTC)),
+            GalleryGroup(title='프로필 촬영 1', created_at=datetime.now(UTC)),
+            GalleryGroup(title='패밀리 촬영', created_at=datetime.now(UTC)),
+            GalleryGroup(title='웨딩 포토 2', created_at=datetime.now(UTC)),
+            GalleryGroup(title='프로필 촬영 2', created_at=datetime.now(UTC)),
+            GalleryGroup(title='커플 촬영', created_at=datetime.now(UTC))
+        ]
+        
+        for group in gallery_groups:
+            db.session.add(group)
+        
+        db.session.commit()
+        
+        # 각 그룹에 이미지 추가
+        for i, group in enumerate(gallery_groups):
+            gallery = Gallery(
+                image_path=f'slide{(i % 5) + 1}.jpg',  # 기존 테스트 이미지 재사용
+                group_id=group.id
+            )
+            db.session.add(gallery)
+        
+        # 초기 CollageText 데이터 추가
+        collage_texts = [
+            CollageText(text="당신만의 특별한 순간을", order=1),
+            CollageText(text="스타일그래퍼가", order=2),
+            CollageText(text="완성해드립니다", order=3)
+        ]
+        
+        for text in collage_texts:
+            db.session.add(text)
         
         # 초기 캐러셀 데이터 추가
         carousel_items = [
