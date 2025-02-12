@@ -5,6 +5,7 @@ from models import Service, Gallery, User, ServiceOption
 from werkzeug.utils import secure_filename
 import os
 from PIL import Image
+import json
 
 admin = Blueprint('admin', __name__)
 
@@ -110,19 +111,49 @@ def list_services():
     services = Service.query.all()
     return render_template('admin/services.html', services=services)
 
-@admin.route('/services/edit/<int:id>', methods=['GET', 'POST'])
+@admin.route('/service/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_service(id):
     service = Service.query.get_or_404(id)
+    
     if request.method == 'POST':
         service.name = request.form['name']
         service.description = request.form['description']
-        service.price = request.form['price']
         service.category = request.form['category']
+        
+        # 상세 내용 저장
+        details = request.form.getlist('details[]')
+        service.details = json.dumps(details)
+        
+        # 패키지 정보 저장
+        packages = []
+        names = request.form.getlist('package_names[]')
+        descriptions = request.form.getlist('package_descriptions[]')
+        prices = request.form.getlist('package_prices[]')
+        
+        for i in range(len(names)):
+            if names[i].strip():
+                package = {
+                    'name': names[i],
+                    'description': descriptions[i],
+                    'price': prices[i]
+                }
+                packages.append(package)
+        
+        service.packages = json.dumps(packages)
+        
         db.session.commit()
         flash('서비스가 수정되었습니다.')
         return redirect(url_for('admin.list_services'))
-    return render_template('admin/edit_service.html', service=service)
+    
+    # JSON 데이터를 파이썬 객체로 변환
+    details = json.loads(service.details) if service.details else []
+    packages = json.loads(service.packages) if service.packages else []
+        
+    return render_template('admin/edit_service.html', 
+                         service=service,
+                         details=details,
+                         packages=packages)
 
 @admin.route('/services/delete/<int:id>')
 @login_required

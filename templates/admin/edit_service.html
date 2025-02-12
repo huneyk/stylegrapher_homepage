@@ -8,29 +8,82 @@
                 <div class="card-body">
                     <h2 class="card-title text-center">서비스 수정</h2>
                     <form method="POST">
-                        <div class="mb-3">
-                            <label for="name" class="form-label">서비스명</label>
-                            <input type="text" class="form-control" id="name" name="name" 
-                                   value="{{ service.name }}" required>
+                        <!-- 기본 정보 -->
+                        <div class="mb-4">
+                            <h3 class="h5 mb-3">서비스 기본 정보</h3>
+                            <div class="mb-3">
+                                <label for="name" class="form-label">서비스명</label>
+                                <input type="text" class="form-control" id="name" name="name" 
+                                       value="{{ service.name }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">서비스 소개</label>
+                                <textarea class="form-control" id="description" name="description" 
+                                        rows="3" required>{{ service.description }}</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="category" class="form-label">카테고리</label>
+                                <select class="form-control" id="category" name="category" required>
+                                    <option value="촬영" {% if service.category == '촬영' %}selected{% endif %}>촬영</option>
+                                    <option value="메이크업" {% if service.category == '메이크업' %}selected{% endif %}>메이크업</option>
+                                    <option value="컨설팅" {% if service.category == '컨설팅' %}selected{% endif %}>컨설팅</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="description" class="form-label">설명</label>
-                            <textarea class="form-control" id="description" name="description" 
-                                      rows="3" required>{{ service.description }}</textarea>
+
+                        <!-- 상세 내용 -->
+                        <div class="mb-4">
+                            <h3 class="h5 mb-3">상세 내용</h3>
+                            <div id="details-container">
+                                {% for detail in details %}
+                                <div class="mb-3 detail-item">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" name="details[]" 
+                                               value="{{ detail }}" required>
+                                        <button type="button" class="btn btn-outline-danger remove-detail">삭제</button>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="add-detail">
+                                + 상세 내용 추가
+                            </button>
                         </div>
-                        <div class="mb-3">
-                            <label for="price" class="form-label">가격</label>
-                            <input type="number" class="form-control" id="price" name="price" 
-                                   value="{{ service.price }}" required>
+
+                        <!-- 패키지 -->
+                        <div class="mb-4">
+                            <h3 class="h5 mb-3">패키지 및 가격</h3>
+                            <div id="packages-container">
+                                {% for package in packages %}
+                                <div class="card mb-3 package-item">
+                                    <div class="card-body">
+                                        <div class="mb-2">
+                                            <label class="form-label">패키지명</label>
+                                            <input type="text" class="form-control" name="package_names[]" 
+                                                   value="{{ package.name }}" required>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">서비스 내용</label>
+                                            <input type="text" class="form-control" name="package_descriptions[]" 
+                                                   value="{{ package.description }}" required>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">가격</label>
+                                            <input type="number" class="form-control" name="package_prices[]" 
+                                                   value="{{ package.price }}" required>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-danger btn-sm remove-package">
+                                            패키지 삭제
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="add-package">
+                                + 새 패키지 추가
+                            </button>
                         </div>
-                        <div class="mb-3">
-                            <label for="category" class="form-label">카테고리</label>
-                            <select class="form-control" id="category" name="category" required>
-                                <option value="촬영" {% if service.category == '촬영' %}selected{% endif %}>촬영</option>
-                                <option value="메이크업" {% if service.category == '메이크업' %}selected{% endif %}>메이크업</option>
-                                <option value="컨설팅" {% if service.category == '컨설팅' %}selected{% endif %}>컨설팅</option>
-                            </select>
-                        </div>
+
                         <div class="text-center">
                             <button type="submit" class="btn btn-primary">수정 완료</button>
                             <a href="{{ url_for('admin.list_services') }}" class="btn btn-secondary">취소</a>
@@ -41,4 +94,54 @@
         </div>
     </div>
 </div>
+
+<script>
+document.getElementById('add-detail').addEventListener('click', function() {
+    const container = document.getElementById('details-container');
+    const newDetail = `
+        <div class="mb-3 detail-item">
+            <div class="input-group">
+                <input type="text" class="form-control" name="details[]" required>
+                <button type="button" class="btn btn-outline-danger remove-detail">삭제</button>
+            </div>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', newDetail);
+});
+
+document.getElementById('add-package').addEventListener('click', function() {
+    const container = document.getElementById('packages-container');
+    const newPackage = `
+        <div class="card mb-3 package-item">
+            <div class="card-body">
+                <div class="mb-2">
+                    <label class="form-label">패키지명</label>
+                    <input type="text" class="form-control" name="package_names[]" required>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">서비스 내용</label>
+                    <input type="text" class="form-control" name="package_descriptions[]" required>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">가격</label>
+                    <input type="number" class="form-control" name="package_prices[]" required>
+                </div>
+                <button type="button" class="btn btn-outline-danger btn-sm remove-package">
+                    패키지 삭제
+                </button>
+            </div>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', newPackage);
+});
+
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('remove-detail')) {
+        e.target.closest('.detail-item').remove();
+    }
+    if (e.target.classList.contains('remove-package')) {
+        e.target.closest('.package-item').remove();
+    }
+});
+</script>
 {% endblock %} 
