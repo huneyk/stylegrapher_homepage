@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title text-center">캐러셀 슬라이드 추가</h2>
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">제목</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="subtitle" class="form-label">부제목</label>
+                            <input type="text" class="form-control" id="subtitle" name="subtitle">
+                        </div>
+                        <div class="mb-3">
+                            <label for="image" class="form-label">이미지</label>
+                            <input type="file" class="form-control" id="image" name="image" accept="image/*" required>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">추가</button>
+                            <a href="{{ url_for('admin.list_carousel') }}" class="btn btn-secondary">취소</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

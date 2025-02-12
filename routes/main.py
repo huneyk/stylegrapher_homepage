@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
-from models import Service, Gallery, Booking
+from models import Service, Gallery, Booking, CarouselItem
 from extensions import db
 import json
 
@@ -9,8 +9,9 @@ main = Blueprint('main', __name__)
 @main.route('/')
 def index():
     services = Service.query.all()
-    images = Gallery.query.order_by(Gallery.id.desc()).limit(6).all()
-    return render_template('index.html', services=services, images=images)
+    images = Gallery.query.all()
+    carousel_items = CarouselItem.query.order_by(CarouselItem.order).all()
+    return render_template('index.html', services=services, images=images, carousel_items=carousel_items)
 
 @main.route('/services')
 def services():

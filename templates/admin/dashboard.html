@@ -55,10 +55,27 @@
                     <h5 class="card-title">
                         <i class="bi bi-calendar-check me-2"></i>예약 관리
                     </h5>
-                    <p class="card-text text-muted">고객 예약을 확인하고 관리합니다.</p>
+                    <p class="card-text text-muted">예약 현황을 확인하고 관리합니다.</p>
                     <div class="d-grid gap-2">
                         <a href="{{ url_for('admin.list_bookings') }}" class="btn btn-primary">
-                            예약 목록 보기
+                            예약 관리
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 캐러셀 관리 카드 -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-images me-2"></i>캐러셀 관리
+                    </h5>
+                    <p class="card-text text-muted">메인 페이지의 슬라이드 이미지와 텍스트를 관리합니다.</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('admin.list_carousel') }}" class="btn btn-primary">
+                            캐러셀 관리
                         </a>
                     </div>
                 </div>

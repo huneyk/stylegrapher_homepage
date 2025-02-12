@@ -64,3 +64,10 @@ class Booking(db.Model):
         # 메시지에서 희망 예약일시를 제외한 내용만 반환
         parts = self.message.split('\n\n희망 예약일시:')
         return parts[0] if parts else ''
+
+class CarouselItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    subtitle = db.Column(db.String(200))
+    image_path = db.Column(db.String(200), nullable=False)
+    order = db.Column(db.Integer, default=0)

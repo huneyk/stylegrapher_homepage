@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify
 from flask_login import login_required, login_user, logout_user
 from extensions import db, login_manager
-from models import Service, Gallery, User, ServiceOption, Booking
+from models import Service, Gallery, User, ServiceOption, Booking, CarouselItem
 from werkzeug.utils import secure_filename
 import os
 from PIL import Image
@@ -236,3 +236,88 @@ def delete_booking(id):
     db.session.commit()
     flash('예약이 삭제되었습니다.')
     return redirect(url_for('admin.list_bookings'))
+
+@admin.route('/carousel')
+@login_required
+def list_carousel():
+    carousel_items = CarouselItem.query.order_by(CarouselItem.order).all()
+    return render_template('admin/carousel.html', carousel_items=carousel_items)
+
+@admin.route('/carousel/add', methods=['GET', 'POST'])
+@login_required
+def add_carousel():
+    if request.method == 'POST':
+        file = request.files['image']
+        if file:
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+            
+            carousel_item = CarouselItem(
+                title=request.form['title'],
+                subtitle=request.form['subtitle'],
+                image_path=filename,
+                order=CarouselItem.query.count()
+            )
+            db.session.add(carousel_item)
+            db.session.commit()
+            
+            flash('캐러셀 슬라이드가 추가되었습니다.')
+            return redirect(url_for('admin.list_carousel'))
+            
+    return render_template('admin/add_carousel.html')
+
+@admin.route('/carousel/update-order', methods=['POST'])
+@login_required
+def update_carousel_order():
+    order_data = request.get_json()
+    for item in order_data:
+        carousel_item = CarouselItem.query.get(item['id'])
+        if carousel_item:
+            carousel_item.order = item['order']
+    db.session.commit()
+    return jsonify({'success': True})
+
+@admin.route('/carousel/edit/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_carousel(id):
+    carousel_item = CarouselItem.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        carousel_item.title = request.form['title']
+        carousel_item.subtitle = request.form['subtitle']
+        
+        if 'image' in request.files:
+            file = request.files['image']
+            if file and file.filename:
+                # 기존 이미지 삭제
+                if carousel_item.image_path:
+                    old_image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], carousel_item.image_path)
+                    if os.path.exists(old_image_path):
+                        os.remove(old_image_path)
+                
+                # 새 이미지 저장
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+                carousel_item.image_path = filename
+        
+        db.session.commit()
+        flash('캐러셀 항목이 수정되었습니다.')
+        return redirect(url_for('admin.list_carousel'))
+        
+    return render_template('admin/edit_carousel.html', carousel=carousel_item)
+
+@admin.route('/carousel/delete/<int:id>')
+@login_required
+def delete_carousel(id):
+    carousel_item = CarouselItem.query.get_or_404(id)
+    
+    # 이미지 파일 삭제
+    if carousel_item.image_path:
+        image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], carousel_item.image_path)
+        if os.path.exists(image_path):
+            os.remove(image_path)
+    
+    db.session.delete(carousel_item)
+    db.session.commit()
+    flash('캐러셀 항목이 삭제되었습니다.')
+    return redirect(url_for('admin.list_carousel'))

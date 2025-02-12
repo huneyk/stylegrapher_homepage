@@ -3,49 +3,69 @@
 {% block title %}홈{% endblock %}
 
 {% block content %}
-<div class="container-fluid p-0">
-    <!-- Hero Section -->
-    <div class="hero-section text-center py-5 bg-light">
-        <div class="container">
-            <h1 class="display-4 mb-3">Stylegrapher 스타일그래퍼</h1>
-            <p class="lead mb-4">당신만의 특별한 순간을 완성해드립니다</p>
+<!-- Carousel Section -->
+<div id="mainCarousel" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-indicators">
+        {% for item in carousel_items %}
+        <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="{{ loop.index0 }}" 
+                {% if loop.first %}class="active"{% endif %}></button>
+        {% endfor %}
+    </div>
+    <div class="carousel-inner">
+        {% for item in carousel_items %}
+        <div class="carousel-item {% if loop.first %}active{% endif %}">
+            <img src="{{ url_for('static', filename='images/' + item.image_path) }}" 
+                 class="d-block w-100" alt="{{ item.title }}">
+            <div class="carousel-caption">
+                <h1>{{ item.title }}</h1>
+                <p>{{ item.subtitle }}</p>
+            </div>
         </div>
+        {% endfor %}
     </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
+</div>
 
-    <!-- Services Preview Section -->
-    <div class="container py-5">
-        <h2 class="text-center mb-4">서비스 안내</h2>
-        {% include '_services.html' %}
-    </div>
+<!-- Services Preview Section -->
+<div class="container py-5">
+    <h2 class="text-center mb-4">서비스 안내</h2>
+    {% include '_services.html' %}
+</div>
 
-    <!-- Gallery Preview Section -->
-    <div class="container py-5">
-        <h2 class="text-center mb-4">갤러리</h2>
-        <div class="row g-4">
-            {% if images %}
-                {% for image in images[:6] %}
-                <div class="col-md-4">
-                    <div class="card gallery-item">
-                        <img src="{{ url_for('static', filename='uploads/' + image.image_path) }}" 
-                             class="card-img-top" 
-                             alt="{{ image.caption }}">
-                    </div>
+<!-- Gallery Preview Section -->
+<div class="container py-5">
+    <h2 class="text-center mb-4">갤러리</h2>
+    <div class="row g-4">
+        {% if images %}
+            {% for image in images[:6] %}
+            <div class="col-md-4">
+                <div class="card gallery-item">
+                    <img src="{{ url_for('static', filename='uploads/' + image.image_path) }}" 
+                         class="card-img-top" 
+                         alt="{{ image.caption }}">
                 </div>
-                {% endfor %}
-            {% endif %}
-        </div>
-        <div class="text-center mt-4">
-            <a href="{{ url_for('main.gallery') }}" class="btn btn-primary">더 보기</a>
-        </div>
+            </div>
+            {% endfor %}
+        {% endif %}
     </div>
+    <div class="text-center mt-4">
+        <a href="{{ url_for('main.gallery') }}" class="btn btn-primary">더 보기</a>
+    </div>
+</div>
 
-    <!-- Contact Section -->
-    <div class="container py-5">
-        <div class="text-center">
-            <h2 class="mb-4">예약 및 문의</h2>
-            <p class="mb-4">궁금하신 점이 있으시다면 언제든 문의해주세요.</p>
-            <a href="{{ url_for('main.contact') }}" class="btn btn-primary btn-lg">문의하기</a>
-        </div>
+<!-- Contact Section -->
+<div class="container py-5">
+    <div class="text-center">
+        <h2 class="mb-4">예약 및 문의</h2>
+        <p class="mb-4">궁금하신 점이 있으시다면 언제든 문의해주세요.</p>
+        <a href="{{ url_for('main.contact') }}" class="btn btn-primary btn-lg">문의하기</a>
     </div>
 </div>
 {% endblock %} 
