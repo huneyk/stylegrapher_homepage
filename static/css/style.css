@@ -273,3 +273,153 @@ footer {
     font-size: 1.2rem;
     margin-bottom: 0;
 }
+
+/* 공통 버튼 스타일 */
+.btn-primary,
+.btn-outline-primary,
+.btn {
+    background-color: white;
+    border: 1px solid rgba(139, 95, 191, 0.5);
+    color: rgba(139, 95, 191, 0.8);
+    padding: 0.4rem 2rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.btn-primary:hover,
+.btn-outline-primary:hover,
+.btn:hover {
+    background-color: rgba(139, 95, 191, 0.05);
+    border-color: rgba(139, 95, 191, 0.8);
+    color: rgba(139, 95, 191, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(139, 95, 191, 0.2);
+}
+
+.btn-primary:active,
+.btn-outline-primary:active,
+.btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+/* 예외적인 버튼 스타일 (예: 관리자 페이지의 삭제 버튼) */
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #bb2d3b;
+    border-color: #b02a37;
+    color: white;
+}
+
+/* 작은 버튼 스타일 조정 */
+.btn-sm {
+    padding: 0.25rem 1rem;
+    font-size: 0.8rem;
+}
+
+/* 큰 버튼 스타일 조정 */
+.btn-lg {
+    padding: 0.5rem 2.5rem;
+    font-size: 1rem;
+}
+
+/* 관리자 대시보드 버튼 그리드 조정 */
+.d-grid .btn {
+    padding: 0.5rem 1rem;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+    .btn {
+        padding: 0.3rem 1.5rem;
+        font-size: 0.85rem;
+    }
+    
+    .btn-lg {
+        padding: 0.4rem 2rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* 공통 카드 스타일 */
+.card {
+    border: 1px solid rgba(139, 95, 191, 0.3);
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(139, 95, 191, 0.2);
+    background-color: #fff;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 8px 30px rgba(139, 95, 191, 0.3);
+    transform: translateY(-2px);
+}
+
+/* 중첩된 카드 스타일 (카드 안의 카드) */
+.card .card {
+    border: none;
+    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.1);
+}
+
+.card .card:hover {
+    box-shadow: 0 8px 25px rgba(139, 95, 191, 0.2);
+}
+
+/* 관리자 페이지 카드 스타일 */
+.admin-card {
+    border: 1px solid rgba(139, 95, 191, 0.3);
+    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.15);
+}
+
+.admin-card:hover {
+    box-shadow: 0 6px 20px rgba(139, 95, 191, 0.25);
+}
+
+/* 서비스 카드 스타일 */
+.service-card {
+    height: 100%;
+    border: 1px solid rgba(139, 95, 191, 0.3);
+    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.15);
+}
+
+.service-card:hover {
+    box-shadow: 0 8px 25px rgba(139, 95, 191, 0.25);
+}
+
+/* 갤러리 카드 스타일 */
+.gallery-card {
+    overflow: hidden;
+}
+
+.gallery-card .carousel-item img {
+    height: 300px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.gallery-card:hover .carousel-item img {
+    transform: scale(1.05);
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+    .card {
+        border-radius: 12px;
+    }
+    
+    .gallery-card .carousel-item img {
+        height: 200px;
+    }
+    
+    .card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(139, 95, 191, 0.25);
+    }
+}

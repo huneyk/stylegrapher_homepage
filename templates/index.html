@@ -243,38 +243,54 @@
 <div class="container py-0">
     {% include '_services.html' %}
 </div>
-<p>
+
 <!-- Gallery Preview Section -->
 <div class="container py-5">
-    <h2 class="text-center mb-4">갤러리</h2>
-    <div class="row g-4">
-        {% for group in preview_galleries %}
-        <div class="col-md-4">
-            <div class="card gallery-preview-card h-100">
-                <div id="previewCarousel{{ loop.index }}" class="carousel slide" data-bs-ride="carousel" data-bs-interval="{{ 4000 + (loop.index0 * 500) }}">
-                    <div class="carousel-inner">
-                        {% for image in group.images %}
-                        <div class="carousel-item {% if loop.first %}active{% endif %}">
-                            <img src="{{ url_for('static', filename='uploads/' + image.image_path) }}" 
-                                 class="d-block w-100" 
-                                 alt="{{ group.title }}">
+    <div class="card gallery-section-card">
+        <div class="card-body p-4">
+            <h2 class="text-center mb-4">갤러리</h2>
+            <div class="row g-4">
+                {% for group in preview_galleries %}
+                <div class="col-md-4">
+                    <div class="card gallery-preview-card h-100">
+                        <div id="previewCarousel{{ loop.index }}" class="carousel slide" data-bs-ride="carousel" data-bs-interval="{{ 4000 + (loop.index0 * 500) }}">
+                            <div class="carousel-inner">
+                                {% for image in group.images %}
+                                <div class="carousel-item {% if loop.first %}active{% endif %}">
+                                    <img src="{{ url_for('static', filename='uploads/' + image.image_path) }}" 
+                                         class="d-block w-100" 
+                                         alt="{{ group.title }}">
+                                </div>
+                                {% endfor %}
+                            </div>
                         </div>
-                        {% endfor %}
+                        <div class="card-body">
+                            <h5 class="gallery-preview-title">{{ group.title }}</h5>
+                        </div>
                     </div>
                 </div>
-                <div class="card-body">
-                    <h5 class="card-title gallery-preview-title">{{ group.title }}</h5>
-                </div>
+                {% endfor %}
+            </div>
+            <div class="text-center mt-4">
+                <a href="{{ url_for('main.gallery') }}" class="btn gallery-more-btn">더 많은 갤러리 보기</a>
             </div>
         </div>
-        {% endfor %}
-    </div>
-    <div class="text-center mt-4">
-        <a href="{{ url_for('main.gallery') }}" class="btn btn-outline-primary">더 많은 갤러리 보기</a>
     </div>
 </div>
 
 <style>
+.gallery-section-card {
+    border: 1px solid rgba(139, 95, 191, 0.3);
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(139, 95, 191, 0.2);
+    background-color: #fff;
+    transition: box-shadow 0.3s ease;
+}
+
+.gallery-section-card:hover {
+    box-shadow: 0 8px 30px rgba(139, 95, 191, 0.3);
+}
+
 .gallery-preview-card {
     border: none;
     border-radius: 10px;
@@ -285,7 +301,7 @@
 
 .gallery-preview-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(65, 26, 75, 0.2);
+    box-shadow: 0 8px 25px rgba(139, 95, 191, 0.2);
 }
 
 .gallery-preview-card .carousel {
@@ -318,6 +334,30 @@
     .gallery-preview-title {
         font-size: 1rem;
     }
+}
+
+.gallery-more-btn {
+    background-color: white;
+    border: 1px solid rgba(139, 95, 191, 0.5);
+    color: rgba(139, 95, 191, 0.8);
+    padding: 0.4rem 2rem;  /* 세로 패딩 줄이고 가로 패딩 늘림 */
+    border-radius: 20px;  /* 둥근 모서리 */
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.gallery-more-btn:hover {
+    background-color: rgba(139, 95, 191, 0.05);
+    border-color: rgba(139, 95, 191, 0.8);
+    color: rgba(139, 95, 191, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(139, 95, 191, 0.2);
+}
+
+.gallery-more-btn:active {
+    transform: translateY(0);
+    box-shadow: none;
 }
 </style>
 
