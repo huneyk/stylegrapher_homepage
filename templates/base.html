@@ -86,13 +86,85 @@
         {% block content %}{% endblock %}
     </main>
 
-    <footer>
-        <div class="social-links">
-            <a href="#" class="instagram">Instagram</a>
-            <a href="#" class="youtube">YouTube</a>
-            <a href="#" class="thread">Thread</a>
+    <footer class="footer mt-auto py-4">
+        <div class="container">
+            <div class="social-links text-center mb-3">
+                <a href="https://www.instagram.com/stylegrapher_us/" class="social-link" target="_blank">
+                    <i class="bi bi-instagram"></i>
+                </a>
+                <a href="https://www.youtube.com/@stylegrapher" class="social-link" target="_blank">
+                    <i class="bi bi-youtube"></i>
+                </a>
+                <a href="https://www.facebook.com/stylegrapher.us" class="social-link" target="_blank">
+                    <i class="bi bi-facebook"></i>
+                </a>
+            </div>
+            <div class="footer-contact text-center mb-2">
+                <a href="mailto:stylegrapher.us@gmail.com" class="contact-link">
+                    stylegrapher.ysg@gmail.com
+                </a>
+            </div>
+            <div class="kakao-channel text-center mb-3">
+                <a href="https://pf.kakao.com/_xgDcFK" class="kakao-link">KAKAO CHANNEL - 스타일그래퍼</a>
+            </div>
+            <div class="copyright text-center">
+                <p class="mb-0">Copyright (c) All rights reserved by Stylegrapher 2014</p>
+                <p class="mb-0">사진 저작 및이 모든 복사나 전재, 배포,</p>
+                <p class="mb-0">상업적 및 비상업적 사용을 모두 금합니다.</p>
+            </div>
         </div>
     </footer>
+
+    <style>
+    .footer {
+        background-color: rgba(139, 95, 191, 0.8);
+        border-top: 1px solid rgba(139, 95, 191, 0.3);
+    }
+
+    .social-links {
+        margin-bottom: 1.5rem;
+    }
+
+    .social-link {
+        color: #fff;
+        font-size: 1.5rem;
+        margin: 0 1rem;
+        text-decoration: none;
+        transition: opacity 0.3s ease;
+    }
+
+    .social-link:hover {
+        color: #fff;
+        opacity: 0.8;
+    }
+
+    .contact-link, .kakao-link {
+        color: #fff;
+        text-decoration: none;
+        transition: opacity 0.3s ease;
+    }
+
+    .contact-link:hover, .kakao-link:hover {
+        color: #fff;
+        opacity: 0.8;
+    }
+
+    .copyright {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.85rem;
+    }
+
+    @media (max-width: 768px) {
+        .social-link {
+            font-size: 1.2rem;
+            margin: 0 0.8rem;
+        }
+        
+        .copyright {
+            font-size: 0.8rem;
+        }
+    }
+    </style>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
