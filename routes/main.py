@@ -113,4 +113,20 @@ def contact():
         return redirect(url_for('main.contact'))
         
     services = Service.query.all()
-    return render_template('booking.html', services=services) 
+    return render_template('booking.html', services=services)
+
+@main.route('/ask', methods=['GET', 'POST'])
+def ask():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        phone = request.form.get('phone')
+        email = request.form.get('email')
+        service_id = request.form.get('service')
+        message = request.form.get('message')
+        
+        # TODO: 이메일 전송 또는 DB 저장 로직 추가
+        
+        return redirect(url_for('main.index'))
+    
+    services = Service.query.all()
+    return render_template('ask.html', services=services) 

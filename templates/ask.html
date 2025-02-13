@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}문의하기{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <h2 class="text-center mb-4">문의하기</h2>
+                    <form method="POST">
+                        <!-- 이름 -->
+                        <div class="mb-3">
+                            <label for="name" class="form-label">이름</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+
+                        <!-- 휴대폰 번호 -->
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">휴대폰 번호</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" 
+                                   pattern="[0-9]{3}-[0-9]{4}-[0-9]{4}" 
+                                   placeholder="010-0000-0000" required>
+                        </div>
+
+                        <!-- 이메일 주소 -->
+                        <div class="mb-3">
+                            <label for="email" class="form-label">이메일 주소</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+
+                        <!-- 문의 대상 서비스 선택 -->
+                        <div class="mb-3">
+                            <label for="service" class="form-label">문의 대상 서비스</label>
+                            <select class="form-select" id="service" name="service" required>
+                                <option value="" selected disabled>서비스를 선택해주세요</option>
+                                {% for service in services %}
+                                <option value="{{ service.id }}">{{ service.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- 메시지 -->
+                        <div class="mb-4">
+                            <label for="message" class="form-label">메시지</label>
+                            <textarea class="form-control" id="message" name="message" 
+                                      rows="5" required></textarea>
+                        </div>
+
+                        <!-- 제출 버튼 -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">문의하기</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: 1px solid rgba(139, 95, 191, 0.3);
+    border-radius: 15px;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: rgba(139, 95, 191, 0.5);
+    box-shadow: 0 0 0 0.2rem rgba(139, 95, 191, 0.25);
+}
+
+.btn-primary {
+    background-color: rgba(139, 95, 191, 0.8);
+    border-color: rgba(139, 95, 191, 0.8);
+}
+
+.btn-primary:hover {
+    background-color: rgba(139, 95, 191, 1);
+    border-color: rgba(139, 95, 191, 1);
+}
+</style>
+{% endblock %} 
