@@ -7,6 +7,8 @@ import os
 from PIL import Image
 import json
 from sqlalchemy import desc
+from datetime import datetime
+import pytz
 
 admin = Blueprint('admin', __name__)
 
@@ -34,7 +36,64 @@ def logout():
 @admin.route('/dashboard')
 @login_required
 def dashboard():
-    return render_template('admin/dashboard.html')
+    try:
+        # 한국 시간대 설정
+        kst = pytz.timezone('Asia/Seoul')
+        
+        # 각 항목 100개씩 가져오기
+        recent_bookings = Booking.query.order_by(
+            Booking.created_at.desc()
+        ).limit(100).all()
+        
+        recent_inquiries = Inquiry.query.order_by(
+            Inquiry.created_at.desc()
+        ).limit(100).all()
+        
+        recent_galleries = GalleryGroup.query.order_by(
+            GalleryGroup.created_at.desc()
+        ).limit(100).all()
+        
+        # UTC to KST 변환
+        for booking in recent_bookings:
+            if booking.created_at:
+                booking.created_at = pytz.utc.localize(booking.created_at).astimezone(kst)
+        
+        for inquiry in recent_inquiries:
+            if inquiry.created_at:
+                inquiry.created_at = pytz.utc.localize(inquiry.created_at).astimezone(kst)
+        
+        for gallery in recent_galleries:
+            if gallery.created_at:
+                gallery.created_at = pytz.utc.localize(gallery.created_at).astimezone(kst)
+        
+        # 각 항목의 전체 개수 확인
+        total_bookings = Booking.query.count()
+        total_inquiries = Inquiry.query.count()
+        total_galleries = GalleryGroup.query.count()
+
+        # 디버깅을 위한 출력
+        print(f"Bookings: {len(recent_bookings)}")
+        print(f"Inquiries: {len(recent_inquiries)}")
+        print(f"Galleries: {len(recent_galleries)}")
+
+        return render_template('admin/dashboard.html',
+                             recent_bookings=recent_bookings,
+                             recent_inquiries=recent_inquiries,
+                             recent_galleries=recent_galleries,
+                             total_bookings=total_bookings,
+                             total_inquiries=total_inquiries,
+                             total_galleries=total_galleries)
+                             
+    except Exception as e:
+        print(f"Error in dashboard route: {str(e)}")
+        flash('데이터를 불러오는 중 오류가 발생했습니다.', 'error')
+        return render_template('admin/dashboard.html',
+                             recent_bookings=[],
+                             recent_inquiries=[],
+                             recent_galleries=[],
+                             total_bookings=0,
+                             total_inquiries=0,
+                             total_galleries=0)
 
 @admin.route('/services/add', methods=['GET', 'POST'])
 @login_required
