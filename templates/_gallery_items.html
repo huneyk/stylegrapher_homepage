@@ -1,0 +1,70 @@
+{% for group in gallery_groups %}
+<div class="col-md-6">
+    <div class="card gallery-item">
+        <div id="carousel{{ group.id }}" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-indicators">
+                {% for image in group.images %}
+                <button type="button" data-bs-target="#carousel{{ group.id }}" 
+                        data-bs-slide-to="{{ loop.index0 }}" 
+                        {% if loop.first %}class="active"{% endif %}></button>
+                {% endfor %}
+            </div>
+            <div class="carousel-inner">
+                {% for image in group.images %}
+                <div class="carousel-item {% if loop.first %}active{% endif %}">
+                    <div class="gallery-image-wrapper">
+                        <img src="{{ url_for('static', filename='uploads/' + image.image_path) }}" 
+                             class="d-block w-100" 
+                             alt="{{ group.title }}">
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% if group.images|length > 1 %}
+            <button class="carousel-control-prev" type="button" 
+                    data-bs-target="#carousel{{ group.id }}" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" 
+                    data-bs-target="#carousel{{ group.id }}" data-bs-slide="next">
+                <span class="carousel-control-next-icon"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">{{ group.title }}</h5>
+            <p class="card-text text-muted">
+                <small>{{ group.images|length }}장의 사진</small>
+            </p>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% if request.headers.get('HX-Request') %}
+<script>
+    // 버튼 섹션 업데이트
+    var loadMoreSection = document.getElementById('load-more-section');
+    {% if has_more %}
+    loadMoreSection.innerHTML = `
+        <button class="btn gallery-more-btn"
+                hx-get="{{ url_for('main.gallery', page=next_page) }}"
+                hx-target="#gallery-container"
+                hx-swap="beforeend"
+                hx-trigger="click"
+                hx-indicator="#loading-indicator">
+            더 많은 갤러리 보기
+        </button>
+        <div id="loading-indicator" class="htmx-indicator">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    `;
+    {% else %}
+    loadMoreSection.innerHTML = '';
+    {% endif %}
+</script>
+{% endif %} 

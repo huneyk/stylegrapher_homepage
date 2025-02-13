@@ -48,8 +48,37 @@ def service_detail(service_type):
 
 @main.route('/gallery')
 def gallery():
-    gallery_groups = GalleryGroup.query.order_by(GalleryGroup.created_at.desc()).all()
-    return render_template('gallery.html', gallery_groups=gallery_groups)
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    
+    # 전체 갤러리 수 먼저 확인
+    total_count = GalleryGroup.query.count()
+    
+    # 페이지네이션 적용
+    pagination = GalleryGroup.query.order_by(desc(GalleryGroup.created_at)).paginate(
+        page=page, per_page=per_page, error_out=False)
+    gallery_groups = pagination.items
+    
+    # 현재까지 보여진 갤러리 수
+    shown_galleries = (page - 1) * per_page + len(gallery_groups)
+    # 남은 갤러리 수 계산
+    remaining_galleries = total_count - shown_galleries
+    
+    # 남은 갤러리가 있고, 현재 페이지의 갤러리가 per_page와 같을 때만 더보기 버튼 표시
+    has_more = remaining_galleries > 0 and len(gallery_groups) == per_page
+    
+    if request.headers.get('HX-Request'):
+        # HTMX 요청인 경우 부분적 HTML만 반환
+        return render_template('_gallery_items.html', 
+                             gallery_groups=gallery_groups,
+                             has_more=has_more,
+                             next_page=page + 1)
+    
+    return render_template('gallery.html', 
+                         gallery_groups=gallery_groups,
+                         has_more=has_more,
+                         next_page=page + 1,
+                         total_galleries=total_count)
 
 @main.route('/contact', methods=['GET', 'POST'])
 def contact():
