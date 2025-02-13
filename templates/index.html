@@ -37,8 +37,8 @@
 <!-- Fade Text Section -->
 <div class="fade-text-section">
     <div class="fade-text">
-        <h2>스타일그래퍼와 함께</h2>
-        <h2>나를 찾아가는 여정</h2>
+        <h2 class="fade-title">스타일그래퍼와 함께</h2>
+        <h2 class="fade-title delayed">나를 찾아가는 여정</h2>
     </div>
 </div>
 
@@ -198,48 +198,79 @@
 
 .fade-text-section {
     background-color: #fff;
-    padding: 3rem 0;  /* 위아래 여백을 3rem으로 통일 */
+    padding: 3rem 0;
     text-align: center;
     overflow: hidden;
-    margin-top: -3rem;  /* collage와의 간격도 3rem으로 조정 */
+    margin-top: -3rem;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .fade-text {
-    animation: fadeIn 2s ease-in-out forwards;  /* 한 번만 실행되도록 forwards 추가 */
+    position: relative;
 }
 
-.fade-text h2 {
+.fade-title {
     font-family: 'Playfair Display', serif;
     font-weight: 500;
     font-size: 2.2rem;
-    color: #333;
-    margin: 0.5rem 0;  /* 텍스트 간격 조정 */
+    color: rgba(139, 95, 191, 0.9);
+    margin: 0.5rem 0;
+    opacity: 0;
+    animation: fadeInOut 4s ease;
+    animation-iteration-count: 3;
 }
 
-@keyframes fadeIn {
-    0% {
+.fade-title.delayed {
+    animation-delay: 0.3s;
+}
+
+@keyframes fadeInOut {
+    0%, 100% {
         opacity: 0;
-        transform: translateY(20px);
     }
-    100% {
+    25%, 75% {
         opacity: 1;
-        transform: translateY(0);
     }
 }
 
-/* 반응형 디자인 */
 @media (max-width: 768px) {
     .fade-text-section {
         padding: 2rem 0;
         margin-top: -2rem;
+        min-height: 150px;
     }
     
-    .fade-text h2 {
+    .fade-title {
         font-size: 1.8rem;
         margin: 0.3rem 0;
     }
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const titles = document.querySelectorAll('.fade-title');
+    let animationsCompleted = 0;
+    
+    titles.forEach(title => {
+        title.addEventListener('animationend', function() {
+            this.style.opacity = '1';
+            this.style.animation = 'none';
+            animationsCompleted++;
+            
+            // 모든 애니메이션이 완료되면 텍스트를 영구적으로 표시
+            if (animationsCompleted === titles.length) {
+                titles.forEach(t => {
+                    t.style.opacity = '1';
+                });
+            }
+        });
+    });
+});
+</script>
 
 <!-- Services Preview Section -->
 <div class="container py-0">
