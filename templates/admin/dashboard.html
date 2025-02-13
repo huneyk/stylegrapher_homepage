@@ -33,15 +33,18 @@
 
         <!-- 갤러리 관리 카드 -->
         <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
+            <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title">
                         <i class="bi bi-images me-2"></i>갤러리 관리
                     </h5>
-                    <p class="card-text text-muted">갤러리 이미지를 업로드하고 관리합니다.</p>
+                    <p class="card-text">갤러리 이미지를 업로드하거나 관리합니다.</p>
                     <div class="d-grid gap-2">
-                        <a href="{{ url_for('admin.upload_image') }}" class="btn btn-primary">
-                            이미지 업로드
+                        <a href="{{ url_for('admin.upload_image') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-upload me-2"></i>이미지 업로드
+                        </a>
+                        <a href="{{ url_for('admin.list_gallery') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-trash me-2"></i>갤러리 삭제
                         </a>
                     </div>
                 </div>
@@ -198,12 +201,20 @@
 .btn-outline-primary {
     border-color: rgba(139, 95, 191, 0.5);
     color: rgba(139, 95, 191, 0.8);
+    transition: all 0.3s ease;
 }
 
 .btn-outline-primary:hover {
     background-color: rgba(139, 95, 191, 0.1);
     border-color: rgba(139, 95, 191, 0.8);
     color: rgba(139, 95, 191, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(139, 95, 191, 0.2);
+}
+
+.btn-outline-primary:active {
+    transform: translateY(0);
+    box-shadow: none;
 }
 
 .text-muted {
@@ -213,6 +224,11 @@
 .card {
     border: 1px solid rgba(139, 95, 191, 0.3);
     border-radius: 15px;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 8px 25px rgba(139, 95, 191, 0.2);
 }
 
 .card-title {
