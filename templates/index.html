@@ -281,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <div class="container py-5">
     <div class="card gallery-section-card">
         <div class="card-body p-4">
-            <h2 class="text-center mb-4">갤러리</h2>
+            <h1 class="text-center mb-5 gallery-main-title">Gallery</h1>
             <div class="row g-4">
                 {% for group in preview_galleries %}
                 <div class="col-md-4">
@@ -417,6 +417,25 @@ document.addEventListener('DOMContentLoaded', function() {
 .gallery-more-btn:active {
     transform: translateY(0);
     box-shadow: none;
+}
+
+.gallery-main-title {
+    font-family: 'Kokonor', cursive;
+    font-size: 2rem;
+    color: rgba(139, 95, 191, 0.8);
+    margin-bottom: 2rem;
+    transition: color 0.3s ease;
+    font-weight: normal;
+}
+
+.gallery-main-title:hover {
+    color: rgba(139, 95, 191, 1);
+}
+
+@media (max-width: 768px) {
+    .gallery-main-title {
+        font-size: 2.2rem;
+    }
 }
 </style>
 

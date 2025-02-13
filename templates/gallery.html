@@ -6,7 +6,7 @@
 <div class="container py-5">
     <div class="card gallery-section-card">
         <div class="card-body p-4">
-            <h1 class="text-center mb-5">갤러리</h1>
+            <h1 class="text-center mb-5 gallery-main-title">Gallery</h1>
             <div class="row g-4">
                 {% for group in gallery_groups %}
                 <div class="col-md-6">
@@ -112,6 +112,25 @@
 @media (max-width: 768px) {
     .gallery-item .carousel {
         padding-top: 133.33%;  /* 모바일에서도 3:4 비율 유지 */
+    }
+}
+
+.gallery-main-title {
+    font-family: 'Kokonor', cursive;
+    font-size: 3rem;
+    color: rgba(139, 95, 191, 0.8);
+    margin-bottom: 2rem;
+    transition: color 0.3s ease;
+    font-weight: normal;
+}
+
+.gallery-main-title:hover {
+    color: rgba(139, 95, 191, 1);
+}
+
+@media (max-width: 768px) {
+    .gallery-main-title {
+        font-size: 2.2rem;
     }
 }
 </style>
