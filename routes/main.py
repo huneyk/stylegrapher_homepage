@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
-from models import Service, Gallery, Booking, CarouselItem, GalleryGroup, CollageText
+from models import Service, Gallery, Booking, CarouselItem, GalleryGroup, CollageText, Inquiry
 from extensions import db
 import json
 from sqlalchemy import desc
@@ -118,13 +118,15 @@ def contact():
 @main.route('/ask', methods=['GET', 'POST'])
 def ask():
     if request.method == 'POST':
-        name = request.form.get('name')
-        phone = request.form.get('phone')
-        email = request.form.get('email')
-        service_id = request.form.get('service')
-        message = request.form.get('message')
-        
-        # TODO: 이메일 전송 또는 DB 저장 로직 추가
+        inquiry = Inquiry(
+            name=request.form.get('name'),
+            phone=request.form.get('phone'),
+            email=request.form.get('email'),
+            service_id=request.form.get('service'),
+            message=request.form.get('message')
+        )
+        db.session.add(inquiry)
+        db.session.commit()
         
         return redirect(url_for('main.index'))
     

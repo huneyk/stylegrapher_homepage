@@ -1,11 +1,12 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify
 from flask_login import login_required, login_user, logout_user
 from extensions import db, login_manager
-from models import Service, Gallery, User, ServiceOption, Booking, CarouselItem, GalleryGroup
+from models import Service, Gallery, User, ServiceOption, Booking, CarouselItem, GalleryGroup, Inquiry
 from werkzeug.utils import secure_filename
 import os
 from PIL import Image
 import json
+from sqlalchemy import desc
 
 admin = Blueprint('admin', __name__)
 
@@ -350,3 +351,25 @@ def delete_carousel(id):
 def list_gallery():
     gallery_groups = GalleryGroup.query.order_by(GalleryGroup.created_at.desc()).all()
     return render_template('admin/list_gallery.html', gallery_groups=gallery_groups)
+
+@admin.route('/inquiries')
+@login_required
+def list_inquiries():
+    inquiries = Inquiry.query.order_by(desc(Inquiry.created_at)).all()
+    return render_template('admin/inquiries.html', inquiries=inquiries)
+
+@admin.route('/inquiries/<int:id>/status', methods=['POST'])
+@login_required
+def update_inquiry_status(id):
+    inquiry = Inquiry.query.get_or_404(id)
+    inquiry.status = request.form.get('status')
+    db.session.commit()
+    return redirect(url_for('admin.list_inquiries'))
+
+@admin.route('/inquiries/<int:id>/delete', methods=['POST'])
+@login_required
+def delete_inquiry(id):
+    inquiry = Inquiry.query.get_or_404(id)
+    db.session.delete(inquiry)
+    db.session.commit()
+    return redirect(url_for('admin.list_inquiries'))
