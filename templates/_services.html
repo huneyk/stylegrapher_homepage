@@ -6,7 +6,7 @@
             <div class="card-body text-center">
                 <h3 class="card-title">{{ service.name }}</h3>
                 <p class="card-text">{{ service.description }}</p>
-                <a href="{{ url_for('main.service_detail', service_type=service.id) }}" class="btn btn-primary">자세히 보기</a>
+                <a href="{{ url_for('main.service_detail', id=service.id) }}" class="btn btn-primary">자세히 보기</a>
             </div>
         </div>
     </div>

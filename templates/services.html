@@ -4,23 +4,110 @@
 
 {% block content %}
 <div class="container py-5">
-    <h1 class="text-center mb-5">서비스 안내</h1>
-    <div class="row g-4">
-        {% for service in services %}
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 service-card">
-                <div class="card-body">
-                    <h2 class="card-title h4">{{ service.name }}</h2>
-                    <p class="card-text">{{ service.description }}</p>
-                    <p class="card-text">
-                        <small class="text-muted">{{ service.category }}</small>
-                    </p>
-                    <p class="card-text fw-bold">{{ service.price }}원</p>
-                    <a href="{{ url_for('main.contact') }}" class="btn btn-primary">예약하기</a>
+    <div class="card">
+        <div class="card-body p-4">
+            <h1 class="text-center mb-5 gallery-main-title">Services</h1>
+            <div class="row g-4">
+                {% for service in services %}
+                <div class="col-md-4">
+                    <div class="card service-card h-100">
+                        <div class="card-body p-4">
+                            <h3 class="service-title mb-3">{{ service.name }}</h3>
+                            <p class="service-description mb-4">{{ service.description }}</p>
+                            <div class="text-center mt-auto">
+                                <a href="{{ url_for('main.service_detail', id=service.id) }}" class="btn gallery-more-btn">
+                                    자세히 보기
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                {% endfor %}
             </div>
         </div>
-        {% endfor %}
     </div>
 </div>
+
+<style>
+.card {
+    border: 1.5px solid rgba(139, 95, 191, 0.4) !important;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.15);
+}
+
+.service-card {
+    transition: all 0.3s ease;
+    border: 1.5px solid rgba(139, 95, 191, 0.4) !important;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.15);
+}
+
+.service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(139, 95, 191, 0.25);
+    border-color: rgba(139, 95, 191, 0.6) !important;
+}
+
+.service-title {
+    color: rgba(139, 95, 191, 0.8);
+    font-size: 1.5rem;
+    font-weight: 500;
+}
+
+.service-description {
+    color: #666;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.gallery-main-title {
+    font-family: 'Kokonor', cursive;
+    font-size: 3rem;
+    color: rgba(139, 95, 191, 0.8);
+    margin-bottom: 2rem;
+    transition: color 0.3s ease;
+    font-weight: normal;
+}
+
+.gallery-main-title:hover {
+    color: rgba(139, 95, 191, 1);
+}
+
+.gallery-more-btn {
+    background-color: transparent;
+    border: 2px solid rgba(139, 95, 191, 0.8);
+    color: rgba(139, 95, 191, 0.8);
+    padding: 0.35rem 2rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    border-radius: 50px;
+    height: 38px;
+    line-height: 1.2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gallery-more-btn:hover {
+    background-color: rgba(139, 95, 191, 0.05);
+    border-color: rgba(139, 95, 191, 0.8);
+    color: rgba(139, 95, 191, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(139, 95, 191, 0.2);
+}
+
+@media (max-width: 768px) {
+    .gallery-main-title {
+        font-size: 2.2rem;
+    }
+    
+    .service-title {
+        font-size: 1.3rem;
+    }
+    
+    .service-description {
+        font-size: 0.9rem;
+    }
+}
+</style>
 {% endblock %} 

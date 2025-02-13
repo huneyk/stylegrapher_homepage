@@ -63,18 +63,25 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.services') }}">
+                            <i class="bi bi-camera-fill"></i>서비스
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('main.gallery') }}">
                             <i class="bi bi-images"></i>갤러리
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.ask') }}">
-                            <i class="bi bi-envelope-fill"></i>문의하기
+                        <a class="nav-link" href="{{ url_for('main.contact') }}">
+                            <i class="bi bi-calendar-check"></i>예약하기
                         </a>
                     </li>
                     {% if current_user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.dashboard') }}">관리자</a>
+                        <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
+                            <i class="bi bi-gear-fill"></i>관리자
+                        </a>
                     </li>
                     {% endif %}
                 </ul>

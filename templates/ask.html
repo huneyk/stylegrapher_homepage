@@ -48,9 +48,11 @@
                                       rows="5" required></textarea>
                         </div>
 
-                        <!-- 제출 버튼 -->
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg">문의하기</button>
+                        <!-- 제출 버튼 수정 -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-lg gallery-more-btn">
+                                문의하기
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -70,14 +72,37 @@
     box-shadow: 0 0 0 0.2rem rgba(139, 95, 191, 0.25);
 }
 
-.btn-primary {
-    background-color: rgba(139, 95, 191, 0.8);
-    border-color: rgba(139, 95, 191, 0.8);
+.gallery-more-btn {
+    background-color: transparent;
+    border: 2px solid rgba(139, 95, 191, 0.8);
+    color: rgba(139, 95, 191, 0.8);
+    padding: 0.5rem 2.5rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    border-radius: 50px;
+    height: 45px;
+    line-height: 1;
 }
 
-.btn-primary:hover {
-    background-color: rgba(139, 95, 191, 1);
-    border-color: rgba(139, 95, 191, 1);
+.gallery-more-btn:hover {
+    background-color: rgba(139, 95, 191, 0.05);
+    border-color: rgba(139, 95, 191, 0.8);
+    color: rgba(139, 95, 191, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(139, 95, 191, 0.2);
+}
+
+.gallery-more-btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+@media (max-width: 768px) {
+    .gallery-more-btn {
+        padding: 0.4rem 2rem;
+        font-size: 0.9rem;
+        height: 40px;
+    }
 }
 </style>
 {% endblock %} 

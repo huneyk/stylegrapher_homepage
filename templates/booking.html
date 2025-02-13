@@ -6,7 +6,7 @@
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
-            <div class="card shadow">
+            <div class="card">
                 <div class="card-body p-4">
                     <h2 class="card-title text-center mb-4">예약하기</h2>
                     
@@ -184,4 +184,17 @@ dateInputs.forEach(input => {
     input.min = today;
 });
 </script>
+
+<style>
+.card {
+    border: 1.5px solid rgba(139, 95, 191, 0.4) !important;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.15);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 8px 25px rgba(139, 95, 191, 0.25);
+}
+</style>
 {% endblock %} 

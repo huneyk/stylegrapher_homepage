@@ -35,9 +35,9 @@ def services():
     services = Service.query.all()
     return render_template('services.html', services=services)
 
-@main.route('/service/<int:service_type>')
-def service_detail(service_type):
-    service = Service.query.get_or_404(service_type)
+@main.route('/service/<int:id>')
+def service_detail(id):
+    service = Service.query.get_or_404(id)
     # JSON 문자열을 파이썬 객체로 변환
     details = json.loads(service.details) if service.details else []
     packages = json.loads(service.packages) if service.packages else []
