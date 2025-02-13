@@ -1,5 +1,5 @@
 {% for group in gallery_groups %}
-<div class="col-md-6">
+<div class="col-md-4">
     <div class="card gallery-item">
         <div id="carousel{{ group.id }}" class="carousel slide" data-bs-ride="carousel">
             <div class="carousel-indicators">
@@ -34,14 +34,23 @@
             {% endif %}
         </div>
         <div class="card-body">
-            <h5 class="card-title">{{ group.title }}</h5>
-            <p class="card-text text-muted">
-                <small>{{ group.images|length }}장의 사진</small>
+            <h5 class="gallery-preview-title">{{ group.title }}</h5>
+            <p class="gallery-image-count">
+                사진 {{ group.images|length }}장
             </p>
         </div>
     </div>
 </div>
 {% endfor %}
+
+<style>
+.gallery-image-count {
+    text-align: center;
+    color: #999999;
+    font-size: 0.9rem;
+    margin: 0.5rem 0 0 0;
+}
+</style>
 
 {% if request.headers.get('HX-Request') %}
 <script>
