@@ -38,18 +38,25 @@
             <div class="card mb-4">
                 <div class="card-body">
                     <h2 class="h4 mb-3">패키지 및 가격</h2>
-                    <div class="row g-4">
-                        {% for package in packages %}
-                        <div class="col-md-6">
-                            <div class="card h-100 border-light">
-                                <div class="card-body">
-                                    <h3 class="h5 mb-3">{{ package.name }}</h3>
-                                    <p class="mb-2">{{ package.description }}</p>
-                                    <p class="fw-bold text-primary mb-0">{{ package.price }}원</p>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>패키지명</th>
+                                    <th>서비스 구성</th>
+                                    <th class="text-end">가격</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for package in packages %}
+                                <tr>
+                                    <td>{{ package.name }}</td>
+                                    <td>{{ package.description }}</td>
+                                    <td class="text-end">{{ '{:,}'.format(package.price|int) }} 원</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

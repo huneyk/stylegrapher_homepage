@@ -66,7 +66,8 @@
                                     </ul>
                                 </div>
                                 <button type="button" class="btn btn-sm btn-danger" 
-                                        onclick="deleteBooking({{ booking.id }})">삭제</button>
+                                        data-booking-id="{{ booking.id }}"
+                                        onclick="deleteBooking(this)">삭제</button>
                             </td>
                         </tr>
                         {% endfor %}
@@ -78,9 +79,10 @@
 </div>
 
 <script>
-function deleteBooking(id) {
+function deleteBooking(button) {
+    const bookingId = button.getAttribute('data-booking-id');
     if (confirm('정말 이 예약을 삭제하시겠습니까?')) {
-        window.location.href = "{{ url_for('admin.delete_booking', id=0) }}".replace('0', id);
+        window.location.href = `/admin/booking/${bookingId}/delete`;  // URL 패턴은 실제 라우트에 맞게 수정해주세요
     }
 }
 </script>
