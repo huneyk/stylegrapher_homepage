@@ -59,22 +59,22 @@
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('main.index') }}">
-                            <i class="bi bi-house-fill"></i>홈
+                            <i class="bi bi-house-fill"></i> 홈
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('main.services') }}">
-                            <i class="bi bi-camera-fill"></i>서비스
+                            <i class="bi bi-grid"></i> 서비스
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('main.gallery') }}">
-                            <i class="bi bi-images"></i>갤러리
+                            <i class="bi bi-images"></i> 갤러리
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('main.contact') }}">
-                            <i class="bi bi-calendar-check"></i>예약하기
+                            <i class="bi bi-calendar-check"></i> 예약하기
                         </a>
                     </li>
                     {% if current_user.is_authenticated %}
@@ -121,6 +121,34 @@
             </div>
         </div>
     </footer>
+
+    <!-- Mobile Bottom Navigation -->
+    <div class="mobile-nav d-md-none">
+        <div class="container">
+            <div class="row g-0">
+                <div class="col-3 text-center">
+                    <a href="{{ url_for('main.index') }}" class="nav-link">
+                        <i class="bi bi-house-fill"></i>
+                    </a>
+                </div>
+                <div class="col-3 text-center">
+                    <a href="{{ url_for('main.services') }}" class="nav-link">
+                        <i class="bi bi-grid"></i>
+                    </a>
+                </div>
+                <div class="col-3 text-center">
+                    <a href="{{ url_for('main.gallery') }}" class="nav-link">
+                        <i class="bi bi-images"></i>
+                    </a>
+                </div>
+                <div class="col-3 text-center">
+                    <a href="{{ url_for('main.contact') }}" class="nav-link">
+                        <i class="bi bi-calendar-check"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <style>
     .footer {
@@ -169,6 +197,36 @@
         
         .copyright {
             font-size: 0.8rem;
+        }
+    }
+
+    .mobile-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: rgba(139, 95, 191, 0.1);
+        padding: 8px 0;
+        border-top: 1px solid rgba(139, 95, 191, 0.2);
+        z-index: 1000;
+    }
+
+    .mobile-nav .nav-link {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: rgba(139, 95, 191, 0.8);
+        text-decoration: none;
+    }
+
+    .mobile-nav .nav-link i {
+        font-size: 1.4rem;
+    }
+
+    /* Add padding to main content to prevent overlap with mobile nav */
+    @media (max-width: 767px) {
+        main {
+            padding-bottom: 60px;
         }
     }
     </style>
