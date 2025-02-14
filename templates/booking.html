@@ -41,10 +41,10 @@
                         <div class="mb-3">
                             <label for="service" class="form-label">문의 대상 서비스</label>
                             <select class="form-select" id="service" name="service" required>
-                                <option value="" {% if not selected_service_id %}selected{% endif %} disabled>선택해주세요</option>
+                                <option value="">선택해주세요</option>
                                 {% for service in services %}
                                 <option value="{{ service.id }}" 
-                                        {% if selected_service_id and service.id|string == selected_service_id %}selected{% endif %}>
+                                    {% if selected_service_id and service.id == selected_service_id|int %}selected{% endif %}>
                                     {{ service.name }}
                                 </option>
                                 {% endfor %}
