@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title text-center">갤러리 수정</h2>
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">제목</label>
+                            <input type="text" class="form-control" id="title" name="title" 
+                                   value="{{ gallery.title }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="subtitle" class="form-label">부제목</label>
+                            <input type="text" class="form-control" id="subtitle" name="subtitle" 
+                                   value="{{ gallery.subtitle }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">설명</label>
+                            <textarea class="form-control" id="description" name="description" 
+                                    rows="3">{{ gallery.description }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="image" class="form-label">이미지</label>
+                            <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                            <small class="form-text text-muted">새 이미지를 선택하지 않으면 기존 이미지가 유지됩니다.</small>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">갤러리 수정</button>
+                            <a href="{{ url_for('admin.list_galleries') }}" class="btn btn-secondary">취소</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,27 @@
+<!-- 공통으로 사용할 갤러리 템플릿 -->
+<div class="row g-4">
+    {% for gallery in galleries %}
+    <div class="col-md-4">
+        <div class="card h-100 gallery-card">
+            <img src="{{ url_for('static', filename=gallery.image_path) }}" class="card-img-top" alt="{{ gallery.title }}">
+            <div class="card-body text-center">
+                <h3 class="card-title mb-1">{{ gallery.title }}</h3>
+                <h4 class="card-subtitle mb-3">{{ gallery.subtitle }}</h4>
+                <p class="card-text">{{ gallery.description }}</p>
+                <a href="{{ url_for('main.gallery_detail', id=gallery.id) }}" class="btn btn-primary">자세히 보기</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<style>
+.gallery-card .card-title {
+    font-size: 1.5rem;
+}
+
+.gallery-card .card-subtitle {
+    font-size: 1.2rem;
+    color: #666;
+}
+</style> 
