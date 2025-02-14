@@ -64,7 +64,7 @@
 
             <!-- 예약 버튼 -->
             <div class="text-center">
-                <a href="{{ url_for('main.contact') }}" class="btn btn-primary btn-lg px-5">
+                <a href="{{ url_for('main.contact', service_id=service.id) }}" class="btn btn-primary btn-lg px-5">
                     예약하기
                 </a>
             </div>

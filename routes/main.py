@@ -82,9 +82,13 @@ def gallery():
 
 @main.route('/contact', methods=['GET', 'POST'])
 def contact():
+    selected_service_id = request.args.get('service_id', None)
+    services = Service.query.all()
+    
     if request.method == 'POST':
         name = request.form.get('name')
-        email = request.form.get('contact')
+        contact = request.form.get('contact')
+        email = request.form.get('email')
         service_id = request.form.get('service')
         message = request.form.get('message')
         
@@ -112,8 +116,9 @@ def contact():
         flash('예약 신청이 잘 전달됐습니다. 스타일그래퍼 담당자가 곧 연락 드리겠습니다. 감사합니다.')
         return redirect(url_for('main.contact'))
         
-    services = Service.query.all()
-    return render_template('booking.html', services=services)
+    return render_template('booking.html', 
+                         services=services, 
+                         selected_service_id=selected_service_id)
 
 @main.route('/ask', methods=['GET', 'POST'])
 def ask():
