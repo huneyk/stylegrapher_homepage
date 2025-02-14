@@ -109,7 +109,7 @@ def contact():
         db.session.add(booking)
         db.session.commit()
         
-        flash('예약 문의가 성공적으로 전송되었습니다.')
+        flash('예약 신청이 잘 전달됐습니다. 스타일그래퍼 담당자가 곧 연락 드리겠습니다. 감사합니다.')
         return redirect(url_for('main.contact'))
         
     services = Service.query.all()

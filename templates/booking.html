@@ -8,7 +8,7 @@
         <div class="col-md-8 col-lg-6">
             <div class="card">
                 <div class="card-body p-4">
-                    <h2 class="card-title text-center mb-4">예약하기</h2>
+                    <h2 class="text-center mb-4">예약하기</h2>
                     
                     {% with messages = get_flashed_messages() %}
                         {% if messages %}
@@ -26,8 +26,17 @@
                             <input type="text" class="form-control" id="name" name="name" required>
                         </div>
                         <div class="mb-3">
-                            <label for="contact" class="form-label">연락처</label>
-                            <input type="text" class="form-control" id="contact" name="contact" required>
+                            <label for="contact" class="form-label">휴대폰 번호</label>
+                            <input type="tel" class="form-control" id="contact" name="contact" 
+                                   pattern="[0-9]{11}" 
+                                   minlength="11" maxlength="11"
+                                   placeholder="01012345678" required>
+                            <div class="form-text">숫자 11자리를 입력해주세요 ('-' 제외)</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">이메일 주소</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   placeholder="example@email.com" required>
                         </div>
                         <div class="mb-3">
                             <label for="service" class="form-label">서비스 선택</label>
@@ -37,51 +46,12 @@
                                 {% endfor %}
                             </select>
                         </div>
-
-                        <!-- 희망 예약일시 -->
-                        <div class="mb-3">
-                            <label class="form-label">희망 예약일시</label>
-                            <div id="datetime-container">
-                                <div class="mb-2">
-                                    <label class="form-label">1순위 (필수)</label>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-2">
-                                            <input type="date" class="form-control" name="date[]" required>
-                                        </div>
-                                        <div class="col-md-6 mb-2">
-                                            <select class="form-select" name="time[]" required>
-                                                <option value="">시간 선택</option>
-                                                <option value="09:00">오전 9:00</option>
-                                                <option value="09:30">오전 9:30</option>
-                                                <option value="10:00">오전 10:00</option>
-                                                <option value="10:30">오전 10:30</option>
-                                                <option value="11:00">오전 11:00</option>
-                                                <option value="11:30">오전 11:30</option>
-                                                <option value="12:00">오후 12:00</option>
-                                                <option value="12:30">오후 12:30</option>
-                                                <option value="13:00">오후 1:00</option>
-                                                <option value="13:30">오후 1:30</option>
-                                                <option value="14:00">오후 2:00</option>
-                                                <option value="14:30">오후 2:30</option>
-                                                <option value="15:00">오후 3:00</option>
-                                                <option value="15:30">오후 3:30</option>
-                                                <option value="16:00">오후 4:00</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-outline-secondary btn-sm mt-2" id="add-datetime">
-                                + 희망일시 추가 (최대 3개)
-                            </button>
-                        </div>
-
                         <div class="mb-3">
                             <label for="message" class="form-label">메시지</label>
                             <textarea class="form-control" id="message" name="message" rows="4"></textarea>
                         </div>
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg">예약하기</button>
+                            <button type="submit" class="btn btn-primary btn-lg">예약 신청</button>
                         </div>
                     </form>
                 </div>

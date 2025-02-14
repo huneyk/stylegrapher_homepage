@@ -20,14 +20,17 @@
                         <div class="mb-3">
                             <label for="phone" class="form-label">휴대폰 번호</label>
                             <input type="tel" class="form-control" id="phone" name="phone" 
-                                   pattern="[0-9]{3}-[0-9]{4}-[0-9]{4}" 
-                                   placeholder="010-0000-0000" required>
+                                   pattern="[0-9]{11}" 
+                                   minlength="11" maxlength="11"
+                                   placeholder="01012345678" required>
+                            <div class="form-text">숫자 11자리를 입력해주세요 ('-' 제외)</div>
                         </div>
 
                         <!-- 이메일 주소 -->
                         <div class="mb-3">
                             <label for="email" class="form-label">이메일 주소</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   placeholder="example@email.com" required>
                         </div>
 
                         <!-- 문의 대상 서비스 선택 -->
