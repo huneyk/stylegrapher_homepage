@@ -42,17 +42,17 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>패키지명</th>
+                                    <th class="package-name-col">패키지명</th>
                                     <th>서비스 구성</th>
-                                    <th class="text-end">가격</th>
+                                    <th class="text-end text-nowrap">가격</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for package in packages %}
                                 <tr>
-                                    <td>{{ package.name }}</td>
+                                    <td class="package-name-col">{{ package.name }}</td>
                                     <td>{{ package.description }}</td>
-                                    <td class="text-end">{{ '{:,}'.format(package.price|int) }} 원</td>
+                                    <td class="text-end text-nowrap">{{ '{:,}'.format(package.price|int) }} 원</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -79,6 +79,14 @@
 .service-description {
     white-space: pre-wrap;
     word-wrap: break-word;
+}
+
+.package-name-col {
+    width: 10em;  /* 한글 10자 폭 */
+    min-width: 10em;
+    max-width: 10em;
+    word-wrap: break-word;
+    word-break: keep-all;
 }
 </style>
 {% endblock %} 
