@@ -10,4 +10,9 @@ Flask-SQLAlchemy==3.0.3
 Flask-Migrate==4.0.4
 Flask-Login==0.6.2
 SQLAlchemy==2.0.15
-alembic==1.11.1 
+alembic==1.11.1
+pytz==2023.3
+python-dotenv==1.0.0
+email-validator==2.0.0
+Flask-WTF==1.1.1
+WTForms==3.0.1 
