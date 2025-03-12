@@ -1,6 +1,7 @@
 from app import create_app
 from models import db
 from werkzeug.security import generate_password_hash
+from sqlalchemy import text
 import sys
 
 def create_admin(username="admin", password="ysg123"):
@@ -8,23 +9,23 @@ def create_admin(username="admin", password="ysg123"):
     with app.app_context():
         try:
             # 데이터베이스 테이블 구조 확인
-            result = db.session.execute("PRAGMA table_info(user)")
+            result = db.session.execute(text("PRAGMA table_info(user)"))
             columns = result.fetchall()
             print("User table columns:")
             for column in columns:
                 print(column)
             
             # 이미 존재하는 사용자인지 확인 (직접 SQL 사용)
-            result = db.session.execute("SELECT id FROM user WHERE uq_user_username = :username", {"username": username})
+            result = db.session.execute(text("SELECT id FROM user WHERE uq_user_username = :username"), {"username": username})
             existing_user = result.fetchone()
             
             if existing_user:
                 print(f"사용자 '{username}'이(가) 이미 존재합니다.")
                 # 기존 사용자의 비밀번호 업데이트
-                update_sql = """
+                update_sql = text("""
                 UPDATE user SET password_hash = :password_hash
                 WHERE uq_user_username = :username
-                """
+                """)
                 update_params = {
                     "username": username,
                     "password_hash": generate_password_hash(password, method='pbkdf2:sha256')
@@ -39,10 +40,10 @@ def create_admin(username="admin", password="ysg123"):
             
             if has_email_column:
                 # email 열이 있는 경우
-                sql = """
+                sql = text("""
                 INSERT INTO user (uq_user_username, email, password_hash, is_admin) 
                 VALUES (:username, :email, :password_hash, :is_admin)
-                """
+                """)
                 params = {
                     "username": username,
                     "email": f"{username}@example.com",  # 기본 이메일 제공
@@ -51,10 +52,10 @@ def create_admin(username="admin", password="ysg123"):
                 }
             else:
                 # email 열이 없는 경우
-                sql = """
+                sql = text("""
                 INSERT INTO user (uq_user_username, password_hash, is_admin) 
                 VALUES (:username, :password_hash, :is_admin)
-                """
+                """)
                 params = {
                     "username": username,
                     "password_hash": generate_password_hash(password, method='pbkdf2:sha256'),
