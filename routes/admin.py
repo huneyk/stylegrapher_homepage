@@ -134,9 +134,30 @@ def dashboard():
                 'created_at': row[5],
                 'service': {'name': row[6]} if row[6] else None
             }
-            # UTC to KST 변환
+            
+            # 날짜 형식 변환 (문자열 또는 datetime 객체 모두 처리)
             if booking['created_at']:
-                booking['created_at'] = pytz.utc.localize(datetime.strptime(booking['created_at'], '%Y-%m-%d %H:%M:%S.%f')).astimezone(kst)
+                try:
+                    # 이미 datetime 객체인 경우
+                    if isinstance(booking['created_at'], datetime):
+                        booking['created_at'] = pytz.utc.localize(booking['created_at']).astimezone(kst)
+                    # 문자열인 경우
+                    else:
+                        # 다양한 형식 처리
+                        try:
+                            dt = datetime.strptime(booking['created_at'], '%Y-%m-%d %H:%M:%S.%f')
+                        except ValueError:
+                            try:
+                                dt = datetime.strptime(booking['created_at'], '%Y-%m-%d %H:%M:%S')
+                            except ValueError:
+                                # 다른 형식이 있을 수 있음
+                                dt = datetime.now()  # 기본값
+                        booking['created_at'] = pytz.utc.localize(dt).astimezone(kst)
+                except Exception as date_error:
+                    print(f"Date conversion error: {str(date_error)}")
+                    # 오류 발생 시 현재 시간으로 대체
+                    booking['created_at'] = datetime.now()
+            
             recent_bookings.append(booking)
         
         # Inquiry 모델 대신 직접 SQL 쿼리 사용
@@ -159,9 +180,30 @@ def dashboard():
                 'created_at': row[6],
                 'service': {'name': row[7]} if row[7] else None
             }
-            # UTC to KST 변환
+            
+            # 날짜 형식 변환 (문자열 또는 datetime 객체 모두 처리)
             if inquiry['created_at']:
-                inquiry['created_at'] = pytz.utc.localize(datetime.strptime(inquiry['created_at'], '%Y-%m-%d %H:%M:%S.%f')).astimezone(kst)
+                try:
+                    # 이미 datetime 객체인 경우
+                    if isinstance(inquiry['created_at'], datetime):
+                        inquiry['created_at'] = pytz.utc.localize(inquiry['created_at']).astimezone(kst)
+                    # 문자열인 경우
+                    else:
+                        # 다양한 형식 처리
+                        try:
+                            dt = datetime.strptime(inquiry['created_at'], '%Y-%m-%d %H:%M:%S.%f')
+                        except ValueError:
+                            try:
+                                dt = datetime.strptime(inquiry['created_at'], '%Y-%m-%d %H:%M:%S')
+                            except ValueError:
+                                # 다른 형식이 있을 수 있음
+                                dt = datetime.now()  # 기본값
+                        inquiry['created_at'] = pytz.utc.localize(dt).astimezone(kst)
+                except Exception as date_error:
+                    print(f"Date conversion error: {str(date_error)}")
+                    # 오류 발생 시 현재 시간으로 대체
+                    inquiry['created_at'] = datetime.now()
+            
             recent_inquiries.append(inquiry)
         
         # GalleryGroup 모델 대신 직접 SQL 쿼리 사용
@@ -178,9 +220,30 @@ def dashboard():
                 'title': row[1],
                 'created_at': row[2]
             }
-            # UTC to KST 변환
+            
+            # 날짜 형식 변환 (문자열 또는 datetime 객체 모두 처리)
             if gallery['created_at']:
-                gallery['created_at'] = pytz.utc.localize(datetime.strptime(gallery['created_at'], '%Y-%m-%d %H:%M:%S.%f')).astimezone(kst)
+                try:
+                    # 이미 datetime 객체인 경우
+                    if isinstance(gallery['created_at'], datetime):
+                        gallery['created_at'] = pytz.utc.localize(gallery['created_at']).astimezone(kst)
+                    # 문자열인 경우
+                    else:
+                        # 다양한 형식 처리
+                        try:
+                            dt = datetime.strptime(gallery['created_at'], '%Y-%m-%d %H:%M:%S.%f')
+                        except ValueError:
+                            try:
+                                dt = datetime.strptime(gallery['created_at'], '%Y-%m-%d %H:%M:%S')
+                            except ValueError:
+                                # 다른 형식이 있을 수 있음
+                                dt = datetime.now()  # 기본값
+                        gallery['created_at'] = pytz.utc.localize(dt).astimezone(kst)
+                except Exception as date_error:
+                    print(f"Date conversion error: {str(date_error)}")
+                    # 오류 발생 시 현재 시간으로 대체
+                    gallery['created_at'] = datetime.now()
+            
             recent_galleries.append(gallery)
         
         # 각 항목의 전체 개수 확인
@@ -266,31 +329,48 @@ def upload_image():
             flash('최대 10개의 이미지만 업로드할 수 있습니다.')
             return redirect(request.url)
         
-        # 갤러리 그룹 생성
-        gallery_group = GalleryGroup(title=request.form['title'])
-        db.session.add(gallery_group)
+        # 업로드 폴더가 없으면 생성
+        upload_folder = current_app.config['UPLOAD_FOLDER']
+        if not os.path.exists(upload_folder):
+            try:
+                os.makedirs(upload_folder)
+                print(f"Created upload directory: {upload_folder}")
+            except Exception as e:
+                print(f"Error creating upload directory: {str(e)}")
+                flash('업로드 폴더를 생성할 수 없습니다.', 'error')
+                return redirect(request.url)
         
-        # 이미지 저장
-        for i, file in enumerate(files):
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-                file.save(filepath)
-                
-                # 이미지 리사이즈
-                resize_image(filepath)
-                
-                # 갤러리 이미지 생성
-                gallery = Gallery(
-                    image_path=filename,
-                    order=i,
-                    group=gallery_group
-                )
-                db.session.add(gallery)
-        
-        db.session.commit()
-        flash('이미지가 업로드되었습니다.')
-        return redirect(url_for('admin.list_gallery'))
+        try:
+            # 갤러리 그룹 생성
+            gallery_group = GalleryGroup(title=request.form['title'])
+            db.session.add(gallery_group)
+            
+            # 이미지 저장
+            for i, file in enumerate(files):
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    filepath = os.path.join(upload_folder, filename)
+                    file.save(filepath)
+                    
+                    # 이미지 리사이즈
+                    resize_image(filepath)
+                    
+                    # 갤러리 이미지 생성
+                    gallery = Gallery(
+                        image_path=filename,
+                        order=i,
+                        group=gallery_group
+                    )
+                    db.session.add(gallery)
+            
+            db.session.commit()
+            flash('이미지가 업로드되었습니다.')
+            return redirect(url_for('admin.list_gallery'))
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error uploading images: {str(e)}")
+            flash('이미지 업로드 중 오류가 발생했습니다.', 'error')
+            return redirect(request.url)
             
     return render_template('admin/upload_image.html')
 
@@ -441,6 +521,30 @@ def list_bookings():
                 'created_at': row[5],
                 'service': {'name': row[6]} if row[6] else None
             }
+            
+            # 날짜 형식 변환 (문자열 또는 datetime 객체 모두 처리)
+            if booking['created_at']:
+                try:
+                    # 이미 datetime 객체인 경우
+                    if isinstance(booking['created_at'], datetime):
+                        booking['created_at'] = pytz.utc.localize(booking['created_at']).astimezone(pytz.timezone('Asia/Seoul'))
+                    # 문자열인 경우
+                    else:
+                        # 다양한 형식 처리
+                        try:
+                            dt = datetime.strptime(booking['created_at'], '%Y-%m-%d %H:%M:%S.%f')
+                        except ValueError:
+                            try:
+                                dt = datetime.strptime(booking['created_at'], '%Y-%m-%d %H:%M:%S')
+                            except ValueError:
+                                # 다른 형식이 있을 수 있음
+                                dt = datetime.now()  # 기본값
+                        booking['created_at'] = pytz.utc.localize(dt).astimezone(pytz.timezone('Asia/Seoul'))
+                except Exception as date_error:
+                    print(f"Date conversion error: {str(date_error)}")
+                    # 오류 발생 시 현재 시간으로 대체
+                    booking['created_at'] = datetime.now()
+            
             bookings.append(booking)
         
         return render_template('admin/bookings.html', bookings=bookings)
@@ -590,22 +694,48 @@ def list_gallery():
                 'images': []  # 이미지 목록은 별도로 조회
             }
             
-            # 각 그룹의 이미지 조회
-            image_result = db.session.execute(text("""
-                SELECT id, image_path, caption, order
-                FROM gallery
-                WHERE group_id = :group_id
-                ORDER BY order
-            """), {'group_id': group['id']})
+            # 날짜 형식 변환 (문자열 또는 datetime 객체 모두 처리)
+            if group['created_at']:
+                try:
+                    # 이미 datetime 객체인 경우
+                    if isinstance(group['created_at'], datetime):
+                        group['created_at'] = pytz.utc.localize(group['created_at']).astimezone(pytz.timezone('Asia/Seoul'))
+                    # 문자열인 경우
+                    else:
+                        # 다양한 형식 처리
+                        try:
+                            dt = datetime.strptime(group['created_at'], '%Y-%m-%d %H:%M:%S.%f')
+                        except ValueError:
+                            try:
+                                dt = datetime.strptime(group['created_at'], '%Y-%m-%d %H:%M:%S')
+                            except ValueError:
+                                # 다른 형식이 있을 수 있음
+                                dt = datetime.now()  # 기본값
+                        group['created_at'] = pytz.utc.localize(dt).astimezone(pytz.timezone('Asia/Seoul'))
+                except Exception as date_error:
+                    print(f"Date conversion error: {str(date_error)}")
+                    # 오류 발생 시 현재 시간으로 대체
+                    group['created_at'] = datetime.now()
             
-            for img_row in image_result:
-                image = {
-                    'id': img_row[0],
-                    'image_path': img_row[1],
-                    'caption': img_row[2],
-                    'order': img_row[3]
-                }
-                group['images'].append(image)
+            # 각 그룹의 이미지 조회
+            try:
+                image_result = db.session.execute(text("""
+                    SELECT id, image_path, caption, "order"
+                    FROM gallery
+                    WHERE group_id = :group_id
+                    ORDER BY "order"
+                """), {'group_id': group['id']})
+                
+                for img_row in image_result:
+                    image = {
+                        'id': img_row[0],
+                        'image_path': img_row[1],
+                        'caption': img_row[2],
+                        'order': img_row[3]
+                    }
+                    group['images'].append(image)
+            except Exception as img_error:
+                print(f"Error fetching images for group {group['id']}: {str(img_error)}")
             
             gallery_groups.append(group)
         
@@ -640,6 +770,30 @@ def list_inquiries():
                 'created_at': row[6],
                 'service': {'name': row[7]} if row[7] else None
             }
+            
+            # 날짜 형식 변환 (문자열 또는 datetime 객체 모두 처리)
+            if inquiry['created_at']:
+                try:
+                    # 이미 datetime 객체인 경우
+                    if isinstance(inquiry['created_at'], datetime):
+                        inquiry['created_at'] = pytz.utc.localize(inquiry['created_at']).astimezone(pytz.timezone('Asia/Seoul'))
+                    # 문자열인 경우
+                    else:
+                        # 다양한 형식 처리
+                        try:
+                            dt = datetime.strptime(inquiry['created_at'], '%Y-%m-%d %H:%M:%S.%f')
+                        except ValueError:
+                            try:
+                                dt = datetime.strptime(inquiry['created_at'], '%Y-%m-%d %H:%M:%S')
+                            except ValueError:
+                                # 다른 형식이 있을 수 있음
+                                dt = datetime.now()  # 기본값
+                        inquiry['created_at'] = pytz.utc.localize(dt).astimezone(pytz.timezone('Asia/Seoul'))
+                except Exception as date_error:
+                    print(f"Date conversion error: {str(date_error)}")
+                    # 오류 발생 시 현재 시간으로 대체
+                    inquiry['created_at'] = datetime.now()
+            
             inquiries.append(inquiry)
         
         return render_template('admin/inquiries.html', inquiries=inquiries)
