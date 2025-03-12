@@ -439,7 +439,7 @@ def delete_inquiry(id):
 def reset_admin_password(username, new_password):
     # 보안을 위한 간단한 토큰 확인 (실제 구현에서는 더 강력한 보안 필요)
     token = request.args.get('token')
-    if token != 'your_secret_token_here':  # 실제 구현에서는 환경 변수 등에서 가져와야 함
+    if token != 'stylegrapher':  # 토큰 값을 'stylegrapher'로 변경
         return "Unauthorized", 401
     
     user = User.query.filter_by(username=username).first()
@@ -457,7 +457,7 @@ def reset_admin_password(username, new_password):
 def create_admin_account(username, email, password):
     # 보안을 위한 간단한 토큰 확인 (실제 구현에서는 더 강력한 보안 필요)
     token = request.args.get('token')
-    if token != 'your_secret_token_here':  # 실제 구현에서는 환경 변수 등에서 가져와야 함
+    if token != 'stylegrapher':  # 토큰 값을 'stylegrapher'로 변경
         return "Unauthorized", 401
     
     # 이미 존재하는 사용자인지 확인
