@@ -420,26 +420,68 @@ def delete_option(option_id):
 @admin.route('/bookings')
 @login_required
 def list_bookings():
-    bookings = Booking.query.order_by(Booking.created_at.desc()).all()
-    return render_template('admin/bookings.html', bookings=bookings)
+    try:
+        # 직접 SQL 쿼리를 사용하여 예약 목록 조회
+        result = db.session.execute(text("""
+            SELECT b.id, b.name, b.email, b.message, b.status, b.created_at, s.name as service_name
+            FROM booking b
+            LEFT JOIN service s ON b.service_id = s.id
+            ORDER BY b.created_at DESC
+        """))
+        
+        # 결과를 딕셔너리 리스트로 변환
+        bookings = []
+        for row in result:
+            booking = {
+                'id': row[0],
+                'name': row[1],
+                'email': row[2],
+                'message': row[3],
+                'status': row[4],
+                'created_at': row[5],
+                'service': {'name': row[6]} if row[6] else None
+            }
+            bookings.append(booking)
+        
+        return render_template('admin/bookings.html', bookings=bookings)
+    except Exception as e:
+        print(f"Error in list_bookings: {str(e)}")
+        flash('예약 목록을 불러오는 중 오류가 발생했습니다.', 'error')
+        return render_template('admin/bookings.html', bookings=[])
 
 @admin.route('/booking/<int:id>/status/<status>')
 @login_required
 def update_booking_status(id, status):
-    booking = Booking.query.get_or_404(id)
-    if status in ['대기', '확정', '취소']:
-        booking.status = status
-        db.session.commit()
-        flash('예약 상태가 업데이트되었습니다.')
+    try:
+        if status in ['대기', '확정', '취소']:
+            # 직접 SQL 쿼리를 사용하여 예약 상태 업데이트
+            db.session.execute(
+                text("UPDATE booking SET status = :status WHERE id = :id"),
+                {"id": id, "status": status}
+            )
+            db.session.commit()
+            flash('예약 상태가 업데이트되었습니다.')
+    except Exception as e:
+        print(f"Error updating booking status: {str(e)}")
+        flash('예약 상태 업데이트 중 오류가 발생했습니다.', 'error')
+    
     return redirect(url_for('admin.list_bookings'))
 
 @admin.route('/booking/<int:id>/delete')
 @login_required
 def delete_booking(id):
-    booking = Booking.query.get_or_404(id)
-    db.session.delete(booking)
-    db.session.commit()
-    flash('예약이 삭제되었습니다.')
+    try:
+        # 직접 SQL 쿼리를 사용하여 예약 삭제
+        db.session.execute(
+            text("DELETE FROM booking WHERE id = :id"),
+            {"id": id}
+        )
+        db.session.commit()
+        flash('예약이 삭제되었습니다.')
+    except Exception as e:
+        print(f"Error deleting booking: {str(e)}")
+        flash('예약 삭제 중 오류가 발생했습니다.', 'error')
+    
     return redirect(url_for('admin.list_bookings'))
 
 @admin.route('/carousel')
@@ -530,29 +572,115 @@ def delete_carousel(id):
 @admin.route('/gallery')
 @login_required
 def list_gallery():
-    gallery_groups = GalleryGroup.query.order_by(GalleryGroup.created_at.desc()).all()
-    return render_template('admin/list_gallery.html', gallery_groups=gallery_groups)
+    try:
+        # 직접 SQL 쿼리를 사용하여 갤러리 그룹 목록 조회
+        result = db.session.execute(text("""
+            SELECT id, title, created_at
+            FROM gallery_group
+            ORDER BY created_at DESC
+        """))
+        
+        # 결과를 딕셔너리 리스트로 변환
+        gallery_groups = []
+        for row in result:
+            group = {
+                'id': row[0],
+                'title': row[1],
+                'created_at': row[2],
+                'images': []  # 이미지 목록은 별도로 조회
+            }
+            
+            # 각 그룹의 이미지 조회
+            image_result = db.session.execute(text("""
+                SELECT id, image_path, caption, order
+                FROM gallery
+                WHERE group_id = :group_id
+                ORDER BY order
+            """), {'group_id': group['id']})
+            
+            for img_row in image_result:
+                image = {
+                    'id': img_row[0],
+                    'image_path': img_row[1],
+                    'caption': img_row[2],
+                    'order': img_row[3]
+                }
+                group['images'].append(image)
+            
+            gallery_groups.append(group)
+        
+        return render_template('admin/list_gallery.html', gallery_groups=gallery_groups)
+    except Exception as e:
+        print(f"Error in list_gallery: {str(e)}")
+        flash('갤러리 목록을 불러오는 중 오류가 발생했습니다.', 'error')
+        return render_template('admin/list_gallery.html', gallery_groups=[])
 
 @admin.route('/inquiries')
 @login_required
 def list_inquiries():
-    inquiries = Inquiry.query.order_by(desc(Inquiry.created_at)).all()
-    return render_template('admin/inquiries.html', inquiries=inquiries)
+    try:
+        # 직접 SQL 쿼리를 사용하여 문의 목록 조회
+        result = db.session.execute(text("""
+            SELECT i.id, i.name, i.email, i.phone, i.message, i.status, i.created_at, s.name as service_name
+            FROM inquiry i
+            LEFT JOIN service s ON i.service_id = s.id
+            ORDER BY i.created_at DESC
+        """))
+        
+        # 결과를 딕셔너리 리스트로 변환
+        inquiries = []
+        for row in result:
+            inquiry = {
+                'id': row[0],
+                'name': row[1],
+                'email': row[2],
+                'phone': row[3],
+                'message': row[4],
+                'status': row[5],
+                'created_at': row[6],
+                'service': {'name': row[7]} if row[7] else None
+            }
+            inquiries.append(inquiry)
+        
+        return render_template('admin/inquiries.html', inquiries=inquiries)
+    except Exception as e:
+        print(f"Error in list_inquiries: {str(e)}")
+        flash('문의 목록을 불러오는 중 오류가 발생했습니다.', 'error')
+        return render_template('admin/inquiries.html', inquiries=[])
 
 @admin.route('/inquiries/<int:id>/status', methods=['POST'])
 @login_required
 def update_inquiry_status(id):
-    inquiry = Inquiry.query.get_or_404(id)
-    inquiry.status = request.form.get('status')
-    db.session.commit()
+    try:
+        status = request.form.get('status')
+        # 직접 SQL 쿼리를 사용하여 문의 상태 업데이트
+        db.session.execute(
+            text("UPDATE inquiry SET status = :status WHERE id = :id"),
+            {"id": id, "status": status}
+        )
+        db.session.commit()
+        flash('문의 상태가 업데이트되었습니다.')
+    except Exception as e:
+        print(f"Error updating inquiry status: {str(e)}")
+        flash('문의 상태 업데이트 중 오류가 발생했습니다.', 'error')
+    
     return redirect(url_for('admin.list_inquiries'))
 
 @admin.route('/inquiries/<int:id>/delete', methods=['POST'])
 @login_required
 def delete_inquiry(id):
-    inquiry = Inquiry.query.get_or_404(id)
-    db.session.delete(inquiry)
-    db.session.commit()
+    try:
+        # 직접 SQL 쿼리를 사용하여 문의 삭제
+        db.session.execute(
+            text("DELETE FROM inquiry WHERE id = :id"),
+            {"id": id}
+        )
+        db.session.commit()
+        flash('문의가 삭제되었습니다.')
+    except Exception as e:
+        print(f"Error deleting inquiry: {str(e)}")
+        flash('문의 삭제 중 오류가 발생했습니다.', 'error')
+    
     return redirect(url_for('admin.list_inquiries'))
 
 # 임시 관리자 비밀번호 재설정 라우트 (사용 후 제거 필요)

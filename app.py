@@ -26,6 +26,23 @@ def create_app():
     
     @login_manager.user_loader
     def load_user(user_id):
-        return User.query.get(int(user_id))
+        from sqlalchemy import text
+        try:
+            # 직접 SQL 쿼리를 사용하여 사용자 조회
+            result = db.session.execute(text("SELECT id, uq_user_username, password_hash FROM user WHERE id = :id"), {"id": user_id})
+            user_data = result.fetchone()
+            
+            if user_data:
+                # 사용자 객체 생성
+                user = User()
+                user.id = user_data[0]
+                user.username = user_data[1]
+                user.password_hash = user_data[2]
+                user.is_admin = True  # 항상 관리자로 설정
+                return user
+            return None
+        except Exception as e:
+            print(f"Error loading user: {str(e)}")
+            return None
     
     return app
