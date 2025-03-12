@@ -506,28 +506,63 @@ def delete_option(option_id):
 # 딕셔너리를 모델처럼 사용하기 위한 클래스 추가
 class DictAsModel:
     def __init__(self, data):
-        self.__dict__.update(data)
+        # 딕셔너리의 키-값 쌍을 객체의 속성으로 설정
+        for key, value in data.items():
+            setattr(self, key, value)
     
     def get_datetimes(self):
-        # 예약 메시지에서 날짜/시간 정보 추출
-        # 실제 구현은 메시지 형식에 따라 달라질 수 있음
-        if hasattr(self, 'message') and self.message:
-            lines = self.message.split('\n')
-            datetimes = []
-            capture = False
-            
-            for line in lines:
-                if '희망 예약일시:' in line:
-                    capture = True
-                    continue
+        """예약 메시지에서 날짜/시간 정보 추출"""
+        try:
+            if hasattr(self, 'message') and self.message:
+                lines = self.message.split('\n')
+                datetimes = []
+                capture = False
                 
-                if capture and line.strip() and '순위:' in line:
-                    parts = line.split('순위:')
-                    if len(parts) > 1:
-                        datetimes.append(parts[1].strip())
-            
-            return datetimes
+                for line in lines:
+                    if '희망 예약일시:' in line:
+                        capture = True
+                        continue
+                    
+                    if capture and line.strip() and '순위:' in line:
+                        parts = line.split('순위:')
+                        if len(parts) > 1:
+                            datetimes.append(parts[1].strip())
+                
+                return datetimes
+        except Exception as e:
+            print(f"Error in get_datetimes: {str(e)}")
         return []
+    
+    def get_message_content(self):
+        """메시지 내용에서 희망 예약일시 부분을 제외한 내용 반환"""
+        try:
+            if hasattr(self, 'message') and self.message:
+                lines = self.message.split('\n')
+                content_lines = []
+                exclude = False
+                
+                for line in lines:
+                    if '희망 예약일시:' in line:
+                        exclude = True
+                        continue
+                    
+                    if not exclude or not line.strip() or not ('순위:' in line):
+                        content_lines.append(line)
+                
+                return '\n'.join(content_lines).strip()
+        except Exception as e:
+            print(f"Error in get_message_content: {str(e)}")
+        return ''
+    
+    def strftime(self, format_string):
+        """datetime 객체의 strftime 메서드를 모방"""
+        try:
+            if hasattr(self, 'created_at') and self.created_at:
+                if isinstance(self.created_at, datetime):
+                    return self.created_at.strftime(format_string)
+        except Exception as e:
+            print(f"Error in strftime: {str(e)}")
+        return ''
 
 @admin.route('/bookings')
 @login_required
