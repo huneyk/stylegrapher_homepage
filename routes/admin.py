@@ -115,35 +115,83 @@ def dashboard():
         kst = pytz.timezone('Asia/Seoul')
         
         # 각 항목 100개씩 가져오기
-        recent_bookings = Booking.query.order_by(
-            Booking.created_at.desc()
-        ).limit(100).all()
+        # Booking 모델 대신 직접 SQL 쿼리 사용
+        result = db.session.execute(text("""
+            SELECT b.id, b.name, b.email, b.message, b.status, b.created_at, s.name as service_name
+            FROM booking b
+            LEFT JOIN service s ON b.service_id = s.id
+            ORDER BY b.created_at DESC
+            LIMIT 100
+        """))
+        recent_bookings = []
+        for row in result:
+            booking = {
+                'id': row[0],
+                'name': row[1],
+                'email': row[2],
+                'message': row[3],
+                'status': row[4],
+                'created_at': row[5],
+                'service': {'name': row[6]} if row[6] else None
+            }
+            # UTC to KST 변환
+            if booking['created_at']:
+                booking['created_at'] = pytz.utc.localize(datetime.strptime(booking['created_at'], '%Y-%m-%d %H:%M:%S.%f')).astimezone(kst)
+            recent_bookings.append(booking)
         
-        recent_inquiries = Inquiry.query.order_by(
-            Inquiry.created_at.desc()
-        ).limit(100).all()
+        # Inquiry 모델 대신 직접 SQL 쿼리 사용
+        result = db.session.execute(text("""
+            SELECT i.id, i.name, i.email, i.phone, i.message, i.status, i.created_at, s.name as service_name
+            FROM inquiry i
+            LEFT JOIN service s ON i.service_id = s.id
+            ORDER BY i.created_at DESC
+            LIMIT 100
+        """))
+        recent_inquiries = []
+        for row in result:
+            inquiry = {
+                'id': row[0],
+                'name': row[1],
+                'email': row[2],
+                'phone': row[3],
+                'message': row[4],
+                'status': row[5],
+                'created_at': row[6],
+                'service': {'name': row[7]} if row[7] else None
+            }
+            # UTC to KST 변환
+            if inquiry['created_at']:
+                inquiry['created_at'] = pytz.utc.localize(datetime.strptime(inquiry['created_at'], '%Y-%m-%d %H:%M:%S.%f')).astimezone(kst)
+            recent_inquiries.append(inquiry)
         
-        recent_galleries = GalleryGroup.query.order_by(
-            GalleryGroup.created_at.desc()
-        ).limit(100).all()
-        
-        # UTC to KST 변환
-        for booking in recent_bookings:
-            if booking.created_at:
-                booking.created_at = pytz.utc.localize(booking.created_at).astimezone(kst)
-        
-        for inquiry in recent_inquiries:
-            if inquiry.created_at:
-                inquiry.created_at = pytz.utc.localize(inquiry.created_at).astimezone(kst)
-        
-        for gallery in recent_galleries:
-            if gallery.created_at:
-                gallery.created_at = pytz.utc.localize(gallery.created_at).astimezone(kst)
+        # GalleryGroup 모델 대신 직접 SQL 쿼리 사용
+        result = db.session.execute(text("""
+            SELECT id, title, created_at
+            FROM gallery_group
+            ORDER BY created_at DESC
+            LIMIT 100
+        """))
+        recent_galleries = []
+        for row in result:
+            gallery = {
+                'id': row[0],
+                'title': row[1],
+                'created_at': row[2]
+            }
+            # UTC to KST 변환
+            if gallery['created_at']:
+                gallery['created_at'] = pytz.utc.localize(datetime.strptime(gallery['created_at'], '%Y-%m-%d %H:%M:%S.%f')).astimezone(kst)
+            recent_galleries.append(gallery)
         
         # 각 항목의 전체 개수 확인
-        total_bookings = Booking.query.count()
-        total_inquiries = Inquiry.query.count()
-        total_galleries = GalleryGroup.query.count()
+        result = db.session.execute(text("SELECT COUNT(*) FROM booking"))
+        total_bookings = result.scalar()
+        
+        result = db.session.execute(text("SELECT COUNT(*) FROM inquiry"))
+        total_inquiries = result.scalar()
+        
+        result = db.session.execute(text("SELECT COUNT(*) FROM gallery_group"))
+        total_galleries = result.scalar()
 
         # 디버깅을 위한 출력
         print(f"Bookings: {len(recent_bookings)}")
@@ -515,15 +563,33 @@ def reset_admin_password(username, new_password):
     if token != 'stylegrapher':  # 토큰 값을 'stylegrapher'로 변경
         return "Unauthorized", 401
     
-    user = User.query.filter_by(username=username).first()
-    if not user:
-        return f"User {username} not found", 404
-    
-    # 새로운 해싱 알고리즘으로 비밀번호 설정
-    user.password_hash = generate_password_hash(new_password, method='pbkdf2:sha256')
-    db.session.commit()
-    
-    return f"Password for {username} has been reset successfully"
+    try:
+        # 직접 SQL 쿼리를 사용하여 사용자 조회
+        result = db.session.execute(
+            text("SELECT id FROM user WHERE uq_user_username = :username"),
+            {"username": username}
+        )
+        user_data = result.fetchone()
+        
+        if not user_data:
+            return f"User {username} not found", 404
+        
+        # 새로운 해싱 알고리즘으로 비밀번호 설정
+        update_sql = text("""
+        UPDATE user SET password_hash = :password_hash
+        WHERE id = :id
+        """)
+        update_params = {
+            "id": user_data[0],
+            "password_hash": generate_password_hash(new_password, method='pbkdf2:sha256')
+        }
+        db.session.execute(update_sql, update_params)
+        db.session.commit()
+        
+        return f"Password for {username} has been reset successfully"
+    except Exception as e:
+        print(f"Error resetting password: {str(e)}")
+        return f"Error resetting password: {str(e)}", 500
 
 # 임시 관리자 계정 생성 라우트 (사용 후 제거 필요)
 @admin.route('/create-admin/<username>/<email>/<password>')
@@ -533,21 +599,54 @@ def create_admin_account(username, email, password):
     if token != 'stylegrapher':  # 토큰 값을 'stylegrapher'로 변경
         return "Unauthorized", 401
     
-    # 이미 존재하는 사용자인지 확인
-    existing_user = User.query.filter_by(username=username).first()
-    if existing_user:
-        return f"User {username} already exists", 400
-    
-    # 새 관리자 계정 생성 (pbkdf2:sha256 알고리즘 사용)
-    admin = User(
-        username=username,
-        email=email,
-        password_hash=generate_password_hash(password, method='pbkdf2:sha256'),
-        is_admin=True
-    )
-    
-    # 데이터베이스에 저장
-    db.session.add(admin)
-    db.session.commit()
-    
-    return f"Admin account {username} has been created successfully"
+    try:
+        # 테이블 구조 확인
+        result = db.session.execute(text("PRAGMA table_info(user)"))
+        columns = [column[1] for column in result.fetchall()]
+        print("User table columns:", columns)
+        
+        # 이미 존재하는 사용자인지 확인
+        result = db.session.execute(
+            text("SELECT id FROM user WHERE uq_user_username = :username"),
+            {"username": username}
+        )
+        existing_user = result.fetchone()
+        
+        if existing_user:
+            return f"User {username} already exists", 400
+        
+        # 테이블에 email 열이 있는지 확인
+        has_email_column = 'email' in columns
+        
+        if has_email_column:
+            # email 열이 있는 경우
+            sql = text("""
+            INSERT INTO user (uq_user_username, email, password_hash, is_admin) 
+            VALUES (:username, :email, :password_hash, :is_admin)
+            """)
+            params = {
+                "username": username,
+                "email": email,
+                "password_hash": generate_password_hash(password, method='pbkdf2:sha256'),
+                "is_admin": True
+            }
+        else:
+            # email 열이 없는 경우
+            sql = text("""
+            INSERT INTO user (uq_user_username, password_hash, is_admin) 
+            VALUES (:username, :password_hash, :is_admin)
+            """)
+            params = {
+                "username": username,
+                "password_hash": generate_password_hash(password, method='pbkdf2:sha256'),
+                "is_admin": True
+            }
+        
+        # 새 관리자 계정 생성
+        db.session.execute(sql, params)
+        db.session.commit()
+        
+        return f"Admin account {username} has been created successfully"
+    except Exception as e:
+        print(f"Error creating admin account: {str(e)}")
+        return f"Error creating admin account: {str(e)}", 500
