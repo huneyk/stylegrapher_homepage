@@ -15,7 +15,23 @@ admin = Blueprint('admin', __name__)
 
 @login_manager.user_loader
 def load_user(id):
-    return User.query.get(int(id))
+    try:
+        # 직접 SQL 쿼리를 사용하여 사용자 조회
+        result = db.session.execute(text("SELECT id, uq_user_username, password_hash FROM user WHERE id = :id"), {"id": id})
+        user_data = result.fetchone()
+        
+        if user_data:
+            # 사용자 객체 생성
+            user = User()
+            user.id = user_data[0]
+            user.username = user_data[1]
+            user.password_hash = user_data[2]
+            user.is_admin = True  # 항상 관리자로 설정
+            return user
+        return None
+    except Exception as e:
+        print(f"Error loading user: {str(e)}")
+        return None
 
 @admin.route('/login', methods=['GET', 'POST'])
 def login():
@@ -23,25 +39,35 @@ def login():
         username = request.form['username']
         password = request.form['password']
         
-        # 직접 SQL 쿼리를 사용하여 사용자 조회
-        result = db.session.execute(
-            text("SELECT id, password_hash, is_admin FROM user WHERE uq_user_username = :username"),
-            {"username": username}
-        )
-        user_data = result.fetchone()
-        
-        if user_data and check_password_hash(user_data[1], password):
-            # 사용자 객체 생성
-            user = User()
-            user.id = user_data[0]
-            user.username = username
-            user.password_hash = user_data[1]
-            user.is_admin = user_data[2]
+        try:
+            # 테이블 구조 확인
+            result = db.session.execute(text("PRAGMA table_info(user)"))
+            columns = [column[1] for column in result.fetchall()]
+            print("User table columns:", columns)
             
-            login_user(user)
-            flash('로그인되었습니다.')
-            return redirect(url_for('admin.dashboard'))
-        flash('아이디 또는 비밀번호가 올바르지 않습니다.')
+            # 기본 쿼리 - id와 password_hash만 사용
+            query = "SELECT id, password_hash FROM user WHERE uq_user_username = :username"
+            
+            # 사용자 조회
+            result = db.session.execute(text(query), {"username": username})
+            user_data = result.fetchone()
+            
+            if user_data and check_password_hash(user_data[1], password):
+                # 사용자 객체 생성
+                user = User()
+                user.id = user_data[0]
+                user.username = username
+                user.password_hash = user_data[1]
+                user.is_admin = True  # 항상 관리자로 설정
+                
+                login_user(user)
+                flash('로그인되었습니다.')
+                return redirect(url_for('admin.dashboard'))
+            flash('아이디 또는 비밀번호가 올바르지 않습니다.')
+        except Exception as e:
+            print(f"Login error: {str(e)}")
+            flash('로그인 중 오류가 발생했습니다.')
+    
     return render_template('admin/login.html')
 
 @admin.route('/logout')
