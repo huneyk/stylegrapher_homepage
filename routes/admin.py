@@ -9,6 +9,7 @@ import json
 from sqlalchemy import desc
 from datetime import datetime
 import pytz
+from werkzeug.security import generate_password_hash
 
 admin = Blueprint('admin', __name__)
 
@@ -432,3 +433,48 @@ def delete_inquiry(id):
     db.session.delete(inquiry)
     db.session.commit()
     return redirect(url_for('admin.list_inquiries'))
+
+# 임시 관리자 비밀번호 재설정 라우트 (사용 후 제거 필요)
+@admin.route('/reset-admin-password/<username>/<new_password>')
+def reset_admin_password(username, new_password):
+    # 보안을 위한 간단한 토큰 확인 (실제 구현에서는 더 강력한 보안 필요)
+    token = request.args.get('token')
+    if token != 'your_secret_token_here':  # 실제 구현에서는 환경 변수 등에서 가져와야 함
+        return "Unauthorized", 401
+    
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        return f"User {username} not found", 404
+    
+    # 새로운 해싱 알고리즘으로 비밀번호 설정
+    user.password_hash = generate_password_hash(new_password, method='pbkdf2:sha256')
+    db.session.commit()
+    
+    return f"Password for {username} has been reset successfully"
+
+# 임시 관리자 계정 생성 라우트 (사용 후 제거 필요)
+@admin.route('/create-admin/<username>/<email>/<password>')
+def create_admin_account(username, email, password):
+    # 보안을 위한 간단한 토큰 확인 (실제 구현에서는 더 강력한 보안 필요)
+    token = request.args.get('token')
+    if token != 'your_secret_token_here':  # 실제 구현에서는 환경 변수 등에서 가져와야 함
+        return "Unauthorized", 401
+    
+    # 이미 존재하는 사용자인지 확인
+    existing_user = User.query.filter_by(username=username).first()
+    if existing_user:
+        return f"User {username} already exists", 400
+    
+    # 새 관리자 계정 생성 (pbkdf2:sha256 알고리즘 사용)
+    admin = User(
+        username=username,
+        email=email,
+        password_hash=generate_password_hash(password, method='pbkdf2:sha256'),
+        is_admin=True
+    )
+    
+    # 데이터베이스에 저장
+    db.session.add(admin)
+    db.session.commit()
+    
+    return f"Admin account {username} has been created successfully"
