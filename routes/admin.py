@@ -125,39 +125,41 @@ def dashboard():
         """))
         recent_bookings = []
         for row in result:
-            booking = {
+            booking_data = {
                 'id': row[0],
                 'name': row[1],
                 'email': row[2],
                 'message': row[3],
                 'status': row[4],
                 'created_at': row[5],
-                'service': {'name': row[6]} if row[6] else None
+                'service': DictAsModel({'name': row[6]}) if row[6] else None
             }
             
             # 날짜 형식 변환 (문자열 또는 datetime 객체 모두 처리)
-            if booking['created_at']:
+            if booking_data['created_at']:
                 try:
                     # 이미 datetime 객체인 경우
-                    if isinstance(booking['created_at'], datetime):
-                        booking['created_at'] = pytz.utc.localize(booking['created_at']).astimezone(kst)
+                    if isinstance(booking_data['created_at'], datetime):
+                        booking_data['created_at'] = pytz.utc.localize(booking_data['created_at']).astimezone(kst)
                     # 문자열인 경우
                     else:
                         # 다양한 형식 처리
                         try:
-                            dt = datetime.strptime(booking['created_at'], '%Y-%m-%d %H:%M:%S.%f')
+                            dt = datetime.strptime(booking_data['created_at'], '%Y-%m-%d %H:%M:%S.%f')
                         except ValueError:
                             try:
-                                dt = datetime.strptime(booking['created_at'], '%Y-%m-%d %H:%M:%S')
+                                dt = datetime.strptime(booking_data['created_at'], '%Y-%m-%d %H:%M:%S')
                             except ValueError:
                                 # 다른 형식이 있을 수 있음
                                 dt = datetime.now()  # 기본값
-                        booking['created_at'] = pytz.utc.localize(dt).astimezone(kst)
+                        booking_data['created_at'] = pytz.utc.localize(dt).astimezone(kst)
                 except Exception as date_error:
                     print(f"Date conversion error: {str(date_error)}")
                     # 오류 발생 시 현재 시간으로 대체
-                    booking['created_at'] = datetime.now()
+                    booking_data['created_at'] = datetime.now()
             
+            # 딕셔너리를 DictAsModel 객체로 변환
+            booking = DictAsModel(booking_data)
             recent_bookings.append(booking)
         
         # Inquiry 모델 대신 직접 SQL 쿼리 사용
@@ -170,7 +172,7 @@ def dashboard():
         """))
         recent_inquiries = []
         for row in result:
-            inquiry = {
+            inquiry_data = {
                 'id': row[0],
                 'name': row[1],
                 'email': row[2],
@@ -178,32 +180,34 @@ def dashboard():
                 'message': row[4],
                 'status': row[5],
                 'created_at': row[6],
-                'service': {'name': row[7]} if row[7] else None
+                'service': DictAsModel({'name': row[7]}) if row[7] else None
             }
             
             # 날짜 형식 변환 (문자열 또는 datetime 객체 모두 처리)
-            if inquiry['created_at']:
+            if inquiry_data['created_at']:
                 try:
                     # 이미 datetime 객체인 경우
-                    if isinstance(inquiry['created_at'], datetime):
-                        inquiry['created_at'] = pytz.utc.localize(inquiry['created_at']).astimezone(kst)
+                    if isinstance(inquiry_data['created_at'], datetime):
+                        inquiry_data['created_at'] = pytz.utc.localize(inquiry_data['created_at']).astimezone(kst)
                     # 문자열인 경우
                     else:
                         # 다양한 형식 처리
                         try:
-                            dt = datetime.strptime(inquiry['created_at'], '%Y-%m-%d %H:%M:%S.%f')
+                            dt = datetime.strptime(inquiry_data['created_at'], '%Y-%m-%d %H:%M:%S.%f')
                         except ValueError:
                             try:
-                                dt = datetime.strptime(inquiry['created_at'], '%Y-%m-%d %H:%M:%S')
+                                dt = datetime.strptime(inquiry_data['created_at'], '%Y-%m-%d %H:%M:%S')
                             except ValueError:
                                 # 다른 형식이 있을 수 있음
                                 dt = datetime.now()  # 기본값
-                        inquiry['created_at'] = pytz.utc.localize(dt).astimezone(kst)
+                        inquiry_data['created_at'] = pytz.utc.localize(dt).astimezone(kst)
                 except Exception as date_error:
                     print(f"Date conversion error: {str(date_error)}")
                     # 오류 발생 시 현재 시간으로 대체
-                    inquiry['created_at'] = datetime.now()
+                    inquiry_data['created_at'] = datetime.now()
             
+            # 딕셔너리를 DictAsModel 객체로 변환
+            inquiry = DictAsModel(inquiry_data)
             recent_inquiries.append(inquiry)
         
         # GalleryGroup 모델 대신 직접 SQL 쿼리 사용
@@ -215,35 +219,37 @@ def dashboard():
         """))
         recent_galleries = []
         for row in result:
-            gallery = {
+            gallery_data = {
                 'id': row[0],
                 'title': row[1],
                 'created_at': row[2]
             }
             
             # 날짜 형식 변환 (문자열 또는 datetime 객체 모두 처리)
-            if gallery['created_at']:
+            if gallery_data['created_at']:
                 try:
                     # 이미 datetime 객체인 경우
-                    if isinstance(gallery['created_at'], datetime):
-                        gallery['created_at'] = pytz.utc.localize(gallery['created_at']).astimezone(kst)
+                    if isinstance(gallery_data['created_at'], datetime):
+                        gallery_data['created_at'] = pytz.utc.localize(gallery_data['created_at']).astimezone(kst)
                     # 문자열인 경우
                     else:
                         # 다양한 형식 처리
                         try:
-                            dt = datetime.strptime(gallery['created_at'], '%Y-%m-%d %H:%M:%S.%f')
+                            dt = datetime.strptime(gallery_data['created_at'], '%Y-%m-%d %H:%M:%S.%f')
                         except ValueError:
                             try:
-                                dt = datetime.strptime(gallery['created_at'], '%Y-%m-%d %H:%M:%S')
+                                dt = datetime.strptime(gallery_data['created_at'], '%Y-%m-%d %H:%M:%S')
                             except ValueError:
                                 # 다른 형식이 있을 수 있음
                                 dt = datetime.now()  # 기본값
-                        gallery['created_at'] = pytz.utc.localize(dt).astimezone(kst)
+                        gallery_data['created_at'] = pytz.utc.localize(dt).astimezone(kst)
                 except Exception as date_error:
                     print(f"Date conversion error: {str(date_error)}")
                     # 오류 발생 시 현재 시간으로 대체
-                    gallery['created_at'] = datetime.now()
+                    gallery_data['created_at'] = datetime.now()
             
+            # 딕셔너리를 DictAsModel 객체로 변환
+            gallery = DictAsModel(gallery_data)
             recent_galleries.append(gallery)
         
         # 각 항목의 전체 개수 확인
@@ -497,6 +503,32 @@ def delete_option(option_id):
     flash('옵션이 삭제되었습니다.')
     return redirect(url_for('admin.list_options', service_id=service_id))
 
+# 딕셔너리를 모델처럼 사용하기 위한 클래스 추가
+class DictAsModel:
+    def __init__(self, data):
+        self.__dict__.update(data)
+    
+    def get_datetimes(self):
+        # 예약 메시지에서 날짜/시간 정보 추출
+        # 실제 구현은 메시지 형식에 따라 달라질 수 있음
+        if hasattr(self, 'message') and self.message:
+            lines = self.message.split('\n')
+            datetimes = []
+            capture = False
+            
+            for line in lines:
+                if '희망 예약일시:' in line:
+                    capture = True
+                    continue
+                
+                if capture and line.strip() and '순위:' in line:
+                    parts = line.split('순위:')
+                    if len(parts) > 1:
+                        datetimes.append(parts[1].strip())
+            
+            return datetimes
+        return []
+
 @admin.route('/bookings')
 @login_required
 def list_bookings():
@@ -509,42 +541,44 @@ def list_bookings():
             ORDER BY b.created_at DESC
         """))
         
-        # 결과를 딕셔너리 리스트로 변환
+        # 결과를 DictAsModel 객체 리스트로 변환
         bookings = []
         for row in result:
-            booking = {
+            booking_data = {
                 'id': row[0],
                 'name': row[1],
                 'email': row[2],
                 'message': row[3],
                 'status': row[4],
                 'created_at': row[5],
-                'service': {'name': row[6]} if row[6] else None
+                'service': DictAsModel({'name': row[6]}) if row[6] else None
             }
             
             # 날짜 형식 변환 (문자열 또는 datetime 객체 모두 처리)
-            if booking['created_at']:
+            if booking_data['created_at']:
                 try:
                     # 이미 datetime 객체인 경우
-                    if isinstance(booking['created_at'], datetime):
-                        booking['created_at'] = pytz.utc.localize(booking['created_at']).astimezone(pytz.timezone('Asia/Seoul'))
+                    if isinstance(booking_data['created_at'], datetime):
+                        booking_data['created_at'] = pytz.utc.localize(booking_data['created_at']).astimezone(pytz.timezone('Asia/Seoul'))
                     # 문자열인 경우
                     else:
                         # 다양한 형식 처리
                         try:
-                            dt = datetime.strptime(booking['created_at'], '%Y-%m-%d %H:%M:%S.%f')
+                            dt = datetime.strptime(booking_data['created_at'], '%Y-%m-%d %H:%M:%S.%f')
                         except ValueError:
                             try:
-                                dt = datetime.strptime(booking['created_at'], '%Y-%m-%d %H:%M:%S')
+                                dt = datetime.strptime(booking_data['created_at'], '%Y-%m-%d %H:%M:%S')
                             except ValueError:
                                 # 다른 형식이 있을 수 있음
                                 dt = datetime.now()  # 기본값
-                        booking['created_at'] = pytz.utc.localize(dt).astimezone(pytz.timezone('Asia/Seoul'))
+                        booking_data['created_at'] = pytz.utc.localize(dt).astimezone(pytz.timezone('Asia/Seoul'))
                 except Exception as date_error:
                     print(f"Date conversion error: {str(date_error)}")
                     # 오류 발생 시 현재 시간으로 대체
-                    booking['created_at'] = datetime.now()
+                    booking_data['created_at'] = datetime.now()
             
+            # 딕셔너리를 DictAsModel 객체로 변환
+            booking = DictAsModel(booking_data)
             bookings.append(booking)
         
         return render_template('admin/bookings.html', bookings=bookings)
@@ -684,10 +718,10 @@ def list_gallery():
             ORDER BY created_at DESC
         """))
         
-        # 결과를 딕셔너리 리스트로 변환
+        # 결과를 DictAsModel 객체 리스트로 변환
         gallery_groups = []
         for row in result:
-            group = {
+            group_data = {
                 'id': row[0],
                 'title': row[1],
                 'created_at': row[2],
@@ -695,27 +729,27 @@ def list_gallery():
             }
             
             # 날짜 형식 변환 (문자열 또는 datetime 객체 모두 처리)
-            if group['created_at']:
+            if group_data['created_at']:
                 try:
                     # 이미 datetime 객체인 경우
-                    if isinstance(group['created_at'], datetime):
-                        group['created_at'] = pytz.utc.localize(group['created_at']).astimezone(pytz.timezone('Asia/Seoul'))
+                    if isinstance(group_data['created_at'], datetime):
+                        group_data['created_at'] = pytz.utc.localize(group_data['created_at']).astimezone(pytz.timezone('Asia/Seoul'))
                     # 문자열인 경우
                     else:
                         # 다양한 형식 처리
                         try:
-                            dt = datetime.strptime(group['created_at'], '%Y-%m-%d %H:%M:%S.%f')
+                            dt = datetime.strptime(group_data['created_at'], '%Y-%m-%d %H:%M:%S.%f')
                         except ValueError:
                             try:
-                                dt = datetime.strptime(group['created_at'], '%Y-%m-%d %H:%M:%S')
+                                dt = datetime.strptime(group_data['created_at'], '%Y-%m-%d %H:%M:%S')
                             except ValueError:
                                 # 다른 형식이 있을 수 있음
                                 dt = datetime.now()  # 기본값
-                        group['created_at'] = pytz.utc.localize(dt).astimezone(pytz.timezone('Asia/Seoul'))
+                        group_data['created_at'] = pytz.utc.localize(dt).astimezone(pytz.timezone('Asia/Seoul'))
                 except Exception as date_error:
                     print(f"Date conversion error: {str(date_error)}")
                     # 오류 발생 시 현재 시간으로 대체
-                    group['created_at'] = datetime.now()
+                    group_data['created_at'] = datetime.now()
             
             # 각 그룹의 이미지 조회
             try:
@@ -724,19 +758,22 @@ def list_gallery():
                     FROM gallery
                     WHERE group_id = :group_id
                     ORDER BY "order"
-                """), {'group_id': group['id']})
+                """), {'group_id': group_data['id']})
                 
                 for img_row in image_result:
-                    image = {
+                    image_data = {
                         'id': img_row[0],
                         'image_path': img_row[1],
                         'caption': img_row[2],
                         'order': img_row[3]
                     }
-                    group['images'].append(image)
+                    # 이미지도 DictAsModel 객체로 변환
+                    group_data['images'].append(DictAsModel(image_data))
             except Exception as img_error:
-                print(f"Error fetching images for group {group['id']}: {str(img_error)}")
+                print(f"Error fetching images for group {group_data['id']}: {str(img_error)}")
             
+            # 딕셔너리를 DictAsModel 객체로 변환
+            group = DictAsModel(group_data)
             gallery_groups.append(group)
         
         return render_template('admin/list_gallery.html', gallery_groups=gallery_groups)
@@ -757,10 +794,10 @@ def list_inquiries():
             ORDER BY i.created_at DESC
         """))
         
-        # 결과를 딕셔너리 리스트로 변환
+        # 결과를 DictAsModel 객체 리스트로 변환
         inquiries = []
         for row in result:
-            inquiry = {
+            inquiry_data = {
                 'id': row[0],
                 'name': row[1],
                 'email': row[2],
@@ -768,32 +805,34 @@ def list_inquiries():
                 'message': row[4],
                 'status': row[5],
                 'created_at': row[6],
-                'service': {'name': row[7]} if row[7] else None
+                'service': DictAsModel({'name': row[7]}) if row[7] else None
             }
             
             # 날짜 형식 변환 (문자열 또는 datetime 객체 모두 처리)
-            if inquiry['created_at']:
+            if inquiry_data['created_at']:
                 try:
                     # 이미 datetime 객체인 경우
-                    if isinstance(inquiry['created_at'], datetime):
-                        inquiry['created_at'] = pytz.utc.localize(inquiry['created_at']).astimezone(pytz.timezone('Asia/Seoul'))
+                    if isinstance(inquiry_data['created_at'], datetime):
+                        inquiry_data['created_at'] = pytz.utc.localize(inquiry_data['created_at']).astimezone(pytz.timezone('Asia/Seoul'))
                     # 문자열인 경우
                     else:
                         # 다양한 형식 처리
                         try:
-                            dt = datetime.strptime(inquiry['created_at'], '%Y-%m-%d %H:%M:%S.%f')
+                            dt = datetime.strptime(inquiry_data['created_at'], '%Y-%m-%d %H:%M:%S.%f')
                         except ValueError:
                             try:
-                                dt = datetime.strptime(inquiry['created_at'], '%Y-%m-%d %H:%M:%S')
+                                dt = datetime.strptime(inquiry_data['created_at'], '%Y-%m-%d %H:%M:%S')
                             except ValueError:
                                 # 다른 형식이 있을 수 있음
                                 dt = datetime.now()  # 기본값
-                        inquiry['created_at'] = pytz.utc.localize(dt).astimezone(pytz.timezone('Asia/Seoul'))
+                        inquiry_data['created_at'] = pytz.utc.localize(dt).astimezone(pytz.timezone('Asia/Seoul'))
                 except Exception as date_error:
                     print(f"Date conversion error: {str(date_error)}")
                     # 오류 발생 시 현재 시간으로 대체
-                    inquiry['created_at'] = datetime.now()
+                    inquiry_data['created_at'] = datetime.now()
             
+            # 딕셔너리를 DictAsModel 객체로 변환
+            inquiry = DictAsModel(inquiry_data)
             inquiries.append(inquiry)
         
         return render_template('admin/inquiries.html', inquiries=inquiries)
