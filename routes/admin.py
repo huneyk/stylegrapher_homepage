@@ -453,8 +453,8 @@ def reset_admin_password(username, new_password):
     return f"Password for {username} has been reset successfully"
 
 # 임시 관리자 계정 생성 라우트 (사용 후 제거 필요)
-@admin.route('/create-admin/<username>/<password>')
-def create_admin_account(username, password):
+@admin.route('/create-admin/<username>/<email>/<password>')
+def create_admin_account(username, email, password):
     # 보안을 위한 간단한 토큰 확인 (실제 구현에서는 더 강력한 보안 필요)
     token = request.args.get('token')
     if token != 'stylegrapher':  # 토큰 값을 'stylegrapher'로 변경
@@ -468,6 +468,7 @@ def create_admin_account(username, password):
     # 새 관리자 계정 생성 (pbkdf2:sha256 알고리즘 사용)
     admin = User(
         username=username,
+        email=email,
         password_hash=generate_password_hash(password, method='pbkdf2:sha256'),
         is_admin=True
     )
