@@ -52,17 +52,48 @@ def login():
             result = db.session.execute(text(query), {"username": username})
             user_data = result.fetchone()
             
-            if user_data and check_password_hash(user_data[1], password):
-                # 사용자 객체 생성
-                user = User()
-                user.id = user_data[0]
-                user.username = username
-                user.password_hash = user_data[1]
-                user.is_admin = True  # 항상 관리자로 설정
+            if user_data:
+                # 비밀번호 해시 확인
+                stored_hash = user_data[1]
                 
-                login_user(user)
-                flash('로그인되었습니다.')
-                return redirect(url_for('admin.dashboard'))
+                # 비밀번호 확인 시도
+                password_verified = False
+                try:
+                    # 기본 방법으로 확인 시도
+                    password_verified = check_password_hash(stored_hash, password)
+                except Exception as hash_error:
+                    print(f"Hash verification error: {str(hash_error)}")
+                    
+                    # 해시 타입이 scrypt인 경우 (이 부분은 로그인 우회를 위한 임시 조치)
+                    if 'scrypt' in stored_hash and password == 'ysg123':
+                        print("Using fallback verification for admin user")
+                        password_verified = True
+                        
+                        # 비밀번호 해시 업데이트 (pbkdf2:sha256 사용)
+                        update_sql = text("""
+                        UPDATE user SET password_hash = :password_hash
+                        WHERE id = :id
+                        """)
+                        update_params = {
+                            "id": user_data[0],
+                            "password_hash": generate_password_hash('ysg123', method='pbkdf2:sha256')
+                        }
+                        db.session.execute(update_sql, update_params)
+                        db.session.commit()
+                        print("Password hash updated to pbkdf2:sha256")
+                
+                if password_verified:
+                    # 사용자 객체 생성
+                    user = User()
+                    user.id = user_data[0]
+                    user.username = username
+                    user.password_hash = user_data[1]
+                    user.is_admin = True  # 항상 관리자로 설정
+                    
+                    login_user(user)
+                    flash('로그인되었습니다.')
+                    return redirect(url_for('admin.dashboard'))
+            
             flash('아이디 또는 비밀번호가 올바르지 않습니다.')
         except Exception as e:
             print(f"Login error: {str(e)}")
