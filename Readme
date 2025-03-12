@@ -1,0 +1,9 @@
+드디어 포팅 성공.
+2025년 3월 12일 저녁 9시 41분
+이 시점의 git log을 기록해둡니다. 
+
+commit 0196d4f279ea91a46f74acd1c2c47ac178d60e0d (HEAD -> main, origin/main)
+Author: Huney <huney.kong@gmail.com>
+Date:   Wed Mar 12 21:39:17 2025 +0900
+
+    Fix 'DictAsModel object has no attribute get_message_content' error by reimplementing DictAsModel class
