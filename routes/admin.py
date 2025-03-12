@@ -6,10 +6,10 @@ from werkzeug.utils import secure_filename
 import os
 from PIL import Image
 import json
-from sqlalchemy import desc
+from sqlalchemy import desc, text
 from datetime import datetime
 import pytz
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 
 admin = Blueprint('admin', __name__)
 
@@ -20,8 +20,24 @@ def load_user(id):
 @admin.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        user = User.query.filter_by(username=request.form['username']).first()
-        if user and user.check_password(request.form['password']):
+        username = request.form['username']
+        password = request.form['password']
+        
+        # 직접 SQL 쿼리를 사용하여 사용자 조회
+        result = db.session.execute(
+            text("SELECT id, password_hash, is_admin FROM user WHERE uq_user_username = :username"),
+            {"username": username}
+        )
+        user_data = result.fetchone()
+        
+        if user_data and check_password_hash(user_data[1], password):
+            # 사용자 객체 생성
+            user = User()
+            user.id = user_data[0]
+            user.username = username
+            user.password_hash = user_data[1]
+            user.is_admin = user_data[2]
+            
             login_user(user)
             flash('로그인되었습니다.')
             return redirect(url_for('admin.dashboard'))
