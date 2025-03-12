@@ -1,9 +1,10 @@
-from app import app, db
-from models import User
+from app import create_app
+from models import User, db
 from werkzeug.security import generate_password_hash
 import sys
 
 def create_admin(username, password):
+    app = create_app()  # 애플리케이션 인스턴스 생성
     with app.app_context():
         try:
             # 이미 존재하는 사용자인지 확인
