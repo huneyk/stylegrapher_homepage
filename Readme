@@ -7,3 +7,5 @@ Author: Huney <huney.kong@gmail.com>
 Date:   Wed Mar 12 21:39:17 2025 +0900
 
     Fix 'DictAsModel object has no attribute get_message_content' error by reimplementing DictAsModel class
+
+    

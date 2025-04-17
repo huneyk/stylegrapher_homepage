@@ -23,8 +23,7 @@
                             <input type="file" class="form-control" id="image" name="image" accept="image/*">
                             {% if carousel.image_path %}
                             <div class="mt-2">
-                                <img src="{{ url_for('static', filename='images/' + carousel.image_path) }}" 
-                                     alt="현재 이미지" style="max-height: 200px;">
+                                <img src="/admin/image/{{ carousel.image_path }}" class="img-fluid mb-2" alt="{{ carousel.title }}">
                                 <p class="text-muted">현재 이미지: {{ carousel.image_path }}</p>
                             </div>
                             {% endif %}

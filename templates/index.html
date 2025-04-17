@@ -20,7 +20,7 @@
                         <div class="carousel-inner">
                             {% for image in group.images %}
                             <div class="carousel-item {% if loop.first %}active{% endif %}">
-                                <img src="{{ url_for('static', filename='uploads/' + image.image_path) }}" 
+                                <img src="/admin/image/{{ image.image_path }}" 
                                      class="d-block w-100" 
                                      alt="{{ group.title }}">
                             </div>
@@ -294,7 +294,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div class="carousel-inner">
                                     {% for image in group.images %}
                                     <div class="carousel-item {% if loop.first %}active{% endif %}">
-                                        <img src="{{ url_for('static', filename='uploads/' + image.image_path) }}" 
+                                        <img src="/admin/image/{{ image.image_path }}" 
                                              class="d-block w-100" 
                                              alt="{{ group.title }}">
                                     </div>

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify, make_response
 from flask_login import login_required, login_user, logout_user
 from extensions import db, login_manager
 from models import Service, Gallery, User, ServiceOption, Booking, CarouselItem, GalleryGroup, Inquiry
@@ -10,8 +10,35 @@ from sqlalchemy import desc, text
 from datetime import datetime
 import pytz
 from werkzeug.security import generate_password_hash, check_password_hash
+import io
+import uuid
+from pymongo import MongoClient
+from dotenv import load_dotenv
+
+# .env 파일 로드
+load_dotenv()
 
 admin = Blueprint('admin', __name__)
+
+# MongoDB 연결 설정
+mongo_uri = os.environ.get('MONGO_URI')
+if not mongo_uri:
+    print("경고: MONGO_URI 환경 변수가 설정되지 않았습니다!")
+    
+try:
+    print(f"MongoDB에 연결 시도: {mongo_uri}")
+    mongo_client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
+    # 연결 테스트
+    mongo_client.server_info()
+    print("MongoDB 연결 성공!")
+    mongo_db = mongo_client['STG-DB']  # .env의 URI에 맞는 데이터베이스 이름으로 변경
+    images_collection = mongo_db['gallery']  # 이미지를 저장할 컬렉션 이름
+    print(f"MongoDB 데이터베이스 '{mongo_db.name}' 및 컬렉션 '{images_collection.name}' 사용 준비 완료")
+except Exception as e:
+    print(f"MongoDB 연결 오류: {str(e)}")
+    mongo_client = None
+    mongo_db = None
+    images_collection = None
 
 @login_manager.user_loader
 def load_user(id):
@@ -322,6 +349,64 @@ def resize_image(image_path, size=(1600, 1200)):
         # 저장
         resized_img.save(image_path, quality=95, optimize=True)
 
+# 이미지 리사이징 및 MongoDB 저장 헬퍼 함수
+def resize_image_memory(img, width=1080):
+    """
+    메모리 상의 이미지를 리사이즈하는 함수
+    width: 타겟 너비 (픽셀)
+    """
+    # 원본 크기 저장
+    original_width, original_height = img.size
+    
+    # 너비를 지정된 픽셀로 고정하고 비율 유지
+    ratio = width / original_width
+    target_height = int(original_height * ratio)
+    
+    # 이미지 리사이즈
+    resized_img = img.resize((width, target_height), Image.Resampling.LANCZOS)
+    
+    return resized_img
+
+def save_image_to_mongodb(file, group_id=None, order=0):
+    """
+    파일을 MongoDB에 저장하는 함수
+    file: 업로드된 파일 객체
+    group_id: 갤러리 그룹 ID (선택적)
+    order: 그룹 내 순서 (선택적)
+    """
+    filename = secure_filename(file.filename)
+    
+    # 이미지 데이터 읽기
+    img_data = file.read()
+    
+    # 이미지 리사이즈
+    img = Image.open(io.BytesIO(img_data))
+    resized_img = resize_image_memory(img, width=1080)
+    
+    # 이미지를 바이트로 변환
+    buffer = io.BytesIO()
+    resized_img.save(buffer, format=img.format or 'JPEG', quality=95, optimize=True)
+    img_binary = buffer.getvalue()
+    
+    # MongoDB에 이미지 저장
+    image_id = str(uuid.uuid4())  # 고유 ID 생성
+    image_doc = {
+        '_id': image_id,
+        'filename': filename,
+        'content_type': file.content_type,
+        'binary_data': img_binary,
+        'created_at': datetime.now()
+    }
+    
+    # 갤러리 그룹 ID가 있는 경우
+    if group_id is not None:
+        image_doc['group_id'] = group_id
+        image_doc['order'] = order
+    
+    images_collection.insert_one(image_doc)
+    return image_id
+
+# 갤러리 이미지 업로드 함수 수정
 @admin.route('/gallery/upload', methods=['GET', 'POST'])
 @login_required
 def upload_image():
@@ -335,35 +420,21 @@ def upload_image():
             flash('최대 10개의 이미지만 업로드할 수 있습니다.')
             return redirect(request.url)
         
-        # 업로드 폴더가 없으면 생성
-        upload_folder = current_app.config['UPLOAD_FOLDER']
-        if not os.path.exists(upload_folder):
-            try:
-                os.makedirs(upload_folder)
-                print(f"Created upload directory: {upload_folder}")
-            except Exception as e:
-                print(f"Error creating upload directory: {str(e)}")
-                flash('업로드 폴더를 생성할 수 없습니다.', 'error')
-                return redirect(request.url)
-        
         try:
             # 갤러리 그룹 생성
             gallery_group = GalleryGroup(title=request.form['title'])
             db.session.add(gallery_group)
+            db.session.flush()  # ID 생성을 위해 flush
             
-            # 이미지 저장
+            # MongoDB에 이미지 저장
             for i, file in enumerate(files):
                 if file and allowed_file(file.filename):
-                    filename = secure_filename(file.filename)
-                    filepath = os.path.join(upload_folder, filename)
-                    file.save(filepath)
+                    # MongoDB에 이미지 저장 및 ID 반환
+                    image_id = save_image_to_mongodb(file, gallery_group.id, i)
                     
-                    # 이미지 리사이즈
-                    resize_image(filepath)
-                    
-                    # 갤러리 이미지 생성
+                    # 갤러리 이미지 레코드 생성 (경로 대신 MongoDB ID 저장)
                     gallery = Gallery(
-                        image_path=filename,
+                        image_path=image_id,  # MongoDB ID를 저장
                         order=i,
                         group=gallery_group
                     )
@@ -385,11 +456,9 @@ def upload_image():
 def delete_gallery_group(group_id):
     group = GalleryGroup.query.get_or_404(group_id)
     
-    # 이미지 파일 삭제
+    # MongoDB에서 이미지 삭제
     for image in group.images:
-        image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image.image_path)
-        if os.path.exists(image_path):
-            os.remove(image_path)
+        images_collection.delete_one({'_id': image.image_path})
     
     db.session.delete(group)
     db.session.commit()
@@ -669,13 +738,13 @@ def add_carousel():
     if request.method == 'POST':
         file = request.files['image']
         if file:
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+            # MongoDB에 이미지 저장 및 ID 반환
+            image_id = save_image_to_mongodb(file)
             
             carousel_item = CarouselItem(
                 title=request.form['title'],
                 subtitle=request.form['subtitle'],
-                image_path=filename,
+                image_path=image_id,  # MongoDB ID 저장
                 order=CarouselItem.query.count()
             )
             db.session.add(carousel_item)
@@ -711,14 +780,11 @@ def edit_carousel(id):
             if file and file.filename:
                 # 기존 이미지 삭제
                 if carousel_item.image_path:
-                    old_image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], carousel_item.image_path)
-                    if os.path.exists(old_image_path):
-                        os.remove(old_image_path)
+                    images_collection.delete_one({'_id': carousel_item.image_path})
                 
-                # 새 이미지 저장
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
-                carousel_item.image_path = filename
+                # MongoDB에 이미지 저장 및 ID 반환
+                image_id = save_image_to_mongodb(file)
+                carousel_item.image_path = image_id
         
         db.session.commit()
         flash('캐러셀 항목이 수정되었습니다.')
@@ -731,11 +797,9 @@ def edit_carousel(id):
 def delete_carousel(id):
     carousel_item = CarouselItem.query.get_or_404(id)
     
-    # 이미지 파일 삭제
+    # MongoDB에서 이미지 삭제
     if carousel_item.image_path:
-        image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], carousel_item.image_path)
-        if os.path.exists(image_path):
-            os.remove(image_path)
+        images_collection.delete_one({'_id': carousel_item.image_path})
     
     db.session.delete(carousel_item)
     db.session.commit()
@@ -1006,3 +1070,71 @@ def create_admin_account(username, email, password):
     except Exception as e:
         print(f"Error creating admin account: {str(e)}")
         return f"Error creating admin account: {str(e)}", 500
+
+@admin.route('/image/<image_id>')
+def get_image(image_id):
+    try:
+        print(f"이미지 요청: {image_id}")
+        
+        if images_collection is None:
+            print("MongoDB 연결이 설정되지 않았습니다.")
+            # MongoDB 연결 없이 로컬 파일 시스템에서만 검색
+            file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_id)
+            print(f"로컬 파일 시스템에서 이미지 검색: {file_path}")
+            
+            if os.path.exists(file_path):
+                print(f"로컬 파일 시스템에서 이미지 발견: {file_path}")
+                content_type = 'image/jpeg'  # 기본값
+                if image_id.lower().endswith('.png'):
+                    content_type = 'image/png'
+                elif image_id.lower().endswith('.gif'):
+                    content_type = 'image/gif'
+                    
+                with open(file_path, 'rb') as f:
+                    image_data = f.read()
+                
+                response = make_response(image_data)
+                response.headers.set('Content-Type', content_type)
+                return response
+            
+            print(f"이미지를 찾을 수 없음: {image_id}")
+            return "Image not found", 404
+        
+        # MongoDB에서 이미지 검색
+        print(f"MongoDB에서 이미지 검색: {image_id}")
+        image_doc = images_collection.find_one({'_id': image_id})
+        
+        if image_doc:
+            print(f"MongoDB에서 이미지 발견: {image_id}")
+            # MongoDB에서 찾은 경우 바이너리 데이터 반환
+            response = make_response(image_doc['binary_data'])
+            response.headers.set('Content-Type', image_doc['content_type'])
+            return response
+        else:
+            print(f"MongoDB에서 이미지를 찾을 수 없음: {image_id}")
+            # MongoDB에서 찾을 수 없는 경우, 로컬 파일 시스템에서 시도
+            file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_id)
+            print(f"로컬 파일 시스템에서 이미지 검색: {file_path}")
+            
+            if os.path.exists(file_path):
+                print(f"로컬 파일 시스템에서 이미지 발견: {file_path}")
+                content_type = 'image/jpeg'  # 기본값
+                if image_id.lower().endswith('.png'):
+                    content_type = 'image/png'
+                elif image_id.lower().endswith('.gif'):
+                    content_type = 'image/gif'
+                    
+                with open(file_path, 'rb') as f:
+                    image_data = f.read()
+                
+                response = make_response(image_data)
+                response.headers.set('Content-Type', content_type)
+                return response
+            
+            print(f"이미지를 찾을 수 없음: {image_id}")
+            return "Image not found", 404
+    except Exception as e:
+        print(f"이미지 검색 중 오류 발생: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return "Error retrieving image", 500

@@ -15,7 +15,7 @@
                         {% for image in group.images %}
                         <div class="carousel-item {% if loop.first %}active{% endif %}">
                             <div class="gallery-image-wrapper">
-                                <img src="/static/uploads/{{ image.path }}" 
+                                <img src="/admin/image/{{ image.image_path }}" 
                                      class="d-block w-100" alt="{{ group.title }}">
                             </div>
                         </div>

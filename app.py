@@ -5,6 +5,12 @@ from routes.admin import admin
 from extensions import db, login_manager, migrate
 from models import User
 from config import Config
+from pymongo import MongoClient
+
+# MongoDB 연결 설정
+mongo_client = MongoClient('mongodb://localhost:27017/')
+mongo_db = mongo_client['stylegrapher_db']
+images_collection = mongo_db['gallery_images']
 
 def create_app():
     app = Flask(__name__)
