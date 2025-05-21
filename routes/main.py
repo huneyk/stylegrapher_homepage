@@ -17,7 +17,17 @@ mongo_uri = os.environ.get('MONGO_URI')
 if mongo_uri:
     try:
         print(f"main.py: MongoDB에 연결 시도: {mongo_uri}")
-        mongo_client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
+        # 향상된 연결 설정 - 타임아웃 증가 및 retryWrites 활성화
+        mongo_client = MongoClient(
+            mongo_uri, 
+            serverSelectionTimeoutMS=30000,  # 30초로 증가
+            connectTimeoutMS=20000,
+            socketTimeoutMS=20000,
+            retryWrites=True,
+            retryReads=True,
+            w='majority',  # 다수의 노드에 쓰기 확인
+            readPreference='primaryPreferred'  # 프라이머리 선호, 없으면 세컨더리로 전환
+        )
         # 연결 테스트
         mongo_client.server_info()
         print("main.py: MongoDB 연결 성공!")
@@ -144,41 +154,46 @@ def gallery(page=1):
                 }
                 
                 # MongoDB에서 이미지 확인
+                mongodb_working = True
                 if images_collection is not None:
-                    image_doc = images_collection.find_one({'_id': image_data['image_path']})
-                    if not image_doc:
-                        # MongoDB에 없는 이미지는 동적으로 MongoDB에 업로드 (선택적)
-                        try:
-                            file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_data['image_path'])
-                            if os.path.exists(file_path):
-                                # 이미지 타입 결정
-                                content_type = 'image/jpeg'  # 기본값
-                                if image_data['image_path'].lower().endswith('.png'):
-                                    content_type = 'image/png'
-                                elif image_data['image_path'].lower().endswith('.gif'):
-                                    content_type = 'image/gif'
-                                
-                                # 이미지 읽기 및 리사이징
-                                with Image.open(file_path) as img:
-                                    resized_img = resize_image_memory(img, width=1080)
-                                    buffer = io.BytesIO()
-                                    resized_img.save(buffer, format=img.format or 'JPEG', quality=95, optimize=True)
-                                    img_binary = buffer.getvalue()
-                                
-                                # MongoDB에 저장
-                                new_doc = {
-                                    '_id': image_data['image_path'],  # 기존 파일명을 ID로 사용
-                                    'filename': image_data['image_path'],
-                                    'content_type': content_type,
-                                    'binary_data': img_binary,
-                                    'group_id': group_data['id'],
-                                    'order': image_data['order'],
-                                    'created_at': datetime.now()
-                                }
-                                images_collection.insert_one(new_doc)
-                                print(f"이미지를 MongoDB에 자동 업로드: {image_data['image_path']}")
-                        except Exception as e:
-                            print(f"이미지 자동 업로드 실패: {str(e)}")
+                    try:
+                        image_doc = images_collection.find_one({'_id': image_data['image_path']})
+                        if not image_doc:
+                            # MongoDB에 없는 이미지는 동적으로 MongoDB에 업로드 시도
+                            try:
+                                file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_data['image_path'])
+                                if os.path.exists(file_path):
+                                    # 이미지 타입 결정
+                                    content_type = 'image/jpeg'  # 기본값
+                                    if image_data['image_path'].lower().endswith('.png'):
+                                        content_type = 'image/png'
+                                    elif image_data['image_path'].lower().endswith('.gif'):
+                                        content_type = 'image/gif'
+                                    
+                                    # 이미지 읽기 및 리사이징
+                                    with Image.open(file_path) as img:
+                                        resized_img = resize_image_memory(img, width=1080)
+                                        buffer = io.BytesIO()
+                                        resized_img.save(buffer, format=img.format or 'JPEG', quality=95, optimize=True)
+                                        img_binary = buffer.getvalue()
+                                    
+                                    # MongoDB에 저장
+                                    new_doc = {
+                                        '_id': image_data['image_path'],  # 기존 파일명을 ID로 사용
+                                        'filename': image_data['image_path'],
+                                        'content_type': content_type,
+                                        'binary_data': img_binary,
+                                        'group_id': group_data['id'],
+                                        'order': image_data['order'],
+                                        'created_at': datetime.now()
+                                    }
+                                    images_collection.insert_one(new_doc)
+                                    print(f"이미지를 MongoDB에 자동 업로드: {image_data['image_path']}")
+                            except Exception as upload_error:
+                                print(f"이미지 자동 업로드 실패: {str(upload_error)}")
+                    except Exception as mongo_error:
+                        print(f"MongoDB 조회 중 오류 발생: {str(mongo_error)}")
+                        mongodb_working = False
                 
                 group_data['images'].append(image_data)
             
