@@ -11,14 +11,18 @@
     <!-- Kokonor 폰트 추가 -->
     <style>
         .navbar-brand {
-            font-family: 'Kokonor', cursive;
-            font-size: 4rem;
-            color: rgba(139, 95, 191, 0.8) !important;
-            transition: color 0.3s ease;
+            padding: 0;
+            transition: transform 0.3s ease;
         }
         
         .navbar-brand:hover {
-            color: rgba(139, 95, 191, 1) !important;
+            transform: scale(1.05);
+        }
+        
+        .navbar-brand img {
+            height: 60px;
+            width: auto;
+            transition: all 0.3s ease;
         }
 
         .nav-link {
@@ -38,8 +42,8 @@
         }
 
         @media (max-width: 768px) {
-            .navbar-brand {
-                font-size: 1.5rem;
+            .navbar-brand img {
+                height: 40px;
             }
             .nav-link {
                 font-size: 1rem;
@@ -51,7 +55,9 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('main.index') }}">Stylegrapher</a>
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Stylegrapher" class="logo-img">
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>

@@ -27,7 +27,17 @@ if not mongo_uri:
     
 try:
     print(f"MongoDB에 연결 시도: {mongo_uri}")
-    mongo_client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
+    # 향상된 연결 설정 - 타임아웃 증가 및 retryWrites 활성화
+    mongo_client = MongoClient(
+        mongo_uri, 
+        serverSelectionTimeoutMS=30000,  # 30초로 증가
+        connectTimeoutMS=20000,
+        socketTimeoutMS=20000,
+        retryWrites=True,
+        retryReads=True,
+        w='majority',  # 다수의 노드에 쓰기 확인
+        readPreference='primaryPreferred'  # 프라이머리 선호, 없으면 세컨더리로 전환
+    )
     # 연결 테스트
     mongo_client.server_info()
     print("MongoDB 연결 성공!")
@@ -1076,63 +1086,64 @@ def get_image(image_id):
     try:
         print(f"이미지 요청: {image_id}")
         
+        # 로컬 파일 시스템에서 이미지 검색 함수
+        def get_from_local():
+            file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_id)
+            print(f"로컬 파일 시스템에서 이미지 검색: {file_path}")
+            
+            if os.path.exists(file_path):
+                print(f"로컬 파일 시스템에서 이미지 발견: {file_path}")
+                content_type = 'image/jpeg'  # 기본값
+                if image_id.lower().endswith('.png'):
+                    content_type = 'image/png'
+                elif image_id.lower().endswith('.gif'):
+                    content_type = 'image/gif'
+                    
+                with open(file_path, 'rb') as f:
+                    image_data = f.read()
+                
+                response = make_response(image_data)
+                response.headers.set('Content-Type', content_type)
+                return response
+            
+            print(f"이미지를 찾을 수 없음: {image_id}")
+            return None
+        
+        # MongoDB 연결이 없으면 로컬 저장소에서 검색
         if images_collection is None:
             print("MongoDB 연결이 설정되지 않았습니다.")
-            # MongoDB 연결 없이 로컬 파일 시스템에서만 검색
-            file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_id)
-            print(f"로컬 파일 시스템에서 이미지 검색: {file_path}")
-            
-            if os.path.exists(file_path):
-                print(f"로컬 파일 시스템에서 이미지 발견: {file_path}")
-                content_type = 'image/jpeg'  # 기본값
-                if image_id.lower().endswith('.png'):
-                    content_type = 'image/png'
-                elif image_id.lower().endswith('.gif'):
-                    content_type = 'image/gif'
-                    
-                with open(file_path, 'rb') as f:
-                    image_data = f.read()
-                
-                response = make_response(image_data)
-                response.headers.set('Content-Type', content_type)
-                return response
-            
-            print(f"이미지를 찾을 수 없음: {image_id}")
+            local_response = get_from_local()
+            if local_response:
+                return local_response
             return "Image not found", 404
         
-        # MongoDB에서 이미지 검색
-        print(f"MongoDB에서 이미지 검색: {image_id}")
-        image_doc = images_collection.find_one({'_id': image_id})
-        
-        if image_doc:
-            print(f"MongoDB에서 이미지 발견: {image_id}")
-            # MongoDB에서 찾은 경우 바이너리 데이터 반환
-            response = make_response(image_doc['binary_data'])
-            response.headers.set('Content-Type', image_doc['content_type'])
-            return response
-        else:
-            print(f"MongoDB에서 이미지를 찾을 수 없음: {image_id}")
-            # MongoDB에서 찾을 수 없는 경우, 로컬 파일 시스템에서 시도
-            file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_id)
-            print(f"로컬 파일 시스템에서 이미지 검색: {file_path}")
+        try:
+            # MongoDB에서 이미지 검색
+            print(f"MongoDB에서 이미지 검색: {image_id}")
+            image_doc = images_collection.find_one({'_id': image_id})
             
-            if os.path.exists(file_path):
-                print(f"로컬 파일 시스템에서 이미지 발견: {file_path}")
-                content_type = 'image/jpeg'  # 기본값
-                if image_id.lower().endswith('.png'):
-                    content_type = 'image/png'
-                elif image_id.lower().endswith('.gif'):
-                    content_type = 'image/gif'
-                    
-                with open(file_path, 'rb') as f:
-                    image_data = f.read()
-                
-                response = make_response(image_data)
-                response.headers.set('Content-Type', content_type)
+            if image_doc:
+                print(f"MongoDB에서 이미지 발견: {image_id}")
+                # MongoDB에서 찾은 경우 바이너리 데이터 반환
+                response = make_response(image_doc['binary_data'])
+                response.headers.set('Content-Type', image_doc['content_type'])
                 return response
+            else:
+                print(f"MongoDB에서 이미지를 찾을 수 없음: {image_id}")
+                # MongoDB에서 찾을 수 없는 경우, 로컬 파일 시스템에서 시도
+                local_response = get_from_local()
+                if local_response:
+                    return local_response
+                return "Image not found", 404
+        except Exception as mongo_error:
+            print(f"MongoDB에서 이미지 검색 중 오류 발생: {str(mongo_error)}")
+            # MongoDB 검색 중 오류 발생 시 로컬 파일 시스템에서 시도
+            local_response = get_from_local()
+            if local_response:
+                return local_response
+            # 로컬에서도 찾을 수 없으면 오류 반환
+            return "Error retrieving image", 500
             
-            print(f"이미지를 찾을 수 없음: {image_id}")
-            return "Image not found", 404
     except Exception as e:
         print(f"이미지 검색 중 오류 발생: {str(e)}")
         import traceback

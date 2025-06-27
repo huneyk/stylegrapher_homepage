@@ -6,11 +6,35 @@ from extensions import db, login_manager, migrate
 from models import User
 from config import Config
 from pymongo import MongoClient
+from dotenv import load_dotenv
+
+# .env 파일 로드
+load_dotenv()
 
 # MongoDB 연결 설정
-mongo_client = MongoClient('mongodb://localhost:27017/')
-mongo_db = mongo_client['stylegrapher_db']
-images_collection = mongo_db['gallery_images']
+mongo_uri = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/')
+try:
+    mongo_client = MongoClient(
+        mongo_uri, 
+        serverSelectionTimeoutMS=30000,  # 30초로 증가
+        connectTimeoutMS=20000,
+        socketTimeoutMS=20000,
+        retryWrites=True,
+        retryReads=True,
+        w='majority',  # 다수의 노드에 쓰기 확인
+        readPreference='primaryPreferred'  # 프라이머리 선호, 없으면 세컨더리로 전환
+    )
+    # 테스트 연결
+    mongo_client.server_info()
+    print("app.py: MongoDB 연결 성공!")
+    mongo_db = mongo_client['STG-DB'] if 'mongodb.net' in mongo_uri else mongo_client['stylegrapher_db']
+    images_collection = mongo_db['gallery']
+    print(f"app.py: MongoDB 데이터베이스 '{mongo_db.name}' 및 컬렉션 '{images_collection.name}' 사용 준비 완료")
+except Exception as e:
+    print(f"app.py: MongoDB 연결 오류: {str(e)}")
+    mongo_client = None
+    mongo_db = None
+    images_collection = None
 
 def create_app():
     app = Flask(__name__)
