@@ -3,11 +3,7 @@
 {% block title %}홈{% endblock %}
 
 {% block content %}
-<!-- Google Fonts 추가 -->
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
 
-<!-- Google Fonts 추가 - Noto Serif KR -->
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&display=swap" rel="stylesheet">
 
 <!-- Collage Section -->
 <div class="hero-section position-relative">
@@ -51,7 +47,7 @@
     overflow: visible;
     background-color: #fff;
     position: relative;
-    padding: 2rem 0;
+    padding: 2rem 0 0.25rem 0;
 }
 
 .collage-container {
@@ -149,7 +145,7 @@
 }
 
 .gallery-title {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Nanum Gothic', sans-serif;
     font-weight: 500;
     font-size: 1.5rem;
     letter-spacing: 0.5px;
@@ -176,7 +172,7 @@
 /* 반응형 디자인을 위한 미디어 쿼리 */
 @media (max-width: 768px) {
     .hero-section {
-        padding: 1rem 0;
+        padding: 1rem 0 0.15rem 0;
     }
     
     .collage-item {
@@ -201,11 +197,11 @@
 
 .fade-text-section {
     background-color: #fff;
-    padding: 3rem 0;
+    padding: 2rem 0;
     text-align: center;
     overflow: hidden;
-    margin-top: -3rem;
-    min-height: 200px;
+    margin-top: -1rem;
+    min-height: 160px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -216,8 +212,8 @@
 }
 
 .fade-title {
-    font-family: 'Playfair Display', serif;
-    font-weight: 500;
+    font-family: 'Nanum Gothic', sans-serif;
+    font-weight: 700;
     font-size: 2.2rem;
     color: rgba(139, 95, 191, 0.9);
     margin: 0.5rem 0;
@@ -241,9 +237,9 @@
 
 @media (max-width: 768px) {
     .fade-text-section {
-        padding: 2rem 0;
-        margin-top: -2rem;
-        min-height: 150px;
+        padding: 1.5rem 0;
+        margin-top: -0.5rem;
+        min-height: 120px;
     }
     
     .fade-title {
@@ -380,10 +376,10 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .gallery-preview-title {
-    font-family: 'Noto Serif KR', serif;
-    font-weight: 500;
-    font-size: 1rem;
-    color: rgba(139, 95, 191, 0.8);
+    font-family: 'Nanum Gothic', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #6c757d;
     margin: 0;
     text-align: center;
     letter-spacing: 0.02em;
@@ -424,8 +420,8 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .gallery-main-title {
-    font-family: 'Kokonor', cursive;
-    font-size: 2rem;
+    font-family: 'Nanum Gothic', sans-serif;
+    font-size: 2.5rem;
     color: rgba(139, 95, 191, 0.8);
     margin-bottom: 2rem;
     transition: color 0.3s ease;
@@ -438,7 +434,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 @media (max-width: 768px) {
     .gallery-main-title {
-        font-size: 2.2rem;
+        font-size: 1.8rem;
     }
 }
 </style>
@@ -453,10 +449,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <style>
 .contact-text {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Nanum Gothic', sans-serif;
     color: rgba(139, 95, 191, 0.8);
     font-size: 1.1rem;
-    font-weight: 500;
+    font-weight: 700;
 }
 
 @media (max-width: 768px) {

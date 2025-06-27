@@ -6,7 +6,7 @@
 <div class="container py-5">
     <div class="row">
         <div class="col-lg-8 mx-auto">
-            <h1 class="text-center mb-4">{{ service.name }}</h1>
+            <h1 class="text-center mb-4 gallery-main-title">{{ service.name }}</h1>
             
             <!-- 서비스 설명 -->
             <div class="card mb-4">
@@ -83,6 +83,45 @@
 
 .package-name-col {
     word-break: keep-all;
+}
+
+/* 상세 내용 카드의 리스트 아이템 스타일 */
+.list-unstyled li {
+    font-size: 1rem !important;
+    color: #6c757d !important;
+    line-height: 1.4;
+}
+
+/* 패키지 및 가격 테이블 본문 스타일 */
+.table tbody td {
+    font-size: 1rem !important;
+    color: #6c757d !important;
+    line-height: 1.4;
+}
+
+/* 테이블 헤더는 기본 색상 유지 */
+.table thead th {
+    color: inherit;
+}
+
+/* 메인 제목 스타일 */
+.gallery-main-title {
+    font-family: 'Nanum Gothic', sans-serif;
+    font-size: 2.5rem;
+    color: rgba(139, 95, 191, 0.8);
+    margin-bottom: 2rem;
+    transition: color 0.3s ease;
+    font-weight: normal;
+}
+
+.gallery-main-title:hover {
+    color: rgba(139, 95, 191, 1);
+}
+
+@media (max-width: 768px) {
+    .gallery-main-title {
+        font-size: 1.8rem;
+    }
 }
 
 @media (max-width: 768px) {
