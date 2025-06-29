@@ -1,4 +1,5 @@
 import os
+import json
 from flask import Flask
 from routes.main import main
 from routes.admin import admin
@@ -49,6 +50,55 @@ def create_app():
     migrate.init_app(app, db)
     
     login_manager.login_view = 'admin.login'
+    
+    # Jinja2 필터 추가
+    @app.template_filter('from_json')
+    def from_json_filter(value):
+        """JSON 문자열을 Python 객체로 변환하는 필터"""
+        if not value:
+            return []
+        try:
+            return json.loads(value)
+        except (json.JSONDecodeError, TypeError):
+            return []
+    
+    # 전역 컨텍스트 추가 - 사이드 메뉴용 카테고리별 서비스
+    @app.context_processor
+    def inject_menu_data():
+        from models import Service
+        
+        categories_data = {
+            'ai_analysis': {
+                'title': 'STG AI 분석',
+                'icon': 'bi-cpu',
+                'services': []
+            },
+            'consulting': {
+                'title': '스타일링 컨설팅',
+                'icon': 'bi-person-check',
+                'services': []
+            },
+            'oneday': {
+                'title': '원데이 스타일링',
+                'icon': 'bi-star',
+                'services': []
+            },
+            'photo': {
+                'title': '화보 & 프로필',
+                'icon': 'bi-camera',
+                'services': []
+            }
+        }
+        
+        try:
+            services = Service.query.all()
+            for service in services:
+                if service.category and service.category in categories_data:
+                    categories_data[service.category]['services'].append(service)
+        except Exception as e:
+            print(f"Error loading menu data: {str(e)}")
+        
+        return dict(menu_categories=categories_data)
     
     # Import blueprints from routes package
     app.register_blueprint(main)

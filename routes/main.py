@@ -91,8 +91,45 @@ def index():
 
 @main.route('/services')
 def services():
+    # 카테고리별로 서비스와 옵션을 그룹화
+    categories_data = {
+        'ai_analysis': {
+            'title': 'STG AI 분석',
+            'description': '인공지능을 활용한 정밀 스타일 분석',
+            'icon': 'bi-cpu',
+            'color': '#6f42c1',
+            'services': []
+        },
+        'consulting': {
+            'title': '스타일링 컨설팅',
+            'description': '전문가와 함께하는 1:1 맞춤 컨설팅',
+            'icon': 'bi-person-check',
+            'color': '#0d6efd',
+            'services': []
+        },
+        'oneday': {
+            'title': '원데이 스타일링',
+            'description': '하루만에 완성하는 완벽한 변신',
+            'icon': 'bi-star',
+            'color': '#20c997',
+            'services': []
+        },
+        'photo': {
+            'title': '화보 & 프로필',
+            'description': '특별한 순간을 기록하는 전문 촬영',
+            'icon': 'bi-camera',
+            'color': '#fd7e14',
+            'services': []
+        }
+    }
+    
+    # 모든 서비스와 옵션 조회
     services = Service.query.all()
-    return render_template('services.html', services=services)
+    for service in services:
+        if service.category and service.category in categories_data:
+            categories_data[service.category]['services'].append(service)
+    
+    return render_template('services_new.html', categories_data=categories_data)
 
 @main.route('/service/<int:id>')
 def service_detail(id):
@@ -290,4 +327,38 @@ def ask():
         return redirect(url_for('main.index'))
     
     services = Service.query.all()
-    return render_template('ask.html', services=services) 
+    return render_template('ask.html', services=services)
+
+# 서비스 카테고리별 라우트 - 각 카테고리의 대표 서비스 상세 페이지로 리다이렉트
+@main.route('/ai-analysis')
+def ai_analysis():
+    # STG AI 분석 - AI 얼굴 분석 (Option ID: 1)로 리다이렉트
+    return redirect(url_for('main.service_option_detail', id=1))
+
+@main.route('/styling-consulting')
+def styling_consulting():
+    # 스타일링 컨설팅 - 퍼스널 컬러 진단 (Option ID: 3)으로 리다이렉트
+    return redirect(url_for('main.service_option_detail', id=3))
+
+@main.route('/oneday-styling')
+def oneday_styling():
+    # 원데이 스타일링 - 메이크업 (Option ID: 7)으로 리다이렉트
+    return redirect(url_for('main.service_option_detail', id=7))
+
+@main.route('/photo-profile')
+def photo_profile():
+    # 화보 & 프로필 - 개인화보 (Option ID: 10)으로 리다이렉트
+    return redirect(url_for('main.service_option_detail', id=10))
+
+# 새로운 페이지 라우트
+@main.route('/customer-story')
+def customer_story():
+    return render_template('customer_story.html')
+
+@main.route('/commercial-portfolio')
+def commercial_portfolio():
+    return render_template('commercial_portfolio.html')
+
+@main.route('/about')
+def about():
+    return render_template('about.html') 

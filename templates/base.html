@@ -75,13 +75,18 @@
         .hamburger-menu, .floating-hamburger {
             background: none;
             border: none;
-            padding: 10px;
+            padding: 15px;
             cursor: pointer;
             display: flex;
             flex-direction: column;
             gap: 4px;
-            z-index: 1000;
+            z-index: 10000;
             transition: opacity 0.3s ease;
+            position: relative;
+            min-width: 50px;
+            min-height: 50px;
+            align-items: center;
+            justify-content: center;
         }
         
         .hamburger-menu.hidden {
@@ -95,10 +100,47 @@
             background-color: rgba(139, 95, 191, 0.8);
             transition: all 0.3s ease;
             border-radius: 2px;
+            display: block;
         }
 
         .hamburger-menu:hover span, .floating-hamburger:hover span {
             background-color: rgba(139, 95, 191, 1);
+        }
+        
+        .hamburger-menu:active {
+            transform: scale(0.95);
+        }
+        
+        /* 햄버거 메뉴 active 상태 애니메이션 */
+        .hamburger-menu.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+        
+        .hamburger-menu.active span:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .hamburger-menu.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
+
+        /* 메뉴 오버레이 스타일 */
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
         }
 
         /* 사이드 메뉴 스타일 */
@@ -111,7 +153,7 @@
             background: rgba(139, 95, 191, 0.95);
             backdrop-filter: blur(10px);
             transition: left 0.3s ease;
-            z-index: 2000;
+            z-index: 9999;
         }
 
         .side-menu.active {
@@ -119,10 +161,11 @@
         }
 
         .side-menu-content {
-            padding: 2rem;
+            padding: 1rem 0;
             height: 100%;
             display: flex;
             flex-direction: column;
+            overflow-y: auto;
         }
 
         .close-menu {
@@ -130,40 +173,112 @@
             border: none;
             color: white;
             font-size: 2rem;
-            align-self: flex-end;
             cursor: pointer;
-            padding: 0;
-            margin-bottom: 2rem;
+            padding: 1rem 2rem;
+            align-self: flex-end;
+            margin-bottom: 1rem;
         }
 
         .side-menu-nav {
             list-style: none;
+            padding: 0 1rem;
+            margin: 0;
+            flex-grow: 1;
+        }
+
+        .main-menu-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .main-menu-link {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            display: block;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .main-menu-link:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+
+
+        /* 카테고리 메뉴 스타일 */
+        .category-menu {
+            margin-bottom: 0.5rem;
+        }
+
+        .category-header {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            cursor: pointer;
+            background: none;
+            border: none;
+            width: 100%;
+        }
+
+        .category-header:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+
+
+        .category-toggle {
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+        }
+
+        .category-toggle.rotated {
+            transform: rotate(180deg);
+        }
+
+        /* 서브메뉴 스타일 */
+        .sub-menu {
+            list-style: none;
             padding: 0;
+            margin: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 0 0 8px 8px;
+        }
+
+        .sub-menu.open {
+            max-height: 500px;
+        }
+
+        .sub-menu-item {
             margin: 0;
         }
 
-        .side-menu-nav li {
-            margin-bottom: 1.5rem;
-        }
-
-        .side-menu-nav a {
-            color: white;
+        .sub-menu-link {
+            color: rgba(255, 255, 255, 0.85);
             text-decoration: none;
-            font-size: 1.2rem;
+            font-size: 0.95rem;
             display: block;
-            padding: 1rem;
-            border-radius: 8px;
+            padding: 0.75rem 1.5rem 0.75rem 3rem;
             transition: all 0.3s ease;
         }
 
-        .side-menu-nav a:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateX(10px);
-        }
-
-        .side-menu-nav i {
-            margin-right: 0.8rem;
-            width: 20px;
+        .sub-menu-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
         }
 
         /* 플로팅 메뉴 스타일 */
@@ -329,43 +444,81 @@
                 <span></span>
                 <span></span>
                 <span></span>
-                <span></span>
             </button>
         </div>
     </nav>
 
+    <!-- 메뉴 배경 오버레이 -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+    
     <!-- 사이드 메뉴 -->
     <div class="side-menu" id="sideMenu">
         <div class="side-menu-content">
             <button class="close-menu" id="closeMenu">&times;</button>
             <ul class="side-menu-nav">
-                <li>
-                    <a href="{{ url_for('main.index') }}">
-                        <i class="bi bi-house-fill"></i> 홈
+                <!-- 일반 메뉴 항목들 -->
+                <li class="main-menu-item">
+                    <a href="{{ url_for('main.index') }}" class="main-menu-link">
+                        홈
                     </a>
                 </li>
-                <li>
-                    <a href="{{ url_for('main.services') }}">
-                        <i class="bi bi-grid"></i> 서비스
+                
+                <!-- 서비스 카테고리별 메뉴 -->
+                {% for category_key, category in menu_categories.items() %}
+                    {% if category.services %}
+                    <li class="category-menu">
+                        <button class="category-header" onclick="toggleCategory('{{ category_key }}')">
+                            <div>
+                                <span>{{ category.title }}</span>
+                            </div>
+                            <i class="bi bi-chevron-down category-toggle" id="toggle-{{ category_key }}"></i>
+                        </button>
+                        <ul class="sub-menu" id="submenu-{{ category_key }}">
+                            {% for service in category.services %}
+                                {% for option in service.options %}
+                                <li class="sub-menu-item">
+                                    <a href="{{ url_for('main.service_option_detail', id=option.id) }}" class="sub-menu-link">
+                                        {{ option.name }}
+                                    </a>
+                                </li>
+                                {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                <!-- 기타 메뉴 항목들 -->
+                <li class="main-menu-item">
+                    <a href="{{ url_for('main.services') }}" class="main-menu-link">
+                        전체 서비스
                     </a>
                 </li>
-                <li>
-                    <a href="{{ url_for('main.gallery') }}">
-                        <i class="bi bi-images"></i> 갤러리
+                <li class="main-menu-item">
+                    <a href="{{ url_for('main.gallery') }}" class="main-menu-link">
+                        갤러리
                     </a>
                 </li>
-                <li>
-                    <a href="{{ url_for('main.contact') }}">
-                        <i class="bi bi-calendar-check"></i> 예약 신청
+                <li class="main-menu-item">
+                    <a href="https://pf.kakao.com/_xgDcFK" class="main-menu-link" target="_blank">
+                        카카오톡 채널로 예약신청
                     </a>
                 </li>
-                {% if current_user.is_authenticated %}
-                <li>
-                    <a href="{{ url_for('admin.dashboard') }}">
-                        <i class="bi bi-gear-fill"></i> 관리자
+                <li class="main-menu-item">
+                    <a href="{{ url_for('main.customer_story') }}" class="main-menu-link">
+                        고객 스토리
                     </a>
                 </li>
-                {% endif %}
+                <li class="main-menu-item">
+                    <a href="{{ url_for('main.commercial_portfolio') }}" class="main-menu-link">
+                        커머셜 포트폴리오
+                    </a>
+                </li>
+                <li class="main-menu-item">
+                    <a href="{{ url_for('main.about') }}" class="main-menu-link">
+                        스타일그래퍼 소개
+                    </a>
+                </li>
             </ul>
         </div>
     </div>
@@ -381,7 +534,7 @@
             </a>
             <a href="{{ url_for('main.services') }}" class="floating-item">
                 <div class="floating-icon">
-                    <i class="bi bi-grid"></i>
+                    <i class="bi bi-gear-wide-connected"></i>
                 </div>
                 <span class="floating-text">서비스</span>
             </a>
@@ -395,16 +548,14 @@
                 <div class="floating-icon">
                     <i class="bi bi-calendar-check"></i>
                 </div>
-                <span class="floating-text">예약신청</span>
+                <span class="floating-text">예약 신청</span>
             </a>
-            {% if current_user.is_authenticated %}
-            <a href="{{ url_for('admin.dashboard') }}" class="floating-item">
+            <a href="{{ url_for('main.customer_story') }}" class="floating-item">
                 <div class="floating-icon">
-                    <i class="bi bi-gear-fill"></i>
+                    <i class="bi bi-chat-heart"></i>
                 </div>
-                <span class="floating-text">관리자</span>
+                <span class="floating-text">고객 스토리</span>
             </a>
-            {% endif %}
         </div>
     </div>
 
@@ -413,57 +564,129 @@
     </main>
 
     <script>
-        // 메뉴 요소들
-        const hamburgerMenu = document.getElementById('hamburgerMenu');
-        const sideMenu = document.getElementById('sideMenu');
-        const closeMenu = document.getElementById('closeMenu');
-        const floatingMenu = document.getElementById('floatingMenu');
+        document.addEventListener('DOMContentLoaded', function() {
+            // 메뉴 요소들
+            const hamburgerMenu = document.getElementById('hamburgerMenu');
+            const sideMenu = document.getElementById('sideMenu');
+            const closeMenu = document.getElementById('closeMenu');
+            const floatingMenu = document.getElementById('floatingMenu');
+            const menuOverlay = document.getElementById('menuOverlay');
 
-        // 사이드 메뉴 열기
-        function openSideMenu() {
-            sideMenu.classList.add('active');
-        }
+            // 요소들이 제대로 찾아졌는지 확인
+            console.log('hamburgerMenu:', hamburgerMenu);
+            console.log('sideMenu:', sideMenu);
+            console.log('closeMenu:', closeMenu);
+            console.log('floatingMenu:', floatingMenu);
+            console.log('menuOverlay:', menuOverlay);
 
-        // 사이드 메뉴 닫기
-        function closeSideMenu() {
-            sideMenu.classList.remove('active');
-        }
+            if (!hamburgerMenu || !sideMenu || !closeMenu) {
+                console.error('메뉴 요소를 찾을 수 없습니다.');
+                return;
+            }
 
-        // 이벤트 리스너들
-        hamburgerMenu.addEventListener('click', openSideMenu);
-        closeMenu.addEventListener('click', closeSideMenu);
+            // 사이드 메뉴 열기
+            function openSideMenu() {
+                console.log('햄버거 메뉴 클릭됨');
+                sideMenu.classList.add('active');
+                hamburgerMenu.classList.add('active');
+                if (menuOverlay) menuOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden'; // 스크롤 방지
+            }
 
-        // 사이드 메뉴 외부 클릭 시 닫기
-        document.addEventListener('click', function(event) {
-            if (sideMenu.classList.contains('active') && 
-                !sideMenu.contains(event.target) && 
-                !hamburgerMenu.contains(event.target)) {
+            // 사이드 메뉴 닫기
+            function closeSideMenu() {
+                console.log('사이드 메뉴 닫기');
+                sideMenu.classList.remove('active');
+                hamburgerMenu.classList.remove('active');
+                if (menuOverlay) menuOverlay.classList.remove('active');
+                document.body.style.overflow = ''; // 스크롤 복원
+            }
+
+            // 이벤트 리스너들
+            hamburgerMenu.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                openSideMenu();
+            });
+            
+            closeMenu.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
                 closeSideMenu();
-            }
-        });
-
-        // 스크롤 이벤트 - 플로팅 메뉴 표시/숨김, 햄버거 메뉴 숨김/표시
-        let lastScrollTop = 0;
-        window.addEventListener('scroll', function() {
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            });
             
-            // 스크롤이 200px 이상일 때 플로팅 메뉴 표시, 햄버거 메뉴 숨김
-            if (scrollTop > 200) {
-                floatingMenu.classList.add('visible');
-                hamburgerMenu.classList.add('hidden');
-            } else {
-                floatingMenu.classList.remove('visible');
-                hamburgerMenu.classList.remove('hidden');
+            // 오버레이 클릭 시 메뉴 닫기
+            if (menuOverlay) {
+                menuOverlay.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    closeSideMenu();
+                });
             }
             
-            lastScrollTop = scrollTop;
+            // ESC 키로 메뉴 닫기
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && sideMenu.classList.contains('active')) {
+                    closeSideMenu();
+                }
+            });
+
+            // 사이드 메뉴 외부 클릭 시 닫기
+            document.addEventListener('click', function(event) {
+                if (sideMenu.classList.contains('active') && 
+                    !sideMenu.contains(event.target) && 
+                    !hamburgerMenu.contains(event.target)) {
+                    closeSideMenu();
+                }
+            });
+
+            // 스크롤 이벤트 - 플로팅 메뉴 표시/숨김, 햄버거 메뉴 숨김/표시
+            let lastScrollTop = 0;
+            window.addEventListener('scroll', function() {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                
+                // 스크롤이 200px 이상일 때 플로팅 메뉴 표시, 햄버거 메뉴 숨김
+                if (scrollTop > 200) {
+                    if (floatingMenu) floatingMenu.classList.add('visible');
+                    if (hamburgerMenu) hamburgerMenu.classList.add('hidden');
+                } else {
+                    if (floatingMenu) floatingMenu.classList.remove('visible');
+                    if (hamburgerMenu) hamburgerMenu.classList.remove('hidden');
+                }
+                
+                lastScrollTop = scrollTop;
+            });
+
+            // 사이드 메뉴 링크 클릭 시 메뉴 닫기
+            const sideMenuLinks = document.querySelectorAll('.side-menu-nav a');
+            sideMenuLinks.forEach(link => {
+                link.addEventListener('click', closeSideMenu);
+            });
         });
 
-        // 사이드 메뉴 링크 클릭 시 메뉴 닫기
-        const sideMenuLinks = document.querySelectorAll('.side-menu-nav a');
-        sideMenuLinks.forEach(link => {
-            link.addEventListener('click', closeSideMenu);
-        });
+        // 카테고리 토글 함수
+        function toggleCategory(categoryKey) {
+            const submenu = document.getElementById('submenu-' + categoryKey);
+            const toggle = document.getElementById('toggle-' + categoryKey);
+            
+            if (submenu && toggle) {
+                if (submenu.classList.contains('open')) {
+                    submenu.classList.remove('open');
+                    toggle.classList.remove('rotated');
+                } else {
+                    // 다른 열린 서브메뉴들 닫기
+                    document.querySelectorAll('.sub-menu.open').forEach(menu => {
+                        menu.classList.remove('open');
+                    });
+                    document.querySelectorAll('.category-toggle.rotated').forEach(tog => {
+                        tog.classList.remove('rotated');
+                    });
+                    
+                    // 현재 서브메뉴 열기
+                    submenu.classList.add('open');
+                                         toggle.classList.add('rotated');
+                 }
+             }
+         }
     </script>
 
     <footer class="footer mt-auto py-4">

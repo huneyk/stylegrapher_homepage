@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+
+{% block title %}서비스{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card main-card">
+        <div class="card-body p-5">
+            <h1 class="text-center mb-5 services-main-title">StyleGrapher Services</h1>
+            <p class="text-center mb-5 services-subtitle">스타일그래퍼만의 전문적이고 다양한 서비스를 만나보세요</p>
+            
+            {% for category_key, category in categories_data.items() %}
+                {% if category.services %}
+                <div class="service-category mb-5">
+                    <div class="category-header text-center mb-4">
+                        <div class="category-icon-wrapper" style="color: {{ category.color }};">
+                            <i class="{{ category.icon }} category-icon"></i>
+                        </div>
+                        <h2 class="category-title" style="color: {{ category.color }};">{{ category.title }}</h2>
+                        <p class="category-description">{{ category.description }}</p>
+                    </div>
+                    
+                    <div class="services-grid">
+                        {% for service in category.services %}
+                            {% for option in service.options %}
+                            <div class="service-card">
+                                <div class="service-card-header">
+                                    <h4 class="service-name">{{ option.name }}</h4>
+                                </div>
+                                <div class="service-card-body">
+                                    <p class="service-description">{{ option.description }}</p>
+                                    
+                                    <!-- 패키지 미리보기 -->
+                                    {% if option.packages %}
+                                        {% set packages = option.packages|from_json %}
+                                        {% if packages %}
+                                        <div class="packages-preview">
+                                            <h6 class="packages-title">제공 패키지</h6>
+                                            <div class="packages-list">
+                                                {% for package in packages[:2] %}
+                                                <div class="package-item">
+                                                    <span class="package-name">{{ package.name }}</span>
+                                                    <span class="package-price">{{ "{:,}".format(package.price|int) }}원</span>
+                                                </div>
+                                                {% endfor %}
+                                                {% if packages|length > 2 %}
+                                                <div class="more-packages">그 외 {{ packages|length - 2 }}개 패키지</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                                <div class="service-card-footer">
+                                    <a href="{{ url_for('main.service_option_detail', id=option.id) }}" 
+                                       class="btn btn-primary service-detail-btn">상세 보기</a>
+                                    <a href="{{ url_for('main.ask') }}" 
+                                       class="btn btn-outline-primary inquiry-btn">문의하기</a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+/* 메인 카드 스타일 */
+.main-card {
+    border: 1.5px solid rgba(139, 95, 191, 0.2) !important;
+    border-radius: 20px;
+    box-shadow: 0 6px 30px rgba(139, 95, 191, 0.1);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 249, 250, 0.95));
+}
+
+/* 제목 스타일 */
+.services-main-title {
+    font-family: 'Nanum Gothic', sans-serif;
+    font-size: 3rem;
+    background: linear-gradient(45deg, rgba(139, 95, 191, 0.8), rgba(139, 95, 191, 1));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.services-subtitle {
+    font-size: 1.2rem;
+    color: #6c757d;
+    font-weight: 300;
+}
+
+/* 카테고리 스타일 */
+.service-category {
+    padding: 2rem 0;
+    border-bottom: 2px solid rgba(139, 95, 191, 0.1);
+    margin-bottom: 3rem;
+}
+
+.service-category:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.category-header {
+    margin-bottom: 2.5rem;
+}
+
+.category-icon-wrapper {
+    margin-bottom: 1rem;
+}
+
+.category-icon {
+    font-size: 3rem;
+    opacity: 0.8;
+}
+
+.category-title {
+    font-family: 'Nanum Gothic', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.category-description {
+    font-size: 1.1rem;
+    color: #6c757d;
+    font-weight: 300;
+    margin-bottom: 0;
+}
+
+/* 서비스 그리드 */
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+/* 서비스 카드 */
+.service-card {
+    background: white;
+    border: 1.5px solid rgba(139, 95, 191, 0.15);
+    border-radius: 15px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.08);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(139, 95, 191, 0.15);
+    border-color: rgba(139, 95, 191, 0.3);
+}
+
+.service-card-header {
+    background: linear-gradient(135deg, rgba(139, 95, 191, 0.05), rgba(139, 95, 191, 0.1));
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.service-name {
+    font-family: 'Nanum Gothic', sans-serif;
+    font-size: 1.3rem;
+    color: rgba(139, 95, 191, 0.9);
+    font-weight: 600;
+    margin-bottom: 0;
+}
+
+.service-card-body {
+    padding: 1.5rem;
+    flex-grow: 1;
+}
+
+.service-description {
+    color: #495057;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+/* 패키지 미리보기 */
+.packages-preview {
+    background: rgba(139, 95, 191, 0.05);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.packages-title {
+    font-size: 0.9rem;
+    color: rgba(139, 95, 191, 0.8);
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.package-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(139, 95, 191, 0.1);
+}
+
+.package-item:last-child {
+    border-bottom: none;
+}
+
+.package-name {
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+.package-price {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: rgba(139, 95, 191, 0.8);
+}
+
+.more-packages {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #6c757d;
+    font-style: italic;
+    padding-top: 0.5rem;
+}
+
+/* 버튼 스타일 */
+.service-card-footer {
+    padding: 1.5rem;
+    background: rgba(249, 249, 249, 0.5);
+    border-top: 1px solid rgba(139, 95, 191, 0.1);
+    display: flex;
+    gap: 0.75rem;
+}
+
+.service-detail-btn {
+    background: linear-gradient(135deg, rgba(139, 95, 191, 0.8), rgba(139, 95, 191, 0.9));
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    flex: 1;
+    text-align: center;
+}
+
+.service-detail-btn:hover {
+    background: linear-gradient(135deg, rgba(139, 95, 191, 0.9), rgba(139, 95, 191, 1));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.3);
+}
+
+.inquiry-btn {
+    border: 2px solid rgba(139, 95, 191, 0.6);
+    color: rgba(139, 95, 191, 0.8);
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    background: transparent;
+    flex: 1;
+    text-align: center;
+}
+
+.inquiry-btn:hover {
+    background: rgba(139, 95, 191, 0.8);
+    border-color: rgba(139, 95, 191, 0.8);
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .services-main-title {
+        font-size: 2.2rem;
+    }
+    
+    .services-subtitle {
+        font-size: 1rem;
+    }
+    
+    .category-title {
+        font-size: 1.8rem;
+    }
+    
+    .category-icon {
+        font-size: 2.5rem;
+    }
+    
+    .services-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .service-card-footer {
+        flex-direction: column;
+    }
+    
+    .main-card .card-body {
+        padding: 2rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .services-main-title {
+        font-size: 1.8rem;
+    }
+    
+    .category-title {
+        font-size: 1.5rem;
+    }
+    
+    .services-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .main-card .card-body {
+        padding: 1.5rem !important;
+    }
+}
+</style>
+{% endblock %} 

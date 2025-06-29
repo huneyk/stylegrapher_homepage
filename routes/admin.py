@@ -369,6 +369,44 @@ def add_service():
     
     return render_template('admin/add_service.html')
 
+@admin.route('/category/add', methods=['GET', 'POST'])
+@login_required
+def add_category():
+    if request.method == 'POST':
+        try:
+            # 간단한 카테고리 추가 - 이름과 설명만
+            service = Service(
+                name=request.form['name'],
+                description=request.form['description'],
+                category=None,  # 카테고리는 기본값으로 설정
+                details=json.dumps([]),  # 빈 리스트
+                packages=json.dumps([])  # 빈 리스트
+            )
+            db.session.add(service)
+            db.session.flush()  # ID를 얻기 위해 flush
+            
+            # 기본 ServiceOption 생성 (카테고리에 서비스가 표시되도록)
+            service_option = ServiceOption(
+                service_id=service.id,
+                name=request.form['name'],
+                description=request.form['description'],
+                detailed_description='',
+                details=json.dumps([]),
+                packages=json.dumps([])
+            )
+            db.session.add(service_option)
+            db.session.commit()
+            
+            flash('새 카테고리가 성공적으로 추가되었습니다.')
+            return redirect(url_for('admin.list_services'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'카테고리 추가 중 오류가 발생했습니다: {str(e)}')
+            return redirect(request.url)
+    
+    return render_template('admin/add_category.html')
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
