@@ -1,53 +1,367 @@
 {% extends "base.html" %}
 
+{% block title %}{{ service.name }} - 옵션 관리{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>{{ service.name }} - 옵션 관리</h2>
-        <a href="{{ url_for('admin.add_option', service_id=service.id) }}" class="btn btn-primary">
-            <i class="bi bi-plus-lg"></i> 새 옵션 추가
-        </a>
+<div class="container mt-4">
+    <div class="admin-header mb-4">
+        <div class="header-content">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('admin.list_services') }}">서비스 관리</a>
+                    </li>
+                    <li class="breadcrumb-item active">{{ service.name }} 옵션</li>
+                </ol>
+            </nav>
+            <h2 class="admin-title">
+                <i class="bi bi-list-ul"></i> {{ service.name }} - 옵션 관리
+            </h2>
+            <p class="service-info">총 {{ service.options|length }}개의 옵션이 등록되어 있습니다.</p>
+        </div>
+        <div class="admin-actions">
+            <a href="{{ url_for('admin.add_option', service_id=service.id) }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> 새 옵션 추가
+            </a>
+        </div>
     </div>
 
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>옵션명</th>
-                    <th>설명</th>
-                    <th>가격</th>
-                    <th>소요시간</th>
-                    <th>관리</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for option in service.options %}
-                <tr>
-                    <td>{{ option.name }}</td>
-                    <td>{{ option.description }}</td>
-                    <td>{{ "{:,}".format(option.price) }}원</td>
-                    <td>{{ option.duration }}</td>
-                    <td>
-                        <a href="{{ url_for('admin.edit_option', option_id=option.id) }}" 
-                           class="btn btn-sm btn-outline-primary">수정</a>
-                        <button onclick="confirmDeleteOption({{ option.id }})" 
-                                class="btn btn-sm btn-outline-danger">삭제</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    {% if service.options %}
+    <div class="options-grid">
+        {% for option in service.options %}
+        <div class="option-card">
+            <div class="option-card-header">
+                <div class="option-info">
+                    <h4 class="option-name">{{ option.name }}</h4>
+                    {% if option.has_detail_page %}
+                    <div class="detail-page-badge active">
+                        <i class="bi bi-check-circle-fill"></i> 상세 페이지 활성
+                    </div>
+                    {% else %}
+                    <div class="detail-page-badge inactive">
+                        <i class="bi bi-circle"></i> 상세 페이지 비활성
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="option-price">
+                    {% if option.price %}
+                    <span class="price-amount">{{ option.price }}원</span>
+                    {% else %}
+                    <span class="price-amount">가격 미설정</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="option-card-body">
+                <div class="option-description">
+                    <p>{{ option.description or '설명이 없습니다.' }}</p>
+                </div>
+                
+                <div class="option-details">
+                    <div class="detail-item">
+                        <span class="detail-label">소요시간:</span>
+                        <span class="detail-value">{{ option.duration or '미설정' }}</span>
+                    </div>
+                    
+                    {% if option.has_detail_page %}
+                    <div class="detail-page-info">
+                        <div class="detail-features">
+                            <span class="detail-label">상세 특징:</span>
+                            {% if option.details %}
+                                {% set details_list = option.details.split('\n') if option.details else [] %}
+                                <span class="detail-value">{{ details_list|length }}개 항목</span>
+                            {% else %}
+                                <span class="detail-value">설정되지 않음</span>
+                            {% endif %}
+                        </div>
+                        <div class="detail-packages">
+                            <span class="detail-label">패키지:</span>
+                            {% if option.packages %}
+                                {% set packages_list = option.packages.split('|') if option.packages else [] %}
+                                <span class="detail-value">{{ packages_list|length }}개 패키지</span>
+                            {% else %}
+                                <span class="detail-value">설정되지 않음</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="option-card-actions">
+                <a href="{{ url_for('admin.edit_option', option_id=option.id) }}" 
+                   class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-pencil"></i> 수정
+                </a>
+                {% if option.has_detail_page %}
+                <a href="{{ url_for('main.service_option_detail', id=option.id) }}" 
+                   class="btn btn-sm btn-outline-info" target="_blank">
+                    <i class="bi bi-eye"></i> 상세페이지 보기
+                </a>
+                {% endif %}
+                <button onclick="confirmDeleteOption({{ option.id }}, {{ option.name | tojson }})" 
+                        class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-trash"></i> 삭제
+                </button>
+            </div>
+        </div>
+        {% endfor %}
     </div>
-    <div class="mt-3">
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="bi bi-inbox"></i>
+        </div>
+        <h3>등록된 옵션이 없습니다</h3>
+        <p>새로운 서비스 옵션을 추가해보세요.</p>
+        <a href="{{ url_for('admin.add_option', service_id=service.id) }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> 첫 번째 옵션 추가하기
+        </a>
+    </div>
+    {% endif %}
+    
+    <div class="back-navigation mt-4">
         <a href="{{ url_for('admin.list_services') }}" class="btn btn-secondary">
-            서비스 목록으로 돌아가기
+            <i class="bi bi-arrow-left"></i> 서비스 목록으로 돌아가기
         </a>
     </div>
 </div>
 
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+
+<style>
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 249, 250, 0.9));
+    border: 1.5px solid rgba(139, 95, 191, 0.2);
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.1);
+}
+
+.header-content {
+    flex: 1;
+}
+
+.breadcrumb {
+    margin-bottom: 0.5rem;
+}
+
+.breadcrumb a {
+    color: rgba(139, 95, 191, 0.7);
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    color: rgba(139, 95, 191, 1);
+}
+
+.admin-title {
+    color: rgba(139, 95, 191, 0.8);
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.service-info {
+    color: #6c757d;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.admin-actions .btn {
+    border-radius: 25px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+}
+
+.options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 1.5rem;
+}
+
+.option-card {
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.option-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.option-card-header {
+    background: linear-gradient(135deg, rgba(248, 249, 250, 0.8), rgba(255, 255, 255, 0.8));
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.option-info {
+    flex: 1;
+}
+
+.option-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 0.5rem 0;
+}
+
+.detail-page-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.detail-page-badge.active {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.detail-page-badge.inactive {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.option-price {
+    text-align: right;
+}
+
+.price-amount {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: rgba(139, 95, 191, 0.8);
+}
+
+.option-card-body {
+    padding: 1.5rem;
+}
+
+.option-description {
+    margin-bottom: 1rem;
+}
+
+.option-description p {
+    color: #6c757d;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.option-details {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.detail-item,
+.detail-features,
+.detail-packages {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.detail-label {
+    font-weight: 500;
+    color: #495057;
+    font-size: 0.9rem;
+}
+
+.detail-value {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.detail-page-info {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(139, 95, 191, 0.1);
+}
+
+.option-card-actions {
+    padding: 1rem 1.5rem;
+    background: rgba(248, 249, 250, 0.5);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.option-card-actions .btn {
+    border-radius: 8px;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #6c757d;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    margin-bottom: 0.5rem;
+    color: #495057;
+}
+
+.empty-state p {
+    margin-bottom: 2rem;
+}
+
+.back-navigation {
+    text-align: center;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+    .admin-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .options-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .option-card-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .option-price {
+        text-align: left;
+    }
+}
+</style>
+
 <script>
-function confirmDeleteOption(id) {
-    if (confirm('정말 이 옵션을 삭제하시겠습니까?')) {
+function confirmDeleteOption(id, name) {
+    if (confirm('정말 "' + name + '" 옵션을 삭제하시겠습니까?\n\n상세 페이지와 관련된 모든 데이터가 함께 삭제됩니다.')) {
         window.location.href = "{{ url_for('admin.delete_option', option_id=0) }}".replace('0', id);
     }
 }

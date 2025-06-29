@@ -327,16 +327,46 @@ def dashboard():
 @login_required
 def add_service():
     if request.method == 'POST':
-        service = Service(
-            name=request.form['name'],
-            description=request.form['description'],
-            price=request.form['price'],
-            category=request.form['category']
-        )
-        db.session.add(service)
-        db.session.commit()
-        flash('서비스가 추가되었습니다.')
-        return redirect(url_for('admin.dashboard'))
+        try:
+            # 상세 정보 처리
+            details_text = request.form.get('details', '').strip()
+            details = [line.strip() for line in details_text.split('\n') if line.strip()] if details_text else []
+            
+            # 패키지 정보 처리
+            packages_text = request.form.get('packages', '').strip()
+            packages = []
+            if packages_text:
+                for line in packages_text.split('\n'):
+                    line = line.strip()
+                    if line and '|' in line:
+                        parts = [part.strip() for part in line.split('|')]
+                        if len(parts) >= 4:
+                            packages.append({
+                                'name': parts[0],
+                                'price': parts[1],
+                                'duration': parts[2],
+                                'description': parts[3]
+                            })
+            
+            # 서비스 생성
+            service = Service(
+                name=request.form['name'],
+                description=request.form['description'],
+                category=request.form['category'],
+                details=json.dumps(details),
+                packages=json.dumps(packages)
+            )
+            db.session.add(service)
+            db.session.commit()
+            
+            flash('서비스가 성공적으로 추가되었습니다. 이제 개별 옵션을 추가해보세요.')
+            return redirect(url_for('admin.list_options', service_id=service.id))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'서비스 추가 중 오류가 발생했습니다: {str(e)}')
+            return redirect(request.url)
+    
     return render_template('admin/add_service.html')
 
 def allowed_file(filename):
@@ -540,47 +570,249 @@ def list_options(service_id):
     service = Service.query.get_or_404(service_id)
     return render_template('admin/options.html', service=service)
 
-@admin.route('/services/<int:service_id>/options/add', methods=['GET', 'POST'])
+@admin.route('/services/options/add', methods=['GET', 'POST'])
 @login_required
-def add_option(service_id):
-    service = Service.query.get_or_404(service_id)
+def add_option_standalone():
+    """카테고리를 선택해서 새로운 서비스 옵션을 추가하는 독립형 라우트"""
+    services = Service.query.all()
+    
     if request.method == 'POST':
+        service_id = int(request.form['service_id'])
+        service = Service.query.get_or_404(service_id)
+        
+        # 기본 ServiceOption 생성
         option = ServiceOption(
             service_id=service_id,
             name=request.form['name'],
             description=request.form['description'],
-            price=request.form['price'],
-            duration=request.form['duration']
+            detailed_description=request.form.get('detailed_description', '')
         )
+        
+        # 상세 내용 처리 (각 줄을 배열로 변환)
+        details_text = request.form.get('details', '')
+        if details_text.strip():
+            details_list = [line.strip() for line in details_text.split('\n') if line.strip()]
+            option.details = json.dumps(details_list, ensure_ascii=False)
+        else:
+            option.details = None
+        
+        # 패키지 정보 처리 (파이프로 구분된 형식을 JSON으로 변환)
+        packages_text = request.form.get('packages', '')
+        if packages_text.strip():
+            packages_list = []
+            for line in packages_text.split('\n'):
+                if '|' in line:
+                    parts = line.split('|')
+                    if len(parts) >= 5:
+                        # 5개 필드: name, description, duration, price, notes
+                        package = {
+                            'name': parts[0].strip(),
+                            'description': parts[1].strip(),
+                            'duration': parts[2].strip(),
+                            'price': parts[3].strip(),
+                            'notes': parts[4].strip()
+                        }
+                        packages_list.append(package)
+                    elif len(parts) >= 4:
+                        # 4개 필드: name, description, duration, price (비고 없음)
+                        package = {
+                            'name': parts[0].strip(),
+                            'description': parts[1].strip(),
+                            'duration': parts[2].strip(),
+                            'price': parts[3].strip(),
+                            'notes': ''
+                        }
+                        packages_list.append(package)
+                    elif len(parts) >= 3:
+                        # 기존 3개 필드 호환성
+                        package = {
+                            'name': parts[0].strip(),
+                            'description': parts[1].strip(),
+                            'duration': '',
+                            'price': parts[2].strip(),
+                            'notes': ''
+                        }
+                        packages_list.append(package)
+            option.packages = json.dumps(packages_list, ensure_ascii=False) if packages_list else None
+        else:
+            option.packages = None
+        
+        db.session.add(option)
+        db.session.commit()
+        flash(f'{service.name} 카테고리에 "{option.name}" 서비스가 추가되었습니다.')
+        return redirect(url_for('admin.list_services'))
+    
+    return render_template('admin/add_option_standalone.html', services=services)
+
+@admin.route('/services/<int:service_id>/options/add', methods=['GET', 'POST'])
+@login_required
+def add_option(service_id):
+    service = Service.query.get_or_404(service_id)
+    
+    if request.method == 'POST':
+        # 기본 ServiceOption 생성
+        option = ServiceOption(
+            service_id=service_id,
+            name=request.form['name'],
+            description=request.form['description'],
+            detailed_description=request.form.get('detailed_description', '')
+        )
+        
+        # 상세 내용 처리 (각 줄을 배열로 변환)
+        details_text = request.form.get('details', '')
+        if details_text.strip():
+            details_list = [line.strip() for line in details_text.split('\n') if line.strip()]
+            option.details = json.dumps(details_list, ensure_ascii=False)
+        else:
+            option.details = None
+        
+        # 패키지 정보 처리 (파이프로 구분된 형식을 JSON으로 변환)
+        packages_text = request.form.get('packages', '')
+        if packages_text.strip():
+            packages_list = []
+            for line in packages_text.split('\n'):
+                if '|' in line:
+                    parts = line.split('|')
+                    if len(parts) >= 5:
+                        # 5개 필드: name, description, duration, price, notes
+                        package = {
+                            'name': parts[0].strip(),
+                            'description': parts[1].strip(),
+                            'duration': parts[2].strip(),
+                            'price': parts[3].strip(),
+                            'notes': parts[4].strip()
+                        }
+                        packages_list.append(package)
+                    elif len(parts) >= 4:
+                        # 4개 필드: name, description, duration, price (비고 없음)
+                        package = {
+                            'name': parts[0].strip(),
+                            'description': parts[1].strip(),
+                            'duration': parts[2].strip(),
+                            'price': parts[3].strip(),
+                            'notes': ''
+                        }
+                        packages_list.append(package)
+                    elif len(parts) >= 3:
+                        # 기존 3개 필드 호환성
+                        package = {
+                            'name': parts[0].strip(),
+                            'description': parts[1].strip(),
+                            'duration': '',
+                            'price': parts[2].strip(),
+                            'notes': ''
+                        }
+                        packages_list.append(package)
+            option.packages = json.dumps(packages_list, ensure_ascii=False) if packages_list else None
+        else:
+            option.packages = None
+        
         db.session.add(option)
         db.session.commit()
         flash('옵션이 추가되었습니다.')
         return redirect(url_for('admin.list_options', service_id=service_id))
+    
     return render_template('admin/add_option.html', service=service)
 
 @admin.route('/services/options/<int:option_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_option(option_id):
     option = ServiceOption.query.get_or_404(option_id)
+    
     if request.method == 'POST':
+        # 기본 정보 업데이트
         option.name = request.form['name']
         option.description = request.form['description']
-        option.price = request.form['price']
-        option.duration = request.form['duration']
+        option.detailed_description = request.form.get('detailed_description', '')
+        
+        # 상세 내용 처리 (각 줄을 배열로 변환)
+        details_text = request.form.get('details', '')
+        if details_text.strip():
+            details_list = [line.strip() for line in details_text.split('\n') if line.strip()]
+            option.details = json.dumps(details_list, ensure_ascii=False)
+        else:
+            option.details = None
+        
+        # 패키지 정보 처리 (파이프로 구분된 형식을 JSON으로 변환)
+        packages_text = request.form.get('packages', '')
+        if packages_text.strip():
+            packages_list = []
+            for line in packages_text.split('\n'):
+                if '|' in line:
+                    parts = line.split('|')
+                    if len(parts) >= 5:
+                        # 5개 필드: name, description, duration, price, notes
+                        package = {
+                            'name': parts[0].strip(),
+                            'description': parts[1].strip(),
+                            'duration': parts[2].strip(),
+                            'price': parts[3].strip(),
+                            'notes': parts[4].strip()
+                        }
+                        packages_list.append(package)
+                    elif len(parts) >= 4:
+                        # 4개 필드: name, description, duration, price (비고 없음)
+                        package = {
+                            'name': parts[0].strip(),
+                            'description': parts[1].strip(),
+                            'duration': parts[2].strip(),
+                            'price': parts[3].strip(),
+                            'notes': ''
+                        }
+                        packages_list.append(package)
+                    elif len(parts) >= 3:
+                        # 기존 3개 필드 호환성
+                        package = {
+                            'name': parts[0].strip(),
+                            'description': parts[1].strip(),
+                            'duration': '',
+                            'price': parts[2].strip(),
+                            'notes': ''
+                        }
+                        packages_list.append(package)
+            option.packages = json.dumps(packages_list, ensure_ascii=False) if packages_list else None
+        else:
+            option.packages = None
+        
         db.session.commit()
         flash('옵션이 수정되었습니다.')
-        return redirect(url_for('admin.list_options', service_id=option.service_id))
-    return render_template('admin/edit_option.html', option=option)
+        return redirect(url_for('admin.list_services'))
+    
+    # GET 요청 시 기존 데이터 로드
+    details_text = ''
+    if option.details:
+        try:
+            details_list = json.loads(option.details)
+            details_text = '\n'.join(details_list)
+        except:
+            details_text = option.details
+    
+    packages_text = ''
+    if option.packages:
+        try:
+            packages_list = json.loads(option.packages)
+            packages_lines = []
+            for package in packages_list:
+                line = f"{package.get('name', '')}|{package.get('description', '')}|{package.get('duration', '')}|{package.get('price', '')}|{package.get('notes', '')}"
+                packages_lines.append(line)
+            packages_text = '\n'.join(packages_lines)
+        except:
+            packages_text = option.packages
+    
+    return render_template('admin/edit_option.html', 
+                         option=option, 
+                         details_text=details_text,
+                         packages_text=packages_text)
 
 @admin.route('/services/options/<int:option_id>/delete')
 @login_required
 def delete_option(option_id):
     option = ServiceOption.query.get_or_404(option_id)
-    service_id = option.service_id
+    service_name = option.name
     db.session.delete(option)
     db.session.commit()
-    flash('옵션이 삭제되었습니다.')
-    return redirect(url_for('admin.list_options', service_id=service_id))
+    flash(f'서비스 "{service_name}"이(가) 삭제되었습니다.')
+    return redirect(url_for('admin.list_services'))
 
 # 딕셔너리를 모델처럼 사용하기 위한 클래스 추가
 class DictAsModel:

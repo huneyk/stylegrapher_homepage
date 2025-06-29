@@ -1,41 +1,293 @@
 {% extends "base.html" %}
 
+{% block title %}서비스 추가{% endblock %}
+
 {% block content %}
 <div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-body">
-                    <h2 class="card-title text-center">서비스 추가</h2>
-                    <form method="POST">
-                        <div class="mb-3">
+        <div class="col-lg-8">
+            <div class="admin-form-card">
+                <div class="form-header">
+                    <h2 class="form-title">
+                        <i class="bi bi-plus-circle"></i> 새 서비스 추가
+                    </h2>
+                    <p class="form-subtitle">새로운 서비스를 추가하고 세부 옵션을 설정하세요.</p>
+                </div>
+                
+                <form method="POST" class="service-form">
+                    <div class="form-section">
+                        <h3 class="section-title">기본 정보</h3>
+                        
+                        <div class="form-group">
                             <label for="name" class="form-label">서비스명</label>
-                            <input type="text" class="form-control" id="name" name="name" required>
+                            <input type="text" class="form-control" id="name" name="name" required
+                                   placeholder="예: STG AI 분석">
                         </div>
-                        <div class="mb-3">
-                            <label for="description" class="form-label">설명</label>
-                            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="price" class="form-label">가격</label>
-                            <input type="number" class="form-control" id="price" name="price" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="category" class="form-label">카테고리</label>
+                        
+                        <div class="form-group">
+                            <label for="category" class="form-label">서비스 카테고리</label>
                             <select class="form-control" id="category" name="category" required>
-                                <option value="촬영">촬영</option>
-                                <option value="메이크업">메이크업</option>
-                                <option value="컨설팅">컨설팅</option>
+                                <option value="">카테고리를 선택하세요</option>
+                                <option value="ai_analysis">🤖 STG AI 분석</option>
+                                <option value="consulting">👩‍💼 스타일링 컨설팅</option>
+                                <option value="oneday">✨ 원데이 스타일링</option>
+                                <option value="photo">📸 화보 & 프로필</option>
                             </select>
+                            <small class="form-text">서비스가 속할 카테고리를 선택하세요.</small>
                         </div>
-                        <div class="text-center">
-                            <button type="submit" class="btn btn-primary">서비스 추가</button>
-                            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">취소</a>
+                        
+                        <div class="form-group">
+                            <label for="description" class="form-label">서비스 설명</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" required
+                                      placeholder="서비스에 대한 간단한 설명을 입력하세요."></textarea>
                         </div>
-                    </form>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3 class="section-title">상세 정보</h3>
+                        
+                        <div class="form-group">
+                            <label for="details" class="form-label">서비스 특징</label>
+                            <textarea class="form-control" id="details" name="details" rows="4"
+                                      placeholder="서비스 특징을 한 줄씩 입력하세요. (예: 최신 AI 기술로 정확한 분석)"></textarea>
+                            <small class="form-text">각 특징은 새 줄로 구분하여 입력하세요.</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="packages" class="form-label">추천 패키지</label>
+                            <textarea class="form-control" id="packages" name="packages" rows="4"
+                                      placeholder="패키지명|가격|소요시간|설명 형식으로 입력하세요. (예: 기본 패키지|150,000원|1시간|AI 얼굴분석 + AI 체형분석)"></textarea>
+                            <small class="form-text">각 패키지는 새 줄로 구분하고, 항목은 |로 구분하여 입력하세요.</small>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> 서비스 추가
+                        </button>
+                        <a href="{{ url_for('admin.list_services') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> 취소
+                        </a>
+                    </div>
+                </form>
+                
+                <div class="help-section">
+                    <h4 class="help-title">💡 도움말</h4>
+                    <div class="help-content">
+                        <p><strong>서비스 추가 후 해야 할 일:</strong></p>
+                        <ol>
+                            <li>서비스가 생성되면 <strong>옵션 관리</strong>에서 개별 서비스 옵션을 추가하세요.</li>
+                            <li>각 옵션에는 이름, 설명, 가격, 소요시간을 설정할 수 있습니다.</li>
+                            <li>패키지 정보는 JSON 형식으로 저장되며, 나중에 수정할 수 있습니다.</li>
+                        </ol>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+
+<style>
+.admin-form-card {
+    background: white;
+    border: 1.5px solid rgba(139, 95, 191, 0.2);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(139, 95, 191, 0.1);
+}
+
+.form-header {
+    background: linear-gradient(135deg, rgba(139, 95, 191, 0.8), rgba(139, 95, 191, 0.9));
+    color: white;
+    padding: 2.5rem 2rem;
+    text-align: center;
+}
+
+.form-title {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.form-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin: 0;
+}
+
+.service-form {
+    padding: 2rem;
+}
+
+.form-section {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(139, 95, 191, 0.1);
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.section-title {
+    font-size: 1.3rem;
+    color: rgba(139, 95, 191, 0.8);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    position: relative;
+    padding-bottom: 0.5rem;
+}
+
+.section-title:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 2px;
+    background: rgba(139, 95, 191, 0.6);
+    border-radius: 1px;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-control {
+    border: 2px solid rgba(139, 95, 191, 0.2);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: rgba(248, 249, 250, 0.5);
+}
+
+.form-control:focus {
+    border-color: rgba(139, 95, 191, 0.6);
+    box-shadow: 0 0 0 0.2rem rgba(139, 95, 191, 0.15);
+    background: white;
+}
+
+.form-text {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(139, 95, 191, 0.1);
+    margin-top: 2rem;
+}
+
+.btn {
+    border-radius: 25px;
+    padding: 0.75rem 2rem;
+    font-weight: 500;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, rgba(139, 95, 191, 0.8), rgba(139, 95, 191, 0.9));
+    border: none;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, rgba(139, 95, 191, 0.9), rgba(139, 95, 191, 1));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.3);
+}
+
+.btn-outline-secondary {
+    border: 2px solid #6c757d;
+    color: #6c757d;
+    background: transparent;
+}
+
+.btn-outline-secondary:hover {
+    background: #6c757d;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.2);
+}
+
+.help-section {
+    background: rgba(139, 95, 191, 0.05);
+    padding: 2rem;
+    border-top: 1px solid rgba(139, 95, 191, 0.1);
+}
+
+.help-title {
+    color: rgba(139, 95, 191, 0.8);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.help-content {
+    color: #6c757d;
+    line-height: 1.6;
+}
+
+.help-content ol {
+    margin-bottom: 0;
+    padding-left: 1.2rem;
+}
+
+.help-content li {
+    margin-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .form-header {
+        padding: 2rem 1.5rem;
+    }
+    
+    .form-title {
+        font-size: 1.6rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .service-form {
+        padding: 1.5rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .help-section {
+        padding: 1.5rem;
+    }
+}
+</style>
 {% endblock %} 

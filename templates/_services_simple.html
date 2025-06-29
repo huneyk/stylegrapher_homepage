@@ -1,0 +1,204 @@
+<!-- Index 페이지용 간단한 서비스 템플릿 -->
+<div class="services-simple-section">
+    <div class="row g-4 justify-content-center">
+        {% for service in services %}
+        <div class="col-md-6">
+            <div class="service-simple-card h-100">
+                <div class="card-body text-center p-4 d-flex flex-column">
+                    <div class="card-content flex-grow-1">
+                        <h3 class="service-card-title mb-3">{{ service.name }}</h3>
+                        <p class="service-card-description mb-4">
+                            {% if service.options %}
+                                {{ service.options[0].description }}
+                            {% else %}
+                                {{ service.description }}
+                            {% endif %}
+                        </p>
+                        
+                        <!-- 서비스 옵션 버튼들 (2개씩 배치) -->
+                        {% if service.options %}
+                        <div class="service-options-buttons mb-4">
+                            {% for option in service.options %}
+                            <div class="option-button-wrapper">
+                                <a href="{{ url_for('main.service_option_detail', id=option.id) }}" class="option-button">{{ option.name }}</a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.services-simple-section {
+    padding: 3rem 0;
+    background: linear-gradient(135deg, rgba(248, 249, 250, 0.5), rgba(255, 255, 255, 0.8));
+}
+
+.service-simple-card {
+    background: white;
+    border: 1.5px solid rgba(139, 95, 191, 0.15);
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.08);
+    overflow: hidden;
+    position: relative;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.service-simple-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, rgba(139, 95, 191, 0.6), rgba(139, 95, 191, 0.8), rgba(139, 95, 191, 0.6));
+}
+
+.service-simple-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 30px rgba(139, 95, 191, 0.2);
+    border-color: rgba(139, 95, 191, 0.3);
+}
+
+.service-card-title {
+    font-family: 'Nanum Gothic', sans-serif;
+    font-size: 1.4rem;
+    color: rgba(139, 95, 191, 0.9);
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 1rem;
+}
+
+.service-card-description {
+    color: #6c757d;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    padding: 0 0.5rem;
+}
+
+.service-options-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+    margin-bottom: 0.5rem;
+    padding: 0 1rem;
+    min-height: 120px;
+    align-content: start;
+}
+
+.option-button-wrapper {
+    display: flex;
+}
+
+.option-button {
+    width: 100%;
+    background: rgba(139, 95, 191, 0.1);
+    color: rgba(139, 95, 191, 0.8);
+    border: 1px solid rgba(139, 95, 191, 0.2);
+    padding: 0.6rem 0.8rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-decoration: none;
+    display: block;
+}
+
+.option-button:hover {
+    background: rgba(139, 95, 191, 0.2);
+    border-color: rgba(139, 95, 191, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(139, 95, 191, 0.2);
+    color: rgba(139, 95, 191, 0.9);
+    text-decoration: none;
+}
+
+
+.card-content {
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 992px) {
+    .service-options-buttons {
+        padding: 0 0.5rem;
+        gap: 0.6rem;
+        min-height: 110px;
+    }
+    
+    .card-content {
+        min-height: 200px;
+    }
+    
+    .option-button {
+        font-size: 0.85rem;
+        padding: 0.5rem 0.6rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .services-simple-section {
+        padding: 2rem 0;
+    }
+    
+    .service-card-title {
+        font-size: 1.2rem;
+    }
+    
+    .service-card-description {
+        font-size: 0.95rem;
+        padding: 0;
+    }
+    
+    .service-options-buttons {
+        padding: 0;
+        gap: 0.5rem;
+        min-height: 100px;
+    }
+    
+    .card-content {
+        min-height: 180px;
+    }
+    
+    .option-button {
+        font-size: 0.8rem;
+        padding: 0.5rem 0.4rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .service-simple-card .card-body {
+        padding: 2rem 1.5rem;
+    }
+    
+    .service-options-buttons {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        min-height: 160px;
+    }
+    
+    .card-content {
+        min-height: 220px;
+    }
+    
+    .option-button {
+        font-size: 0.85rem;
+        padding: 0.6rem 0.8rem;
+    }
+}
+</style> 

@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app
-from models import Service, Gallery, Booking, CarouselItem, GalleryGroup, CollageText, Inquiry
+from models import Service, ServiceOption, Gallery, Booking, CarouselItem, GalleryGroup, CollageText, Inquiry
 from extensions import db
 import json
 from sqlalchemy import desc
@@ -102,6 +102,19 @@ def service_detail(id):
     packages = json.loads(service.packages) if service.packages else []
     return render_template('service_detail.html', 
                          service=service, 
+                         details=details,
+                         packages=packages)
+
+@main.route('/service_option/<int:id>')
+def service_option_detail(id):
+    service_option = ServiceOption.query.get_or_404(id)
+    
+    # JSON 문자열을 파이썬 객체로 변환
+    details = json.loads(service_option.details) if service_option.details else []
+    packages = json.loads(service_option.packages) if service_option.packages else []
+    
+    return render_template('service_option_detail.html', 
+                         service_option=service_option, 
                          details=details,
                          packages=packages)
 

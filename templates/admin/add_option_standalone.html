@@ -1,0 +1,470 @@
+{% extends "base.html" %}
+
+{% block title %}새 서비스 추가{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="admin-form-card">
+                <div class="form-header">
+                    <h2 class="form-title">
+                        <i class="bi bi-plus-circle"></i> 새 서비스 추가
+                    </h2>
+                    <p class="form-subtitle">기존 카테고리에 새로운 개별 서비스를 추가하세요.</p>
+                </div>
+                
+                <form method="POST" class="service-form">
+                    <div class="form-section">
+                        <h3 class="section-title">카테고리 선택</h3>
+                        
+                        <div class="form-group">
+                            <label for="service_id" class="form-label">서비스 카테고리</label>
+                            <select class="form-control" id="service_id" name="service_id" required>
+                                <option value="">카테고리를 선택하세요</option>
+                                {% for service in services %}
+                                <option value="{{ service.id }}" data-category="{{ service.category }}">
+                                    {% if service.category == 'ai_analysis' %}🤖 {{ service.name }}
+                                    {% elif service.category == 'consulting' %}👩‍💼 {{ service.name }}
+                                    {% elif service.category == 'oneday' %}✨ {{ service.name }}
+                                    {% elif service.category == 'photo' %}📸 {{ service.name }}
+                                    {% else %}📝 {{ service.name }}
+                                    {% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text">새 서비스가 속할 카테고리를 선택하세요.</small>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3 class="section-title">기본 정보</h3>
+                        
+                        <div class="form-group">
+                            <label for="name" class="form-label">서비스명</label>
+                            <input type="text" class="form-control" id="name" name="name" required
+                                   placeholder="예: AI 얼굴 분석, 퍼스널 컬러 진단">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="description" class="form-label">기본 설명</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" required
+                                      placeholder="인덱스 페이지 카드에 표시될 기본 설명을 입력하세요."></textarea>
+                            <small class="form-text">인덱스 페이지의 서비스 카드에 표시됩니다.</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="detailed_description" class="form-label">상세 설명</label>
+                            <textarea class="form-control" id="detailed_description" name="detailed_description" rows="3"
+                                      placeholder="서비스 상세 페이지에 표시될 자세한 설명을 입력하세요."></textarea>
+                            <small class="form-text">서비스 상세 페이지에 표시됩니다.</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="details" class="form-label">서비스 특징</label>
+                            <textarea class="form-control" id="details" name="details" rows="4"
+                                      placeholder="서비스 특징을 한 줄씩 입력하세요.&#10;예:&#10;최신 AI 기술 활용&#10;개인 맞춤형 분석&#10;전문가 상담 포함"></textarea>
+                            <small class="form-text">각 특징은 새 줄로 구분하여 입력하세요.</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">패키지 정보</label>
+                            <div class="packages-table-container">
+                                <table class="table table-bordered packages-table" id="packagesTable">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 20%">패키지명</th>
+                                            <th style="width: 35%">설명</th>
+                                            <th style="width: 20%">소요시간</th>
+                                            <th style="width: 15%">가격</th>
+                                            <th style="width: 10%">삭제</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="packagesTableBody">
+                                        <!-- 패키지 행들이 여기에 동적으로 추가됩니다 -->
+                                    </tbody>
+                                </table>
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="addPackageRow()">
+                                    <i class="bi bi-plus-circle"></i> 패키지 추가
+                                </button>
+                            </div>
+                            <textarea class="form-control d-none" id="packages" name="packages"></textarea>
+                            <small class="form-text">패키지를 추가하고 각 필드를 입력하세요. 여러 패키지를 제공할 수 있습니다.</small>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> 서비스 추가
+                        </button>
+                        <a href="{{ url_for('admin.list_services') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> 취소
+                        </a>
+                    </div>
+                </form>
+                
+                <div class="help-section">
+                    <h4 class="help-title">💡 도움말</h4>
+                    <div class="help-content">
+                        <p><strong>서비스 추가 가이드:</strong></p>
+                        <ul>
+                            <li><strong>카테고리:</strong> 새 서비스가 속할 기존 카테고리를 선택하세요.</li>
+                            <li><strong>상세 페이지:</strong> 활성화하면 고객이 클릭해서 더 자세한 정보를 볼 수 있습니다.</li>
+                            <li><strong>패키지:</strong> 여러 가격대의 옵션을 제공하려면 패키지 정보를 입력하세요.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+
+<style>
+.admin-form-card {
+    background: white;
+    border: 1.5px solid rgba(139, 95, 191, 0.2);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(139, 95, 191, 0.1);
+}
+
+.form-header {
+    background: linear-gradient(135deg, rgba(139, 95, 191, 0.8), rgba(139, 95, 191, 0.9));
+    color: white;
+    padding: 2.5rem 2rem;
+    text-align: center;
+}
+
+.form-title {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.form-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin: 0;
+}
+
+.service-form {
+    padding: 2rem;
+}
+
+.form-section {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(139, 95, 191, 0.1);
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.section-title {
+    font-size: 1.3rem;
+    color: rgba(139, 95, 191, 0.8);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    position: relative;
+    padding-bottom: 0.5rem;
+}
+
+.section-title:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 2px;
+    background: rgba(139, 95, 191, 0.6);
+    border-radius: 1px;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-control {
+    border: 2px solid rgba(139, 95, 191, 0.2);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: rgba(248, 249, 250, 0.5);
+}
+
+.form-control:focus {
+    border-color: rgba(139, 95, 191, 0.6);
+    box-shadow: 0 0 0 0.2rem rgba(139, 95, 191, 0.15);
+    background: white;
+}
+
+.form-text {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.form-check-custom {
+    background: rgba(139, 95, 191, 0.05);
+    border: 1px solid rgba(139, 95, 191, 0.2);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-check-custom .form-check-input {
+    margin-right: 0.75rem;
+    margin-top: 0.2rem;
+}
+
+.form-check-label {
+    cursor: pointer;
+    color: #495057;
+}
+
+.check-description {
+    display: block;
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+    font-weight: normal;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(139, 95, 191, 0.1);
+    margin-top: 2rem;
+}
+
+.form-actions .btn {
+    border-radius: 25px;
+    padding: 0.75rem 2rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.help-section {
+    background: rgba(139, 95, 191, 0.03);
+    padding: 1.5rem 2rem;
+    border-top: 1px solid rgba(139, 95, 191, 0.1);
+}
+
+.help-title {
+    color: rgba(139, 95, 191, 0.8);
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.help-content {
+    color: #6c757d;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.help-content ul {
+    margin-bottom: 0;
+    padding-left: 1.2rem;
+}
+
+.help-content li {
+    margin-bottom: 0.5rem;
+}
+
+.packages-table-container {
+    border: 2px solid rgba(139, 95, 191, 0.2);
+    border-radius: 12px;
+    padding: 1rem;
+    background: rgba(248, 249, 250, 0.5);
+}
+
+.packages-table {
+    margin-bottom: 1rem;
+}
+
+.packages-table th {
+    background: rgba(139, 95, 191, 0.1);
+    color: rgba(139, 95, 191, 0.8);
+    font-weight: 600;
+    border-color: rgba(139, 95, 191, 0.2);
+}
+
+.packages-table td {
+    border-color: rgba(139, 95, 191, 0.15);
+    vertical-align: middle;
+}
+
+.packages-table input {
+    border: 1px solid rgba(139, 95, 191, 0.2);
+    border-radius: 6px;
+    padding: 0.5rem;
+    width: 100%;
+    background: white;
+    transition: border-color 0.2s ease;
+}
+
+.packages-table input:focus {
+    border-color: rgba(139, 95, 191, 0.5);
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(139, 95, 191, 0.15);
+}
+
+.delete-package-btn {
+    border: none;
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border-radius: 6px;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.delete-package-btn:hover {
+    background: rgba(220, 53, 69, 0.2);
+    color: #c82333;
+}
+
+.empty-packages-row {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .form-title {
+        font-size: 1.5rem;
+    }
+    
+    .form-subtitle {
+        font-size: 1rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .form-actions .btn {
+        justify-content: center;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const detailPageCheckbox = document.getElementById('has_detail_page');
+    const detailPageFields = document.getElementById('detail-page-fields');
+    
+    detailPageCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            detailPageFields.style.display = 'block';
+        } else {
+            detailPageFields.style.display = 'none';
+        }
+    });
+    
+    // 페이지 로드 시 빈 테이블 표시
+    showEmptyRow();
+});
+
+function addPackageRow(name = '', description = '', duration = '', price = '') {
+    const tableBody = document.getElementById('packagesTableBody');
+    
+    // 빈 행 제거
+    const emptyRow = tableBody.querySelector('.empty-packages-row');
+    if (emptyRow) {
+        emptyRow.remove();
+    }
+    
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>
+            <input type="text" class="package-name" value="${name}" placeholder="패키지명" onchange="updatePackagesText()">
+        </td>
+        <td>
+            <input type="text" class="package-description" value="${description}" placeholder="패키지 설명" onchange="updatePackagesText()">
+        </td>
+        <td>
+            <input type="text" class="package-duration" value="${duration}" placeholder="소요시간" onchange="updatePackagesText()">
+        </td>
+        <td>
+            <input type="text" class="package-price" value="${price}" placeholder="가격" onchange="updatePackagesText()">
+        </td>
+        <td class="text-center">
+            <button type="button" class="delete-package-btn" onclick="deletePackageRow(this)">
+                <i class="bi bi-trash"></i>
+            </button>
+        </td>
+    `;
+    
+    tableBody.appendChild(row);
+    updatePackagesText();
+}
+
+function deletePackageRow(button) {
+    if (confirm('이 패키지를 삭제하시겠습니까?')) {
+        const row = button.closest('tr');
+        row.remove();
+        
+        // 모든 행이 삭제되면 빈 행 표시
+        const tableBody = document.getElementById('packagesTableBody');
+        if (tableBody.children.length === 0) {
+            showEmptyRow();
+        }
+        
+        updatePackagesText();
+    }
+}
+
+function showEmptyRow() {
+    const tableBody = document.getElementById('packagesTableBody');
+    const emptyRow = document.createElement('tr');
+    emptyRow.className = 'empty-packages-row';
+    emptyRow.innerHTML = `
+        <td colspan="5" class="py-3">
+            등록된 패키지가 없습니다. "패키지 추가" 버튼을 클릭하여 패키지를 추가하세요.
+        </td>
+    `;
+    tableBody.appendChild(emptyRow);
+}
+
+function updatePackagesText() {
+    const tableBody = document.getElementById('packagesTableBody');
+    const rows = tableBody.querySelectorAll('tr:not(.empty-packages-row)');
+    const packages = [];
+    
+    rows.forEach(row => {
+        const name = row.querySelector('.package-name').value.trim();
+        const description = row.querySelector('.package-description').value.trim();
+        const duration = row.querySelector('.package-duration').value.trim();
+        const price = row.querySelector('.package-price').value.trim();
+        
+        if (name && description && duration && price) {
+            packages.push(`${name}|${description}|${duration}|${price}`);
+        }
+    });
+    
+    document.getElementById('packages').value = packages.join('\n');
+}
+</script>
+{% endblock %} 

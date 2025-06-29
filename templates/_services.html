@@ -1,25 +1,232 @@
-<!-- 공통으로 사용할 서비스 템플릿 -->
-<div class="row g-4">
-    {% for service in services %}
-    <div class="col-md-4">
-        <div class="card h-100 service-card">
-            <div class="card-body text-center">
-                <h3 class="card-title">{{ service.name }}</h3>
-                <p class="card-text lead service-description">{{ service.description }}</p>
+<!-- 2단계 서비스 구성 템플릿 -->
+{% set service_categories = {
+    'ai_analysis': '🤖 STG AI 분석',
+    'consulting': '👩‍💼 스타일링 컨설팅',
+    'oneday': '✨ 원데이 스타일링',
+    'photo': '📸 화보 & 프로필'
+} %}
+
+{% for category, category_title in service_categories.items() %}
+    {% set category_services = services | selectattr('category', 'equalto', category) | list %}
+    {% if category_services %}
+    <div class="service-category mb-5">
+        <h2 class="category-title mb-4">{{ category_title }}</h2>
+        
+        {% for service in category_services %}
+        <div class="service-group mb-4">
+            <div class="service-header">
+                <h3 class="service-title">{{ service.name }}</h3>
+                <p class="service-description">{{ service.description }}</p>
+            </div>
+            
+            <div class="service-options row g-3">
+                {% for option in service.options %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="option-card h-100">
+                        <div class="card-body">
+                            <h5 class="option-name">{{ option.name }}</h5>
+                            <p class="option-description">{{ option.description }}</p>
+                            <div class="option-details">
+                                <span class="price">{{ "{:,}".format(option.price) }}원</span>
+                                <span class="duration">{{ option.duration }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="service-actions mt-3">
                 <a href="{{ url_for('main.service_detail', id=service.id) }}" class="btn btn-primary">자세히 보기</a>
+                <a href="{{ url_for('main.contact') }}?service={{ service.id }}" class="btn btn-outline-primary">예약 문의</a>
             </div>
         </div>
+        {% endfor %}
     </div>
-    {% endfor %}
-</div>
+    {% endif %}
+{% endfor %}
 
 <style>
+.service-category {
+    border-bottom: 2px solid rgba(139, 95, 191, 0.1);
+    padding-bottom: 2rem;
+}
+
+.service-category:last-child {
+    border-bottom: none;
+}
+
+.category-title {
+    font-family: 'Nanum Gothic', sans-serif;
+    font-size: 1.8rem;
+    color: rgba(139, 95, 191, 0.9);
+    font-weight: 600;
+    text-align: center;
+    position: relative;
+    padding-bottom: 1rem;
+}
+
+.category-title:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, rgba(139, 95, 191, 0.3), rgba(139, 95, 191, 0.8), rgba(139, 95, 191, 0.3));
+    border-radius: 2px;
+}
+
+.service-group {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 249, 250, 0.9));
+    border: 1.5px solid rgba(139, 95, 191, 0.2);
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.1);
+    transition: all 0.3s ease;
+}
+
+.service-group:hover {
+    box-shadow: 0 6px 25px rgba(139, 95, 191, 0.15);
+    transform: translateY(-2px);
+}
+
+.service-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.service-title {
+    font-family: 'Nanum Gothic', sans-serif;
+    font-size: 1.5rem;
+    color: rgba(139, 95, 191, 0.8);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
 .service-description {
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    word-break: keep-all;
-    font-size: 1rem !important;
-    color: #6c757d !important;
+    color: #6c757d;
+    font-size: 1.1rem;
+    margin-bottom: 0;
+}
+
+.option-card {
+    border: 1px solid rgba(139, 95, 191, 0.2);
+    border-radius: 12px;
+    background: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(139, 95, 191, 0.08);
+}
+
+.option-card:hover {
+    border-color: rgba(139, 95, 191, 0.4);
+    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.15);
+    transform: translateY(-2px);
+}
+
+.option-name {
+    font-family: 'Nanum Gothic', sans-serif;
+    font-size: 1.1rem;
+    color: rgba(139, 95, 191, 0.8);
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.option-description {
+    color: #6c757d;
+    font-size: 0.9rem;
     line-height: 1.4;
+    margin-bottom: 1rem;
+}
+
+.option-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(139, 95, 191, 0.1);
+}
+
+.price {
+    font-weight: 600;
+    color: rgba(139, 95, 191, 0.8);
+    font-size: 1rem;
+}
+
+.duration {
+    background: rgba(139, 95, 191, 0.1);
+    color: rgba(139, 95, 191, 0.8);
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.service-actions {
+    text-align: center;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(139, 95, 191, 0.1);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, rgba(139, 95, 191, 0.8), rgba(139, 95, 191, 0.9));
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin-right: 1rem;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, rgba(139, 95, 191, 0.9), rgba(139, 95, 191, 1));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.3);
+}
+
+.btn-outline-primary {
+    border: 2px solid rgba(139, 95, 191, 0.6);
+    color: rgba(139, 95, 191, 0.8);
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    background: transparent;
+}
+
+.btn-outline-primary:hover {
+    background: rgba(139, 95, 191, 0.8);
+    border-color: rgba(139, 95, 191, 0.8);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.2);
+}
+
+@media (max-width: 768px) {
+    .service-group {
+        padding: 1.5rem;
+    }
+    
+    .category-title {
+        font-size: 1.5rem;
+    }
+    
+    .service-title {
+        font-size: 1.3rem;
+    }
+    
+    .btn-primary,
+    .btn-outline-primary {
+        display: block;
+        width: 100%;
+        margin: 0.5rem 0;
+    }
+    
+    .option-details {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
 }
 </style> 

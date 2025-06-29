@@ -4,34 +4,454 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2>서비스 관리</h2>
-    <div class="mb-3">
-        <a href="{{ url_for('admin.add_service') }}" class="btn btn-primary">새 서비스 추가</a>
+    <div class="admin-header mb-4">
+        <h2 class="admin-title">
+            <i class="bi bi-gear-fill"></i> 서비스 관리
+        </h2>
+        <div class="admin-actions">
+            <a href="{{ url_for('admin.add_option_standalone') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> 새 서비스 추가
+            </a>
+        </div>
     </div>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>서비스명</th>
-                <th>설명</th>
-                <th>카테고리</th>
-                <th>관리</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for service in services %}
-            <tr>
-                <td>{{ service.name }}</td>
-                <td>{{ service.description }}</td>
-                <td>{{ service.category }}</td>
-                <td>
-                    <a href="{{ url_for('admin.edit_service', id=service.id) }}" class="btn btn-sm btn-primary">수정</a>
-                    <a href="{{ url_for('admin.delete_service', id=service.id) }}" 
-                       class="btn btn-sm btn-danger"
-                       onclick="return confirm('정말 삭제하시겠습니까?')">삭제</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+
+    <!-- 서비스 카테고리별 그룹화 -->
+    {% set service_categories = {
+        'ai_analysis': {'name': 'STG AI 분석', 'color': '#6f42c1'},
+        'consulting': {'name': '스타일링 컨설팅', 'color': '#0d6efd'},
+        'oneday': {'name': '원데이 스타일링', 'color': '#20c997'},
+        'photo': {'name': '화보 & 프로필', 'color': '#fd7e14'}
+    } %}
+
+    {% for category_key, category_info in service_categories.items() %}
+        {% set category_services = services | selectattr('category', 'equalto', category_key) | list %}
+        {% if category_services %}
+        {% set total_options = category_services | map(attribute='options') | sum(start=[]) | list %}
+        <div class="service-category-section mb-5">
+            <div class="category-header">
+                <h3 class="category-title" style="color: {{ category_info.color }}">
+                    {{ category_info.name }}
+                </h3>
+                <div class="category-stats">
+                    {{ total_options | length }}개 서비스
+                </div>
+            </div>
+            
+            <div class="category-body">
+                <!-- 개별 서비스 옵션들을 카드 형태로 표시 -->
+                <div class="options-grid">
+                    {% for service in category_services %}
+                        {% for option in service.options %}
+                        <div class="option-card" onclick="editOption({{ option.id }})">
+                            <div class="option-card-header">
+                                <h4 class="option-name">{{ option.name }}</h4>
+                            </div>
+                            
+                            <div class="option-card-body">
+                                <p class="option-description">{{ option.description or '설명이 없습니다.' }}</p>
+                                
+                                <div class="option-details">
+                                    <!-- 기본 정보만 표시 -->
+                                </div>
+                            </div>
+                            
+                            <div class="option-card-footer">
+                                <div class="edit-hint">
+                                    <i class="bi bi-pencil"></i> 클릭하여 수정
+                                </div>
+                                <div class="footer-actions">
+                                    <a href="{{ url_for('main.service_option_detail', id=option.id) }}" 
+                                       class="view-link" target="_blank" onclick="event.stopPropagation();">
+                                        <i class="bi bi-eye"></i> 보기
+                                    </a>
+                                    <button type="button" class="delete-btn" 
+                                            data-option-id="{{ option.id }}" 
+                                            data-option-name="{{ option.name }}"
+                                            onclick="deleteOption(this, event)">
+                                        <i class="bi bi-trash"></i> 삭제
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endfor %}
+                    
+                    <!-- 새 서비스 옵션 추가 카드 -->
+                    <div class="add-option-card" onclick="addNewOption('{{ category_key }}')">
+                        <div class="add-option-content">
+                            <div class="add-icon">
+                                <i class="bi bi-plus-circle"></i>
+                            </div>
+                            <h4>새 서비스 추가</h4>
+                            <p>{{ category_info.name }}에<br>새로운 서비스를 추가하세요</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+
+    <!-- 카테고리 없는 서비스 -->
+    {% set uncategorized_services = services | rejectattr('category') | list %}
+    {% if uncategorized_services %}
+    {% set total_options = uncategorized_services | map(attribute='options') | sum(start=[]) | list %}
+    <div class="service-category-section mb-5">
+        <div class="category-header">
+            <h3 class="category-title" style="color: #6c757d">
+                기타 서비스
+            </h3>
+            <div class="category-stats">
+                {{ total_options | length }}개 서비스
+            </div>
+        </div>
+        
+        <div class="category-body">
+            <div class="options-grid">
+                {% for service in uncategorized_services %}
+                    {% for option in service.options %}
+                    <div class="option-card" onclick="editOption({{ option.id }})">
+                        <div class="option-card-header">
+                            <h4 class="option-name">{{ option.name }}</h4>
+                        </div>
+                        
+                        <div class="option-card-body">
+                            <p class="option-description">{{ option.description or '설명이 없습니다.' }}</p>
+                            
+                            <div class="option-details">
+                                <!-- 기본 정보만 표시 -->
+                            </div>
+                        </div>
+                        
+                        <div class="option-card-footer">
+                            <div class="edit-hint">
+                                <i class="bi bi-pencil"></i> 클릭하여 수정
+                            </div>
+                            <div class="footer-actions">
+                                <a href="{{ url_for('main.service_option_detail', id=option.id) }}" 
+                                   class="view-link" target="_blank" onclick="event.stopPropagation();">
+                                    <i class="bi bi-eye"></i> 보기
+                                </a>
+                                <button type="button" class="delete-btn" 
+                                        data-option-id="{{ option.id }}" 
+                                        data-option-name="{{ option.name }}"
+                                        onclick="deleteOption(this, event)">
+                                    <i class="bi bi-trash"></i> 삭제
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
+
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+
+<style>
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 249, 250, 0.9));
+    border: 1.5px solid rgba(139, 95, 191, 0.2);
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.1);
+}
+
+.admin-title {
+    color: rgba(139, 95, 191, 0.8);
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.admin-actions .btn {
+    border-radius: 25px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+}
+
+.service-category-section {
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.category-header {
+    background: linear-gradient(135deg, rgba(248, 249, 250, 0.8), rgba(255, 255, 255, 0.8));
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.category-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.category-stats {
+    background: rgba(139, 95, 191, 0.1);
+    color: rgba(139, 95, 191, 0.8);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.category-body {
+    padding: 1.5rem;
+}
+
+.options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.option-card {
+    background: white;
+    border: 2px solid rgba(139, 95, 191, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.option-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(139, 95, 191, 0.15);
+    border-color: rgba(139, 95, 191, 0.3);
+}
+
+.option-card-header {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.option-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+    flex: 1;
+}
+
+.detail-page-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.detail-page-badge.active {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.detail-page-badge.inactive {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.option-card-body {
+    padding: 1rem;
+}
+
+.option-description {
+    color: #6c757d;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin-bottom: 0.8rem;
+}
+
+.option-details {
+    display: grid;
+    gap: 0.3rem;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.detail-label {
+    font-weight: 500;
+    color: #495057;
+}
+
+.detail-value {
+    color: #6c757d;
+}
+
+.option-card-footer {
+    padding: 0.8rem 1rem;
+    background: rgba(248, 249, 250, 0.5);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.edit-hint {
+    color: rgba(139, 95, 191, 0.7);
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.footer-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.view-link {
+    color: rgba(139, 95, 191, 0.8);
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.view-link:hover {
+    background: rgba(139, 95, 191, 0.1);
+    color: rgba(139, 95, 191, 1);
+    text-decoration: none;
+}
+
+.delete-btn {
+    background: transparent;
+    border: 1px solid rgba(220, 53, 69, 0.5);
+    color: rgba(220, 53, 69, 0.8);
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.delete-btn:hover {
+    background: rgba(220, 53, 69, 0.1);
+    border-color: rgba(220, 53, 69, 0.7);
+    color: rgba(220, 53, 69, 1);
+}
+
+.add-option-card {
+    background: linear-gradient(135deg, rgba(139, 95, 191, 0.05), rgba(139, 95, 191, 0.1));
+    border: 2px dashed rgba(139, 95, 191, 0.3);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+}
+
+.add-option-card:hover {
+    background: linear-gradient(135deg, rgba(139, 95, 191, 0.1), rgba(139, 95, 191, 0.15));
+    border-color: rgba(139, 95, 191, 0.5);
+    transform: translateY(-2px);
+}
+
+.add-option-content {
+    text-align: center;
+    color: rgba(139, 95, 191, 0.8);
+}
+
+.add-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+}
+
+.add-option-content h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.add-option-content p {
+    font-size: 0.9rem;
+    margin: 0;
+    line-height: 1.3;
+}
+
+@media (max-width: 768px) {
+    .admin-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .options-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .category-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+}
+</style>
+
+<script>
+function editOption(optionId) {
+    window.location.href = "{{ url_for('admin.edit_option', option_id=0) }}".replace('0', optionId);
+}
+
+function addNewOption(category) {
+    // 해당 카테고리의 첫 번째 서비스 ID를 찾아서 옵션 추가 페이지로 이동
+    {% for service in services %}
+    if ('{{ service.category }}' === category) {
+        window.location.href = "{{ url_for('admin.add_option', service_id=0) }}".replace('0', '{{ service.id }}');
+        return;
+    }
+    {% endfor %}
+}
+
+function deleteOption(button, event) {
+    event.stopPropagation();
+    
+    const optionId = button.getAttribute('data-option-id');
+    const optionName = button.getAttribute('data-option-name');
+    
+    if (confirm(`정말로 "${optionName}" 서비스를 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)) {
+        window.location.href = `/admin/services/options/${optionId}/delete`;
+    }
+}
+</script>
 {% endblock %} 

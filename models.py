@@ -28,9 +28,10 @@ class ServiceOption(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     service_id = db.Column(db.Integer, db.ForeignKey('service.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text)
-    price = db.Column(db.Integer)
-    duration = db.Column(db.String(50))  # 예: "1시간", "30분" 등
+    description = db.Column(db.Text)  # 기본 설명 - index page 카드에 표시
+    detailed_description = db.Column(db.Text)  # 상세 설명 - 서비스 상세 페이지에 표시
+    details = db.Column(db.Text)  # JSON 형식으로 저장 (상세 내용 리스트)
+    packages = db.Column(db.Text)  # JSON 형식으로 저장 (패키지 및 가격 정보)
     
     # Service 모델과의 관계 설정
     service = db.relationship('Service', backref=db.backref('options', lazy=True, cascade="all, delete-orphan"))
