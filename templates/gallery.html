@@ -140,5 +140,39 @@
 <!-- HTMX 라이브러리 추가 -->
 <script src="https://unpkg.com/htmx.org@1.9.6"></script>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // HTMX 이벤트 리스너 추가
+    document.body.addEventListener('htmx:beforeRequest', function(event) {
+        // '더 많은 갤러리 보기' 버튼에서 발생한 요청인지 확인
+        if (event.detail.elt.classList.contains('gallery-more-btn')) {
+            if (window.showLoadingModal) {
+                window.showLoadingModal();
+            }
+        }
+    });
+
+    document.body.addEventListener('htmx:afterSettle', function(event) {
+        // 갤러리 관련 HTMX 요청이 완료되면 로딩 모달 숨기기
+        if (event.detail.elt.classList.contains('gallery-more-btn')) {
+            // 최소 1초는 표시한 후 숨기기
+            setTimeout(function() {
+                if (window.hideLoadingModal) {
+                    window.hideLoadingModal();
+                }
+            }, 800);
+        }
+    });
+
+    // HTMX 요청 실패 시에도 모달 숨기기
+    document.body.addEventListener('htmx:responseError', function(event) {
+        if (event.detail.elt.classList.contains('gallery-more-btn')) {
+            if (window.hideLoadingModal) {
+                window.hideLoadingModal();
+            }
+        }
+    });
+});
+</script>
 
 {% endblock %} 

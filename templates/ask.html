@@ -37,10 +37,23 @@
                         <div class="mb-3">
                             <label for="service" class="form-label">문의 대상 서비스</label>
                             <select class="form-select" id="service" name="service" required>
-                                <option value="" selected disabled>서비스를 선택해주세요</option>
-                                {% for service in services %}
-                                <option value="{{ service.id }}">{{ service.name }}</option>
+                                <option value="" {% if not default_selection %}selected{% endif %} disabled>서비스를 선택해주세요</option>
+                                {% set current_category = '' %}
+                                {% for service in all_services %}
+                                    {% if service.category != current_category %}
+                                        {% if current_category %}
+                                            </optgroup>
+                                        {% endif %}
+                                        {% set current_category = service.category %}
+                                        <optgroup label="{{ current_category }}">
+                                    {% endif %}
+                                    <option value="{{ service.id }}" {% if default_selection == service.id %}selected{% endif %}>
+                                        {{ service.name }}
+                                    </option>
                                 {% endfor %}
+                                {% if current_category %}
+                                    </optgroup>
+                                {% endif %}
                             </select>
                         </div>
 

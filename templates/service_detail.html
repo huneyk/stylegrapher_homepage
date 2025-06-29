@@ -91,16 +91,17 @@
             </div>
 
             <!-- 예약 및 문의 버튼 -->
-            <div class="action-section text-center">
-                <div class="action-buttons">
-                    <a href="{{ url_for('main.contact') }}?service={{ service.id }}" class="btn btn-primary btn-lg">
-                        <i class="bi bi-calendar-check"></i> 예약 신청
-                    </a>
-                    <a href="{{ url_for('main.ask') }}" class="btn btn-outline-primary btn-lg">
-                        <i class="bi bi-chat-dots"></i> 상담 문의
-                    </a>
+            <div class="text-center">
+                <p class="contact-text mb-4 lead">궁금하신 점이 있으시다면 언제든 문의해주세요.</p>
+                <div class="action-buttons mb-3">
+                    <a href="mailto:stylegrapher.ysg@gmail.com?subject=[문의] {{ service.name }} 관련 문의&body=안녕하세요!%0D%0A%0D%0A{{ service.name }} 서비스에 대해 문의드립니다.%0D%0A%0D%0A문의 내용:%0D%0A%0D%0A%0D%0A연락처:%0D%0A희망 일정:%0D%0A%0D%0A감사합니다." class="btn btn-primary">문의 하기</a>
                 </div>
-                <p class="action-note mt-3">전문 상담을 통해 맞춤형 서비스를 제공해드립니다.</p>
+                <div class="kakao-section">
+                    <p class="kakao-note">예약은 카카오톡 채널을 통해 진행됩니다.</p>
+                    <button type="button" class="kakao-btn" onclick="showKakaoModal()">
+                        <span class="kakao-logo">💬</span> 카카오톡 채널로 예약신청하기
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -322,59 +323,153 @@
     font-weight: 500;
 }
 
-.action-section {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 249, 250, 0.9));
-    border: 1.5px solid rgba(139, 95, 191, 0.2);
-    border-radius: 20px;
-    padding: 3rem 2rem;
-    box-shadow: 0 4px 20px rgba(139, 95, 191, 0.1);
+.contact-text {
+    font-family: 'Nanum Gothic', sans-serif;
+    color: rgba(139, 95, 191, 0.8);
+    font-size: 1.1rem;
+    font-weight: 700;
 }
 
 .action-buttons {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
     margin-bottom: 1rem;
 }
 
-.btn-lg {
-    padding: 1rem 2.5rem;
-    font-size: 1.1rem;
-    border-radius: 30px;
-    font-weight: 500;
-    transition: all 0.3s ease;
+.kakao-section {
+    margin-top: 1.5rem;
 }
 
-.btn-primary {
-    background: linear-gradient(135deg, rgba(139, 95, 191, 0.8), rgba(139, 95, 191, 0.9));
-    border: none;
-}
-
-.btn-primary:hover {
-    background: linear-gradient(135deg, rgba(139, 95, 191, 0.9), rgba(139, 95, 191, 1));
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(139, 95, 191, 0.3);
-}
-
-.btn-outline-primary {
-    border: 2px solid rgba(139, 95, 191, 0.6);
-    color: rgba(139, 95, 191, 0.8);
-    background: transparent;
-}
-
-.btn-outline-primary:hover {
-    background: rgba(139, 95, 191, 0.8);
-    border-color: rgba(139, 95, 191, 0.8);
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(139, 95, 191, 0.2);
-}
-
-.action-note {
+.kakao-note {
     color: #6c757d;
-    font-size: 0.95rem;
-    font-style: italic;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+
+.kakao-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #FEE500;
+    color: #3C1E1E;
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    border: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(254, 229, 0, 0.3);
+}
+
+.kakao-btn:hover {
+    background: #FFD700;
+    color: #3C1E1E;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(254, 229, 0, 0.4);
+}
+
+.kakao-logo {
+    font-size: 1.2rem;
+    filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.2));
+}
+
+/* 카카오톡 모달 스타일 */
+.kakao-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    animation: fadeIn 0.3s ease;
+}
+
+.kakao-modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 2rem;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    animation: slideIn 0.3s ease;
+    text-align: center;
+}
+
+.kakao-modal-header {
+    margin-bottom: 1.5rem;
+}
+
+.kakao-modal-title {
+    color: #3C1E1E;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.kakao-modal-message {
+    color: #333;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+}
+
+.kakao-modal-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.kakao-continue-btn {
+    background: #FEE500;
+    color: #3C1E1E;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.kakao-continue-btn:hover {
+    background: #FFD700;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(254, 229, 0, 0.4);
+}
+
+.kakao-cancel-btn {
+    background: #f8f9fa;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+    padding: 0.75rem 2rem;
+    border-radius: 20px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.kakao-cancel-btn:hover {
+    background: #e9ecef;
+    color: #495057;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { 
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @media (max-width: 768px) {
@@ -399,18 +494,12 @@
         padding: 2rem 1rem;
     }
     
-    .action-section {
-        padding: 2rem 1.5rem;
+    .contact-text {
+        font-size: 1rem;
     }
     
-    .action-buttons {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .btn-lg {
-        width: 100%;
-        max-width: 300px;
+    .kakao-note {
+        font-size: 0.9rem;
     }
     
     .package-details {
@@ -429,4 +518,54 @@
     }
 }
 </style>
+
+<!-- 카카오톡 모달 -->
+<div id="kakaoModal" class="kakao-modal">
+    <div class="kakao-modal-content">
+        <div class="kakao-modal-header">
+            <h4 class="kakao-modal-title">카카오톡 채널 안내</h4>
+        </div>
+        <div class="kakao-modal-message">
+            안녕하세요?<br><br>
+            카카오톡 채널에 고객님의 성함과 희망 서비스, 희망 예약시간, 휴대전화 번호, 그리고 궁금하신 점을 알려주시면 최대한 빠른 시간 안에 회신 드리겠습니다.<br><br>
+            감사합니다.
+        </div>
+        <div class="kakao-modal-buttons">
+            <button class="kakao-continue-btn" onclick="goToKakaoChannel()">계속하기</button>
+            <button class="kakao-cancel-btn" onclick="closeKakaoModal()">취소</button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 카카오톡 모달 관련 함수들
+    window.showKakaoModal = function() {
+        const modal = document.getElementById('kakaoModal');
+        if (modal) {
+            modal.style.display = 'block';
+        }
+    };
+
+    window.closeKakaoModal = function() {
+        const modal = document.getElementById('kakaoModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    };
+
+    window.goToKakaoChannel = function() {
+        window.open('https://pf.kakao.com/_xgDcFK', '_blank');
+        closeKakaoModal();
+    };
+
+    // 모달 외부 클릭시 닫기
+    document.addEventListener('click', function(event) {
+        const modal = document.getElementById('kakaoModal');
+        if (event.target === modal) {
+            closeKakaoModal();
+        }
+    });
+});
+</script>
 {% endblock %} 

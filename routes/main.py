@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app
+from flask_mail import Message
 from models import Service, ServiceOption, Gallery, Booking, CarouselItem, GalleryGroup, CollageText, Inquiry
-from extensions import db
+from extensions import db, mail
 import json
 from sqlalchemy import desc
 from sqlalchemy.sql import text
@@ -314,20 +315,131 @@ def contact():
 @main.route('/ask', methods=['GET', 'POST'])
 def ask():
     if request.method == 'POST':
+        # 폼 데이터 수집
+        name = request.form.get('name')
+        phone = request.form.get('phone')
+        email = request.form.get('email')
+        selected_service = request.form.get('service')
+        message = request.form.get('message')
+        
+        # 선택된 서비스 정보 파싱
+        service_type, service_db_id = selected_service.split('_', 1)
+        service_db_id = int(service_db_id)
+        
+        # 실제 service_id와 선택된 서비스/옵션 이름 확인
+        if service_type == 'option':
+            service_option = ServiceOption.query.get(service_db_id)
+            actual_service_id = service_option.service_id
+            selected_service_name = service_option.name
+        else:  # service_type == 'service'
+            service = Service.query.get(service_db_id)
+            actual_service_id = service.id
+            selected_service_name = service.name
+        
+        # 메시지에 선택된 서비스 정보 추가
+        enhanced_message = f"[문의 대상: {selected_service_name}]\n\n{message}"
+        
+        # 데이터베이스에 저장
         inquiry = Inquiry(
-            name=request.form.get('name'),
-            phone=request.form.get('phone'),
-            email=request.form.get('email'),
-            service_id=request.form.get('service'),
-            message=request.form.get('message')
+            name=name,
+            phone=phone,
+            email=email,
+            service_id=actual_service_id,
+            message=enhanced_message
         )
         db.session.add(inquiry)
         db.session.commit()
         
+        # 이메일 발송
+        try:
+            # 관리자에게 보낼 이메일 내용
+            subject = f"[스타일그래퍼 문의] {selected_service_name} 관련 문의"
+            
+            email_body = f"""
+스타일그래퍼 홈페이지에서 새로운 문의가 접수되었습니다.
+
+■ 문의자 정보
+• 이름: {name}
+• 휴대폰: {phone}
+• 이메일: {email}
+
+■ 문의 서비스
+• {selected_service_name}
+
+■ 문의 내용
+{message}
+
+---
+이 메일은 스타일그래퍼 홈페이지에서 자동으로 발송되었습니다.
+문의자에게 답변을 드리시기 바랍니다.
+            """
+            
+            # 메일 메시지 생성
+            msg = Message(
+                subject=subject,
+                recipients=['stylegrapher.ysg@gmail.com'],
+                body=email_body,
+                reply_to=email  # 답장시 문의자 이메일로 가도록 설정
+            )
+            
+            # 메일 발송
+            mail.send(msg)
+            
+            flash('문의가 성공적으로 접수되었습니다. 담당자가 빠른 시일 내에 연락드리겠습니다.', 'success')
+            
+        except Exception as e:
+            print(f"이메일 발송 오류: {str(e)}")
+            flash('문의는 접수되었으나 이메일 발송에 문제가 발생했습니다. 직접 연락 부탁드립니다.', 'warning')
+        
         return redirect(url_for('main.index'))
     
+    # 모든 서비스와 서비스 옵션을 가져와서 통합 목록 생성
     services = Service.query.all()
-    return render_template('ask.html', services=services)
+    service_options = ServiceOption.query.all()
+    
+    # 통합 서비스 목록 생성 (개별 서비스 옵션 위주로)
+    all_services = []
+    
+    # ServiceOption들 추가
+    for option in service_options:
+        all_services.append({
+            'type': 'option',
+            'id': f'option_{option.id}',
+            'name': option.name,
+            'category': option.service.name if option.service else '기타'
+        })
+    
+    # Service들도 추가 (ServiceOption이 없는 경우를 위해)
+    for service in services:
+        if not service.options:  # 옵션이 없는 서비스만 추가
+            all_services.append({
+                'type': 'service',
+                'id': f'service_{service.id}',
+                'name': service.name,
+                'category': '기타'
+            })
+    
+    # 카테고리별로 정렬
+    all_services.sort(key=lambda x: (x['category'], x['name']))
+    
+    # 이전 페이지에서 온 경우 default 선택을 위한 파라미터들
+    selected_service_id = request.args.get('service_id')  # service_detail에서 온 경우
+    selected_option_id = request.args.get('option_id')    # service_option_detail에서 온 경우
+    
+    default_selection = None
+    if selected_option_id:
+        default_selection = f'option_{selected_option_id}'
+    elif selected_service_id:
+        # 해당 서비스의 첫 번째 옵션을 찾거나 서비스 자체를 선택
+        service = Service.query.get(selected_service_id)
+        if service and service.options:
+            default_selection = f'option_{service.options[0].id}'
+        else:
+            default_selection = f'service_{selected_service_id}'
+    
+    return render_template('ask.html', 
+                         all_services=all_services, 
+                         default_selection=default_selection)
 
 # 서비스 카테고리별 라우트 - 각 카테고리의 대표 서비스 상세 페이지로 리다이렉트
 @main.route('/ai-analysis')

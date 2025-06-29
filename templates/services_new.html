@@ -13,11 +13,28 @@
                 {% if category.services %}
                 <div class="service-category mb-5">
                     <div class="category-header text-center mb-4">
-                        <div class="category-icon-wrapper" style="color: {{ category.color }};">
-                            <i class="{{ category.icon }} category-icon"></i>
+                        <h2 class="category-title">{{ category.title }}</h2>
+                        {% if category_key == 'ai_analysis' %}
+                        <div class="category-basic-description">
+                            <p>스타일그래퍼의 독자적인 AI 기술을 활용하여 고객님의 얼굴형, 피부톤, 체형 등을 정밀 분석합니다.</p>
+                            <p>개인의 고유한 특성을 파악하여 가장 어울리는 스타일을 과학적으로 제안드립니다.</p>
                         </div>
-                        <h2 class="category-title" style="color: {{ category.color }};">{{ category.title }}</h2>
-                        <p class="category-description">{{ category.description }}</p>
+                        {% elif category_key == 'consulting' %}
+                        <div class="category-basic-description">
+                            <p>전문 스타일리스트와의 1:1 맞춤 컨설팅을 통해 개인의 라이프스타일과 선호도를 반영한 스타일링을 제공합니다.</p>
+                            <p>퍼스널 컬러 진단부터 토탈 이미지 메이킹까지 체계적인 스타일 솔루션을 만나보세요.</p>
+                        </div>
+                        {% elif category_key == 'oneday' %}
+                        <div class="category-basic-description">
+                            <p>바쁜 일상 속에서도 완벽한 변신을 원하는 분들을 위한 원데이 스타일링 서비스입니다.</p>
+                            <p>헤어, 메이크업, 스타일링을 한 번에 완성하여 특별한 하루를 선사해드립니다.</p>
+                        </div>
+                        {% elif category_key == 'photo' %}
+                        <div class="category-basic-description">
+                            <p>인생의 소중한 순간을 기록하는 전문 화보 촬영 서비스입니다.</p>
+                            <p>개인 프로필부터 가족 사진, 커플 화보까지 특별한 추억을 아름다운 작품으로 남겨드립니다.</p>
+                        </div>
+                        {% endif %}
                     </div>
                     
                     <div class="services-grid">
@@ -29,33 +46,12 @@
                                 </div>
                                 <div class="service-card-body">
                                     <p class="service-description">{{ option.description }}</p>
-                                    
-                                    <!-- 패키지 미리보기 -->
-                                    {% if option.packages %}
-                                        {% set packages = option.packages|from_json %}
-                                        {% if packages %}
-                                        <div class="packages-preview">
-                                            <h6 class="packages-title">제공 패키지</h6>
-                                            <div class="packages-list">
-                                                {% for package in packages[:2] %}
-                                                <div class="package-item">
-                                                    <span class="package-name">{{ package.name }}</span>
-                                                    <span class="package-price">{{ "{:,}".format(package.price|int) }}원</span>
-                                                </div>
-                                                {% endfor %}
-                                                {% if packages|length > 2 %}
-                                                <div class="more-packages">그 외 {{ packages|length - 2 }}개 패키지</div>
-                                                {% endif %}
-                                            </div>
-                                        </div>
-                                        {% endif %}
-                                    {% endif %}
                                 </div>
                                 <div class="service-card-footer">
                                     <a href="{{ url_for('main.service_option_detail', id=option.id) }}" 
-                                       class="btn btn-primary service-detail-btn">상세 보기</a>
+                                       class="btn service-btn detail-btn">상세 보기</a>
                                     <a href="{{ url_for('main.ask') }}" 
-                                       class="btn btn-outline-primary inquiry-btn">문의하기</a>
+                                       class="btn service-btn inquiry-btn">문의하기</a>
                                 </div>
                             </div>
                             {% endfor %}
@@ -111,26 +107,29 @@
     margin-bottom: 2.5rem;
 }
 
-.category-icon-wrapper {
-    margin-bottom: 1rem;
-}
-
-.category-icon {
-    font-size: 3rem;
-    opacity: 0.8;
-}
-
 .category-title {
     font-family: 'Nanum Gothic', sans-serif;
     font-size: 2.2rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
+    color: rgba(139, 95, 191, 0.8) !important;
 }
 
-.category-description {
-    font-size: 1.1rem;
-    color: #6c757d;
-    font-weight: 300;
+.category-basic-description {
+    max-width: 800px;
+    margin: 1.5rem auto 0 auto;
+    padding: 0 1rem;
+}
+
+.category-basic-description p {
+    font-size: 1rem;
+    color: #495057;
+    line-height: 1.6;
+    margin-bottom: 0.75rem;
+    font-weight: 400;
+}
+
+.category-basic-description p:last-child {
     margin-bottom: 0;
 }
 
@@ -186,52 +185,6 @@
     margin-bottom: 1.5rem;
 }
 
-/* 패키지 미리보기 */
-.packages-preview {
-    background: rgba(139, 95, 191, 0.05);
-    border-radius: 10px;
-    padding: 1rem;
-    margin-top: 1rem;
-}
-
-.packages-title {
-    font-size: 0.9rem;
-    color: rgba(139, 95, 191, 0.8);
-    font-weight: 600;
-    margin-bottom: 0.75rem;
-}
-
-.package-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid rgba(139, 95, 191, 0.1);
-}
-
-.package-item:last-child {
-    border-bottom: none;
-}
-
-.package-name {
-    font-size: 0.9rem;
-    color: #495057;
-}
-
-.package-price {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: rgba(139, 95, 191, 0.8);
-}
-
-.more-packages {
-    text-align: center;
-    font-size: 0.85rem;
-    color: #6c757d;
-    font-style: italic;
-    padding-top: 0.5rem;
-}
-
 /* 버튼 스타일 */
 .service-card-footer {
     padding: 1.5rem;
@@ -241,40 +194,51 @@
     gap: 0.75rem;
 }
 
-.service-detail-btn {
-    background: linear-gradient(135deg, rgba(139, 95, 191, 0.8), rgba(139, 95, 191, 0.9));
-    border: none;
-    padding: 0.75rem 1.5rem;
+.service-btn {
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
     border-radius: 25px;
-    font-weight: 500;
     transition: all 0.3s ease;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    min-width: 120px;
     flex: 1;
     text-align: center;
 }
 
-.service-detail-btn:hover {
-    background: linear-gradient(135deg, rgba(139, 95, 191, 0.9), rgba(139, 95, 191, 1));
-    transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.3);
+.detail-btn {
+    background-color: transparent;
+    border: 2px solid rgba(139, 95, 191, 0.8);
+    color: rgba(139, 95, 191, 0.8);
+}
+
+.detail-btn:hover {
+    background-color: rgba(139, 95, 191, 0.05);
+    border-color: rgba(139, 95, 191, 1);
+    color: rgba(139, 95, 191, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.2);
 }
 
 .inquiry-btn {
-    border: 2px solid rgba(139, 95, 191, 0.6);
+    background-color: transparent;
+    border: 2px solid rgba(139, 95, 191, 0.8);
     color: rgba(139, 95, 191, 0.8);
-    padding: 0.75rem 1.5rem;
-    border-radius: 25px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    background: transparent;
-    flex: 1;
-    text-align: center;
 }
 
 .inquiry-btn:hover {
-    background: rgba(139, 95, 191, 0.8);
-    border-color: rgba(139, 95, 191, 0.8);
-    color: white;
-    transform: translateY(-1px);
+    background-color: rgba(139, 95, 191, 0.05);
+    border-color: rgba(139, 95, 191, 1);
+    color: rgba(139, 95, 191, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.2);
+}
+
+.service-btn:active {
+    transform: translateY(0);
+    box-shadow: none;
 }
 
 /* 반응형 디자인 */
@@ -289,10 +253,6 @@
     
     .category-title {
         font-size: 1.8rem;
-    }
-    
-    .category-icon {
-        font-size: 2.5rem;
     }
     
     .services-grid {

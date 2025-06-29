@@ -439,11 +439,132 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 </style>
 
+<!-- Additional Cards Section -->
+<div class="container py-5">
+    <div class="row g-4">
+        <!-- 고객 스토리 카드 -->
+        <div class="col-md-4">
+            <a href="{{ url_for('main.customer_story') }}" class="text-decoration-none">
+                <div class="card additional-card h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="additional-card-icon mb-3">
+                            <i class="bi bi-chat-heart-fill" style="font-size: 3rem; color: rgba(139, 95, 191, 0.8);"></i>
+                        </div>
+                        <h5 class="additional-card-title">고객 스토리</h5>
+                        <p class="additional-card-text">고객들의 변화와 감동의 이야기</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        
+        <!-- 커머셜 포트폴리오 카드 -->
+        <div class="col-md-4">
+            <a href="{{ url_for('main.commercial_portfolio') }}" class="text-decoration-none">
+                <div class="card additional-card h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="additional-card-icon mb-3">
+                            <i class="bi bi-briefcase-fill" style="font-size: 3rem; color: rgba(139, 95, 191, 0.8);"></i>
+                        </div>
+                        <h5 class="additional-card-title">커머셜 포트폴리오</h5>
+                        <p class="additional-card-text">전문적인 상업 촬영 포트폴리오</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        
+        <!-- 스타일그래퍼 소개 카드 -->
+        <div class="col-md-4">
+            <a href="{{ url_for('main.about') }}" class="text-decoration-none">
+                <div class="card additional-card h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="additional-card-icon mb-3">
+                            <i class="bi bi-person-circle" style="font-size: 3rem; color: rgba(139, 95, 191, 0.8);"></i>
+                        </div>
+                        <h5 class="additional-card-title">스타일그래퍼 소개</h5>
+                        <p class="additional-card-text">스타일그래퍼와 함께하는 스타일 여정</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.additional-card {
+    border: 1px solid rgba(139, 95, 191, 0.3);
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(139, 95, 191, 0.2);
+    background-color: #fff;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    min-height: 250px;
+}
+
+.additional-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(139, 95, 191, 0.3);
+    border-color: rgba(139, 95, 191, 0.5);
+}
+
+.additional-card-title {
+    font-family: 'Nanum Gothic', sans-serif;
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: rgba(139, 95, 191, 0.9);
+    margin-bottom: 1rem;
+    transition: color 0.3s ease;
+}
+
+.additional-card:hover .additional-card-title {
+    color: rgba(139, 95, 191, 1);
+}
+
+.additional-card-text {
+    font-family: 'Nanum Gothic', sans-serif;
+    font-size: 1rem;
+    color: #6c757d;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.additional-card-icon {
+    transition: transform 0.3s ease;
+}
+
+.additional-card:hover .additional-card-icon {
+    transform: scale(1.1);
+}
+
+@media (max-width: 768px) {
+    .additional-card {
+        min-height: 200px;
+        margin-bottom: 1rem;
+    }
+    
+    .additional-card-title {
+        font-size: 1.1rem;
+    }
+    
+    .additional-card-text {
+        font-size: 0.9rem;
+    }
+    
+    .additional-card-icon i {
+        font-size: 2.5rem !important;
+    }
+}
+</style>
+
 <!-- Contact Section -->
 <div class="container py-5">
     <div class="text-center">
         <p class="contact-text mb-4 lead">궁금하신 점이 있으시다면 언제든 문의해주세요.</p>
-        <a href="{{ url_for('main.ask') }}" class="btn btn-primary">문의 하기</a>
+        <div class="contact-buttons">
+            <a href="mailto:stylegrapher.ysg@gmail.com?subject=[문의] 스타일그래퍼 서비스 문의&body=안녕하세요!%0D%0A%0D%0A스타일그래퍼 서비스에 대해 문의드립니다.%0D%0A%0D%0A문의 내용:%0D%0A%0D%0A%0D%0A연락처:%0D%0A희망 일정:%0D%0A%0D%0A감사합니다." class="btn btn-primary contact-btn">문의 하기</a>
+            <button type="button" class="btn kakao-btn contact-btn" onclick="showKakaoModal()">
+                💬 카카오톡 채널로 예약신청하기
+            </button>
+        </div>
     </div>
 </div>
 
@@ -455,9 +576,73 @@ document.addEventListener('DOMContentLoaded', function() {
     font-weight: 700;
 }
 
+.contact-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.contact-btn {
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    min-width: 200px;
+}
+
+.contact-btn.btn-primary {
+    background-color: rgba(139, 95, 191, 0.8);
+    border-color: rgba(139, 95, 191, 0.8);
+    color: white;
+}
+
+.contact-btn.btn-primary:hover {
+    background-color: rgba(139, 95, 191, 1);
+    border-color: rgba(139, 95, 191, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.3);
+}
+
+.contact-btn.kakao-btn {
+    background-color: #FEE500;
+    color: #3C1E1E;
+    border: 2px solid #FEE500;
+    font-weight: 600;
+}
+
+.contact-btn.kakao-btn:hover {
+    background-color: #FFD700;
+    border-color: #FFD700;
+    color: #3C1E1E;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(254, 229, 0, 0.4);
+}
+
+.contact-btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
 @media (max-width: 768px) {
     .contact-text {
         font-size: 1rem;
+    }
+    
+    .contact-buttons {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .contact-btn {
+        min-width: 280px;
+        padding: 0.65rem 1.5rem;
+        font-size: 0.95rem;
     }
 }
 </style>

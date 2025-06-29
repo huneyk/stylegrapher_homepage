@@ -58,21 +58,32 @@
     // 버튼 섹션 업데이트
     var loadMoreSection = document.getElementById('load-more-section');
     {% if has_more %}
-    loadMoreSection.innerHTML = `
-        <button class="btn gallery-more-btn"
-                hx-get="{{ url_for('main.gallery', page=next_page) }}"
-                hx-target="#gallery-container"
-                hx-swap="beforeend"
-                hx-trigger="click"
-                hx-indicator="#loading-indicator">
-            더 많은 갤러리 보기
-        </button>
-        <div id="loading-indicator" class="htmx-indicator">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        </div>
-    `;
+    var buttonHTML = '<button class="btn gallery-more-btn" ' +
+                     'hx-get="{{ url_for("main.gallery", page=next_page) }}" ' +
+                     'hx-target="#gallery-container" ' +
+                     'hx-swap="beforeend" ' +
+                     'hx-trigger="click" ' +
+                     'hx-indicator="#loading-indicator">' +
+                     '더 많은 갤러리 보기' +
+                     '</button>' +
+                     '<div id="loading-indicator" class="htmx-indicator">' +
+                     '<div class="spinner-border text-primary" role="status">' +
+                     '<span class="visually-hidden">Loading...</span>' +
+                     '</div>' +
+                     '</div>';
+    
+    loadMoreSection.innerHTML = buttonHTML;
+    
+    // 새로 생성된 버튼에 이벤트 리스너 추가
+    var newButton = loadMoreSection.querySelector('.gallery-more-btn');
+    if (newButton && window.showLoadingModal) {
+        newButton.addEventListener('click', function() {
+            if (window.showLoadingModal) window.showLoadingModal();
+            setTimeout(function() {
+                if (window.hideLoadingModal) window.hideLoadingModal();
+            }, 2000);
+        });
+    }
     {% else %}
     loadMoreSection.innerHTML = '';
     {% endif %}
