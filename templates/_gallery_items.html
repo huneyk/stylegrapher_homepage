@@ -95,19 +95,45 @@
     opacity: 1;
 }
 
-.gallery-overlay-content {
+.gallery-item-link .gallery-overlay-content {
     text-align: center;
-    color: white;
+    color: white !important;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 20px;
+    border-radius: 10px;
+    backdrop-filter: blur(5px);
 }
 
-.gallery-overlay-content i {
+.gallery-item-link .gallery-overlay-content * {
+    color: white !important;
+}
+
+.gallery-item-link .gallery-overlay-content i {
     display: block;
     margin-bottom: 8px;
+    color: white !important;
 }
 
-.gallery-overlay-content p {
+.gallery-item-link .gallery-overlay-content p {
     font-size: 0.9rem;
     font-weight: 500;
+    color: white !important;
+    margin: 0;
+}
+
+/* 링크 색상 상속 방지 - 모든 상태에서 흰색 강제 적용 */
+.gallery-item-link .gallery-overlay-content,
+.gallery-item-link .gallery-overlay-content *,
+.gallery-item-link:hover .gallery-overlay-content,
+.gallery-item-link:hover .gallery-overlay-content *,
+.gallery-item-link:visited .gallery-overlay-content,
+.gallery-item-link:visited .gallery-overlay-content *,
+.gallery-item-link:focus .gallery-overlay-content,
+.gallery-item-link:focus .gallery-overlay-content *,
+.gallery-item-link:active .gallery-overlay-content,
+.gallery-item-link:active .gallery-overlay-content * {
+    color: white !important;
+    text-decoration: none !important;
 }
 
 /* 캐러셀 컨트롤 버튼 스타일 개선 */
