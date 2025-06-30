@@ -16,9 +16,10 @@
                         <div class="carousel-inner">
                             {% for image in group.images %}
                             <div class="carousel-item {% if loop.first %}active{% endif %}">
-                                <img src="/admin/image/{{ image.image_path }}" 
+                                <img src="{{ url_for('main.serve_image', image_path=image.image_path) }}" 
                                      class="d-block w-100" 
-                                     alt="{{ group.title }}">
+                                     alt="{{ group.title }}"
+                                     loading="lazy">
                             </div>
                             {% endfor %}
                         </div>
@@ -290,9 +291,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div class="carousel-inner">
                                     {% for image in group.images %}
                                     <div class="carousel-item {% if loop.first %}active{% endif %}">
-                                        <img src="/admin/image/{{ image.image_path }}" 
+                                        <img src="{{ url_for('main.serve_image', image_path=image.image_path) }}" 
                                              class="d-block w-100" 
-                                             alt="{{ group.title }}">
+                                             alt="{{ group.title }}"
+                                             loading="lazy">
                                     </div>
                                     {% endfor %}
                                 </div>
@@ -383,6 +385,9 @@ document.addEventListener('DOMContentLoaded', function() {
     margin: 0;
     text-align: center;
     letter-spacing: 0.02em;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    line-break: strict;
 }
 
 @media (max-width: 768px) {
@@ -513,6 +518,9 @@ document.addEventListener('DOMContentLoaded', function() {
     color: rgba(139, 95, 191, 0.9);
     margin-bottom: 1rem;
     transition: color 0.3s ease;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    line-break: strict;
 }
 
 .additional-card:hover .additional-card-title {
@@ -525,6 +533,9 @@ document.addEventListener('DOMContentLoaded', function() {
     color: #6c757d;
     margin: 0;
     line-height: 1.5;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    line-break: strict;
 }
 
 .additional-card-icon {
@@ -574,6 +585,9 @@ document.addEventListener('DOMContentLoaded', function() {
     color: rgba(139, 95, 191, 0.8);
     font-size: 1.1rem;
     font-weight: 700;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    line-break: strict;
 }
 
 .contact-buttons {

@@ -30,12 +30,29 @@
             font-size: 1rem !important;
             color: #6c757d !important;
             line-height: 1.4;
+            word-break: keep-all;
+            overflow-wrap: break-word;
+            line-break: strict;
         }
         
         /* 관리자 대시보드의 카드 본문 텍스트 */
         .card-body p.text-muted {
             font-size: 1rem !important;
             color: #6c757d !important;
+            word-break: keep-all;
+            overflow-wrap: break-word;
+            line-break: strict;
+        }
+
+        /* 모든 카드 내 텍스트 요소의 단어 줄바꿈 규칙 */
+        .card h1, .card h2, .card h3, .card h4, .card h5, .card h6,
+        .card .lead,
+        .card .gallery-image-count,
+        .card .service-title,
+        .card .option-title {
+            word-break: keep-all;
+            overflow-wrap: break-word;
+            line-break: strict;
         }
         .navbar {
             padding: 4rem 0 calc(2.6rem + 10px) 0 !important;
@@ -427,58 +444,7 @@
             }
         }
 
-        /* 로딩 모달 스타일 */
-        .loading-modal {
-            display: none;
-            position: fixed;
-            z-index: 10000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            animation: fadeIn 0.3s ease;
-        }
 
-        .loading-modal-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 2.5rem;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            min-width: 300px;
-        }
-
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid rgba(139, 95, 191, 0.8);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1.5rem auto;
-        }
-
-        .loading-text {
-            font-size: 1.1rem;
-            color: #333;
-            margin: 0;
-            font-weight: 500;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
 
         /* 카카오톡 모달 스타일 */
         .kakao-modal {
@@ -707,13 +673,7 @@
         </div>
     </div>
 
-    <!-- 로딩 모달 -->
-    <div id="loadingModal" class="loading-modal">
-        <div class="loading-modal-content">
-            <div class="loading-spinner"></div>
-            <p class="loading-text">갤러리를 불러오는 중입니다...</p>
-        </div>
-    </div>
+
 
     <!-- 카카오톡 모달 -->
     <div id="kakaoModal" class="kakao-modal">
@@ -857,20 +817,7 @@
                 link.addEventListener('click', closeSideMenu);
             });
 
-            // 로딩 모달 관련 함수들
-            window.showLoadingModal = function() {
-                const modal = document.getElementById('loadingModal');
-                if (modal) {
-                    modal.style.display = 'block';
-                }
-            };
 
-            window.hideLoadingModal = function() {
-                const modal = document.getElementById('loadingModal');
-                if (modal) {
-                    modal.style.display = 'none';
-                }
-            };
 
             // 카카오톡 모달 관련 함수들
             window.showKakaoModal = function() {
@@ -900,69 +847,7 @@
                 }
             });
 
-            // 갤러리 관련 링크에 로딩 모달 추가
-            const galleryLinks = document.querySelectorAll('a[href*="gallery"]');
-            galleryLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    // 외부 링크나 특별한 동작이 있는 경우 제외
-                    if (link.getAttribute('target') === '_blank' || 
-                        link.getAttribute('onclick') || 
-                        link.getAttribute('href').startsWith('#')) {
-                        return;
-                    }
-                    
-                    showLoadingModal();
-                    
-                    // 최소 1.5초 동안 모달 표시 후 페이지 로딩 완료 시 숨기기
-                    const startTime = Date.now();
-                    const minDisplayTime = 1500; // 1.5초
-                    
-                    // 페이지 언로드 전에 모달이 사라지지 않도록 처리
-                    const hideModalWhenReady = () => {
-                        const elapsedTime = Date.now() - startTime;
-                        const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
-                        
-                        setTimeout(() => {
-                            hideLoadingModal();
-                        }, remainingTime);
-                    };
-                    
-                    // beforeunload 이벤트로 페이지 이탈 감지
-                    window.addEventListener('beforeunload', hideModalWhenReady, { once: true });
-                    
-                    // 만약 페이지 이동이 안 되면 3초 후 자동으로 숨기기
-                    setTimeout(() => {
-                        hideLoadingModal();
-                    }, 3000);
-                });
-            });
-
-            // '더 많은 갤러리 보기' 버튼들에 로딩 모달 추가 (일반 링크만)
-            const galleryMoreBtns = document.querySelectorAll('.gallery-more-btn:not([hx-get])');
-            galleryMoreBtns.forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    showLoadingModal();
-                    
-                    // 일반 링크의 경우 페이지 이동 처리
-                    const startTime = Date.now();
-                    const minDisplayTime = 1500;
-                    
-                    const hideModalWhenReady = () => {
-                        const elapsedTime = Date.now() - startTime;
-                        const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
-                        
-                        setTimeout(() => {
-                            hideLoadingModal();
-                        }, remainingTime);
-                    };
-                    
-                    window.addEventListener('beforeunload', hideModalWhenReady, { once: true });
-                    
-                    setTimeout(() => {
-                        hideLoadingModal();
-                    }, 3000);
-                });
-            });
+            // 갤러리 관련 로딩 모달 제거됨
         });
 
         // 카테고리 토글 함수

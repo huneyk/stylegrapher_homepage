@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app
+from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app, send_file, make_response
 from flask_mail import Message
 from models import Service, ServiceOption, Gallery, Booking, CarouselItem, GalleryGroup, CollageText, Inquiry
 from extensions import db, mail
@@ -8,9 +8,11 @@ from sqlalchemy.sql import text
 import os
 import io
 from PIL import Image
-from datetime import datetime
+from datetime import datetime, timedelta
 from pymongo import MongoClient
 from dotenv import load_dotenv
+import functools
+import hashlib
 
 # MongoDB 설정 불러오기
 load_dotenv()
@@ -66,6 +68,74 @@ def resize_image_memory(img, width=1080):
 
 # Create the Blueprint object
 main = Blueprint('main', __name__)
+
+# 간단한 메모리 캐시 구현
+_cache = {}
+_cache_timestamps = {}
+
+def cache_with_timeout(timeout_minutes=30):
+    """메모리 캐시 데코레이터"""
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            # 캐시 키 생성
+            cache_key = f"{func.__name__}:{hash(str(args) + str(sorted(kwargs.items())))}"
+            
+            # 캐시 만료 시간 확인
+            if cache_key in _cache_timestamps:
+                if datetime.now() - _cache_timestamps[cache_key] < timedelta(minutes=timeout_minutes):
+                    return _cache[cache_key]
+            
+            # 캐시 미스 또는 만료된 경우 실행
+            result = func(*args, **kwargs)
+            _cache[cache_key] = result
+            _cache_timestamps[cache_key] = datetime.now()
+            
+            return result
+        return wrapper
+    return decorator
+
+def process_missing_images_background(missing_images):
+    """백그라운드에서 누락된 이미지들을 MongoDB에 업로드"""
+    if not images_collection:
+        return
+    
+    for image_path in missing_images:
+        try:
+            file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_path)
+            if os.path.exists(file_path):
+                # 이미지 타입 결정
+                content_type = 'image/jpeg'
+                if image_path.lower().endswith('.png'):
+                    content_type = 'image/png'
+                elif image_path.lower().endswith('.gif'):
+                    content_type = 'image/gif'
+                
+                # 이미지 리사이징 (더 작은 크기로)
+                with Image.open(file_path) as img:
+                    # 썸네일 생성 (600px 너비로 축소)
+                    resized_img = resize_image_memory(img, width=600)
+                    buffer = io.BytesIO()
+                    resized_img.save(buffer, format='JPEG', quality=85, optimize=True)
+                    img_binary = buffer.getvalue()
+                
+                # MongoDB에 저장
+                new_doc = {
+                    '_id': image_path,
+                    'filename': image_path,
+                    'content_type': content_type,
+                    'binary_data': img_binary,
+                    'created_at': datetime.now(),
+                    'optimized': True
+                }
+                
+                # 중복 체크 후 삽입
+                if not images_collection.find_one({'_id': image_path}):
+                    images_collection.insert_one(new_doc)
+                    print(f"백그라운드에서 이미지 처리 완료: {image_path}")
+                    
+        except Exception as e:
+            print(f"백그라운드 이미지 처리 실패 {image_path}: {str(e)}")
 
 def get_all_services():
     """모든 서비스와 서비스 옵션을 가져와서 통합 목록 생성"""
@@ -187,8 +257,34 @@ def service_option_detail(id):
                          details=details,
                          packages=packages)
 
+@main.route('/image/<path:image_path>')
+def serve_image(image_path):
+    """이미지를 효율적으로 서빙하는 라우트"""
+    try:
+        # MongoDB에서 이미지 조회
+        if images_collection is not None:
+            image_doc = images_collection.find_one({'_id': image_path})
+            if image_doc and 'binary_data' in image_doc:
+                response = make_response(image_doc['binary_data'])
+                response.headers['Content-Type'] = image_doc.get('content_type', 'image/jpeg')
+                response.headers['Cache-Control'] = 'public, max-age=86400'  # 1일 캐시
+                return response
+        
+        # MongoDB에 없으면 파일 시스템에서 서빙
+        file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_path)
+        if os.path.exists(file_path):
+            return send_file(file_path)
+        
+        # 이미지가 없으면 404
+        return "Image not found", 404
+        
+    except Exception as e:
+        print(f"이미지 서빙 오류: {str(e)}")
+        return "Image serving error", 500
+
 @main.route('/gallery')
 @main.route('/gallery/<int:page>')
+@cache_with_timeout(15)  # 15분 캐시
 def gallery(page=1):
     try:
         per_page = 9  # 페이지당 갤러리 그룹 수
@@ -202,91 +298,108 @@ def gallery(page=1):
         has_more = page < total_pages
         next_page = page + 1 if has_more else None
         
-        # SQL에서 갤러리 그룹 조회
+        # 최적화된 쿼리: 갤러리 그룹과 이미지를 한 번에 조회
         result = db.session.execute(text("""
-            SELECT id, title, created_at
-            FROM gallery_group
-            ORDER BY created_at DESC
-            LIMIT :limit OFFSET :offset
+            SELECT 
+                gg.id as group_id, 
+                gg.title, 
+                gg.created_at,
+                g.id as image_id,
+                g.image_path,
+                g."order"
+            FROM gallery_group gg
+            LEFT JOIN gallery g ON gg.id = g.group_id
+            WHERE gg.id IN (
+                SELECT id FROM gallery_group 
+                ORDER BY created_at DESC 
+                LIMIT :limit OFFSET :offset
+            )
+            ORDER BY gg.created_at DESC, g."order"
         """), {"limit": per_page, "offset": (page - 1) * per_page})
         
-        # 갤러리 그룹 목록으로 변환
-        gallery_groups = []
+        # 그룹별로 데이터 정리
+        groups_dict = {}
         for row in result:
-            group_data = {
-                'id': row[0],
-                'title': row[1],
-                'created_at': row[2],
-                'images': []
-            }
-            
-            # SQL에서 각 그룹의 이미지 기본 정보 조회
-            image_result = db.session.execute(text("""
-                SELECT id, image_path, "order"
-                FROM gallery
-                WHERE group_id = :group_id
-                ORDER BY "order"
-            """), {'group_id': group_data['id']})
-            
-            for img_row in image_result:
-                image_data = {
-                    'id': img_row[0],
-                    'image_path': img_row[1],
-                    'order': img_row[2]
+            group_id = row[0]
+            if group_id not in groups_dict:
+                groups_dict[group_id] = {
+                    'id': group_id,
+                    'title': row[1],
+                    'created_at': row[2],
+                    'images': []
                 }
-                
-                # MongoDB에서 이미지 확인
-                mongodb_working = True
-                if images_collection is not None:
-                    try:
-                        image_doc = images_collection.find_one({'_id': image_data['image_path']})
-                        if not image_doc:
-                            # MongoDB에 없는 이미지는 동적으로 MongoDB에 업로드 시도
-                            try:
-                                file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_data['image_path'])
-                                if os.path.exists(file_path):
-                                    # 이미지 타입 결정
-                                    content_type = 'image/jpeg'  # 기본값
-                                    if image_data['image_path'].lower().endswith('.png'):
-                                        content_type = 'image/png'
-                                    elif image_data['image_path'].lower().endswith('.gif'):
-                                        content_type = 'image/gif'
-                                    
-                                    # 이미지 읽기 및 리사이징
-                                    with Image.open(file_path) as img:
-                                        resized_img = resize_image_memory(img, width=1080)
-                                        buffer = io.BytesIO()
-                                        resized_img.save(buffer, format=img.format or 'JPEG', quality=95, optimize=True)
-                                        img_binary = buffer.getvalue()
-                                    
-                                    # MongoDB에 저장
-                                    new_doc = {
-                                        '_id': image_data['image_path'],  # 기존 파일명을 ID로 사용
-                                        'filename': image_data['image_path'],
-                                        'content_type': content_type,
-                                        'binary_data': img_binary,
-                                        'group_id': group_data['id'],
-                                        'order': image_data['order'],
-                                        'created_at': datetime.now()
-                                    }
-                                    images_collection.insert_one(new_doc)
-                                    print(f"이미지를 MongoDB에 자동 업로드: {image_data['image_path']}")
-                            except Exception as upload_error:
-                                print(f"이미지 자동 업로드 실패: {str(upload_error)}")
-                    except Exception as mongo_error:
-                        print(f"MongoDB 조회 중 오류 발생: {str(mongo_error)}")
-                        mongodb_working = False
-                
-                group_data['images'].append(image_data)
             
-            gallery_groups.append(group_data)
+            # 이미지가 있는 경우에만 추가
+            if row[3] is not None:  # image_id가 None이 아닌 경우
+                groups_dict[group_id]['images'].append({
+                    'id': row[3],
+                    'image_path': row[4],
+                    'order': row[5]
+                })
+        
+        # 리스트로 변환 (생성일 기준 정렬 유지)
+        gallery_groups = list(groups_dict.values())
+        
+        # MongoDB 이미지 존재 여부 일괄 확인 (성능 최적화)
+        if images_collection is not None and gallery_groups:
+            try:
+                # 모든 이미지 경로 수집
+                all_image_paths = []
+                for group in gallery_groups:
+                    for image in group['images']:
+                        all_image_paths.append(image['image_path'])
+                
+                if all_image_paths:
+                    # 한 번의 쿼리로 모든 이미지 존재 여부 확인
+                    existing_images = images_collection.find(
+                        {'_id': {'$in': all_image_paths}}, 
+                        {'_id': 1}
+                    )
+                    existing_image_set = {doc['_id'] for doc in existing_images}
+                    
+                    # 없는 이미지들을 백그라운드에서 처리
+                    missing_images = set(all_image_paths) - existing_image_set
+                    if missing_images:
+                        print(f"MongoDB에 없는 이미지 {len(missing_images)}개 발견 (백그라운드에서 처리 시작)")
+                        # 별도 스레드에서 처리 (non-blocking)
+                        import threading
+                        thread = threading.Thread(
+                            target=process_missing_images_background, 
+                            args=(list(missing_images),)
+                        )
+                        thread.daemon = True
+                        thread.start()
+                        
+            except Exception as mongo_error:
+                print(f"MongoDB 일괄 조회 중 오류 발생: {str(mongo_error)}")
         
         if request.headers.get('HX-Request'):
-            # HTMX 요청인 경우 갤러리 아이템만 반환
-            return render_template('_gallery_items.html', 
-                                gallery_groups=gallery_groups,
-                                has_more=has_more,
-                                next_page=next_page)
+            # HTMX 요청인 경우 갤러리 아이템과 버튼 업데이트를 함께 반환
+            gallery_items_html = render_template('_gallery_items.html', 
+                                gallery_groups=gallery_groups)
+            
+            # 버튼 섹션 업데이트용 HTML
+            if has_more:
+                button_html = f'''
+                <button class="btn gallery-more-btn"
+                        hx-get="{url_for('main.gallery', page=next_page)}"
+                        hx-target="#gallery-container"
+                        hx-swap="beforeend"
+                        hx-trigger="click"
+                        hx-indicator="#loading-indicator">
+                    더 많은 갤러리 보기
+                </button>
+                <div id="loading-indicator" class="htmx-indicator">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>'''
+            else:
+                button_html = ''
+            
+            # 갤러리 아이템과 버튼을 함께 반환
+            response_html = gallery_items_html + f'<div id="load-more-section" hx-swap-oob="true">{button_html}</div>'
+            return response_html
         
         # 일반 요청인 경우 전체 페이지 반환
         return render_template('gallery.html', 

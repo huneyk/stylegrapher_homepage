@@ -13,9 +13,10 @@
                 {% for image in group.images %}
                 <div class="carousel-item {% if loop.first %}active{% endif %}">
                     <div class="gallery-image-wrapper">
-                        <img src="/admin/image/{{ image.image_path }}" 
+                        <img src="{{ url_for('main.serve_image', image_path=image.image_path) }}"
                              class="d-block w-100" 
-                             alt="{{ group.title }}">
+                             alt="{{ group.title }}"
+                             loading="lazy">
                     </div>
                 </div>
                 {% endfor %}
@@ -51,41 +52,4 @@
     font-size: 0.9rem;
     margin: 0.5rem 0 0 0;
 }
-</style>
-
-{% if request.headers.get('HX-Request') %}
-<script>
-    // 버튼 섹션 업데이트
-    var loadMoreSection = document.getElementById('load-more-section');
-    {% if has_more %}
-    var buttonHTML = '<button class="btn gallery-more-btn" ' +
-                     'hx-get="{{ url_for("main.gallery", page=next_page) }}" ' +
-                     'hx-target="#gallery-container" ' +
-                     'hx-swap="beforeend" ' +
-                     'hx-trigger="click" ' +
-                     'hx-indicator="#loading-indicator">' +
-                     '더 많은 갤러리 보기' +
-                     '</button>' +
-                     '<div id="loading-indicator" class="htmx-indicator">' +
-                     '<div class="spinner-border text-primary" role="status">' +
-                     '<span class="visually-hidden">Loading...</span>' +
-                     '</div>' +
-                     '</div>';
-    
-    loadMoreSection.innerHTML = buttonHTML;
-    
-    // 새로 생성된 버튼에 이벤트 리스너 추가
-    var newButton = loadMoreSection.querySelector('.gallery-more-btn');
-    if (newButton && window.showLoadingModal) {
-        newButton.addEventListener('click', function() {
-            if (window.showLoadingModal) window.showLoadingModal();
-            setTimeout(function() {
-                if (window.hideLoadingModal) window.hideLoadingModal();
-            }, 2000);
-        });
-    }
-    {% else %}
-    loadMoreSection.innerHTML = '';
-    {% endif %}
-</script>
-{% endif %} 
+</style> 

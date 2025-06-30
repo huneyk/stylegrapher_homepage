@@ -3,7 +3,7 @@
     {% for gallery in galleries %}
     <div class="col-md-4">
         <div class="card h-100 gallery-card">
-            <img src="/admin/image/{{ gallery.image_path }}" class="card-img-top" alt="{{ gallery.title }}">
+            <img src="{{ url_for('main.serve_image', image_path=gallery.image_path) }}" class="card-img-top" alt="{{ gallery.title }}" loading="lazy">
             <div class="card-body text-center">
                 <h3 class="card-title mb-1">{{ gallery.title }}</h3>
                 <h4 class="card-subtitle mb-3">{{ gallery.subtitle }}</h4>
