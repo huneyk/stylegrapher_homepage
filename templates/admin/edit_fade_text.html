@@ -6,9 +6,14 @@
 <div class="container mt-5">
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>Fade Text 수정</h1>
-    <a href="{{ url_for('admin.list_fade_texts') }}" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i> 목록으로
-    </a>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-tachometer-alt"></i> 대시보드
+        </a>
+        <a href="{{ url_for('admin.list_fade_texts') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> 목록으로
+        </a>
+    </div>
 </div>
 
 {% with messages = get_flashed_messages(with_categories=true) %}
