@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify, make_response
 from flask_login import login_required, login_user, logout_user
 from extensions import db, login_manager
-from models import Service, Gallery, User, ServiceOption, Booking, GalleryGroup, Inquiry
+from models import Service, Gallery, User, ServiceOption, Booking, GalleryGroup, Inquiry, CollageText
 from werkzeug.utils import secure_filename
 import os
 from PIL import Image
@@ -1156,8 +1156,6 @@ def delete_booking(id):
     
     return redirect(url_for('admin.list_bookings'))
 
-
-
 @admin.route('/gallery')
 @login_required
 def list_gallery():
@@ -1493,3 +1491,81 @@ def get_image(image_id):
         import traceback
         traceback.print_exc()
         return "Error retrieving image", 500
+
+# Fade Text (CollageText) 관리
+@admin.route('/fade-texts')
+@login_required
+def list_fade_texts():
+    try:
+        fade_texts = CollageText.query.order_by(CollageText.order.asc()).all()
+        return render_template('admin/fade_texts.html', fade_texts=fade_texts)
+    except Exception as e:
+        print(f"Error listing fade texts: {str(e)}")
+        flash('Fade Text 목록을 불러오는 중 오류가 발생했습니다.', 'error')
+        return redirect(url_for('admin.dashboard'))
+
+@admin.route('/fade-text/add', methods=['GET', 'POST'])
+@login_required
+def add_fade_text():
+    if request.method == 'POST':
+        try:
+            text = request.form.get('text', '').strip()
+            order = request.form.get('order', 0, type=int)
+            
+            if not text:
+                flash('텍스트를 입력해주세요.', 'error')
+                return render_template('admin/add_fade_text.html')
+                
+            fade_text = CollageText(text=text, order=order)
+            db.session.add(fade_text)
+            db.session.commit()
+            
+            flash('Fade Text가 추가되었습니다.')
+            return redirect(url_for('admin.list_fade_texts'))
+        except Exception as e:
+            print(f"Error adding fade text: {str(e)}")
+            flash('Fade Text 추가 중 오류가 발생했습니다.', 'error')
+    
+    return render_template('admin/add_fade_text.html')
+
+@admin.route('/fade-text/edit/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_fade_text(id):
+    try:
+        fade_text = CollageText.query.get_or_404(id)
+        
+        if request.method == 'POST':
+            text = request.form.get('text', '').strip()
+            order = request.form.get('order', 0, type=int)
+            
+            if not text:
+                flash('텍스트를 입력해주세요.', 'error')
+                return render_template('admin/edit_fade_text.html', fade_text=fade_text)
+                
+            fade_text.text = text
+            fade_text.order = order
+            db.session.commit()
+            
+            flash('Fade Text가 수정되었습니다.')
+            return redirect(url_for('admin.list_fade_texts'))
+            
+        return render_template('admin/edit_fade_text.html', fade_text=fade_text)
+    except Exception as e:
+        print(f"Error editing fade text: {str(e)}")
+        flash('Fade Text 수정 중 오류가 발생했습니다.', 'error')
+        return redirect(url_for('admin.list_fade_texts'))
+
+@admin.route('/fade-text/delete/<int:id>')
+@login_required
+def delete_fade_text(id):
+    try:
+        fade_text = CollageText.query.get_or_404(id)
+        db.session.delete(fade_text)
+        db.session.commit()
+        
+        flash('Fade Text가 삭제되었습니다.')
+    except Exception as e:
+        print(f"Error deleting fade text: {str(e)}")
+        flash('Fade Text 삭제 중 오류가 발생했습니다.', 'error')
+    
+    return redirect(url_for('admin.list_fade_texts'))

@@ -37,8 +37,15 @@
 <!-- Fade Text Section -->
 <div class="fade-text-section">
     <div class="fade-text">
-        <h2 class="fade-title">스타일그래퍼와 함께</h2>
-        <h2 class="fade-title delayed">나를 찾아가는 여정</h2>
+        {% if fade_texts %}
+            {% for fade_text in fade_texts %}
+                <h2 class="fade-title{% if not loop.first %} delayed{% endif %}">{{ fade_text.text }}</h2>
+            {% endfor %}
+        {% else %}
+            <!-- 기본값 (데이터베이스에 데이터가 없을 때) -->
+            <h2 class="fade-title">스타일그래퍼와 함께</h2>
+            <h2 class="fade-title delayed">나를 찾아가는 여정</h2>
+        {% endif %}
     </div>
 </div>
 

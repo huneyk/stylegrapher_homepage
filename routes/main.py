@@ -185,15 +185,20 @@ def index():
     
     services = Service.query.all()
     
+    # Fade Text 데이터 가져오기 (순서별로 정렬)
+    fade_texts = CollageText.query.order_by(CollageText.order.asc()).all()
+    
     # 디버깅을 위한 출력
     print(f"Total galleries: {len(all_galleries)}")
     print(f"Recent galleries: {len(recent_galleries)}")
     print(f"Preview galleries: {len(preview_galleries)}")
+    print(f"Fade texts: {len(fade_texts)}")
     
     return render_template('index.html', 
                          recent_galleries=recent_galleries,
                          preview_galleries=preview_galleries,
-                         services=services)
+                         services=services,
+                         fade_texts=fade_texts)
 
 @main.route('/services')
 def services():
