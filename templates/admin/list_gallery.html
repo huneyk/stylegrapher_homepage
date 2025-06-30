@@ -20,8 +20,10 @@
     <div class="alert alert-info mb-4">
         <i class="bi bi-info-circle me-2"></i>
         <strong>갤러리 관리 안내:</strong><br>
-        • <strong>표출 순서:</strong> 숫자가 클수록 위에 표시됩니다. (같은 숫자는 최신순)<br>
-        • <strong>상단 고정:</strong> 최대 3개까지 홈페이지 상단에 고정 표시됩니다.
+        • <strong>표출 순서:</strong> 숫자가 클수록 위에 표시됩니다. (0~999, 같은 숫자는 최신순)<br>
+        • <strong>상단 고정:</strong> 최대 3개까지 홈페이지 상단에 고정 표시됩니다.<br>
+        • <strong>상단고정 내 순서:</strong> 상단고정된 갤러리끼리도 표출 순서로 정렬됩니다.<br>
+        • <strong>저장 방법:</strong> 순서 변경 후 <kbd>Enter</kbd> 키 또는 저장 버튼을 클릭하세요.
     </div>
 
     <div class="row g-4">
@@ -66,14 +68,28 @@
                     <!-- 표출 순서 설정 -->
                     <div class="mb-3">
                         <form method="POST" action="{{ url_for('admin.update_gallery_order', group_id=group.id) }}" 
-                              class="d-flex align-items-center gap-2">
-                            <label class="form-label mb-0">표출 순서:</label>
+                              class="d-flex align-items-center gap-2" onsubmit="return handleOrderSubmit(this)">
+                            <label class="form-label mb-0">
+                                표출 순서:
+                                {% if group.is_pinned %}
+                                <small class="text-muted">(상단고정됨)</small>
+                                {% endif %}
+                            </label>
                             <input type="number" name="display_order" value="{{ group.display_order }}" 
-                                   class="form-control form-control-sm" style="width: 80px;" min="0">
+                                   class="form-control form-control-sm order-input" 
+                                   style="width: 90px;" min="0" max="999"
+                                   data-group-id="{{ group.id }}"
+                                   data-is-pinned="{{ group.is_pinned }}">
                             <button type="submit" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-check"></i>
+                                <i class="bi bi-check"></i> 저장
                             </button>
                         </form>
+                        <small class="text-muted">
+                            숫자가 클수록 위에 표시됩니다. 
+                            {% if group.is_pinned %}
+                            <span class="text-warning">상단고정된 항목끼리의 순서를 조정할 수 있습니다.</span>
+                            {% endif %}
+                        </small>
                     </div>
                     
                     <!-- 상단 고정 토글 -->
@@ -81,11 +97,17 @@
                         <form method="POST" action="{{ url_for('admin.toggle_gallery_pin', group_id=group.id) }}" 
                               class="d-flex align-items-center gap-2">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" 
+                                <input class="form-check-input pin-checkbox" type="checkbox" 
+                                       data-group-id="{{ group.id }}"
                                        {% if group.is_pinned %}checked{% endif %}
-                                       onchange="this.form.submit()">
+                                       onchange="handlePinToggle(this)">
                                 <label class="form-check-label">
                                     상단 고정 (최대 3개)
+                                    {% if group.is_pinned %}
+                                    <span class="text-warning ms-1">
+                                        <i class="bi bi-pin-angle-fill"></i>
+                                    </span>
+                                    {% endif %}
                                 </label>
                             </div>
                         </form>
@@ -130,5 +152,195 @@
 .form-control-sm {
     font-size: 0.875rem;
 }
+
+.pin-checkbox:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.order-input:focus {
+    border-color: #8b5fbf;
+    box-shadow: 0 0 0 0.2rem rgba(139, 95, 191, 0.25);
+}
+
+.custom-alert {
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    checkPinLimits();
+});
+
+function checkPinLimits() {
+    const pinCheckboxes = document.querySelectorAll('.pin-checkbox');
+    const checkedCount = document.querySelectorAll('.pin-checkbox:checked').length;
+    
+    pinCheckboxes.forEach(checkbox => {
+        if (!checkbox.checked && checkedCount >= 3) {
+            checkbox.disabled = true;
+            checkbox.closest('.form-check').style.opacity = '0.6';
+        } else {
+            checkbox.disabled = false;
+            checkbox.closest('.form-check').style.opacity = '1';
+        }
+    });
+}
+
+function handlePinToggle(checkbox) {
+    const form = checkbox.closest('form');
+    const checkedCount = document.querySelectorAll('.pin-checkbox:checked').length;
+    
+    // 체크하려는데 이미 3개가 체크되어 있으면 경고
+    if (checkbox.checked && checkedCount > 3) {
+        alert('상단 고정은 최대 3개까지만 가능합니다.');
+        checkbox.checked = false;
+        return false;
+    }
+    
+    // 서버에 요청 보내기
+    form.submit();
+}
+
+function handleOrderSubmit(form) {
+    const input = form.querySelector('input[name="display_order"]');
+    const value = parseInt(input.value);
+    
+    if (isNaN(value) || value < 0) {
+        showMessage('표출 순서는 0 이상의 숫자여야 합니다.', 'error');
+        return false;
+    }
+    
+    if (value > 999) {
+        showMessage('표출 순서는 999 이하여야 합니다.', 'error');
+        return false;
+    }
+    
+    // AJAX로 전송
+    submitOrderUpdate(form);
+    return false; // 기본 form submit 방지
+}
+
+function submitOrderUpdate(form) {
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    // 저장 중 표시
+    submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> 저장중...';
+    submitBtn.disabled = true;
+    
+    // FormData 생성
+    const formData = new FormData(form);
+    
+    // AJAX 요청
+    fetch(form.action, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(data => Promise.reject(data));
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showMessage(data.message, 'success');
+            // 입력값이 서버에서 처리된 값으로 업데이트됨
+            form.querySelector('input[name="display_order"]').value = data.display_order;
+        } else {
+            showMessage(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        const message = error.message || '갤러리 순서 업데이트 중 오류가 발생했습니다.';
+        showMessage(message, 'error');
+        console.error('Error:', error);
+    })
+    .finally(() => {
+        // 버튼 복원
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+}
+
+function showMessage(message, type = 'info') {
+    // 기존 메시지 제거
+    const existingMessage = document.querySelector('.custom-alert');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    // 새 메시지 생성
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'} custom-alert`;
+    alertDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 300px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border: none;
+        border-radius: 8px;
+    `;
+    
+    alertDiv.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="bi bi-${type === 'error' ? 'exclamation-triangle' : type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
+            <span>${message}</span>
+            <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+        </div>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    // 3초 후 자동 제거
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 3000);
+}
+
+// 엔터키로 표출순서 저장
+document.addEventListener('keypress', function(e) {
+    if (e.target.classList.contains('order-input') && e.key === 'Enter') {
+        e.preventDefault();
+        const form = e.target.closest('form');
+        handleOrderSubmit(form);
+    }
+});
+
+// 표출순서 입력 시 실시간 검증
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('order-input')) {
+        const value = parseInt(e.target.value);
+        const submitBtn = e.target.closest('form').querySelector('button[type="submit"]');
+        
+        if (isNaN(value) || value < 0 || value > 999) {
+            e.target.style.borderColor = '#dc3545';
+            submitBtn.disabled = true;
+        } else {
+            e.target.style.borderColor = '#8b5fbf';
+            submitBtn.disabled = false;
+        }
+    }
+});
+</script>
 {% endblock %} 

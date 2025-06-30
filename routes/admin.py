@@ -558,6 +558,35 @@ def update_gallery_order(group_id):
     try:
         display_order = int(request.form.get('display_order', 0))
         
+        # 입력값 검증
+        if display_order < 0 or display_order > 999:
+            if request.is_json or request.headers.get('Content-Type') == 'application/x-www-form-urlencoded':
+                return jsonify({
+                    'success': False,
+                    'message': '표출 순서는 0~999 사이의 값이어야 합니다.'
+                }), 400
+            flash('표출 순서는 0~999 사이의 값이어야 합니다.', 'error')
+            return redirect(url_for('admin.list_gallery'))
+        
+        # 갤러리 그룹 존재 확인
+        result = db.session.execute(
+            text("SELECT id, is_pinned, title FROM gallery_group WHERE id = :id"),
+            {"id": group_id}
+        )
+        group_data = result.fetchone()
+        
+        if not group_data:
+            if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({
+                    'success': False,
+                    'message': '갤러리를 찾을 수 없습니다.'
+                }), 404
+            flash('갤러리를 찾을 수 없습니다.', 'error')
+            return redirect(url_for('admin.list_gallery'))
+        
+        is_pinned = bool(group_data[1])
+        gallery_title = group_data[2]
+        
         # 순서 업데이트
         db.session.execute(
             text("UPDATE gallery_group SET display_order = :display_order, updated_at = :updated_at WHERE id = :id"),
@@ -568,9 +597,42 @@ def update_gallery_order(group_id):
             }
         )
         db.session.commit()
-        flash('갤러리 순서가 업데이트되었습니다.')
+        
+        # AJAX 요청인 경우 JSON 응답
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            if is_pinned:
+                message = f'상단고정 갤러리 "{gallery_title}"의 표출 순서가 {display_order}(으)로 업데이트되었습니다.'
+            else:
+                message = f'갤러리 "{gallery_title}"의 표출 순서가 {display_order}(으)로 업데이트되었습니다.'
+            
+            return jsonify({
+                'success': True,
+                'message': message,
+                'display_order': display_order,
+                'is_pinned': is_pinned
+            })
+        
+        # 일반 요청인 경우 기존 방식
+        if is_pinned:
+            flash(f'상단고정 갤러리의 표출 순서가 {display_order}(으)로 업데이트되었습니다.')
+        else:
+            flash(f'갤러리 표출 순서가 {display_order}(으)로 업데이트되었습니다.')
+            
+    except ValueError:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({
+                'success': False,
+                'message': '올바른 숫자를 입력해주세요.'
+            }), 400
+        flash('올바른 숫자를 입력해주세요.', 'error')
     except Exception as e:
         print(f"Error updating gallery order: {str(e)}")
+        db.session.rollback()
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({
+                'success': False,
+                'message': '갤러리 순서 업데이트 중 오류가 발생했습니다.'
+            }), 500
         flash('갤러리 순서 업데이트 중 오류가 발생했습니다.', 'error')
     
     return redirect(url_for('admin.list_gallery'))
@@ -579,18 +641,20 @@ def update_gallery_order(group_id):
 @login_required
 def toggle_gallery_pin(group_id):
     try:
-        # 현재 상태 확인
+        # 현재 상태 확인 (title도 함께 가져오기)
         result = db.session.execute(
-            text("SELECT is_pinned FROM gallery_group WHERE id = :id"),
+            text("SELECT is_pinned, title FROM gallery_group WHERE id = :id"),
             {"id": group_id}
         )
-        current_state = result.fetchone()
+        current_data = result.fetchone()
         
-        if not current_state:
+        if not current_data:
             flash('갤러리를 찾을 수 없습니다.', 'error')
             return redirect(url_for('admin.list_gallery'))
         
-        new_state = not bool(current_state[0])
+        current_pinned = bool(current_data[0])
+        gallery_title = current_data[1]
+        new_state = not current_pinned
         
         # 상단 고정하려는 경우, 이미 3개가 고정되어 있는지 확인
         if new_state:
@@ -599,7 +663,7 @@ def toggle_gallery_pin(group_id):
             ).scalar()
             
             if pinned_count >= 3:
-                flash('상단 고정은 최대 3개까지만 가능합니다.', 'warning')
+                flash('상단 고정은 최대 3개까지만 가능합니다. 다른 갤러리의 고정을 해제한 후 시도해주세요.', 'warning')
                 return redirect(url_for('admin.list_gallery'))
         
         # 상태 업데이트
@@ -614,13 +678,18 @@ def toggle_gallery_pin(group_id):
         db.session.commit()
         
         if new_state:
-            flash('갤러리가 상단에 고정되었습니다.')
+            # 현재 고정된 갤러리 개수 확인
+            pinned_count = db.session.execute(
+                text("SELECT COUNT(*) FROM gallery_group WHERE is_pinned = 1")
+            ).scalar()
+            flash(f'"{gallery_title}" 갤러리가 상단에 고정되었습니다. (현재 {pinned_count}/3개 고정)')
         else:
-            flash('갤러리 상단 고정이 해제되었습니다.')
+            flash(f'"{gallery_title}" 갤러리의 상단 고정이 해제되었습니다.')
             
     except Exception as e:
         print(f"Error toggling gallery pin: {str(e)}")
         flash('갤러리 상단 고정 상태 변경 중 오류가 발생했습니다.', 'error')
+        db.session.rollback()
     
     return redirect(url_for('admin.list_gallery'))
 
