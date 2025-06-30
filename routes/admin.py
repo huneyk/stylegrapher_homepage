@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify, make_response
 from flask_login import login_required, login_user, logout_user
 from extensions import db, login_manager
-from models import Service, Gallery, User, ServiceOption, Booking, CarouselItem, GalleryGroup, Inquiry
+from models import Service, Gallery, User, ServiceOption, Booking, GalleryGroup, Inquiry
 from werkzeug.utils import secure_filename
 import os
 from PIL import Image
@@ -499,8 +499,17 @@ def upload_image():
             return redirect(request.url)
         
         try:
-            # 갤러리 그룹 생성
-            gallery_group = GalleryGroup(title=request.form['title'])
+            # 현재 최고 display_order 값 조회
+            max_order_result = db.session.execute(
+                text("SELECT MAX(display_order) FROM gallery_group")
+            ).scalar()
+            next_order = (max_order_result or 0) + 1
+            
+            # 갤러리 그룹 생성 (새 갤러리가 가장 앞에 배치되도록)
+            gallery_group = GalleryGroup(
+                title=request.form['title'],
+                display_order=next_order
+            )
             db.session.add(gallery_group)
             db.session.flush()  # ID 생성을 위해 flush
             
@@ -541,6 +550,78 @@ def delete_gallery_group(group_id):
     db.session.delete(group)
     db.session.commit()
     flash('갤러리가 삭제되었습니다.')
+    return redirect(url_for('admin.list_gallery'))
+
+@admin.route('/gallery/update-order/<int:group_id>', methods=['POST'])
+@login_required
+def update_gallery_order(group_id):
+    try:
+        display_order = int(request.form.get('display_order', 0))
+        
+        # 순서 업데이트
+        db.session.execute(
+            text("UPDATE gallery_group SET display_order = :display_order, updated_at = :updated_at WHERE id = :id"),
+            {
+                "id": group_id,
+                "display_order": display_order,
+                "updated_at": datetime.utcnow()
+            }
+        )
+        db.session.commit()
+        flash('갤러리 순서가 업데이트되었습니다.')
+    except Exception as e:
+        print(f"Error updating gallery order: {str(e)}")
+        flash('갤러리 순서 업데이트 중 오류가 발생했습니다.', 'error')
+    
+    return redirect(url_for('admin.list_gallery'))
+
+@admin.route('/gallery/toggle-pin/<int:group_id>', methods=['POST'])
+@login_required
+def toggle_gallery_pin(group_id):
+    try:
+        # 현재 상태 확인
+        result = db.session.execute(
+            text("SELECT is_pinned FROM gallery_group WHERE id = :id"),
+            {"id": group_id}
+        )
+        current_state = result.fetchone()
+        
+        if not current_state:
+            flash('갤러리를 찾을 수 없습니다.', 'error')
+            return redirect(url_for('admin.list_gallery'))
+        
+        new_state = not bool(current_state[0])
+        
+        # 상단 고정하려는 경우, 이미 3개가 고정되어 있는지 확인
+        if new_state:
+            pinned_count = db.session.execute(
+                text("SELECT COUNT(*) FROM gallery_group WHERE is_pinned = 1")
+            ).scalar()
+            
+            if pinned_count >= 3:
+                flash('상단 고정은 최대 3개까지만 가능합니다.', 'warning')
+                return redirect(url_for('admin.list_gallery'))
+        
+        # 상태 업데이트
+        db.session.execute(
+            text("UPDATE gallery_group SET is_pinned = :is_pinned, updated_at = :updated_at WHERE id = :id"),
+            {
+                "id": group_id,
+                "is_pinned": new_state,
+                "updated_at": datetime.utcnow()
+            }
+        )
+        db.session.commit()
+        
+        if new_state:
+            flash('갤러리가 상단에 고정되었습니다.')
+        else:
+            flash('갤러리 상단 고정이 해제되었습니다.')
+            
+    except Exception as e:
+        print(f"Error toggling gallery pin: {str(e)}")
+        flash('갤러리 상단 고정 상태 변경 중 오류가 발생했습니다.', 'error')
+    
     return redirect(url_for('admin.list_gallery'))
 
 @admin.route('/services')
@@ -1006,95 +1087,17 @@ def delete_booking(id):
     
     return redirect(url_for('admin.list_bookings'))
 
-@admin.route('/carousel')
-@login_required
-def list_carousel():
-    carousel_items = CarouselItem.query.order_by(CarouselItem.order).all()
-    return render_template('admin/carousel.html', carousel_items=carousel_items)
 
-@admin.route('/carousel/add', methods=['GET', 'POST'])
-@login_required
-def add_carousel():
-    if request.method == 'POST':
-        file = request.files['image']
-        if file:
-            # MongoDB에 이미지 저장 및 ID 반환
-            image_id = save_image_to_mongodb(file)
-            
-            carousel_item = CarouselItem(
-                title=request.form['title'],
-                subtitle=request.form['subtitle'],
-                image_path=image_id,  # MongoDB ID 저장
-                order=CarouselItem.query.count()
-            )
-            db.session.add(carousel_item)
-            db.session.commit()
-            
-            flash('캐러셀 슬라이드가 추가되었습니다.')
-            return redirect(url_for('admin.list_carousel'))
-            
-    return render_template('admin/add_carousel.html')
-
-@admin.route('/carousel/update-order', methods=['POST'])
-@login_required
-def update_carousel_order():
-    order_data = request.get_json()
-    for item in order_data:
-        carousel_item = CarouselItem.query.get(item['id'])
-        if carousel_item:
-            carousel_item.order = item['order']
-    db.session.commit()
-    return jsonify({'success': True})
-
-@admin.route('/carousel/edit/<int:id>', methods=['GET', 'POST'])
-@login_required
-def edit_carousel(id):
-    carousel_item = CarouselItem.query.get_or_404(id)
-    
-    if request.method == 'POST':
-        carousel_item.title = request.form['title']
-        carousel_item.subtitle = request.form['subtitle']
-        
-        if 'image' in request.files:
-            file = request.files['image']
-            if file and file.filename:
-                # 기존 이미지 삭제
-                if carousel_item.image_path:
-                    images_collection.delete_one({'_id': carousel_item.image_path})
-                
-                # MongoDB에 이미지 저장 및 ID 반환
-                image_id = save_image_to_mongodb(file)
-                carousel_item.image_path = image_id
-        
-        db.session.commit()
-        flash('캐러셀 항목이 수정되었습니다.')
-        return redirect(url_for('admin.list_carousel'))
-        
-    return render_template('admin/edit_carousel.html', carousel=carousel_item)
-
-@admin.route('/carousel/delete/<int:id>')
-@login_required
-def delete_carousel(id):
-    carousel_item = CarouselItem.query.get_or_404(id)
-    
-    # MongoDB에서 이미지 삭제
-    if carousel_item.image_path:
-        images_collection.delete_one({'_id': carousel_item.image_path})
-    
-    db.session.delete(carousel_item)
-    db.session.commit()
-    flash('캐러셀 항목이 삭제되었습니다.')
-    return redirect(url_for('admin.list_carousel'))
 
 @admin.route('/gallery')
 @login_required
 def list_gallery():
     try:
-        # 직접 SQL 쿼리를 사용하여 갤러리 그룹 목록 조회
+        # 직접 SQL 쿼리를 사용하여 갤러리 그룹 목록 조회 (display_order, is_pinned 포함)
         result = db.session.execute(text("""
-            SELECT id, title, created_at
+            SELECT id, title, created_at, display_order, is_pinned
             FROM gallery_group
-            ORDER BY created_at DESC
+            ORDER BY display_order DESC, created_at DESC
         """))
         
         # 결과를 DictAsModel 객체 리스트로 변환
@@ -1104,6 +1107,8 @@ def list_gallery():
                 'id': row[0],
                 'title': row[1],
                 'created_at': row[2],
+                'display_order': row[3] if row[3] is not None else 0,
+                'is_pinned': bool(row[4]) if row[4] is not None else False,
                 'images': []  # 이미지 목록은 별도로 조회
             }
             

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app, send_file, make_response
 from flask_mail import Message
-from models import Service, ServiceOption, Gallery, Booking, CarouselItem, GalleryGroup, CollageText, Inquiry
+from models import Service, ServiceOption, Gallery, Booking, GalleryGroup, CollageText, Inquiry
 from extensions import db, mail
 import json
 from sqlalchemy import desc
@@ -170,10 +170,14 @@ def get_all_services():
 
 @main.route('/')
 def index():
-    # 모든 갤러리 그룹을 최신순으로 가져오기
-    all_galleries = GalleryGroup.query.order_by(desc(GalleryGroup.created_at)).all()
+    # 갤러리 그룹을 상단 고정, 표출 순서, 생성일 순으로 가져오기
+    all_galleries = GalleryGroup.query.order_by(
+        desc(GalleryGroup.is_pinned),
+        desc(GalleryGroup.display_order), 
+        desc(GalleryGroup.created_at)
+    ).all()
     
-    # 상위 3개는 collage용
+    # 상위 3개는 collage용 (상단 고정된 갤러리가 우선)
     recent_galleries = all_galleries[:3] if all_galleries else []
     
     # 4-6번째는 하단 갤러리용
@@ -298,12 +302,14 @@ def gallery(page=1):
         has_more = page < total_pages
         next_page = page + 1 if has_more else None
         
-        # 최적화된 쿼리: 갤러리 그룹과 이미지를 한 번에 조회
+        # 최적화된 쿼리: 갤러리 그룹과 이미지를 한 번에 조회 (상단 고정 및 표출 순서 반영)
         result = db.session.execute(text("""
             SELECT 
                 gg.id as group_id, 
                 gg.title, 
                 gg.created_at,
+                gg.is_pinned,
+                gg.display_order,
                 g.id as image_id,
                 g.image_path,
                 g."order"
@@ -311,10 +317,10 @@ def gallery(page=1):
             LEFT JOIN gallery g ON gg.id = g.group_id
             WHERE gg.id IN (
                 SELECT id FROM gallery_group 
-                ORDER BY created_at DESC 
+                ORDER BY is_pinned DESC, display_order DESC, created_at DESC 
                 LIMIT :limit OFFSET :offset
             )
-            ORDER BY gg.created_at DESC, g."order"
+            ORDER BY gg.is_pinned DESC, gg.display_order DESC, gg.created_at DESC, g."order"
         """), {"limit": per_page, "offset": (page - 1) * per_page})
         
         # 그룹별로 데이터 정리
@@ -326,15 +332,17 @@ def gallery(page=1):
                     'id': group_id,
                     'title': row[1],
                     'created_at': row[2],
+                    'is_pinned': bool(row[3]) if row[3] is not None else False,
+                    'display_order': row[4] if row[4] is not None else 0,
                     'images': []
                 }
             
             # 이미지가 있는 경우에만 추가
-            if row[3] is not None:  # image_id가 None이 아닌 경우
+            if row[5] is not None:  # image_id가 None이 아닌 경우
                 groups_dict[group_id]['images'].append({
-                    'id': row[3],
-                    'image_path': row[4],
-                    'order': row[5]
+                    'id': row[5],
+                    'image_path': row[6],
+                    'order': row[7]
                 })
         
         # 리스트로 변환 (생성일 기준 정렬 유지)

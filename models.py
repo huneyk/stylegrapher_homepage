@@ -39,6 +39,8 @@ class ServiceOption(db.Model):
 class GalleryGroup(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
+    display_order = db.Column(db.Integer, default=0)  # 표출 순서
+    is_pinned = db.Column(db.Boolean, default=False)  # 상단 고정
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     images = db.relationship('Gallery', backref='group', cascade='all, delete-orphan')
@@ -76,12 +78,7 @@ class Booking(db.Model):
         parts = self.message.split('\n\n희망 예약일시:')
         return parts[0] if parts else ''
 
-class CarouselItem(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    subtitle = db.Column(db.String(200))
-    image_path = db.Column(db.String(200), nullable=False)
-    order = db.Column(db.Integer, default=0)
+
 
 class CollageText(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -20,6 +20,9 @@
             <p class="service-info">총 {{ service.options|length }}개의 옵션이 등록되어 있습니다.</p>
         </div>
         <div class="admin-actions">
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-primary me-2">
+                <i class="bi bi-house-door"></i> 관리자 대시보드 바로가기
+            </a>
             <a href="{{ url_for('admin.add_option', service_id=service.id) }}" class="btn btn-primary">
                 <i class="bi bi-plus-circle"></i> 새 옵션 추가
             </a>

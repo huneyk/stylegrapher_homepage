@@ -4,7 +4,12 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2 class="mb-4">문의 관리</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>문의 관리</h2>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-primary">
+            <i class="bi bi-house-door"></i> 관리자 대시보드 바로가기
+        </a>
+    </div>
     
     <div class="card">
         <div class="card-body">
@@ -32,7 +37,8 @@
                             <td>{{ inquiry.service.name }}</td>
                             <td>
                                 <button type="button" class="btn btn-sm btn-link" 
-                                        onclick="showMessage('{{ inquiry.message }}')">
+                                        data-message="{{ inquiry.message }}"
+                                        onclick="showMessage(this.getAttribute('data-message'))">
                                     메시지 보기
                                 </button>
                             </td>
@@ -57,26 +63,26 @@
                                 </form>
                             </td>
                         </tr>
-
-                        <!-- 커스텀 모달 -->
-                        <div id="customModal" class="custom-modal">
-                            <div class="custom-modal-content">
-                                <div class="custom-modal-header">
-                                    <h5>문의 메시지</h5>
-                                    <button type="button" class="close-button" onclick="closeModal()">&times;</button>
-                                </div>
-                                <div class="custom-modal-body">
-                                    <p id="modalMessage"></p>
-                                </div>
-                                <div class="custom-modal-footer">
-                                    <button type="button" class="btn btn-secondary" onclick="closeModal()">닫기</button>
-                                </div>
-                            </div>
-                        </div>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- 커스텀 모달 (루프 밖에 단일 모달) -->
+<div id="customModal" class="custom-modal">
+    <div class="custom-modal-content">
+        <div class="custom-modal-header">
+            <h5>문의 메시지</h5>
+            <button type="button" class="close-button" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="custom-modal-body">
+            <p id="modalMessage"></p>
+        </div>
+        <div class="custom-modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal()">닫기</button>
         </div>
     </div>
 </div>
@@ -115,6 +121,9 @@
 .custom-modal-body {
     padding: 1rem;
     white-space: pre-wrap;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    line-break: strict;
 }
 
 .custom-modal-footer {
@@ -146,23 +155,44 @@
     background-color: rgba(139, 95, 191, 1);
     border-color: rgba(139, 95, 191, 1);
 }
+
+@media (max-width: 768px) {
+    .custom-modal-content {
+        width: 90%;
+        margin: 20% auto;
+    }
+}
 </style>
 
 <script>
 function showMessage(message) {
-    document.getElementById('modalMessage').textContent = message;
-    document.getElementById('customModal').style.display = 'block';
-    document.body.style.overflow = 'hidden';
+    console.log('showMessage 호출됨:', message);
+    const modalElement = document.getElementById('customModal');
+    const messageElement = document.getElementById('modalMessage');
+    
+    if (modalElement && messageElement) {
+        messageElement.textContent = message;
+        modalElement.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        console.log('모달 표시됨');
+    } else {
+        console.error('모달 요소를 찾을 수 없습니다.');
+    }
 }
 
 function closeModal() {
-    document.getElementById('customModal').style.display = 'none';
-    document.body.style.overflow = 'auto';
+    console.log('closeModal 호출됨');
+    const modalElement = document.getElementById('customModal');
+    if (modalElement) {
+        modalElement.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        console.log('모달 숨김');
+    }
 }
 
 // 모달 외부 클릭 시 닫기
 window.onclick = function(event) {
-    var modal = document.getElementById('customModal');
+    const modal = document.getElementById('customModal');
     if (event.target == modal) {
         closeModal();
     }
@@ -173,6 +203,15 @@ document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
         closeModal();
     }
+});
+
+// DOM 로드 후 초기화
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM 로드 완료');
+    const modal = document.getElementById('customModal');
+    const message = document.getElementById('modalMessage');
+    console.log('모달 요소:', modal);
+    console.log('메시지 요소:', message);
 });
 </script>
 {% endblock %} 

@@ -1,6 +1,6 @@
 from app import create_app
 from extensions import db
-from models import User, Service, Gallery, Booking, ServiceOption, CarouselItem, GalleryGroup, CollageText
+from models import User, Service, Gallery, Booking, ServiceOption, GalleryGroup, CollageText
 import json
 from datetime import datetime, UTC
 
@@ -44,42 +44,7 @@ def init_db():
         for text in collage_texts:
             db.session.add(text)
         
-        # 초기 캐러셀 데이터 추가
-        carousel_items = [
-            CarouselItem(
-                title='Stylegrapher 스타일그래퍼',
-                subtitle='당신만의 특별한 순간을 완성해드립니다',
-                image_path='slide1.jpg',
-                order=0
-            ),
-            CarouselItem(
-                title='프로페셔널한 촬영',
-                subtitle='최고의 퀄리티로 담아내는 당신의 모습',
-                image_path='slide2.jpg',
-                order=1
-            ),
-            CarouselItem(
-                title='스타일 컨설팅',
-                subtitle='당신만의 매력을 찾아드립니다',
-                image_path='slide3.jpg',
-                order=2
-            ),
-            CarouselItem(
-                title='자연스러운 순간',
-                subtitle='편안한 분위기에서 진행되는 촬영',
-                image_path='slide4.jpg',
-                order=3
-            ),
-            CarouselItem(
-                title='특별한 추억',
-                subtitle='소중한 순간을 영원히 간직하세요',
-                image_path='slide5.jpg',
-                order=4
-            )
-        ]
-        
-        for item in carousel_items:
-            db.session.add(item)
+
 
         # 여기서 서비스 데이터 추가
         services_data = [
