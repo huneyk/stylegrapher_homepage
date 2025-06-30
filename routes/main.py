@@ -265,25 +265,35 @@ def service_option_detail(id):
 def serve_image(image_path):
     """이미지를 효율적으로 서빙하는 라우트"""
     try:
+        print(f"이미지 요청: {image_path}")
+        
         # MongoDB에서 이미지 조회
         if images_collection is not None:
             image_doc = images_collection.find_one({'_id': image_path})
             if image_doc and 'binary_data' in image_doc:
+                print(f"MongoDB에서 이미지 발견: {image_path} (크기: {len(image_doc['binary_data'])} bytes)")
                 response = make_response(image_doc['binary_data'])
                 response.headers['Content-Type'] = image_doc.get('content_type', 'image/jpeg')
                 response.headers['Cache-Control'] = 'public, max-age=86400'  # 1일 캐시
                 return response
+            else:
+                print(f"MongoDB에서 이미지 없음: {image_path}")
         
         # MongoDB에 없으면 파일 시스템에서 서빙
         file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_path)
+        print(f"파일 시스템에서 확인: {file_path}")
         if os.path.exists(file_path):
+            print(f"파일 시스템에서 이미지 발견: {image_path}")
             return send_file(file_path)
         
         # 이미지가 없으면 404
+        print(f"이미지를 찾을 수 없음: {image_path}")
         return "Image not found", 404
         
     except Exception as e:
         print(f"이미지 서빙 오류: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return "Image serving error", 500
 
 @main.route('/gallery')
@@ -423,6 +433,33 @@ def gallery(page=1):
                               gallery_groups=[], 
                               has_more=False,
                               next_page=None)
+
+@main.route('/gallery/detail/<int:group_id>')
+def gallery_detail(group_id):
+    """특정 갤러리 그룹의 모든 이미지를 보여주는 상세 페이지"""
+    try:
+        # 갤러리 그룹 조회
+        gallery_group = GalleryGroup.query.get_or_404(group_id)
+        print(f"갤러리 그룹 {group_id} 조회 성공: {gallery_group.title}")
+        
+        # 해당 그룹의 모든 이미지를 순서대로 조회
+        gallery_images = Gallery.query.filter_by(group_id=group_id)\
+                                     .order_by(Gallery.order.asc(), Gallery.id.asc()).all()
+        
+        print(f"갤러리 그룹 {group_id}의 이미지 수: {len(gallery_images)}")
+        for i, img in enumerate(gallery_images):
+            print(f"  이미지 {i+1}: {img.image_path}")
+        
+        return render_template('gallery_detail.html', 
+                             gallery_group=gallery_group,
+                             gallery_images=gallery_images)
+                             
+    except Exception as e:
+        print(f"Error in gallery_detail route: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        flash('갤러리를 불러오는 중 오류가 발생했습니다.')
+        return redirect(url_for('main.gallery'))
 
 @main.route('/contact', methods=['GET', 'POST'])
 def contact():

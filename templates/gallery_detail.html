@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block title %}{{ gallery_group.title }} - 갤러리{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card gallery-detail-card">
+        <div class="card-body p-4">
+            <!-- 제목과 뒤로가기 버튼 -->
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <div>
+                    <h1 class="gallery-detail-title mb-1">{{ gallery_group.title }}</h1>
+                    <p class="gallery-detail-info text-muted mb-0">
+                        총 {{ gallery_images|length }}장의 사진
+                    </p>
+                </div>
+                <a href="{{ url_for('main.gallery') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>갤러리 목록
+                </a>
+            </div>
+
+            {% if gallery_images %}
+            <!-- 이미지 그리드 -->
+            <div class="row g-3" id="gallery-grid">
+                {% for image in gallery_images %}
+                <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+                    <div class="gallery-detail-item" data-bs-toggle="modal" data-bs-target="#imageModal" 
+                         data-image-src="{{ url_for('main.serve_image', image_path=image.image_path) }}"
+                         data-image-caption="{{ image.caption or gallery_group.title }}"
+                         data-image-index="{{ loop.index0 }}">
+                        <img src="{{ url_for('main.serve_image', image_path=image.image_path) }}" 
+                             class="img-fluid gallery-detail-thumbnail" 
+                             alt="{{ image.caption or gallery_group.title }}"
+                             loading="lazy">
+                        <div class="gallery-detail-overlay">
+                            <i class="fas fa-search-plus"></i>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-images fa-3x text-muted mb-3"></i>
+                <p class="text-muted">이 갤러리에는 아직 사진이 없습니다.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- 이미지 모달 -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content bg-transparent border-0">
+            <div class="modal-header border-0 pb-0">
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0 text-center">
+                <img id="modalImage" src="" class="img-fluid modal-image" alt="">
+                <div class="modal-navigation">
+                    <button type="button" id="prevImage" class="btn modal-nav-btn purple-circle-btn">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button type="button" id="nextImage" class="btn modal-nav-btn purple-circle-btn">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div class="modal-caption mt-3">
+                    <p id="modalCaption" class="text-white mb-0"></p>
+                    <small id="modalCounter" class="text-white-50"></small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.gallery-detail-card {
+    border: 1px solid rgba(139, 95, 191, 0.3);
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(139, 95, 191, 0.2);
+    background-color: #fff;
+}
+
+.gallery-detail-title {
+    font-family: 'Nanum Gothic', sans-serif;
+    font-size: 2rem;
+    color: rgba(139, 95, 191, 0.8);
+    font-weight: 500;
+    margin: 0;
+}
+
+.gallery-detail-info {
+    font-size: 0.95rem;
+}
+
+.gallery-detail-item {
+    position: relative;
+    cursor: pointer;
+    border-radius: 10px;
+    overflow: hidden;
+    aspect-ratio: 1;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.gallery-detail-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(139, 95, 191, 0.3);
+}
+
+.gallery-detail-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.gallery-detail-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.gallery-detail-item:hover .gallery-detail-overlay {
+    opacity: 1;
+}
+
+.gallery-detail-overlay i {
+    color: white;
+    font-size: 1.5rem;
+}
+
+/* 모달 스타일 */
+.modal-image {
+    max-height: 80vh;
+    border-radius: 10px;
+}
+
+.modal-navigation {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+    pointer-events: none;
+}
+
+.modal-nav-btn {
+    pointer-events: all;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.modal-nav-btn:hover {
+    opacity: 1;
+}
+
+.purple-circle-btn {
+    background-color: rgba(139, 95, 191, 0.8) !important;
+    border: 2px solid rgba(139, 95, 191, 0.8) !important;
+    color: white !important;
+    transition: all 0.3s ease;
+}
+
+.purple-circle-btn:hover {
+    background-color: transparent !important;
+    border: 2px solid rgba(139, 95, 191, 1) !important;
+    color: rgba(139, 95, 191, 1) !important;
+    transform: scale(1.1);
+}
+
+.purple-circle-btn:focus {
+    box-shadow: 0 0 0 3px rgba(139, 95, 191, 0.3) !important;
+}
+
+.modal-caption {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .gallery-detail-title {
+        font-size: 1.5rem;
+    }
+    
+    .modal-navigation {
+        padding: 0 10px;
+    }
+    
+    .modal-nav-btn {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+@media (max-width: 576px) {
+    .d-flex.align-items-center.justify-content-between {
+        flex-direction: column;
+        align-items: flex-start !important;
+        justify-content: flex-start !important;
+    }
+    
+    .d-flex.align-items-center.justify-content-between .btn {
+        margin-top: 15px;
+        align-self: flex-end;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    const modalCaption = document.getElementById('modalCaption');
+    const modalCounter = document.getElementById('modalCounter');
+    const prevBtn = document.getElementById('prevImage');
+    const nextBtn = document.getElementById('nextImage');
+    
+    let currentIndex = 0;
+    let images = [];
+    
+    // 이미지 데이터 수집
+    document.querySelectorAll('.gallery-detail-item').forEach((item, index) => {
+        images.push({
+            src: item.getAttribute('data-image-src'),
+            caption: item.getAttribute('data-image-caption'),
+            index: index
+        });
+        
+        item.addEventListener('click', function() {
+            currentIndex = index;
+            showImage(currentIndex);
+        });
+    });
+    
+    function showImage(index) {
+        if (images.length === 0) return;
+        
+        const image = images[index];
+        modalImage.src = image.src;
+        modalCaption.textContent = image.caption;
+        modalCounter.textContent = `${index + 1} / ${images.length}`;
+        
+        // 네비게이션 버튼 표시/숨김
+        prevBtn.style.display = index > 0 ? 'flex' : 'none';
+        nextBtn.style.display = index < images.length - 1 ? 'flex' : 'none';
+    }
+    
+    prevBtn.addEventListener('click', function() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            showImage(currentIndex);
+        }
+    });
+    
+    nextBtn.addEventListener('click', function() {
+        if (currentIndex < images.length - 1) {
+            currentIndex++;
+            showImage(currentIndex);
+        }
+    });
+    
+    // 키보드 네비게이션
+    document.addEventListener('keydown', function(e) {
+        if (modal.classList.contains('show')) {
+            if (e.key === 'ArrowLeft' && currentIndex > 0) {
+                currentIndex--;
+                showImage(currentIndex);
+            } else if (e.key === 'ArrowRight' && currentIndex < images.length - 1) {
+                currentIndex++;
+                showImage(currentIndex);
+            } else if (e.key === 'Escape') {
+                bootstrap.Modal.getInstance(modal).hide();
+            }
+        }
+    });
+});
+</script>
+
+{% endblock %} 

@@ -21,7 +21,7 @@
                     더 많은 갤러리 보기
                 </button>
                 <div id="loading-indicator" class="htmx-indicator">
-                    <div class="spinner-border text-primary" role="status">
+                    <div class="custom-purple-spinner" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
                 </div>
@@ -137,6 +137,37 @@
 }
 .htmx-request.gallery-more-btn {
     display: none;
+}
+
+/* 보라색 원형 스피너 */
+.custom-purple-spinner {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, transparent, rgba(139, 95, 191, 0.8));
+    animation: spin 1s linear infinite;
+    position: relative;
+    margin: 0 auto;
+}
+
+.custom-purple-spinner::before {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    right: 3px;
+    bottom: 3px;
+    border-radius: 50%;
+    background: white;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 </style>
 
