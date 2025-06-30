@@ -67,6 +67,37 @@ def resize_image_memory(img, width=1080):
 # Create the Blueprint object
 main = Blueprint('main', __name__)
 
+def get_all_services():
+    """모든 서비스와 서비스 옵션을 가져와서 통합 목록 생성"""
+    services = Service.query.all()
+    service_options = ServiceOption.query.all()
+    
+    # 통합 서비스 목록 생성 (개별 서비스 옵션 위주로)
+    all_services = []
+    
+    # ServiceOption들 추가
+    for option in service_options:
+        all_services.append({
+            'type': 'option',
+            'id': f'option_{option.id}',
+            'name': option.name,
+            'category': option.service.name if option.service else '기타'
+        })
+    
+    # Service들도 추가 (ServiceOption이 없는 경우를 위해)
+    for service in services:
+        if not service.options:  # 옵션이 없는 서비스만 추가
+            all_services.append({
+                'type': 'service',
+                'id': f'service_{service.id}',
+                'name': service.name,
+                'category': '기타'
+            })
+    
+    # 카테고리별로 정렬
+    all_services.sort(key=lambda x: (x['category'], x['name']))
+    return all_services
+
 @main.route('/')
 def index():
     # 모든 갤러리 그룹을 최신순으로 가져오기
@@ -339,7 +370,7 @@ def ask():
         # 메시지에 선택된 서비스 정보 추가
         enhanced_message = f"[문의 대상: {selected_service_name}]\n\n{message}"
         
-        # 데이터베이스에 저장
+        # SQLite 데이터베이스에 저장
         inquiry = Inquiry(
             name=name,
             phone=phone,
@@ -350,7 +381,29 @@ def ask():
         db.session.add(inquiry)
         db.session.commit()
         
+        # MongoDB에도 저장
+        if mongo_db is not None:
+            try:
+                inquiry_doc = {
+                    'name': name,
+                    'phone': phone,
+                    'email': email,
+                    'service_id': actual_service_id,
+                    'service_name': selected_service_name,
+                    'service_type': service_type,
+                    'message': message,
+                    'enhanced_message': enhanced_message,
+                    'created_at': datetime.now(),
+                    'status': 'new'
+                }
+                inquiries_collection = mongo_db['inquiries']
+                inquiries_collection.insert_one(inquiry_doc)
+                print(f"MongoDB에 문의사항 저장 완료: {name}")
+            except Exception as mongo_error:
+                print(f"MongoDB 저장 오류: {str(mongo_error)}")
+        
         # 이메일 발송
+        email_sent = False
         try:
             # 관리자에게 보낼 이메일 내용
             subject = f"[스타일그래퍼 문의] {selected_service_name} 관련 문의"
@@ -377,6 +430,7 @@ def ask():
             # 메일 메시지 생성
             msg = Message(
                 subject=subject,
+                sender=current_app.config['MAIL_DEFAULT_SENDER'],
                 recipients=['stylegrapher.ysg@gmail.com'],
                 body=email_body,
                 reply_to=email  # 답장시 문의자 이메일로 가도록 설정
@@ -384,43 +438,20 @@ def ask():
             
             # 메일 발송
             mail.send(msg)
-            
-            flash('문의가 성공적으로 접수되었습니다. 담당자가 빠른 시일 내에 연락드리겠습니다.', 'success')
+            email_sent = True
+            print(f"이메일 발송 성공: {subject}")
             
         except Exception as e:
             print(f"이메일 발송 오류: {str(e)}")
-            flash('문의는 접수되었으나 이메일 발송에 문제가 발생했습니다. 직접 연락 부탁드립니다.', 'warning')
         
-        return redirect(url_for('main.index'))
+        # 성공 시 현재 페이지에서 모달 표시
+        return render_template('ask.html', 
+                             all_services=get_all_services(),
+                             show_success_modal=True,
+                             email_sent=email_sent)
     
     # 모든 서비스와 서비스 옵션을 가져와서 통합 목록 생성
-    services = Service.query.all()
-    service_options = ServiceOption.query.all()
-    
-    # 통합 서비스 목록 생성 (개별 서비스 옵션 위주로)
-    all_services = []
-    
-    # ServiceOption들 추가
-    for option in service_options:
-        all_services.append({
-            'type': 'option',
-            'id': f'option_{option.id}',
-            'name': option.name,
-            'category': option.service.name if option.service else '기타'
-        })
-    
-    # Service들도 추가 (ServiceOption이 없는 경우를 위해)
-    for service in services:
-        if not service.options:  # 옵션이 없는 서비스만 추가
-            all_services.append({
-                'type': 'service',
-                'id': f'service_{service.id}',
-                'name': service.name,
-                'category': '기타'
-            })
-    
-    # 카테고리별로 정렬
-    all_services.sort(key=lambda x: (x['category'], x['name']))
+    all_services = get_all_services()
     
     # 이전 페이지에서 온 경우 default 선택을 위한 파라미터들
     selected_service_id = request.args.get('service_id')  # service_detail에서 온 경우

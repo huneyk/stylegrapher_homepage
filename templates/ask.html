@@ -77,6 +77,37 @@
     </div>
 </div>
 
+<!-- 성공 모달 -->
+{% if show_success_modal %}
+<div class="modal fade show success-modal" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header success-modal-header">
+                <h5 class="modal-title success-modal-title" id="successModalLabel">
+                    <i class="bi bi-check-circle-fill me-2"></i>문의 접수 완료
+                </h5>
+            </div>
+            <div class="modal-body text-center py-4">
+                <p class="mb-3 success-modal-text">
+                    문의 사항이 잘 접수됐습니다.<br>
+                    곧 회신 드리겠습니다. 감사합니다!
+                </p>
+                {% if not email_sent %}
+                <div class="alert alert-warning" role="alert">
+                    <small>이메일 발송에 일시적인 문제가 발생했지만, 문의사항은 정상적으로 접수되었습니다.</small>
+                </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer justify-content-center success-modal-footer">
+                <button type="button" class="btn gallery-more-btn" onclick="goToHome()">
+                    확인
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <style>
 .card {
     border: 1px solid rgba(139, 95, 191, 0.3);
@@ -120,5 +151,35 @@
         height: 40px;
     }
 }
+
+/* 성공 모달 스타일 */
+.success-modal {
+    display: block;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.success-modal-header {
+    border-bottom: 1px solid rgba(139, 95, 191, 0.3);
+    background-color: #f8f9fa;
+}
+
+.success-modal-title {
+    color: rgba(139, 95, 191, 0.8);
+}
+
+.success-modal-text {
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.success-modal-footer {
+    border-top: 1px solid rgba(139, 95, 191, 0.3);
+}
 </style>
+
+<script>
+function goToHome() {
+    window.location.href = "{{ url_for('main.index') }}";
+}
+</script>
 {% endblock %} 
