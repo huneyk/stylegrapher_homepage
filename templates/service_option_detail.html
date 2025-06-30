@@ -75,14 +75,10 @@
 
             <!-- 문의 버튼 -->
             <div class="text-center">
-                <p class="contact-text mb-4 lead">궁금하신 점이 있으시다면 언제든 문의해주세요.</p>
-                <div class="action-buttons mb-3">
-                    <a href="{{ url_for('main.ask', option_id=service_option.id) }}" class="btn btn-primary">문의 하기</a>
-                </div>
-                <div class="kakao-section">
-                    <p class="kakao-note">예약은 카카오톡 채널을 통해 진행됩니다.</p>
+                <p class="contact-text mb-4 lead">궁금하신 점이나 예약신청은 카카오톡 채널을 이용해주시기 바랍니다.</p>
+                <div class="action-buttons">
                     <button type="button" class="kakao-btn" onclick="showKakaoModal()">
-                        <span class="kakao-logo">💬</span> 카카오톡 채널로 예약신청하기
+                        <span class="kakao-logo">💬</span> 문의/예약신청
                     </button>
                 </div>
             </div>

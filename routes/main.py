@@ -3,7 +3,7 @@ from flask_mail import Message
 from models import Service, ServiceOption, Gallery, Booking, GalleryGroup, CollageText, Inquiry
 from extensions import db, mail
 import json
-from sqlalchemy import desc
+from sqlalchemy import desc, asc
 from sqlalchemy.sql import text
 import os
 import io

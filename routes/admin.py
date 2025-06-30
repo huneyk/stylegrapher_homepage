@@ -1097,7 +1097,7 @@ def list_gallery():
         result = db.session.execute(text("""
             SELECT id, title, created_at, display_order, is_pinned
             FROM gallery_group
-            ORDER BY display_order DESC, created_at DESC
+            ORDER BY is_pinned DESC, display_order DESC, created_at DESC
         """))
         
         # 결과를 DictAsModel 객체 리스트로 변환
