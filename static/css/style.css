@@ -550,3 +550,26 @@ footer {
         padding: 8px 6px;
     }
 }
+
+/* Admin 안내 메시지 스타일 */
+.form-text {
+    color: var(--light-purple) !important;
+    font-size: 0.875rem;
+}
+
+.text-muted {
+    color: var(--light-purple) !important;
+}
+
+/* Admin 입력창 placeholder 스타일 */
+.form-control::placeholder {
+    color: var(--light-purple) !important;
+    opacity: 0.8;
+}
+
+input.form-control::placeholder,
+textarea.form-control::placeholder,
+select.form-control::placeholder {
+    color: var(--light-purple) !important;
+    opacity: 0.8;
+}
