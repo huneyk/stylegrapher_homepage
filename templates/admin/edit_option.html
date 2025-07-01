@@ -68,6 +68,9 @@
                                 <button type="button" class="btn btn-outline-primary btn-sm" onclick="addPackageRow()">
                                     <i class="bi bi-plus-circle"></i> 패키지 추가
                                 </button>
+                                <button type="button" class="btn btn-outline-danger btn-sm ms-2" onclick="clearAllPackages()">
+                                    <i class="bi bi-trash3"></i> 표 내용 전체 지우기
+                                </button>
                             </div>
                             <textarea class="form-control d-none" id="packages" name="packages">{{ packages_text or '' }}</textarea>
                             <div class="form-text">패키지를 추가하고 각 필드를 입력하세요. 여러 패키지를 제공할 수 있습니다.</div>
@@ -127,9 +130,40 @@
                                 <button type="button" class="btn btn-outline-primary btn-sm" onclick="addRefundRow()">
                                     <i class="bi bi-plus-circle"></i> 환불 기준 추가
                                 </button>
+                                <button type="button" class="btn btn-outline-danger btn-sm ms-2" onclick="clearAllRefundRules()">
+                                    <i class="bi bi-trash3"></i> 표 내용 전체 지우기
+                                </button>
                             </div>
                             <textarea class="form-control d-none" id="refund_policy_table" name="refund_policy_table">{{ option.refund_policy_table or '' }}</textarea>
                             <div class="form-text">환불 기준을 테이블 형태로 관리할 수 있습니다. 기본 안내와 함께 표시됩니다.</div>
+                        </div>
+
+                        <!-- 시간외 업차지 테이블 -->
+                        <div class="mb-3">
+                            <h5 class="form-label">🕐 시간외 업차지</h5>
+                            <div class="overtime-charge-table-container">
+                                <table class="table table-striped overtime-charge-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 40%">시간대/조건</th>
+                                            <th style="width: 30%">추가 요금</th>
+                                            <th style="width: 20%">비고</th>
+                                            <th style="width: 10%">삭제</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="overtimeChargeTableBody">
+                                        <!-- 시간외 업차지 행들이 여기에 동적으로 추가됩니다 -->
+                                    </tbody>
+                                </table>
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="addOvertimeChargeRow()">
+                                    <i class="bi bi-plus-circle"></i> 시간외 업차지 기준 추가
+                                </button>
+                                <button type="button" class="btn btn-outline-danger btn-sm ms-2" onclick="clearAllOvertimeChargeRules()">
+                                    <i class="bi bi-trash3"></i> 표 내용 전체 지우기
+                                </button>
+                            </div>
+                            <textarea class="form-control d-none" id="overtime_charge_table" name="overtime_charge_table">{{ option.overtime_charge_table or '' }}</textarea>
+                            <div class="form-text">시간외 업차지 기준을 테이블 형태로 관리할 수 있습니다.</div>
                         </div>
 
                         
@@ -288,6 +322,65 @@ h5 {
     color: #6c757d;
     font-style: italic;
 }
+
+.overtime-charge-table-container {
+    border: 2px solid rgba(139, 95, 191, 0.2);
+    border-radius: 12px;
+    padding: 1rem;
+    background: rgba(248, 249, 250, 0.5);
+}
+
+.overtime-charge-table {
+    margin-bottom: 1rem;
+}
+
+.overtime-charge-table th {
+    background: rgba(139, 95, 191, 0.1);
+    color: rgba(139, 95, 191, 0.8);
+    font-weight: 600;
+    border-color: rgba(139, 95, 191, 0.2);
+}
+
+.overtime-charge-table td {
+    border-color: rgba(139, 95, 191, 0.15);
+    vertical-align: middle;
+}
+
+.overtime-charge-table input {
+    border: 1px solid rgba(139, 95, 191, 0.2);
+    border-radius: 6px;
+    padding: 0.5rem;
+    width: 100%;
+    background: white;
+    transition: border-color 0.2s ease;
+}
+
+.overtime-charge-table input:focus {
+    border-color: rgba(139, 95, 191, 0.5);
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(139, 95, 191, 0.15);
+}
+
+.delete-overtime-charge-btn {
+    border: none;
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border-radius: 6px;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.delete-overtime-charge-btn:hover {
+    background: rgba(220, 53, 69, 0.2);
+    color: #c82333;
+}
+
+.empty-overtime-charge-row {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+}
 </style>
 
 <script>
@@ -296,6 +389,8 @@ document.addEventListener('DOMContentLoaded', function() {
     loadExistingPackages();
     // 페이지 로드 시 기존 환불 규정 데이터 파싱
     loadExistingRefundRules();
+    // 페이지 로드 시 기존 시간외 업차지 데이터 파싱
+    loadExistingOvertimeChargeRules();
 });
 
 function loadExistingPackages() {
@@ -524,6 +619,143 @@ function updateRefundTableText() {
     });
     
     document.getElementById('refund_policy_table').value = refundRules.join('\n');
+}
+
+// 시간외 업차지 테이블 관리 함수들
+function loadExistingOvertimeChargeRules() {
+    const overtimeChargeTableText = document.getElementById('overtime_charge_table').value;
+    const tableBody = document.getElementById('overtimeChargeTableBody');
+    
+    // 기존 데이터 클리어
+    tableBody.innerHTML = '';
+    
+    if (overtimeChargeTableText.trim()) {
+        const lines = overtimeChargeTableText.split('\n');
+        let hasData = false;
+        
+        lines.forEach(line => {
+            if (line.trim() && line.includes('|')) {
+                const parts = line.split('|');
+                if (parts.length >= 3) {
+                    addOvertimeChargeRow(parts[0].trim(), parts[1].trim(), parts[2].trim());
+                    hasData = true;
+                }
+            }
+        });
+        
+        if (!hasData) {
+            showEmptyOvertimeChargeRow();
+        }
+    } else {
+        showEmptyOvertimeChargeRow();
+    }
+}
+
+function addOvertimeChargeRow(timeCondition = '', additionalFee = '', note = '') {
+    const tableBody = document.getElementById('overtimeChargeTableBody');
+    
+    // 빈 행 제거
+    const emptyRow = tableBody.querySelector('.empty-overtime-charge-row');
+    if (emptyRow) {
+        emptyRow.remove();
+    }
+    
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>
+            <input type="text" class="overtime-time-condition" value="${timeCondition}" placeholder="예: 평일 18시 이후" onchange="updateOvertimeChargeTableText()">
+        </td>
+        <td>
+            <input type="text" class="overtime-additional-fee" value="${additionalFee}" placeholder="예: +20,000원" onchange="updateOvertimeChargeTableText()">
+        </td>
+        <td>
+            <input type="text" class="overtime-note" value="${note}" placeholder="예: 야간 촬영" onchange="updateOvertimeChargeTableText()">
+        </td>
+        <td class="text-center">
+            <button type="button" class="delete-overtime-charge-btn" onclick="deleteOvertimeChargeRow(this)">
+                <i class="bi bi-trash"></i>
+            </button>
+        </td>
+    `;
+    
+    tableBody.appendChild(row);
+    updateOvertimeChargeTableText();
+}
+
+function deleteOvertimeChargeRow(button) {
+    if (confirm('이 시간외 업차지 기준을 삭제하시겠습니까?')) {
+        const row = button.closest('tr');
+        row.remove();
+        
+        // 모든 행이 삭제되면 빈 행 표시
+        const tableBody = document.getElementById('overtimeChargeTableBody');
+        if (tableBody.children.length === 0) {
+            showEmptyOvertimeChargeRow();
+        }
+        
+        updateOvertimeChargeTableText();
+    }
+}
+
+function showEmptyOvertimeChargeRow() {
+    const tableBody = document.getElementById('overtimeChargeTableBody');
+    const emptyRow = document.createElement('tr');
+    emptyRow.className = 'empty-overtime-charge-row';
+    emptyRow.innerHTML = `
+        <td colspan="4" class="py-3">
+            등록된 시간외 업차지 기준이 없습니다. "시간외 업차지 기준 추가" 버튼을 클릭하여 기준을 추가하세요.
+        </td>
+    `;
+    tableBody.appendChild(emptyRow);
+}
+
+function updateOvertimeChargeTableText() {
+    const tableBody = document.getElementById('overtimeChargeTableBody');
+    const rows = tableBody.querySelectorAll('tr:not(.empty-overtime-charge-row)');
+    const overtimeChargeRules = [];
+    
+    rows.forEach(row => {
+        const timeCondition = row.querySelector('.overtime-time-condition').value.trim();
+        const additionalFee = row.querySelector('.overtime-additional-fee').value.trim();
+        const note = row.querySelector('.overtime-note').value.trim();
+        
+        if (timeCondition && additionalFee) {
+            overtimeChargeRules.push(`${timeCondition}|${additionalFee}|${note}`);
+        }
+    });
+    
+    document.getElementById('overtime_charge_table').value = overtimeChargeRules.join('\n');
+}
+
+// 전체 지우기 함수들
+function clearAllPackages() {
+    if (confirm('모든 패키지 데이터를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+        const tableBody = document.getElementById('packagesTableBody');
+        tableBody.innerHTML = '';
+        showEmptyRow();
+        updatePackagesText();
+        alert('모든 패키지 데이터가 삭제되었습니다.');
+    }
+}
+
+function clearAllRefundRules() {
+    if (confirm('모든 환불 기준 데이터를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+        const tableBody = document.getElementById('refundTableBody');
+        tableBody.innerHTML = '';
+        showEmptyRefundRow();
+        updateRefundTableText();
+        alert('모든 환불 기준 데이터가 삭제되었습니다.');
+    }
+}
+
+function clearAllOvertimeChargeRules() {
+    if (confirm('모든 시간외 업차지 기준 데이터를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+        const tableBody = document.getElementById('overtimeChargeTableBody');
+        tableBody.innerHTML = '';
+        showEmptyOvertimeChargeRow();
+        updateOvertimeChargeTableText();
+        alert('모든 시간외 업차지 기준 데이터가 삭제되었습니다.');
+    }
 }
 </script>
 {% endblock %} 

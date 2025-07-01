@@ -179,6 +179,44 @@
             </div>
             {% endif %}
             
+            <!-- 시간외 업차지 카드 -->
+            {% if service_option.overtime_charge_table and service_option.overtime_charge_table.strip() %}
+            <div class="mb-4">
+                <div class="info-card">
+                    <h2 class="section-title">🕐 시간외 업차지</h2>
+                    <div class="booking-content">
+                        <!-- 시간외 업차지 테이블 -->
+                        <div class="overtime-charge-table-container">
+                            {% set overtime_charge_rules = service_option.overtime_charge_table.split('\n') %}
+                            {% if overtime_charge_rules %}
+                            <table class="table overtime-charge-table">
+                                <thead>
+                                    <tr>
+                                        <th>시간대/조건</th>
+                                        <th>추가 요금</th>
+                                        <th>비고</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for rule in overtime_charge_rules %}
+                                    {% if rule.strip() and '|' in rule %}
+                                    {% set parts = rule.split('|') %}
+                                    <tr>
+                                        <td>{{ parts[0].strip() }}</td>
+                                        <td>{{ parts[1].strip() }}</td>
+                                        <td>{{ parts[2].strip() if parts|length > 2 else '' }}</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
             <!-- 문의 버튼 -->
             <div class="text-center">
                 <p class="contact-text mb-4 lead">궁금하신 점이나 예약신청은 카카오톡 채널을 이용해주시기 바랍니다.</p>
