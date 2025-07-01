@@ -101,3 +101,54 @@ class Inquiry(db.Model):
     status = db.Column(db.String(20), default='대기')  # 대기, 처리중, 완료
     
     service = db.relationship('Service', backref='inquiries')
+
+class SiteSettings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    main_color_r = db.Column(db.Integer, default=139)  # 기본값: rgba(139, 95, 191, 0.8)
+    main_color_g = db.Column(db.Integer, default=95)
+    main_color_b = db.Column(db.Integer, default=191)
+    sub_color_r = db.Column(db.Integer, default=65)   # 기본값: rgba(65, 26, 75, 0.8)
+    sub_color_g = db.Column(db.Integer, default=26)
+    sub_color_b = db.Column(db.Integer, default=75)
+    background_color_r = db.Column(db.Integer, default=255)  # 기본값: white
+    background_color_g = db.Column(db.Integer, default=255)
+    background_color_b = db.Column(db.Integer, default=255)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<SiteSettings {self.id}>'
+    
+    @classmethod
+    def get_current_settings(cls):
+        """현재 사이트 설정을 가져오거나 기본값으로 생성"""
+        settings = cls.query.first()
+        if not settings:
+            settings = cls()
+            db.session.add(settings)
+            db.session.commit()
+        return settings
+    
+    def get_main_color_rgb(self):
+        """main color RGB 문자열 반환"""
+        return f"{self.main_color_r}, {self.main_color_g}, {self.main_color_b}"
+    
+    def get_sub_color_rgb(self):
+        """sub color RGB 문자열 반환"""
+        return f"{self.sub_color_r}, {self.sub_color_g}, {self.sub_color_b}"
+    
+    def get_background_color_rgb(self):
+        """background color RGB 문자열 반환"""
+        return f"{self.background_color_r}, {self.background_color_g}, {self.background_color_b}"
+    
+    def get_main_color_hex(self):
+        """main color HEX 문자열 반환"""
+        return f"#{self.main_color_r:02x}{self.main_color_g:02x}{self.main_color_b:02x}"
+    
+    def get_sub_color_hex(self):
+        """sub color HEX 문자열 반환"""
+        return f"#{self.sub_color_r:02x}{self.sub_color_g:02x}{self.sub_color_b:02x}"
+    
+    def get_background_color_hex(self):
+        """background color HEX 문자열 반환"""
+        return f"#{self.background_color_r:02x}{self.background_color_g:02x}{self.background_color_b:02x}"

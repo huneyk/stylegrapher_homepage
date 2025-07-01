@@ -33,15 +33,15 @@
 
 <style>
 .gallery-section-card {
-    border: 1px solid rgba(139, 95, 191, 0.3);
+    border: 1px solid rgba(var(--main-color-rgb), 0.3);
     border-radius: 15px;
-    box-shadow: 0 4px 20px rgba(139, 95, 191, 0.2);
+    box-shadow: 0 4px 20px rgba(var(--main-color-rgb), 0.2);
     background-color: #fff;
     transition: box-shadow 0.3s ease;
 }
 
 .gallery-section-card:hover {
-    box-shadow: 0 8px 30px rgba(139, 95, 191, 0.3);
+    box-shadow: 0 8px 30px rgba(var(--main-color-rgb), 0.3);
 }
 
 .gallery-item {
@@ -54,7 +54,7 @@
 
 .gallery-item:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(139, 95, 191, 0.2);
+    box-shadow: 0 8px 25px rgba(var(--main-color-rgb), 0.2);
 }
 
 .gallery-item .carousel {
@@ -94,14 +94,14 @@
 .gallery-main-title {
     font-family: 'Nanum Gothic', sans-serif;
     font-size: 2.5rem;
-    color: rgba(139, 95, 191, 0.8);
+    color: rgba(var(--main-color-rgb), 0.8);
     margin-bottom: 2rem;
     transition: color 0.3s ease;
     font-weight: normal;
 }
 
 .gallery-main-title:hover {
-    color: rgba(139, 95, 191, 1);
+    color: rgba(var(--main-color-rgb), 1);
 }
 
 @media (max-width: 768px) {
@@ -112,9 +112,9 @@
 
 .gallery-preview-title {
     font-family: 'Nanum Gothic', sans-serif;
-    font-weight: 500;
+    font-weight: normal;
     font-size: 1rem;
-    color: rgba(139, 95, 191, 0.8);
+    color: rgba(var(--sub-color-rgb), 0.8);
     margin: 0;
     text-align: center;
     letter-spacing: 0.02em;
@@ -144,7 +144,7 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: conic-gradient(from 0deg, transparent, rgba(139, 95, 191, 0.8));
+    background: conic-gradient(from 0deg, transparent, rgba(var(--main-color-rgb), 0.8));
     animation: spin 1s linear infinite;
     position: relative;
     margin: 0 auto;

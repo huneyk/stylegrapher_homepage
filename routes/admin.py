@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify, make_response
 from flask_login import login_required, login_user, logout_user
 from extensions import db, login_manager
-from models import Service, Gallery, User, ServiceOption, Booking, GalleryGroup, Inquiry, CollageText
+from models import Service, Gallery, User, ServiceOption, Booking, GalleryGroup, Inquiry, CollageText, SiteSettings
 from werkzeug.utils import secure_filename
 import os
 from PIL import Image
@@ -1569,3 +1569,91 @@ def delete_fade_text(id):
         flash('Fade Text 삭제 중 오류가 발생했습니다.', 'error')
     
     return redirect(url_for('admin.list_fade_texts'))
+
+# 사이트 색상 설정 관리
+@admin.route('/site-colors')
+@login_required
+def site_colors():
+    try:
+        settings = SiteSettings.get_current_settings()
+        return render_template('admin/site_colors.html', settings=settings)
+    except Exception as e:
+        print(f"Error loading site colors: {str(e)}")
+        flash('사이트 색상 설정을 불러오는 중 오류가 발생했습니다.', 'error')
+        return redirect(url_for('admin.dashboard'))
+
+@admin.route('/site-colors/update', methods=['POST'])
+@login_required
+def update_site_colors():
+    try:
+        settings = SiteSettings.get_current_settings()
+        
+        # Main Color
+        main_r = request.form.get('main_color_r', 139, type=int)
+        main_g = request.form.get('main_color_g', 95, type=int)
+        main_b = request.form.get('main_color_b', 191, type=int)
+        
+        # Sub Color
+        sub_r = request.form.get('sub_color_r', 65, type=int)
+        sub_g = request.form.get('sub_color_g', 26, type=int)
+        sub_b = request.form.get('sub_color_b', 75, type=int)
+        
+        # Background Color
+        bg_r = request.form.get('background_color_r', 255, type=int)
+        bg_g = request.form.get('background_color_g', 255, type=int)
+        bg_b = request.form.get('background_color_b', 255, type=int)
+        
+        # 값 유효성 검사 (0-255 범위)
+        def validate_rgb(value):
+            return max(0, min(255, value))
+        
+        settings.main_color_r = validate_rgb(main_r)
+        settings.main_color_g = validate_rgb(main_g)
+        settings.main_color_b = validate_rgb(main_b)
+        
+        settings.sub_color_r = validate_rgb(sub_r)
+        settings.sub_color_g = validate_rgb(sub_g)
+        settings.sub_color_b = validate_rgb(sub_b)
+        
+        settings.background_color_r = validate_rgb(bg_r)
+        settings.background_color_g = validate_rgb(bg_g)
+        settings.background_color_b = validate_rgb(bg_b)
+        
+        db.session.commit()
+        
+        flash('사이트 색상이 성공적으로 업데이트되었습니다.')
+        return redirect(url_for('admin.site_colors'))
+        
+    except Exception as e:
+        print(f"Error updating site colors: {str(e)}")
+        flash('색상 업데이트 중 오류가 발생했습니다.', 'error')
+        return redirect(url_for('admin.site_colors'))
+
+@admin.route('/site-colors/reset', methods=['POST'])
+@login_required
+def reset_site_colors():
+    try:
+        settings = SiteSettings.get_current_settings()
+        
+        # 기본값으로 리셋
+        settings.main_color_r = 139
+        settings.main_color_g = 95
+        settings.main_color_b = 191
+        
+        settings.sub_color_r = 65
+        settings.sub_color_g = 26
+        settings.sub_color_b = 75
+        
+        settings.background_color_r = 255
+        settings.background_color_g = 255
+        settings.background_color_b = 255
+        
+        db.session.commit()
+        
+        flash('사이트 색상이 기본값으로 리셋되었습니다.')
+        return redirect(url_for('admin.site_colors'))
+        
+    except Exception as e:
+        print(f"Error resetting site colors: {str(e)}")
+        flash('색상 리셋 중 오류가 발생했습니다.', 'error')
+        return redirect(url_for('admin.site_colors'))

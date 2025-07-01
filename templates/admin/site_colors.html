@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}사이트 색상 관리 - 관리자{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-palette me-2"></i>사이트 색상 관리</h2>
+        <div>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary me-2">
+                <i class="fas fa-tachometer-alt me-1"></i>대시보드
+            </a>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Color Settings Form -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-sliders-h me-2"></i>색상 설정</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.update_site_colors') }}">
+                        <!-- Main Color -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">메인 컬러 (Main Color)</label>
+                            <div class="row g-2">
+                                <div class="col-md-2">
+                                    <label for="main_color_r" class="form-label">R</label>
+                                    <input type="number" class="form-control" id="main_color_r" name="main_color_r" 
+                                           value="{{ settings.main_color_r }}" min="0" max="255" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="main_color_g" class="form-label">G</label>
+                                    <input type="number" class="form-control" id="main_color_g" name="main_color_g" 
+                                           value="{{ settings.main_color_g }}" min="0" max="255" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="main_color_b" class="form-label">B</label>
+                                    <input type="number" class="form-control" id="main_color_b" name="main_color_b" 
+                                           value="{{ settings.main_color_b }}" min="0" max="255" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">미리보기</label>
+                                    <div id="main_color_preview" class="border rounded" style="height: 38px; background-color: rgb({{ settings.main_color_r }}, {{ settings.main_color_g }}, {{ settings.main_color_b }});"></div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">HEX</label>
+                                    <input type="text" class="form-control" id="main_color_hex" value="{{ settings.get_main_color_hex() }}" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sub Color -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">서브 컬러 (Sub Color)</label>
+                            <div class="row g-2">
+                                <div class="col-md-2">
+                                    <label for="sub_color_r" class="form-label">R</label>
+                                    <input type="number" class="form-control" id="sub_color_r" name="sub_color_r" 
+                                           value="{{ settings.sub_color_r }}" min="0" max="255" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="sub_color_g" class="form-label">G</label>
+                                    <input type="number" class="form-control" id="sub_color_g" name="sub_color_g" 
+                                           value="{{ settings.sub_color_g }}" min="0" max="255" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="sub_color_b" class="form-label">B</label>
+                                    <input type="number" class="form-control" id="sub_color_b" name="sub_color_b" 
+                                           value="{{ settings.sub_color_b }}" min="0" max="255" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">미리보기</label>
+                                    <div id="sub_color_preview" class="border rounded" style="height: 38px; background-color: rgb({{ settings.sub_color_r }}, {{ settings.sub_color_g }}, {{ settings.sub_color_b }});"></div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">HEX</label>
+                                    <input type="text" class="form-control" id="sub_color_hex" value="{{ settings.get_sub_color_hex() }}" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Background Color -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">배경 컬러 (Background Color)</label>
+                            <div class="row g-2">
+                                <div class="col-md-2">
+                                    <label for="background_color_r" class="form-label">R</label>
+                                    <input type="number" class="form-control" id="background_color_r" name="background_color_r" 
+                                           value="{{ settings.background_color_r }}" min="0" max="255" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="background_color_g" class="form-label">G</label>
+                                    <input type="number" class="form-control" id="background_color_g" name="background_color_g" 
+                                           value="{{ settings.background_color_g }}" min="0" max="255" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="background_color_b" class="form-label">B</label>
+                                    <input type="number" class="form-control" id="background_color_b" name="background_color_b" 
+                                           value="{{ settings.background_color_b }}" min="0" max="255" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">미리보기</label>
+                                    <div id="background_color_preview" class="border rounded" style="height: 38px; background-color: rgb({{ settings.background_color_r }}, {{ settings.background_color_g }}, {{ settings.background_color_b }});"></div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">HEX</label>
+                                    <input type="text" class="form-control" id="background_color_hex" value="{{ settings.get_background_color_hex() }}" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>변경사항 저장
+                            </button>
+                            <button type="button" class="btn btn-warning" onclick="resetToDefaults()">
+                                <i class="fas fa-undo me-1"></i>기본값으로 리셋
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Color Usage Guide -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6><i class="fas fa-info-circle me-2"></i>색상 사용 가이드</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-primary">메인 컬러</h6>
+                        <small class="text-muted">주요 버튼, 링크, 강조 영역에 사용됩니다.</small>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-secondary">서브 컬러</h6>
+                        <small class="text-muted">보조 버튼, 테두리, 아이콘에 사용됩니다.</small>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-dark">배경 컬러</h6>
+                        <small class="text-muted">페이지 전체 배경색으로 사용됩니다.</small>
+                    </div>
+                    <hr>
+                    <div class="text-center">
+                        <small class="text-muted">현재 설정</small>
+                        <div class="mt-2">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="small">메인:</span>
+                                <code class="small">rgb({{ settings.main_color_r }}, {{ settings.main_color_g }}, {{ settings.main_color_b }})</code>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="small">서브:</span>
+                                <code class="small">rgb({{ settings.sub_color_r }}, {{ settings.sub_color_g }}, {{ settings.sub_color_b }})</code>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="small">배경:</span>
+                                <code class="small">rgb({{ settings.background_color_r }}, {{ settings.background_color_g }}, {{ settings.background_color_b }})</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// RGB 값 변경 시 실시간 미리보기 업데이트
+function updateColorPreview(colorType) {
+    const r = document.getElementById(`${colorType}_color_r`).value;
+    const g = document.getElementById(`${colorType}_color_g`).value;
+    const b = document.getElementById(`${colorType}_color_b`).value;
+    
+    const rgb = `rgb(${r}, ${g}, ${b})`;
+    const hex = `#${parseInt(r).toString(16).padStart(2, '0')}${parseInt(g).toString(16).padStart(2, '0')}${parseInt(b).toString(16).padStart(2, '0')}`;
+    
+    document.getElementById(`${colorType}_color_preview`).style.backgroundColor = rgb;
+    document.getElementById(`${colorType}_color_hex`).value = hex.toUpperCase();
+}
+
+// 모든 색상 입력에 이벤트 리스너 추가
+['main', 'sub', 'background'].forEach(colorType => {
+    ['r', 'g', 'b'].forEach(component => {
+        document.getElementById(`${colorType}_color_${component}`).addEventListener('input', function() {
+            updateColorPreview(colorType);
+        });
+    });
+});
+
+// 기본값으로 리셋
+function resetToDefaults() {
+    if (confirm('정말로 기본값으로 리셋하시겠습니까?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ url_for("admin.reset_site_colors") }}';
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %} 

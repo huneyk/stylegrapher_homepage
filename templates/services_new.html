@@ -77,9 +77,9 @@
 <style>
 /* 메인 카드 스타일 */
 .main-card {
-    border: 1.5px solid rgba(139, 95, 191, 0.2) !important;
+    border: 1.5px solid rgba(var(--main-color-rgb), 0.2) !important;
     border-radius: 20px;
-    box-shadow: 0 6px 30px rgba(139, 95, 191, 0.1);
+    box-shadow: 0 6px 30px rgba(var(--main-color-rgb), 0.1);
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 249, 250, 0.95));
 }
 
@@ -87,7 +87,7 @@
 .services-main-title {
     font-family: 'Nanum Gothic', sans-serif;
     font-size: 3rem;
-    background: linear-gradient(45deg, rgba(139, 95, 191, 0.8), rgba(139, 95, 191, 1));
+    background: linear-gradient(45deg, rgba(var(--main-color-rgb), 0.8), rgba(var(--main-color-rgb), 1));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -104,7 +104,7 @@
 /* 카테고리 스타일 */
 .service-category {
     padding: 2rem 0;
-    border-bottom: 2px solid rgba(139, 95, 191, 0.1);
+    border-bottom: 2px solid rgba(var(--main-color-rgb), 0.1);
     margin-bottom: 3rem;
 }
 
@@ -122,7 +122,7 @@
     font-size: 2.2rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
-    color: rgba(139, 95, 191, 0.8) !important;
+    color: rgba(var(--main-color-rgb), 0.8) !important;
     word-break: keep-all;
     overflow-wrap: break-word;
     line-break: strict;
@@ -160,11 +160,11 @@
 /* 서비스 카드 */
 .service-card {
     background: white;
-    border: 1.5px solid rgba(139, 95, 191, 0.15);
+    border: 1.5px solid rgba(var(--main-color-rgb), 0.15);
     border-radius: 15px;
     overflow: hidden;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.08);
+    box-shadow: 0 4px 15px rgba(var(--main-color-rgb), 0.08);
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -172,12 +172,12 @@
 
 .service-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 30px rgba(139, 95, 191, 0.15);
-    border-color: rgba(139, 95, 191, 0.3);
+    box-shadow: 0 8px 30px rgba(var(--main-color-rgb), 0.15);
+    border-color: rgba(var(--main-color-rgb), 0.3);
 }
 
 .service-card-header {
-    background: linear-gradient(135deg, rgba(139, 95, 191, 0.05), rgba(139, 95, 191, 0.1));
+    background: linear-gradient(135deg, rgba(var(--main-color-rgb), 0.05), rgba(var(--main-color-rgb), 0.1));
     padding: 1.5rem;
     text-align: center;
 }
@@ -185,7 +185,7 @@
 .service-name {
     font-family: 'Nanum Gothic', sans-serif;
     font-size: 1.3rem;
-    color: rgba(139, 95, 191, 0.9);
+    color: rgba(var(--main-color-rgb), 0.9);
     font-weight: 600;
     margin-bottom: 0;
     word-break: keep-all;
@@ -211,7 +211,7 @@
 .service-card-footer {
     padding: 1.5rem;
     background: rgba(249, 249, 249, 0.5);
-    border-top: 1px solid rgba(139, 95, 191, 0.1);
+    border-top: 1px solid rgba(var(--main-color-rgb), 0.1);
     display: flex;
     justify-content: center;
     gap: 0.75rem;
@@ -232,8 +232,8 @@
 
 .detail-btn {
     background-color: white;
-    border: 1px solid rgba(139, 95, 191, 0.5);
-    color: rgba(139, 95, 191, 0.8);
+    border: 1px solid rgba(var(--sub-color-rgb), 0.5);
+    color: rgba(var(--main-color-rgb), 0.8);
     padding: 0.4rem 2rem;
     border-radius: 20px;
     font-size: 0.9rem;
@@ -242,11 +242,11 @@
 }
 
 .detail-btn:hover {
-    background-color: rgba(139, 95, 191, 0.05);
-    border-color: rgba(139, 95, 191, 0.8);
-    color: rgba(139, 95, 191, 1);
+    background-color: rgba(var(--main-color-rgb), 0.05);
+    border-color: rgba(var(--sub-color-rgb), 0.8);
+    color: rgba(var(--main-color-rgb), 1);
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(139, 95, 191, 0.2);
+    box-shadow: 0 4px 10px rgba(var(--main-color-rgb), 0.2);
 }
 
 .detail-btn:active {

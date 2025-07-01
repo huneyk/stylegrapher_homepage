@@ -70,10 +70,13 @@
 .service-card-title {
     font-family: 'Nanum Gothic', sans-serif;
     font-size: 1.4rem;
-    color: rgba(139, 95, 191, 0.9);
+    color: var(--main-color);
     font-weight: 600;
     line-height: 1.3;
     margin-bottom: 1rem;
+    background-color: rgba(var(--sub-color-rgb), 0.1);
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
 }
 
 .service-card-description {
@@ -100,9 +103,9 @@
 
 .option-button {
     width: 100%;
-    background: rgba(139, 95, 191, 0.1);
-    color: rgba(139, 95, 191, 0.8);
-    border: 1px solid rgba(139, 95, 191, 0.2);
+    background: rgba(var(--main-color-rgb), 0.1);
+    color: var(--main-color-alpha);
+    border: 1px solid rgba(var(--sub-color-rgb), 0.4);
     padding: 0.6rem 0.8rem;
     border-radius: 12px;
     font-size: 0.9rem;
@@ -118,11 +121,11 @@
 }
 
 .option-button:hover {
-    background: rgba(139, 95, 191, 0.2);
-    border-color: rgba(139, 95, 191, 0.4);
+    background: rgba(var(--main-color-rgb), 0.2);
+    border-color: rgba(var(--sub-color-rgb), 0.6);
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(139, 95, 191, 0.2);
-    color: rgba(139, 95, 191, 0.9);
+    box-shadow: 0 2px 8px rgba(var(--sub-color-rgb), 0.2);
+    color: var(--main-color);
     text-decoration: none;
 }
 

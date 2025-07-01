@@ -12,6 +12,53 @@
     <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- 동적 사이트 색상 변수 -->
+    <style>
+        :root {
+            --main-color-rgb: {{ site_colors.main_rgb }};
+            --sub-color-rgb: {{ site_colors.sub_rgb }};
+            --background-color-rgb: {{ site_colors.background_rgb }};
+            --main-color: rgb(var(--main-color-rgb));
+            --sub-color: rgb(var(--sub-color-rgb));
+            --background-color: rgb(var(--background-color-rgb));
+            --main-color-alpha: rgba(var(--main-color-rgb), 0.8);
+            --sub-color-alpha: rgba(var(--sub-color-rgb), 0.8);
+        }
+        
+        /* 페이지 제목들에 main color 적용 */
+        .service-title, 
+        .section-title, 
+        .page-title, 
+        .hero-title, 
+        .gallery-detail-title, 
+        .category-title, 
+        .services-main-title,
+        .card-title {
+            color: var(--main-color) !important;
+        }
+        
+        /* Admin 페이지 테이블 헤더에 sub color 배경 적용 */
+        .table thead th, 
+        .table-light,
+        .packages-table thead th {
+            background-color: rgba(var(--sub-color-rgb), 0.15) !important;
+            border-color: rgba(var(--sub-color-rgb), 0.3) !important;
+            color: rgba(var(--main-color-rgb), 0.9) !important;
+        }
+        
+        /* 모든 테이블 셀 텍스트에 main color 적용 */
+        .table td, .table th,
+        .packages-table td, .packages-table th {
+            color: rgba(var(--main-color-rgb), 0.8) !important;
+        }
+        
+        /* 테이블 셀 hover 효과에 sub color 적용 */
+        .table-hover tbody tr:hover {
+            background-color: rgba(var(--sub-color-rgb), 0.05) !important;
+        }
+    </style>
+    
     <!-- 전체 폰트 설정 -->
     <style>
         * {
@@ -114,14 +161,14 @@
         .hamburger-menu span, .floating-hamburger span {
             width: 25px;
             height: 3px;
-            background-color: rgba(139, 95, 191, 0.8);
+            background-color: var(--main-color-alpha);
             transition: all 0.3s ease;
             border-radius: 2px;
             display: block;
         }
 
         .hamburger-menu:hover span, .floating-hamburger:hover span {
-            background-color: rgba(139, 95, 191, 1);
+            background-color: var(--main-color);
         }
         
         .hamburger-menu:active {
@@ -167,7 +214,7 @@
             left: -300px;
             width: 300px;
             height: 100vh;
-            background: rgba(139, 95, 191, 0.95);
+            background: rgba(var(--main-color-rgb), 0.95);
             backdrop-filter: blur(10px);
             transition: left 0.3s ease;
             z-index: 9999;
@@ -320,7 +367,7 @@
         }
 
         .floating-item {
-            background: rgba(139, 95, 191, 0.9);
+            background: rgba(var(--main-color-rgb), 0.9);
             color: white;
             text-decoration: none;
             border-radius: 25px;
@@ -328,7 +375,7 @@
             align-items: center;
             padding: 8px 15px 8px 8px;
             margin-bottom: 10px;
-            box-shadow: 0 4px 15px rgba(139, 95, 191, 0.3);
+            box-shadow: 0 4px 15px rgba(var(--main-color-rgb), 0.3);
             transition: all 0.3s ease;
             min-width: 120px;
         }
@@ -354,7 +401,7 @@
 
         .floating-item:hover {
             color: white;
-            background: rgba(139, 95, 191, 1);
+            background: var(--main-color);
             transform: translateX(-10px);
             opacity: 1 !important;
         }
@@ -406,7 +453,7 @@
                 background: rgba(255, 255, 255, 0.95);
                 backdrop-filter: blur(10px);
                 border-radius: 20px 20px 0 0;
-                box-shadow: 0 -4px 20px rgba(139, 95, 191, 0.2);
+                box-shadow: 0 -4px 20px rgba(var(--main-color-rgb), 0.2);
             }
             
             .floating-nav {
@@ -570,64 +617,136 @@
         <div class="side-menu-content">
             <button class="close-menu" id="closeMenu">&times;</button>
             <ul class="side-menu-nav">
-                <!-- 일반 메뉴 항목들 -->
+                <!-- 1. 홈 -->
                 <li class="main-menu-item">
                     <a href="{{ url_for('main.index') }}" class="main-menu-link">
                         홈
                     </a>
                 </li>
                 
-                <!-- 서비스 카테고리별 메뉴 -->
-                {% for category_key, category in menu_categories.items() %}
-                    {% if category.services %}
-                    <li class="category-menu">
-                        <button class="category-header" onclick="toggleCategory('{{ category_key }}')">
-                            <div>
-                                <span>{{ category.title }}</span>
-                            </div>
-                            <i class="bi bi-chevron-down category-toggle" id="toggle-{{ category_key }}"></i>
-                        </button>
-                        <ul class="sub-menu" id="submenu-{{ category_key }}">
-                            {% for service in category.services %}
-                                {% for option in service.options %}
-                                <li class="sub-menu-item">
-                                    <a href="{{ url_for('main.service_option_detail', id=option.id) }}" class="sub-menu-link">
-                                        {{ option.name }}
-                                    </a>
-                                </li>
-                                {% endfor %}
-                            {% endfor %}
-                        </ul>
-                    </li>
-                    {% endif %}
-                {% endfor %}
+                <!-- 2. STG AI 분석 -->
+                <li class="category-menu">
+                    <button class="category-header" onclick="toggleCategory('stg-ai')">
+                        <div>
+                            <span>STG AI 분석</span>
+                        </div>
+                        <i class="bi bi-chevron-down category-toggle" id="toggle-stg-ai"></i>
+                    </button>
+                    <ul class="sub-menu" id="submenu-stg-ai">
+                        <li class="sub-menu-item">
+                            <a href="{{ url_for('main.service_option_detail', id=1) }}" class="sub-menu-link">
+                                AI 얼굴 분석
+                            </a>
+                        </li>
+                        <li class="sub-menu-item">
+                            <a href="{{ url_for('main.service_option_detail', id=2) }}" class="sub-menu-link">
+                                AI 체형 분석
+                            </a>
+                        </li>
+                    </ul>
+                </li>
                 
-                <!-- 기타 메뉴 항목들 -->
-                <li class="main-menu-item">
-                    <a href="{{ url_for('main.services') }}" class="main-menu-link">
-                        전체 서비스
-                    </a>
+                <!-- 3. 스타일링 컨설팅 -->
+                <li class="category-menu">
+                    <button class="category-header" onclick="toggleCategory('styling-consulting')">
+                        <div>
+                            <span>스타일링 컨설팅</span>
+                        </div>
+                        <i class="bi bi-chevron-down category-toggle" id="toggle-styling-consulting"></i>
+                    </button>
+                    <ul class="sub-menu" id="submenu-styling-consulting">
+                        <li class="sub-menu-item">
+                            <a href="{{ url_for('main.service_option_detail', id=3) }}" class="sub-menu-link">
+                                퍼스널 컬러 진단
+                            </a>
+                        </li>
+                        <li class="sub-menu-item">
+                            <a href="{{ url_for('main.service_option_detail', id=4) }}" class="sub-menu-link">
+                                메이크업 레슨
+                            </a>
+                        </li>
+                        <li class="sub-menu-item">
+                            <a href="{{ url_for('main.service_option_detail', id=5) }}" class="sub-menu-link">
+                                헤어 스타일링 레슨
+                            </a>
+                        </li>
+                        <li class="sub-menu-item">
+                            <a href="{{ url_for('main.service_option_detail', id=6) }}" class="sub-menu-link">
+                                패션 스타일링 레슨
+                            </a>
+                        </li>
+                    </ul>
                 </li>
-                <li class="main-menu-item">
-                    <a href="{{ url_for('main.gallery') }}" class="main-menu-link">
-                        갤러리
-                    </a>
+                
+                <!-- 4. 원데이 스타일링 -->
+                <li class="category-menu">
+                    <button class="category-header" onclick="toggleCategory('oneday-styling')">
+                        <div>
+                            <span>원데이 스타일링</span>
+                        </div>
+                        <i class="bi bi-chevron-down category-toggle" id="toggle-oneday-styling"></i>
+                    </button>
+                    <ul class="sub-menu" id="submenu-oneday-styling">
+                        <li class="sub-menu-item">
+                            <a href="{{ url_for('main.service_option_detail', id=7) }}" class="sub-menu-link">
+                                메이크업
+                            </a>
+                        </li>
+                        <li class="sub-menu-item">
+                            <a href="{{ url_for('main.service_option_detail', id=8) }}" class="sub-menu-link">
+                                헤어 드라이
+                            </a>
+                        </li>
+                        <li class="sub-menu-item">
+                            <a href="{{ url_for('main.service_option_detail', id=9) }}" class="sub-menu-link">
+                                패션 스타일링
+                            </a>
+                        </li>
+                    </ul>
                 </li>
-                <li class="main-menu-item">
-                    <a href="https://pf.kakao.com/_xgDcFK" class="main-menu-link" target="_blank">
-                        카카오톡 채널로 예약신청
-                    </a>
+                
+                <!-- 5. 화보 & 프로필 -->
+                <li class="category-menu">
+                    <button class="category-header" onclick="toggleCategory('photo-profile')">
+                        <div>
+                            <span>화보 & 프로필</span>
+                        </div>
+                        <i class="bi bi-chevron-down category-toggle" id="toggle-photo-profile"></i>
+                    </button>
+                    <ul class="sub-menu" id="submenu-photo-profile">
+                        <li class="sub-menu-item">
+                            <a href="{{ url_for('main.service_option_detail', id=10) }}" class="sub-menu-link">
+                                개인화보
+                            </a>
+                        </li>
+                        <li class="sub-menu-item">
+                            <a href="{{ url_for('main.service_option_detail', id=11) }}" class="sub-menu-link">
+                                프로필 촬영
+                            </a>
+                        </li>
+                        <li class="sub-menu-item">
+                            <a href="{{ url_for('main.gallery') }}" class="sub-menu-link">
+                                갤러리
+                            </a>
+                        </li>
+                    </ul>
                 </li>
+                
+                <!-- 6. 고객 스토리 -->
                 <li class="main-menu-item">
                     <a href="{{ url_for('main.customer_story') }}" class="main-menu-link">
                         고객 스토리
                     </a>
                 </li>
+                
+                <!-- 7. 커머셜 포트폴리오 -->
                 <li class="main-menu-item">
                     <a href="{{ url_for('main.commercial_portfolio') }}" class="main-menu-link">
                         커머셜 포트폴리오
                     </a>
                 </li>
+                
+                <!-- 8. 스타일그래퍼 소개 -->
                 <li class="main-menu-item">
                     <a href="{{ url_for('main.about') }}" class="main-menu-link">
                         스타일그래퍼 소개
@@ -910,8 +1029,8 @@
 
     <style>
     .footer {
-        background-color: rgba(139, 95, 191, 0.8);
-        border-top: 1px solid rgba(139, 95, 191, 0.3);
+                    background-color: var(--main-color);
+            border-top: 1px solid rgba(var(--main-color-rgb), 0.3);
     }
 
     .social-links {
@@ -963,9 +1082,9 @@
         bottom: 0;
         left: 0;
         right: 0;
-        background-color: rgba(139, 95, 191, 0.25);
+        background-color: rgba(var(--main-color-rgb), 0.25);
         padding: 8px 0;
-        border-top: 1px solid rgba(139, 95, 191, 0.4);
+        border-top: 1px solid rgba(var(--main-color-rgb), 0.4);
         z-index: 1000;
     }
 
@@ -973,7 +1092,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        color: rgba(139, 95, 191, 0.8);
+        color: var(--main-color-alpha);
         text-decoration: none;
     }
 
@@ -1011,19 +1130,19 @@
     .float-item {
         width: 40px;
         height: 40px;
-        background-color: rgba(139, 95, 191, 0.1);
+        background-color: rgba(var(--main-color-rgb), 0.1);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: rgba(139, 95, 191, 0.8);
+        color: var(--main-color-alpha);
         text-decoration: none;
         transition: all 0.3s ease;
     }
 
     .float-item:hover {
-        background-color: rgba(139, 95, 191, 0.2);
-        color: rgba(139, 95, 191, 1);
+        background-color: rgba(var(--main-color-rgb), 0.2);
+        color: var(--main-color);
     }
 
     .float-item i {

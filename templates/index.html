@@ -223,7 +223,7 @@
     font-family: 'Nanum Gothic', sans-serif;
     font-weight: 700;
     font-size: 2.2rem;
-    color: rgba(139, 95, 191, 0.9);
+    color: var(--main-color);
     margin: 0.5rem 0;
     opacity: 0;
     animation: fadeInOut 4s ease;
@@ -386,9 +386,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .gallery-preview-title {
     font-family: 'Nanum Gothic', sans-serif;
-    font-weight: 700;
+    font-weight: normal;
     font-size: 0.9rem;
-    color: #6c757d;
+    color: rgba(var(--sub-color-rgb), 0.8);
     margin: 0;
     text-align: center;
     letter-spacing: 0.02em;
@@ -409,8 +409,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .gallery-more-btn {
     background-color: white;
-    border: 1px solid rgba(139, 95, 191, 0.5);
-    color: rgba(139, 95, 191, 0.8);
+    border: 1px solid rgba(var(--sub-color-rgb), 0.5);
+    color: rgba(var(--main-color-rgb), 0.8);
     padding: 0.4rem 2rem;  /* 세로 패딩 줄이고 가로 패딩 늘림 */
     border-radius: 20px;  /* 둥근 모서리 */
     font-size: 0.9rem;
@@ -419,11 +419,11 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .gallery-more-btn:hover {
-    background-color: rgba(139, 95, 191, 0.05);
-    border-color: rgba(139, 95, 191, 0.8);
-    color: rgba(139, 95, 191, 1);
+    background-color: rgba(var(--main-color-rgb), 0.05);
+    border-color: rgba(var(--sub-color-rgb), 0.8);
+    color: rgba(var(--main-color-rgb), 1);
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(139, 95, 191, 0.2);
+    box-shadow: 0 4px 10px rgba(var(--main-color-rgb), 0.2);
 }
 
 .gallery-more-btn:active {
@@ -434,14 +434,14 @@ document.addEventListener('DOMContentLoaded', function() {
 .gallery-main-title {
     font-family: 'Nanum Gothic', sans-serif;
     font-size: 2.5rem;
-    color: rgba(139, 95, 191, 0.8);
+    color: var(--main-color-alpha);
     margin-bottom: 2rem;
     transition: color 0.3s ease;
     font-weight: normal;
 }
 
 .gallery-main-title:hover {
-    color: rgba(139, 95, 191, 1);
+    color: var(--main-color);
 }
 
 @media (max-width: 768px) {
@@ -460,7 +460,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="card additional-card h-100">
                     <div class="card-body text-center p-4">
                         <div class="additional-card-icon mb-3">
-                            <i class="bi bi-chat-heart-fill" style="font-size: 3rem; color: rgba(139, 95, 191, 0.8);"></i>
+                            <i class="bi bi-chat-heart-fill" style="font-size: 3rem; color: var(--main-color-alpha);"></i>
                         </div>
                         <h5 class="additional-card-title">고객 스토리</h5>
                         <p class="additional-card-text">고객들의 변화와 감동의 이야기</p>
@@ -475,7 +475,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="card additional-card h-100">
                     <div class="card-body text-center p-4">
                         <div class="additional-card-icon mb-3">
-                            <i class="bi bi-briefcase-fill" style="font-size: 3rem; color: rgba(139, 95, 191, 0.8);"></i>
+                            <i class="bi bi-briefcase-fill" style="font-size: 3rem; color: var(--main-color-alpha);"></i>
                         </div>
                         <h5 class="additional-card-title">커머셜 포트폴리오</h5>
                         <p class="additional-card-text">전문적인 상업 촬영 포트폴리오</p>
@@ -490,7 +490,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="card additional-card h-100">
                     <div class="card-body text-center p-4">
                         <div class="additional-card-icon mb-3">
-                            <i class="bi bi-person-circle" style="font-size: 3rem; color: rgba(139, 95, 191, 0.8);"></i>
+                            <i class="bi bi-person-circle" style="font-size: 3rem; color: var(--main-color-alpha);"></i>
                         </div>
                         <h5 class="additional-card-title">스타일그래퍼 소개</h5>
                         <p class="additional-card-text">스타일그래퍼와 함께하는 스타일 여정</p>
@@ -503,9 +503,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <style>
 .additional-card {
-    border: 1px solid rgba(139, 95, 191, 0.3);
+    border: 1px solid rgba(var(--main-color-rgb), 0.3);
     border-radius: 15px;
-    box-shadow: 0 4px 20px rgba(139, 95, 191, 0.2);
+    box-shadow: 0 4px 20px rgba(var(--main-color-rgb), 0.2);
     background-color: #fff;
     transition: all 0.3s ease;
     cursor: pointer;
@@ -514,15 +514,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .additional-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 30px rgba(139, 95, 191, 0.3);
-    border-color: rgba(139, 95, 191, 0.5);
+    box-shadow: 0 8px 30px rgba(var(--main-color-rgb), 0.3);
+    border-color: rgba(var(--main-color-rgb), 0.5);
 }
 
 .additional-card-title {
     font-family: 'Nanum Gothic', sans-serif;
     font-weight: 700;
     font-size: 1.3rem;
-    color: rgba(139, 95, 191, 0.9);
+    color: var(--main-color);
     margin-bottom: 1rem;
     transition: color 0.3s ease;
     word-break: keep-all;
@@ -531,7 +531,7 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .additional-card:hover .additional-card-title {
-    color: rgba(139, 95, 191, 1);
+    color: var(--main-color);
 }
 
 .additional-card-text {
