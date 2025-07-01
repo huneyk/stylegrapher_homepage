@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify, make_response
 from flask_login import login_required, login_user, logout_user
 from extensions import db, login_manager
-from models import Service, Gallery, User, ServiceOption, Booking, GalleryGroup, Inquiry, CollageText, SiteSettings
+from models import Service, Gallery, User, ServiceOption, Booking, GalleryGroup, Inquiry, CollageText, SiteSettings, TermsOfService, PrivacyPolicy
 from werkzeug.utils import secure_filename
 import os
 from PIL import Image
@@ -1657,3 +1657,71 @@ def reset_site_colors():
         print(f"Error resetting site colors: {str(e)}")
         flash('색상 리셋 중 오류가 발생했습니다.', 'error')
         return redirect(url_for('admin.site_colors'))
+
+# 이용약관 관리
+@admin.route('/terms-of-service')
+@login_required
+def manage_terms():
+    try:
+        terms = TermsOfService.get_current_content()
+        return render_template('admin/terms_of_service.html', terms=terms)
+    except Exception as e:
+        flash(f'이용약관 로드 중 오류가 발생했습니다: {str(e)}', 'error')
+        return redirect(url_for('admin.dashboard'))
+
+@admin.route('/terms-of-service/update', methods=['POST'])
+@login_required
+def update_terms():
+    try:
+        content = request.form.get('content', '')
+        
+        if not content.strip():
+            flash('이용약관 내용을 입력해주세요.', 'error')
+            return redirect(url_for('admin.manage_terms'))
+        
+        terms = TermsOfService.get_current_content()
+        terms.content = content
+        terms.updated_at = datetime.utcnow()
+        
+        db.session.commit()
+        flash('이용약관이 성공적으로 업데이트되었습니다.', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'오류가 발생했습니다: {str(e)}', 'error')
+    
+    return redirect(url_for('admin.manage_terms'))
+
+# 개인정보처리방침 관리
+@admin.route('/privacy-policy')
+@login_required
+def manage_privacy():
+    try:
+        policy = PrivacyPolicy.get_current_content()
+        return render_template('admin/privacy_policy.html', policy=policy)
+    except Exception as e:
+        flash(f'개인정보처리방침 로드 중 오류가 발생했습니다: {str(e)}', 'error')
+        return redirect(url_for('admin.dashboard'))
+
+@admin.route('/privacy-policy/update', methods=['POST'])
+@login_required
+def update_privacy():
+    try:
+        content = request.form.get('content', '')
+        
+        if not content.strip():
+            flash('개인정보처리방침 내용을 입력해주세요.', 'error')
+            return redirect(url_for('admin.manage_privacy'))
+        
+        policy = PrivacyPolicy.get_current_content()
+        policy.content = content
+        policy.updated_at = datetime.utcnow()
+        
+        db.session.commit()
+        flash('개인정보처리방침이 성공적으로 업데이트되었습니다.', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'오류가 발생했습니다: {str(e)}', 'error')
+    
+    return redirect(url_for('admin.manage_privacy'))

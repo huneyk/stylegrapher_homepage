@@ -667,4 +667,16 @@ def commercial_portfolio():
 
 @main.route('/about')
 def about():
-    return render_template('about.html') 
+    return render_template('about.html')
+
+@main.route('/terms-of-service')
+def terms_of_service():
+    from models import TermsOfService
+    terms = TermsOfService.get_current_content()
+    return render_template('terms_of_service.html', terms=terms)
+
+@main.route('/privacy-policy')
+def privacy_policy():
+    from models import PrivacyPolicy
+    policy = PrivacyPolicy.get_current_content()
+    return render_template('privacy_policy.html', policy=policy) 

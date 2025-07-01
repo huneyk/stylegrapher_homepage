@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}개인정보처리방침 관리 - 관리자{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4 page-title">개인정보처리방침 관리</h2>
+            
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>개인정보처리방침 편집
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.update_privacy') }}">
+                        <div class="mb-3">
+                            <label for="content" class="form-label">
+                                <i class="fas fa-edit me-2"></i>개인정보처리방침 내용
+                            </label>
+                            <div id="editor-container" style="height: 400px; border: 1px solid #ccc;"></div>
+                            <textarea 
+                                class="form-control d-none" 
+                                id="content" 
+                                name="content" 
+                                required
+                            >{{ policy.content | safe }}</textarea>
+                            <small class="form-text text-muted">
+                                HTML 태그를 사용할 수 있습니다. 에디터에서 직접 서식을 적용하세요.
+                            </small>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="text-muted">
+                                <small>
+                                    <i class="fas fa-clock me-1"></i>
+                                    최종 업데이트: {{ policy.updated_at.strftime('%Y년 %m월 %d일 %H:%M') if policy.updated_at else '최초 생성' }}
+                                </small>
+                            </div>
+                            <div>
+                                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary me-2">
+                                    <i class="fas fa-home me-1"></i>관리자 대시보드
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i>저장
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- 미리보기 섹션 -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-eye me-2"></i>미리보기
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="preview-content" style="max-height: 400px; overflow-y: auto;">
+                        {{ policy.content | safe }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quill.js CDN -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('페이지 로드 완료');
+    
+    // Quill 에디터 초기화
+    var quill = new Quill('#editor-container', {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'align': [] }],
+                ['link'],
+                ['clean']
+            ]
+        },
+        placeholder: '개인정보처리방침 내용을 입력하세요...'
+    });
+
+    console.log('Quill 에디터 초기화 완료');
+
+    // 초기 내용 설정 - textarea에서 직접 가져오기
+    function loadInitialContent() {
+        var textarea = document.getElementById('content');
+        var initialContent = textarea.value;
+        
+        console.log('초기 데이터 길이:', initialContent.length);
+        
+        if (initialContent && initialContent.trim().length > 0) {
+            console.log('초기 데이터 로딩 중...');
+            quill.clipboard.dangerouslyPasteHTML(initialContent);
+            updatePreview();
+        } else {
+            console.log('초기 데이터가 없습니다.');
+            updatePreview();
+        }
+    }
+
+    // 300ms 후에 로드하여 에디터가 완전히 초기화된 후에 실행
+    setTimeout(loadInitialContent, 300);
+
+    // 에디터 내용 변경시 hidden textarea 업데이트
+    quill.on('text-change', function() {
+        var content = quill.root.innerHTML;
+        document.getElementById('content').value = content;
+        updatePreview();
+    });
+
+    // 폼 제출시 내용 확인
+    document.querySelector('form').addEventListener('submit', function(e) {
+        var content = quill.root.innerHTML;
+        document.getElementById('content').value = content;
+        
+        // 내용이 비어있는지 확인
+        var textContent = quill.getText().trim();
+        if (!textContent || textContent.length === 0) {
+            e.preventDefault();
+            alert('개인정보처리방침 내용을 입력해주세요.');
+            return false;
+        }
+    });
+    
+    // 미리보기 업데이트 함수
+    function updatePreview() {
+        var content = quill.root.innerHTML;
+        var previewElement = document.querySelector('.preview-content');
+        if (content && content.trim() !== '<p><br></p>') {
+            previewElement.innerHTML = content;
+        } else {
+            previewElement.innerHTML = '<p style="color: #666; font-style: italic;">내용이 없습니다.</p>';
+        }
+    }
+});
+</script>
+
+<style>
+.page-title {
+    color: rgb(var(--main-color-rgb));
+    font-weight: 600;
+}
+
+.card {
+    border: 1px solid rgba(var(--main-color-rgb), 0.2);
+    border-radius: 15px;
+}
+
+.card-header {
+    background-color: rgba(var(--main-color-rgb), 0.1);
+    border-bottom: 1px solid rgba(var(--main-color-rgb), 0.2);
+    color: rgb(var(--main-color-rgb));
+}
+
+.btn-primary {
+    background-color: rgb(var(--main-color-rgb));
+    border-color: rgb(var(--main-color-rgb));
+}
+
+.btn-primary:hover {
+    background-color: rgba(var(--main-color-rgb), 0.9);
+    border-color: rgba(var(--main-color-rgb), 0.9);
+}
+
+.btn-secondary {
+    background-color: rgb(var(--sub-color-rgb));
+    border-color: rgb(var(--sub-color-rgb));
+}
+
+.btn-secondary:hover {
+    background-color: rgba(var(--sub-color-rgb), 0.9);
+    border-color: rgba(var(--sub-color-rgb), 0.9);
+}
+
+.preview-content {
+    border: 1px solid rgba(var(--main-color-rgb), 0.2);
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #f8f9fa;
+}
+
+.preview-content h3.section-title {
+    color: rgb(var(--main-color-rgb));
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.preview-content p {
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.preview-content ul, 
+.preview-content ol {
+    margin-bottom: 15px;
+    padding-left: 25px;
+}
+
+.preview-content li {
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+/* Quill Editor 스타일 개선 */
+.ql-toolbar {
+    border-top: 1px solid rgba(var(--main-color-rgb), 0.3) !important;
+    border-left: 1px solid rgba(var(--main-color-rgb), 0.3) !important;
+    border-right: 1px solid rgba(var(--main-color-rgb), 0.3) !important;
+    background-color: #f8f9fa;
+}
+
+.ql-container {
+    border-bottom: 1px solid rgba(var(--main-color-rgb), 0.3) !important;
+    border-left: 1px solid rgba(var(--main-color-rgb), 0.3) !important;
+    border-right: 1px solid rgba(var(--main-color-rgb), 0.3) !important;
+    font-family: 'Nanum Gothic', sans-serif;
+    font-size: 14px;
+}
+
+.ql-editor {
+    line-height: 1.6;
+    min-height: 350px;
+}
+
+.ql-editor h1, .ql-editor h2, .ql-editor h3 {
+    color: rgb(var(--main-color-rgb));
+    font-weight: 600;
+}
+
+#editor-container {
+    border: none !important;
+}
+</style>
+{% endblock %} 
