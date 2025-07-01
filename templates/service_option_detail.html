@@ -71,8 +71,114 @@
             </div>
             {% endif %}
             
-
-
+            <!-- 예약 방법 카드 -->
+            {% if service_option.booking_method and service_option.booking_method.strip() %}
+            <div class="mb-4">
+                <div class="info-card">
+                    <h2 class="section-title">📋 예약 방법</h2>
+                    <div class="booking-content">
+                        <ul class="booking-list">
+                            {% for line in service_option.booking_method.split('\n') %}
+                            {% if line.strip() %}
+                            <li>{{ line.strip() }}</li>
+                            {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- 제작비 결제 방식 카드 -->
+            {% if service_option.payment_info and service_option.payment_info.strip() %}
+            <div class="mb-4">
+                <div class="info-card">
+                    <h2 class="section-title">💳 제작비 결제 방식</h2>
+                    <div class="booking-content">
+                        <ul class="booking-list">
+                            {% for line in service_option.payment_info.split('\n') %}
+                            {% if line.strip() %}
+                            <li>{{ line.strip() }}</li>
+                            {% endif %}
+                            {% endfor %}
+                        </ul>
+                        <div class="account-info">
+                            <strong>입금 계좌 : 국민 46480101210393 이지은 ((신)스타일그래퍼)</strong><br>
+                            <span class="note-text">*카드 결제는 스타일그래퍼 샵으로 직접 방문하시면 가능합니다.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- 안내 사항 카드 -->
+            {% if service_option.guide_info and service_option.guide_info.strip() %}
+            <div class="mb-4">
+                <div class="info-card">
+                    <h2 class="section-title">ℹ️ 안내 사항</h2>
+                    <div class="booking-content">
+                        {% for line in service_option.guide_info.split('\n') %}
+                        {% if line.strip() %}
+                        <p class="guide-paragraph">{{ line.strip() }}</p>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- 예약 변경 및 환불 규정 카드 -->
+            {% if (service_option.refund_policy_text and service_option.refund_policy_text.strip()) or (service_option.refund_policy_table and service_option.refund_policy_table.strip()) %}
+            <div class="mb-4">
+                <div class="info-card">
+                    <h2 class="section-title">🔄 예약 변경 및 환불 규정</h2>
+                    <div class="booking-content">
+                        <!-- 기본 안내 텍스트 -->
+                        {% if service_option.refund_policy_text and service_option.refund_policy_text.strip() %}
+                        <ul class="booking-list">
+                            {% for line in service_option.refund_policy_text.split('\n') %}
+                            {% if line.strip() %}
+                            <li>{{ line.strip() }}</li>
+                            {% endif %}
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                        
+                        <!-- 환불 테이블 -->
+                        {% if service_option.refund_policy_table and service_option.refund_policy_table.strip() %}
+                        <div class="refund-table-container">
+                            {% set refund_rules = service_option.refund_policy_table.split('\n') %}
+                            {% if refund_rules %}
+                            <h4 class="refund-subtitle">환불 기준표</h4>
+                            <table class="table refund-table">
+                                <thead>
+                                    <tr>
+                                        <th>기준일</th>
+                                        <th>환불비율</th>
+                                        <th>비고</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for rule in refund_rules %}
+                                    {% if rule.strip() and '|' in rule %}
+                                    {% set parts = rule.split('|') %}
+                                    <tr>
+                                        <td>{{ parts[0].strip() }}</td>
+                                        <td>{{ parts[1].strip() }}</td>
+                                        <td>{{ parts[2].strip() if parts|length > 2 else '' }}</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
             <!-- 문의 버튼 -->
             <div class="text-center">
                 <p class="contact-text mb-4 lead">궁금하신 점이나 예약신청은 카카오톡 채널을 이용해주시기 바랍니다.</p>
@@ -440,6 +546,114 @@
     .package-table {
         font-size: 0.8rem;
     }
+}
+
+/* 예약 조건 스타일 */
+.booking-section {
+    border-bottom: 1px solid rgba(139, 95, 191, 0.1);
+    padding-bottom: 1.5rem;
+}
+
+.booking-section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.booking-section-title {
+    font-family: 'Nanum Gothic', sans-serif;
+    font-size: 1.2rem;
+    color: rgba(139, 95, 191, 0.8);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid rgba(139, 95, 191, 0.2);
+}
+
+.booking-content {
+    color: #6c757d;
+    line-height: 1.6;
+}
+
+.booking-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.booking-list li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.booking-list li:before {
+    content: "•";
+    color: rgba(139, 95, 191, 0.7);
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.example-text {
+    font-style: italic;
+    color: #8e8e8e;
+    font-size: 0.9rem;
+    display: block;
+    margin-top: 0.5rem;
+    padding-left: 1rem;
+    border-left: 2px solid rgba(139, 95, 191, 0.3);
+}
+
+.note-text {
+    font-size: 0.9rem;
+    color: #8e8e8e;
+    font-style: italic;
+}
+
+.account-info {
+    background: rgba(139, 95, 191, 0.05);
+    border-left: 4px solid rgba(139, 95, 191, 0.7);
+    padding: 1rem;
+    margin-top: 1rem;
+    border-radius: 0 8px 8px 0;
+}
+
+.refund-table-container {
+    margin-top: 1rem;
+}
+
+.refund-subtitle {
+    font-size: 1rem;
+    color: rgba(139, 95, 191, 0.8);
+    font-weight: 600;
+    margin: 1.5rem 0 0.75rem 0;
+}
+
+.refund-table {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.refund-table th {
+    background: rgba(139, 95, 191, 0.1);
+    color: rgba(139, 95, 191, 0.8);
+    font-weight: 600;
+    border: 1px solid rgba(139, 95, 191, 0.2);
+    padding: 0.75rem;
+    text-align: center;
+}
+
+.refund-table td {
+    border: 1px solid rgba(139, 95, 191, 0.1);
+    padding: 0.75rem;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.refund-table tbody tr:nth-child(even) {
+    background: rgba(139, 95, 191, 0.02);
 }
 </style>
 

@@ -33,6 +33,14 @@ class ServiceOption(db.Model):
     details = db.Column(db.Text)  # JSON 형식으로 저장 (상세 내용 리스트)
     packages = db.Column(db.Text)  # JSON 형식으로 저장 (패키지 및 가격 정보)
     
+    # 예약 조건 관련 필드들
+    booking_method = db.Column(db.Text)  # 예약 방법
+    payment_info = db.Column(db.Text)  # 제작비 결제 방식  
+    guide_info = db.Column(db.Text)  # 안내 사항
+    refund_policy = db.Column(db.Text)  # 예약 변경 및 환불 규정 (구 버전 호환용)
+    refund_policy_text = db.Column(db.Text)  # 환불 규정 기본 안내
+    refund_policy_table = db.Column(db.Text)  # 환불 규정 테이블 데이터
+    
     # Service 모델과의 관계 설정
     service = db.relationship('Service', backref=db.backref('options', lazy=True, cascade="all, delete-orphan"))
 

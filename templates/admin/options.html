@@ -96,6 +96,10 @@
                    class="btn btn-sm btn-outline-primary">
                     <i class="bi bi-pencil"></i> 수정
                 </a>
+                <a href="{{ url_for('admin.edit_option', option_id=option.id) }}#booking-conditions" 
+                   class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-calendar-check"></i> 예약조건
+                </a>
                 {% if option.has_detail_page %}
                 <a href="{{ url_for('main.service_option_detail', id=option.id) }}" 
                    class="btn btn-sm btn-outline-info" target="_blank">

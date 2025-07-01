@@ -73,6 +73,64 @@
                             <div class="form-text">패키지를 추가하고 각 필드를 입력하세요. 여러 패키지를 제공할 수 있습니다.</div>
                         </div>
                         
+                        <!-- 예약 조건 섹션 -->
+                        <hr>
+                        <h5 class="mb-3" id="booking-conditions">예약 조건 관리</h5>
+                        
+                        <div class="mb-3">
+                            <label for="booking_method" class="form-label">📋 예약 방법</label>
+                            <textarea class="form-control" id="booking_method" name="booking_method" rows="8"
+                                      placeholder="예약 방법에 대한 안내 내용을 한 줄씩 입력하세요. 각 줄은 별도의 항목으로 표시됩니다.&#10;예:&#10;위에 보이는 작품명, 컨셉수, 제작비와 소요시간을 확인합니다.&#10;대략적으로 촬영을 원하는 시기를 정합니다.&#10;스타일그래퍼 카카오채널에 문의 내용을 남깁니다.">{{ option.booking_method or '' }}</textarea>
+                            <div class="form-text">각 줄을 별도의 예약 단계로 표시합니다. 비워두면 기본 예약 방법 안내가 표시됩니다.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="payment_info" class="form-label">💳 제작비 결제 방식</label>
+                            <textarea class="form-control" id="payment_info" name="payment_info" rows="6"
+                                      placeholder="제작비 결제 방식에 대한 안내 내용을 한 줄씩 입력하세요.&#10;예:&#10;제작비는 모두 3회로 분할 결제하실 수 있습니다.&#10;계약금: 제작비의 20% (최초 계약 시 결제)&#10;중도금: 제작비의 30% (사전미팅 시 결제)">{{ option.payment_info or '' }}</textarea>
+                            <div class="form-text">각 줄을 별도의 결제 정보로 표시합니다. 비워두면 기본 결제 방식 안내가 표시됩니다.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="guide_info" class="form-label">ℹ️ 안내 사항</label>
+                            <textarea class="form-control" id="guide_info" name="guide_info" rows="5"
+                                      placeholder="고객에게 안내할 내용을 입력하세요.&#10;예:&#10;촬영일 약 한달-최소 2주 전에 한시간 가량의 사전미팅을 갖게 됩니다.&#10;사전미팅에 오시기 전에 시도해 보시고 싶으신 컨셉을 준비해 주세요.">{{ option.guide_info or '' }}</textarea>
+                            <div class="form-text">문단 형태로 표시됩니다. 비워두면 기본 안내 사항이 표시됩니다.</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label">🔄 예약 변경 및 환불 규정</label>
+                            
+                            <!-- 기본 안내 텍스트 -->
+                            <div class="mb-3">
+                                <label for="refund_policy_text" class="form-label">기본 안내</label>
+                                <textarea class="form-control" id="refund_policy_text" name="refund_policy_text" rows="4"
+                                          placeholder="환불 규정에 대한 기본 안내를 한 줄씩 입력하세요.&#10;예:&#10;계약금을 결제하시면 촬영일 예약이 확정됩니다.&#10;예약 변경: 촬영 날짜/시간 변경은 촬영일 기준 30일전까지만 가능합니다.">{{ option.refund_policy_text or '' }}</textarea>
+                            </div>
+                            
+                            <!-- 환불 테이블 -->
+                            <div class="refund-table-container">
+                                <label class="form-label">환불 기준 테이블</label>
+                                <table class="table table-bordered refund-table" id="refundTable">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 30%">기준일</th>
+                                            <th style="width: 20%">환불비율</th>
+                                            <th style="width: 30%">비고</th>
+                                            <th style="width: 20%">삭제</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="refundTableBody">
+                                        <!-- 환불 규정 행들이 여기에 동적으로 추가됩니다 -->
+                                    </tbody>
+                                </table>
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="addRefundRow()">
+                                    <i class="bi bi-plus-circle"></i> 환불 기준 추가
+                                </button>
+                            </div>
+                            <textarea class="form-control d-none" id="refund_policy_table" name="refund_policy_table">{{ option.refund_policy_table or '' }}</textarea>
+                            <div class="form-text">환불 기준을 테이블 형태로 관리할 수 있습니다. 기본 안내와 함께 표시됩니다.</div>
+                        </div>
 
                         
                         <div class="text-center">
@@ -171,12 +229,73 @@ h5 {
     color: #6c757d;
     font-style: italic;
 }
+
+.refund-table-container {
+    border: 2px solid rgba(139, 95, 191, 0.2);
+    border-radius: 12px;
+    padding: 1rem;
+    background: rgba(248, 249, 250, 0.5);
+}
+
+.refund-table {
+    margin-bottom: 1rem;
+}
+
+.refund-table th {
+    background: rgba(139, 95, 191, 0.1);
+    color: rgba(139, 95, 191, 0.8);
+    font-weight: 600;
+    border-color: rgba(139, 95, 191, 0.2);
+}
+
+.refund-table td {
+    border-color: rgba(139, 95, 191, 0.15);
+    vertical-align: middle;
+}
+
+.refund-table input {
+    border: 1px solid rgba(139, 95, 191, 0.2);
+    border-radius: 6px;
+    padding: 0.5rem;
+    width: 100%;
+    background: white;
+    transition: border-color 0.2s ease;
+}
+
+.refund-table input:focus {
+    border-color: rgba(139, 95, 191, 0.5);
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(139, 95, 191, 0.15);
+}
+
+.delete-refund-btn {
+    border: none;
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border-radius: 6px;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.delete-refund-btn:hover {
+    background: rgba(220, 53, 69, 0.2);
+    color: #c82333;
+}
+
+.empty-refund-row {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+}
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // 페이지 로드 시 기존 패키지 데이터 파싱
     loadExistingPackages();
+    // 페이지 로드 시 기존 환불 규정 데이터 파싱
+    loadExistingRefundRules();
 });
 
 function loadExistingPackages() {
@@ -299,6 +418,112 @@ function updatePackagesText() {
     });
     
     document.getElementById('packages').value = packages.join('\n');
+}
+
+// 환불 테이블 관리 함수들
+function loadExistingRefundRules() {
+    const refundTableText = document.getElementById('refund_policy_table').value;
+    const tableBody = document.getElementById('refundTableBody');
+    
+    // 기존 데이터 클리어
+    tableBody.innerHTML = '';
+    
+    if (refundTableText.trim()) {
+        const lines = refundTableText.split('\n');
+        let hasData = false;
+        
+        lines.forEach(line => {
+            if (line.trim() && line.includes('|')) {
+                const parts = line.split('|');
+                if (parts.length >= 3) {
+                    addRefundRow(parts[0].trim(), parts[1].trim(), parts[2].trim());
+                    hasData = true;
+                }
+            }
+        });
+        
+        if (!hasData) {
+            showEmptyRefundRow();
+        }
+    } else {
+        showEmptyRefundRow();
+    }
+}
+
+function addRefundRow(period = '', rate = '', note = '') {
+    const tableBody = document.getElementById('refundTableBody');
+    
+    // 빈 행 제거
+    const emptyRow = tableBody.querySelector('.empty-refund-row');
+    if (emptyRow) {
+        emptyRow.remove();
+    }
+    
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>
+            <input type="text" class="refund-period" value="${period}" placeholder="예: 촬영일 30일 전" onchange="updateRefundTableText()">
+        </td>
+        <td>
+            <input type="text" class="refund-rate" value="${rate}" placeholder="예: 100%" onchange="updateRefundTableText()">
+        </td>
+        <td>
+            <input type="text" class="refund-note" value="${note}" placeholder="예: 전액환불" onchange="updateRefundTableText()">
+        </td>
+        <td class="text-center">
+            <button type="button" class="delete-refund-btn" onclick="deleteRefundRow(this)">
+                <i class="bi bi-trash"></i>
+            </button>
+        </td>
+    `;
+    
+    tableBody.appendChild(row);
+    updateRefundTableText();
+}
+
+function deleteRefundRow(button) {
+    if (confirm('이 환불 기준을 삭제하시겠습니까?')) {
+        const row = button.closest('tr');
+        row.remove();
+        
+        // 모든 행이 삭제되면 빈 행 표시
+        const tableBody = document.getElementById('refundTableBody');
+        if (tableBody.children.length === 0) {
+            showEmptyRefundRow();
+        }
+        
+        updateRefundTableText();
+    }
+}
+
+function showEmptyRefundRow() {
+    const tableBody = document.getElementById('refundTableBody');
+    const emptyRow = document.createElement('tr');
+    emptyRow.className = 'empty-refund-row';
+    emptyRow.innerHTML = `
+        <td colspan="4" class="py-3">
+            등록된 환불 기준이 없습니다. "환불 기준 추가" 버튼을 클릭하여 환불 기준을 추가하세요.
+        </td>
+    `;
+    tableBody.appendChild(emptyRow);
+}
+
+function updateRefundTableText() {
+    const tableBody = document.getElementById('refundTableBody');
+    const rows = tableBody.querySelectorAll('tr:not(.empty-refund-row)');
+    const refundRules = [];
+    
+    rows.forEach(row => {
+        const period = row.querySelector('.refund-period').value.trim();
+        const rate = row.querySelector('.refund-rate').value.trim();
+        const note = row.querySelector('.refund-note').value.trim();
+        
+        if (period && rate) {
+            refundRules.push(`${period}|${rate}|${note}`);
+        }
+    });
+    
+    document.getElementById('refund_policy_table').value = refundRules.join('\n');
 }
 </script>
 {% endblock %} 

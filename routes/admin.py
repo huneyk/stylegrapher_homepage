@@ -913,6 +913,13 @@ def edit_option(option_id):
         option.description = request.form['description']
         option.detailed_description = request.form.get('detailed_description', '')
         
+        # 예약 조건 필드들 업데이트
+        option.booking_method = request.form.get('booking_method', '')
+        option.payment_info = request.form.get('payment_info', '')
+        option.guide_info = request.form.get('guide_info', '')
+        option.refund_policy_text = request.form.get('refund_policy_text', '')
+        option.refund_policy_table = request.form.get('refund_policy_table', '')
+        
         # 상세 내용 처리 (각 줄을 배열로 변환)
         details_text = request.form.get('details', '')
         if details_text.strip():

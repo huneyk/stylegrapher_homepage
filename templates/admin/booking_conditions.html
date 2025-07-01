@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>예약 조건 관리 - 스타일그래퍼 관리자</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <style>
+        .admin-nav {
+            background: #2c3e50;
+        }
+        .nav-link {
+            color: #ecf0f1 !important;
+            border-radius: 5px;
+            margin: 2px;
+        }
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .nav-link.active {
+            background: #3498db;
+        }
+        .card-header {
+            background: #34495e;
+            color: white;
+        }
+        .form-label {
+            font-weight: 600;
+        }
+        .refund-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        .btn-add-row {
+            background: #27ae60;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            padding: 5px 10px;
+            font-size: 0.9rem;
+        }
+        .btn-add-row:hover {
+            background: #219a52;
+        }
+        .btn-remove-row {
+            background: #e74c3c;
+            border: none;
+            color: white;
+            border-radius: 3px;
+            padding: 2px 8px;
+            font-size: 0.8rem;
+        }
+        .btn-remove-row:hover {
+            background: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <!-- 관리자 네비게이션 -->
+    <nav class="navbar navbar-expand-lg admin-nav">
+        <div class="container-fluid">
+            <a class="navbar-brand text-white" href="{{ url_for('admin.dashboard') }}">
+                <i class="bi bi-gear-fill"></i> 스타일그래퍼 관리자
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
+                    <i class="bi bi-house"></i> 대시보드
+                </a>
+                <a class="nav-link" href="{{ url_for('admin.list_services') }}">
+                    <i class="bi bi-list-ul"></i> 서비스 관리
+                </a>
+                <a class="nav-link" href="{{ url_for('admin.list_gallery') }}">
+                    <i class="bi bi-images"></i> 갤러리 관리
+                </a>
+                <a class="nav-link active" href="{{ url_for('admin.manage_booking_conditions') }}">
+                    <i class="bi bi-calendar-check"></i> 예약 조건
+                </a>
+                <a class="nav-link" href="{{ url_for('admin.logout') }}">
+                    <i class="bi bi-box-arrow-right"></i> 로그아웃
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <!-- 서비스 선택 섹션 -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-filter"></i> 서비스 선택
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="GET" action="{{ url_for('admin.manage_booking_conditions') }}">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <select name="service_option_id" class="form-select" onchange="this.form.submit()">
+                                        <option value="">전체 공통 조건</option>
+                                        {% for service_option in service_options %}
+                                        <option value="{{ service_option.id }}" 
+                                                {% if selected_service_option and selected_service_option.id == service_option.id %}selected{% endif %}>
+                                            {{ service_option.service.name }} - {{ service_option.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="service-status">
+                                        {% if selected_service_option %}
+                                            <span class="badge bg-primary fs-6">{{ selected_service_option.service.name }} - {{ selected_service_option.name }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary fs-6">전체 공통 조건</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <h2 class="mb-0">
+                        <i class="bi bi-calendar-check text-primary"></i> 예약 조건 관리
+                        {% if selected_service_option %}
+                            <small class="text-muted">- {{ selected_service_option.service.name }} - {{ selected_service_option.name }}</small>
+                        {% else %}
+                            <small class="text-muted">- 전체 공통</small>
+                        {% endif %}
+                    </h2>
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> 관리자 대시보드로 돌아가기
+                    </a>
+                </div>
+                
+                <!-- 성공/오류 메시지 -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <!-- 예약 조건 폼 -->
+                <form method="POST" action="{{ url_for('admin.update_booking_conditions') }}">
+                    {% if selected_service_option %}
+                    <input type="hidden" name="service_option_id" value="{{ selected_service_option.id }}">
+                    {% endif %}
+                    <div class="row">
+                        <!-- 예약 방법 -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="bi bi-1-circle"></i> 예약 방법
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="booking_method" class="form-label">내용</label>
+                                        <textarea class="form-control" id="booking_method" name="booking_method" rows="15" placeholder="예약 방법을 입력하세요...">{{ conditions.booking_method or '' }}</textarea>
+                                        <div class="form-text">입력 내용이 없으면 카드가 표출되지 않습니다.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 제작비 결제 방식 -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="bi bi-2-circle"></i> 제작비 결제 방식
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="payment_method" class="form-label">내용</label>
+                                        <textarea class="form-control" id="payment_method" name="payment_method" rows="15" placeholder="제작비 결제 방식을 입력하세요...">{{ conditions.payment_method or '' }}</textarea>
+                                        <div class="form-text">입력 내용이 없으면 카드가 표출되지 않습니다.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 안내 사항 -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="bi bi-3-circle"></i> 안내 사항
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="notice_info" class="form-label">내용</label>
+                                        <textarea class="form-control" id="notice_info" name="notice_info" rows="10" placeholder="안내 사항을 입력하세요...">{{ conditions.notice_info or '' }}</textarea>
+                                        <div class="form-text">입력 내용이 없으면 카드가 표출되지 않습니다.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 예약 변경 및 환불 규정 -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="bi bi-4-circle"></i> 예약 변경 및 환불 규정
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="refund_policy" class="form-label">내용</label>
+                                        <textarea class="form-control" id="refund_policy" name="refund_policy" rows="10" placeholder="예약 변경 및 환불 규정을 입력하세요...">{{ conditions.refund_policy or '' }}</textarea>
+                                        <div class="form-text">입력 내용이 없으면 카드가 표출되지 않습니다.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mb-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle"></i> 예약 조건 저장
+                        </button>
+                    </div>
+                </form>
+
+                <!-- 중도금 환불 스케줄 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-table"></i> 중도금 환불 스케줄
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('admin.update_refund_schedule') }}">
+                            {% if selected_service_option %}
+                            <input type="hidden" name="service_option_id" value="{{ selected_service_option.id }}">
+                            {% endif %}
+                            <div class="table-responsive">
+                                <table class="table table-bordered refund-table" id="refund-table">
+                                    <thead>
+                                        <tr>
+                                            <th width="40%">기준일</th>
+                                            <th width="30%">환불비율</th>
+                                            <th width="25%">비고</th>
+                                            <th width="5%">삭제</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for schedule in refund_schedules %}
+                                        <tr>
+                                            <td>
+                                                <input type="text" class="form-control" name="period[]" value="{{ schedule.period }}" placeholder="기준일을 입력하세요">
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control" name="refund_rate[]" value="{{ schedule.refund_rate }}" placeholder="환불비율을 입력하세요">
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control" name="note[]" value="{{ schedule.note or '' }}" placeholder="비고 (선택사항)">
+                                            </td>
+                                            <td class="text-center">
+                                                <button type="button" class="btn-remove-row" onclick="removeRow(this)">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <button type="button" class="btn-add-row" onclick="addRow()">
+                                    <i class="bi bi-plus-circle"></i> 행 추가
+                                </button>
+                            </div>
+                            
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check-circle"></i> 환불 스케줄 저장
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function addRow() {
+            const tableBody = document.querySelector('#refund-table tbody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>
+                    <input type="text" class="form-control" name="period[]" placeholder="기준일을 입력하세요">
+                </td>
+                <td>
+                    <input type="text" class="form-control" name="refund_rate[]" placeholder="환불비율을 입력하세요">
+                </td>
+                <td>
+                    <input type="text" class="form-control" name="note[]" placeholder="비고 (선택사항)">
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn-remove-row" onclick="removeRow(this)">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            `;
+            tableBody.appendChild(newRow);
+        }
+
+        function removeRow(button) {
+            if (document.querySelectorAll('#refund-table tbody tr').length > 1) {
+                button.closest('tr').remove();
+            } else {
+                alert('최소 하나의 행은 있어야 합니다.');
+            }
+        }
+    </script>
+</body>
+</html> 
