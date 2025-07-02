@@ -81,28 +81,28 @@
                         <h5 class="mb-3" id="booking-conditions">예약 조건 관리</h5>
                         
                         <div class="mb-3">
-                            <label for="booking_method" class="form-label">📋 예약 방법</label>
+                            <label for="booking_method" class="form-label">예약 방법</label>
                             <textarea class="form-control" id="booking_method" name="booking_method" rows="8"
                                       placeholder="예약 방법에 대한 안내 내용을 한 줄씩 입력하세요. 각 줄은 별도의 항목으로 표시됩니다.&#10;예:&#10;위에 보이는 작품명, 컨셉수, 제작비와 소요시간을 확인합니다.&#10;대략적으로 촬영을 원하는 시기를 정합니다.&#10;스타일그래퍼 카카오채널에 문의 내용을 남깁니다.">{{ option.booking_method or '' }}</textarea>
                             <div class="form-text">각 줄을 별도의 예약 단계로 표시합니다. 비워두면 기본 예약 방법 안내가 표시됩니다.</div>
                         </div>
                         
                         <div class="mb-3">
-                            <label for="payment_info" class="form-label">💳 제작비 결제 방식</label>
+                            <label for="payment_info" class="form-label">제작비 결제 방식</label>
                             <textarea class="form-control" id="payment_info" name="payment_info" rows="6"
                                       placeholder="제작비 결제 방식에 대한 안내 내용을 한 줄씩 입력하세요.&#10;예:&#10;제작비는 모두 3회로 분할 결제하실 수 있습니다.&#10;계약금: 제작비의 20% (최초 계약 시 결제)&#10;중도금: 제작비의 30% (사전미팅 시 결제)">{{ option.payment_info or '' }}</textarea>
                             <div class="form-text">각 줄을 별도의 결제 정보로 표시합니다. 비워두면 기본 결제 방식 안내가 표시됩니다.</div>
                         </div>
                         
                         <div class="mb-3">
-                            <label for="guide_info" class="form-label">ℹ️ 안내 사항</label>
+                            <label for="guide_info" class="form-label">안내 사항</label>
                             <textarea class="form-control" id="guide_info" name="guide_info" rows="5"
                                       placeholder="고객에게 안내할 내용을 입력하세요.&#10;예:&#10;촬영일 약 한달-최소 2주 전에 한시간 가량의 사전미팅을 갖게 됩니다.&#10;사전미팅에 오시기 전에 시도해 보시고 싶으신 컨셉을 준비해 주세요.">{{ option.guide_info or '' }}</textarea>
                             <div class="form-text">문단 형태로 표시됩니다. 비워두면 기본 안내 사항이 표시됩니다.</div>
                         </div>
                         
                         <div class="mb-4">
-                            <label class="form-label">🔄 예약 변경 및 환불 규정</label>
+                            <label class="form-label">예약 변경 및 환불 규정</label>
                             
                             <!-- 기본 안내 텍스트 -->
                             <div class="mb-3">
@@ -140,7 +140,7 @@
 
                         <!-- 시간외 업차지 테이블 -->
                         <div class="mb-3">
-                            <h5 class="form-label">🕐 시간외 업차지</h5>
+                            <h5 class="form-label">시간외 업차지</h5>
                             <div class="overtime-charge-table-container">
                                 <table class="table table-striped overtime-charge-table">
                                     <thead>

@@ -7,12 +7,7 @@
     <div class="row">
         <div class="col-lg-10 mx-auto">
             <!-- 서비스 카테고리별 아이콘 설정 -->
-            {% set category_icons = {
-                'ai_analysis': '🤖',
-                'consulting': '👩‍💼',
-                'oneday': '✨',
-                'photo': '📸'
-            } %}
+
             
             <div class="service-header text-center mb-5">
                 <h1 class="service-title mb-3">{{ service_option.name }}</h1>
@@ -75,7 +70,7 @@
             {% if service_option.booking_method and service_option.booking_method.strip() %}
             <div class="mb-4">
                 <div class="info-card">
-                    <h2 class="section-title">📋 예약 방법</h2>
+                    <h2 class="section-title">예약 방법</h2>
                     <div class="booking-content">
                         <ul class="booking-list">
                             {% for line in service_option.booking_method.split('\n') %}
@@ -93,7 +88,7 @@
             {% if service_option.payment_info and service_option.payment_info.strip() %}
             <div class="mb-4">
                 <div class="info-card">
-                    <h2 class="section-title">💳 제작비 결제 방식</h2>
+                    <h2 class="section-title">제작비 결제 방식</h2>
                     <div class="booking-content">
                         <ul class="booking-list">
                             {% for line in service_option.payment_info.split('\n') %}
@@ -115,7 +110,7 @@
             {% if service_option.guide_info and service_option.guide_info.strip() %}
             <div class="mb-4">
                 <div class="info-card">
-                    <h2 class="section-title">ℹ️ 안내 사항</h2>
+                    <h2 class="section-title">안내 사항</h2>
                     <div class="booking-content">
                         {% for line in service_option.guide_info.split('\n') %}
                         {% if line.strip() %}
@@ -131,7 +126,7 @@
             {% if (service_option.refund_policy_text and service_option.refund_policy_text.strip()) or (service_option.refund_policy_table and service_option.refund_policy_table.strip()) %}
             <div class="mb-4">
                 <div class="info-card">
-                    <h2 class="section-title">🔄 예약 변경 및 환불 규정</h2>
+                    <h2 class="section-title">예약 변경 및 환불 규정</h2>
                     <div class="booking-content">
                         <!-- 기본 안내 텍스트 -->
                         {% if service_option.refund_policy_text and service_option.refund_policy_text.strip() %}
@@ -183,7 +178,7 @@
             {% if service_option.overtime_charge_table and service_option.overtime_charge_table.strip() %}
             <div class="mb-4">
                 <div class="info-card">
-                    <h2 class="section-title">⏰ 시간외 업차지</h2>
+                                         <h2 class="section-title">시간외 업차지</h2>
                     <div class="booking-content">
                         <!-- 시간외 업차지 테이블 -->
                         <div class="overtime-charge-table-container">

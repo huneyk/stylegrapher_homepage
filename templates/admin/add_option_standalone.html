@@ -31,11 +31,11 @@
                                 <option value="">카테고리를 선택하세요</option>
                                 {% for service in services %}
                                 <option value="{{ service.id }}" data-category="{{ service.category }}">
-                                    {% if service.category == 'ai_analysis' %}🤖 {{ service.name }}
-                                    {% elif service.category == 'consulting' %}👩‍💼 {{ service.name }}
-                                    {% elif service.category == 'oneday' %}✨ {{ service.name }}
-                                    {% elif service.category == 'photo' %}📸 {{ service.name }}
-                                    {% else %}📝 {{ service.name }}
+                                                            {% if service.category == 'ai_analysis' %}{{ service.name }}
+                        {% elif service.category == 'consulting' %}{{ service.name }}
+                                                            {% elif service.category == 'oneday' %}{{ service.name }}
+                        {% elif service.category == 'photo' %}{{ service.name }}
+                        {% else %}{{ service.name }}
                                     {% endif %}
                                 </option>
                                 {% endfor %}
@@ -111,7 +111,7 @@
                 </form>
                 
                 <div class="help-section">
-                    <h4 class="help-title">💡 도움말</h4>
+                    <h4 class="help-title">도움말</h4>
                     <div class="help-content">
                         <p><strong>서비스 추가 가이드:</strong></p>
                         <ul>
