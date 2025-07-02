@@ -1371,65 +1371,7 @@ def reset_admin_password(username, new_password):
         print(f"Error resetting password: {str(e)}")
         return f"Error resetting password: {str(e)}", 500
 
-# 임시 관리자 계정 생성 라우트 (사용 후 제거 필요)
-@admin.route('/create-admin/<username>/<email>/<password>')
-def create_admin_account(username, email, password):
-    # 보안을 위한 간단한 토큰 확인 (실제 구현에서는 더 강력한 보안 필요)
-    token = request.args.get('token')
-    if token != 'stylegrapher':  # 토큰 값을 'stylegrapher'로 변경
-        return "Unauthorized", 401
-    
-    try:
-        # 테이블 구조 확인
-        result = db.session.execute(text("PRAGMA table_info(user)"))
-        columns = [column[1] for column in result.fetchall()]
-        print("User table columns:", columns)
-        
-        # 이미 존재하는 사용자인지 확인
-        result = db.session.execute(
-            text("SELECT id FROM user WHERE uq_user_username = :username"),
-            {"username": username}
-        )
-        existing_user = result.fetchone()
-        
-        if existing_user:
-            return f"User {username} already exists", 400
-        
-        # 테이블에 email 열이 있는지 확인
-        has_email_column = 'email' in columns
-        
-        if has_email_column:
-            # email 열이 있는 경우
-            sql = text("""
-            INSERT INTO user (uq_user_username, email, password_hash, is_admin) 
-            VALUES (:username, :email, :password_hash, :is_admin)
-            """)
-            params = {
-                "username": username,
-                "email": email,
-                "password_hash": generate_password_hash(password, method='pbkdf2:sha256'),
-                "is_admin": True
-            }
-        else:
-            # email 열이 없는 경우
-            sql = text("""
-            INSERT INTO user (uq_user_username, password_hash, is_admin) 
-            VALUES (:username, :password_hash, :is_admin)
-            """)
-            params = {
-                "username": username,
-                "password_hash": generate_password_hash(password, method='pbkdf2:sha256'),
-                "is_admin": True
-            }
-        
-        # 새 관리자 계정 생성
-        db.session.execute(sql, params)
-        db.session.commit()
-        
-        return f"Admin account {username} has been created successfully"
-    except Exception as e:
-        print(f"Error creating admin account: {str(e)}")
-        return f"Error creating admin account: {str(e)}", 500
+
 
 @admin.route('/image/<image_id>')
 def get_image(image_id):
@@ -1637,34 +1579,7 @@ def update_site_colors():
         flash('색상 업데이트 중 오류가 발생했습니다.', 'error')
         return redirect(url_for('admin.site_colors'))
 
-@admin.route('/site-colors/reset', methods=['POST'])
-@login_required
-def reset_site_colors():
-    try:
-        settings = SiteSettings.get_current_settings()
-        
-        # 기본값으로 리셋
-        settings.main_color_r = 139
-        settings.main_color_g = 95
-        settings.main_color_b = 191
-        
-        settings.sub_color_r = 65
-        settings.sub_color_g = 26
-        settings.sub_color_b = 75
-        
-        settings.background_color_r = 255
-        settings.background_color_g = 255
-        settings.background_color_b = 255
-        
-        db.session.commit()
-        
-        flash('사이트 색상이 기본값으로 리셋되었습니다.')
-        return redirect(url_for('admin.site_colors'))
-        
-    except Exception as e:
-        print(f"Error resetting site colors: {str(e)}")
-        flash('색상 리셋 중 오류가 발생했습니다.', 'error')
-        return redirect(url_for('admin.site_colors'))
+
 
 # 이용약관 관리
 @admin.route('/terms-of-service')

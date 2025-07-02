@@ -129,9 +129,6 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save me-1"></i>변경사항 저장
                             </button>
-                            <button type="button" class="btn btn-warning" onclick="resetToDefaults()">
-                                <i class="fas fa-undo me-1"></i>기본값으로 리셋
-                            </button>
                         </div>
                     </form>
                 </div>
@@ -204,15 +201,6 @@ function updateColorPreview(colorType) {
     });
 });
 
-// 기본값으로 리셋
-function resetToDefaults() {
-    if (confirm('정말로 기본값으로 리셋하시겠습니까?')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '{{ url_for("admin.reset_site_colors") }}';
-        document.body.appendChild(form);
-        form.submit();
-    }
-}
+
 </script>
 {% endblock %} 

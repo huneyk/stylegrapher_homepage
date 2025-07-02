@@ -108,29 +108,31 @@ def create_app():
         
         try:
             settings = SiteSettings.get_current_settings()
-            return dict(
-                site_colors={
-                    'main_rgb': settings.get_main_color_rgb(),
-                    'sub_rgb': settings.get_sub_color_rgb(),
-                    'background_rgb': settings.get_background_color_rgb(),
-                    'main_hex': settings.get_main_color_hex(),
-                    'sub_hex': settings.get_sub_color_hex(),
-                    'background_hex': settings.get_background_color_hex()
-                }
-            )
+            if settings:
+                return dict(
+                    site_colors={
+                        'main_rgb': settings.get_main_color_rgb(),
+                        'sub_rgb': settings.get_sub_color_rgb(),
+                        'background_rgb': settings.get_background_color_rgb(),
+                        'main_hex': settings.get_main_color_hex(),
+                        'sub_hex': settings.get_sub_color_hex(),
+                        'background_hex': settings.get_background_color_hex()
+                    }
+                )
         except Exception as e:
             print(f"Error loading site colors: {str(e)}")
-            # 기본값 반환
-            return dict(
-                site_colors={
-                    'main_rgb': '139, 95, 191',
-                    'sub_rgb': '65, 26, 75',
-                    'background_rgb': '255, 255, 255',
-                    'main_hex': '#8B5FBF',
-                    'sub_hex': '#411A4B',
-                    'background_hex': '#FFFFFF'
-                }
-            )
+        
+        # 설정이 없는 경우 빈 색상 정보 반환
+        return dict(
+            site_colors={
+                'main_rgb': None,
+                'sub_rgb': None,
+                'background_rgb': None,
+                'main_hex': None,
+                'sub_hex': None,
+                'background_hex': None
+            }
+        )
     
     # Import blueprints from routes package
     app.register_blueprint(main)
