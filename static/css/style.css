@@ -6,6 +6,31 @@
     --black: #000000;
 }
 
+/* Admin placeholder styles */
+input::placeholder,
+textarea::placeholder {
+    color: var(--light-purple) !important;
+    opacity: 1;
+}
+
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+    color: var(--light-purple) !important;
+    opacity: 1;
+}
+
+input::-moz-placeholder,
+textarea::-moz-placeholder {
+    color: var(--light-purple) !important;
+    opacity: 1;
+}
+
+input:-ms-input-placeholder,
+textarea:-ms-input-placeholder {
+    color: var(--light-purple) !important;
+    opacity: 1;
+}
+
 body {
     margin: 0;
     padding: 0;
