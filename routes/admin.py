@@ -913,13 +913,19 @@ def edit_option(option_id):
         option.description = request.form['description']
         option.detailed_description = request.form.get('detailed_description', '')
         
-        # 예약 조건 필드들 업데이트 (폼에서 전송된 값으로 정상 업데이트)
-        option.booking_method = request.form.get('booking_method', '')
-        option.payment_info = request.form.get('payment_info', '')
-        option.guide_info = request.form.get('guide_info', '')
-        option.refund_policy_text = request.form.get('refund_policy_text', '')
-        option.refund_policy_table = request.form.get('refund_policy_table', '')
-        option.overtime_charge_table = request.form.get('overtime_charge_table', '')
+        # 예약 조건 필드들 업데이트 (기존 None 값 유지)
+        def update_field_preserve_none(current_value, form_value):
+            """기존에 None인 필드는 빈 값 전송시에도 None을 유지"""
+            if current_value is None and (form_value == '' or form_value is None):
+                return None
+            return form_value if form_value is not None else ''
+        
+        option.booking_method = update_field_preserve_none(option.booking_method, request.form.get('booking_method'))
+        option.payment_info = update_field_preserve_none(option.payment_info, request.form.get('payment_info'))
+        option.guide_info = update_field_preserve_none(option.guide_info, request.form.get('guide_info'))
+        option.refund_policy_text = update_field_preserve_none(option.refund_policy_text, request.form.get('refund_policy_text'))
+        option.refund_policy_table = update_field_preserve_none(option.refund_policy_table, request.form.get('refund_policy_table'))
+        option.overtime_charge_table = update_field_preserve_none(option.overtime_charge_table, request.form.get('overtime_charge_table'))
         
         # 상세 내용 처리 (각 줄을 배열로 변환)
         details_text = request.form.get('details', '')
