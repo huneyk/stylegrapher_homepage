@@ -479,44 +479,6 @@ footer {
     background-color: #f5f5f5;
 }
 
-.overtime-charge-table-container {
-    margin-top: 20px;
-}
-
-.overtime-charge-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 12px;
-    background: #ffffff;
-    border: 1px solid #dee2e6;
-    border-radius: 6px;
-    overflow: hidden;
-}
-
-.overtime-charge-table th {
-    background-color: #f8f9fa;
-    color: var(--primary-purple);
-    font-weight: 600;
-    padding: 12px;
-    text-align: center;
-    border-bottom: 2px solid #dee2e6;
-}
-
-.overtime-charge-table td {
-    padding: 10px 12px;
-    text-align: center;
-    border-bottom: 1px solid #dee2e6;
-    color: #333;
-}
-
-.overtime-charge-table tr:last-child td {
-    border-bottom: none;
-}
-
-.overtime-charge-table tr:hover {
-    background-color: #f5f5f5;
-}
-
 /* 모바일 반응형 */
 @media (max-width: 768px) {
     .card {
@@ -540,36 +502,4 @@ footer {
     .refund-table td {
         padding: 8px 6px;
     }
-    
-    .overtime-charge-table {
-        font-size: 0.9rem;
-    }
-    
-    .overtime-charge-table th,
-    .overtime-charge-table td {
-        padding: 8px 6px;
-    }
-}
-
-/* Admin 안내 메시지 스타일 */
-.form-text {
-    color: var(--light-purple) !important;
-    font-size: 0.875rem;
-}
-
-.text-muted {
-    color: var(--light-purple) !important;
-}
-
-/* Admin 입력창 placeholder 스타일 */
-.form-control::placeholder {
-    color: var(--light-purple) !important;
-    opacity: 0.8;
-}
-
-input.form-control::placeholder,
-textarea.form-control::placeholder,
-select.form-control::placeholder {
-    color: var(--light-purple) !important;
-    opacity: 0.8;
 }

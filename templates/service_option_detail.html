@@ -75,7 +75,7 @@
             {% if service_option.booking_method and service_option.booking_method.strip() %}
             <div class="mb-4">
                 <div class="info-card">
-                    <h2 class="section-title">예약 방법</h2>
+                    <h2 class="section-title">📋 예약 방법</h2>
                     <div class="booking-content">
                         <ul class="booking-list">
                             {% for line in service_option.booking_method.split('\n') %}
@@ -84,13 +84,6 @@
                             {% endif %}
                             {% endfor %}
                         </ul>
-                        
-                        <!-- 카카오톡 채널 문의 버튼 -->
-                        <div class="text-center mt-4">
-                            <button type="button" class="kakao-btn" onclick="showKakaoModal()">
-                                <span class="kakao-logo">💬</span> 카카오톡채널로 문의/예약신청 하기
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -100,7 +93,7 @@
             {% if service_option.payment_info and service_option.payment_info.strip() %}
             <div class="mb-4">
                 <div class="info-card">
-                    <h2 class="section-title">제작비 결제 방식</h2>
+                    <h2 class="section-title">💳 제작비 결제 방식</h2>
                     <div class="booking-content">
                         <ul class="booking-list">
                             {% for line in service_option.payment_info.split('\n') %}
@@ -122,7 +115,7 @@
             {% if service_option.guide_info and service_option.guide_info.strip() %}
             <div class="mb-4">
                 <div class="info-card">
-                    <h2 class="section-title">안내 사항</h2>
+                    <h2 class="section-title">ℹ️ 안내 사항</h2>
                     <div class="booking-content">
                         {% for line in service_option.guide_info.split('\n') %}
                         {% if line.strip() %}
@@ -138,7 +131,7 @@
             {% if (service_option.refund_policy_text and service_option.refund_policy_text.strip()) or (service_option.refund_policy_table and service_option.refund_policy_table.strip()) %}
             <div class="mb-4">
                 <div class="info-card">
-                    <h2 class="section-title">예약 변경 및 환불 규정</h2>
+                    <h2 class="section-title">🔄 예약 변경 및 환불 규정</h2>
                     <div class="booking-content">
                         <!-- 기본 안내 텍스트 -->
                         {% if service_option.refund_policy_text and service_option.refund_policy_text.strip() %}
@@ -181,44 +174,6 @@
                             {% endif %}
                         </div>
                         {% endif %}
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-            
-            <!-- 시간외 업차지 카드 -->
-            {% if service_option.overtime_charge_table and service_option.overtime_charge_table.strip() %}
-            <div class="mb-4">
-                <div class="info-card">
-                    <h2 class="section-title">시간외 업차지</h2>
-                    <div class="booking-content">
-                        <!-- 시간외 업차지 테이블 -->
-                        <div class="overtime-charge-table-container">
-                            {% set overtime_charge_rules = service_option.overtime_charge_table.split('\n') %}
-                            {% if overtime_charge_rules %}
-                            <table class="table overtime-charge-table">
-                                <thead>
-                                    <tr>
-                                        <th>시간대/조건</th>
-                                        <th>추가 요금</th>
-                                        <th>비고</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for rule in overtime_charge_rules %}
-                                    {% if rule.strip() and '|' in rule %}
-                                    {% set parts = rule.split('|') %}
-                                    <tr>
-                                        <td>{{ parts[0].strip() }}</td>
-                                        <td>{{ parts[1].strip() }}</td>
-                                        <td>{{ parts[2].strip() if parts|length > 2 else '' }}</td>
-                                    </tr>
-                                    {% endif %}
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                            {% endif %}
-                        </div>
                     </div>
                 </div>
             </div>
