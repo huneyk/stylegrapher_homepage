@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stylegrapher 스타일그래퍼 {% block title %}{% endblock %}</title>
     <meta name="description" content="{% block meta_description %}스타일그래퍼는 AI 얼굴분석, 퍼스널컬러 진단, 스타일링 컨설팅, 화보 및 프로필 촬영 서비스를 제공하는 전문 스타일링 스튜디오입니다.{% endblock %}">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
     <!-- Critical CSS preload -->
     <link rel="preload" href="{{ url_for('static', filename='css/style.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"></noscript>
