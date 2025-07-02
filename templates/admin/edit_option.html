@@ -423,11 +423,10 @@ function loadExistingPackages() {
             }
         });
         
-        if (!hasData) {
-            showEmptyRow();
-        }
+        // 데이터가 없어도 빈 행을 자동으로 생성하지 않음
+        // 사용자가 직접 "패키지 추가" 버튼을 클릭해야만 행이 생성됨
     } else {
-        showEmptyRow();
+        // 데이터가 없는 경우 아무것도 하지 않음 (빈 테이블 유지)
     }
 }
 
@@ -537,11 +536,10 @@ function loadExistingRefundRules() {
             }
         });
         
-        if (!hasData) {
-            showEmptyRefundRow();
-        }
+        // 데이터가 없어도 빈 행을 자동으로 생성하지 않음
+        // 사용자가 직접 "환불 기준 추가" 버튼을 클릭해야만 행이 생성됨
     } else {
-        showEmptyRefundRow();
+        // 데이터가 없는 경우 아무것도 하지 않음 (빈 테이블 유지)
     }
 }
 
@@ -557,13 +555,13 @@ function addRefundRow(period = '', rate = '', note = '') {
     const row = document.createElement('tr');
     row.innerHTML = `
         <td>
-            <input type="text" class="refund-period" value="${period}" placeholder="예: 촬영일 30일 전" onchange="updateRefundTableText()">
+            <input type="text" class="refund-period" value="${period}" placeholder="기준일" onchange="updateRefundTableText()">
         </td>
         <td>
-            <input type="text" class="refund-rate" value="${rate}" placeholder="예: 100%" onchange="updateRefundTableText()">
+            <input type="text" class="refund-rate" value="${rate}" placeholder="환불비율" onchange="updateRefundTableText()">
         </td>
         <td>
-            <input type="text" class="refund-note" value="${note}" placeholder="예: 전액환불" onchange="updateRefundTableText()">
+            <input type="text" class="refund-note" value="${note}" placeholder="비고" onchange="updateRefundTableText()">
         </td>
         <td class="text-center">
             <button type="button" class="delete-refund-btn" onclick="deleteRefundRow(this)">
@@ -643,11 +641,10 @@ function loadExistingOvertimeChargeRules() {
             }
         });
         
-        if (!hasData) {
-            showEmptyOvertimeChargeRow();
-        }
+        // 데이터가 없어도 빈 행을 자동으로 생성하지 않음
+        // 사용자가 직접 "시간외 업차지 기준 추가" 버튼을 클릭해야만 행이 생성됨
     } else {
-        showEmptyOvertimeChargeRow();
+        // 데이터가 없는 경우 아무것도 하지 않음 (빈 테이블 유지)
     }
 }
 
@@ -663,13 +660,13 @@ function addOvertimeChargeRow(timeCondition = '', additionalFee = '', note = '')
     const row = document.createElement('tr');
     row.innerHTML = `
         <td>
-            <input type="text" class="overtime-time-condition" value="${timeCondition}" placeholder="예: 평일 18시 이후" onchange="updateOvertimeChargeTableText()">
+            <input type="text" class="overtime-time-condition" value="${timeCondition}" placeholder="시간대/조건" onchange="updateOvertimeChargeTableText()">
         </td>
         <td>
-            <input type="text" class="overtime-additional-fee" value="${additionalFee}" placeholder="예: +20,000원" onchange="updateOvertimeChargeTableText()">
+            <input type="text" class="overtime-additional-fee" value="${additionalFee}" placeholder="추가 요금" onchange="updateOvertimeChargeTableText()">
         </td>
         <td>
-            <input type="text" class="overtime-note" value="${note}" placeholder="예: 야간 촬영" onchange="updateOvertimeChargeTableText()">
+            <input type="text" class="overtime-note" value="${note}" placeholder="비고" onchange="updateOvertimeChargeTableText()">
         </td>
         <td class="text-center">
             <button type="button" class="delete-overtime-charge-btn" onclick="deleteOvertimeChargeRow(this)">
