@@ -2,7 +2,7 @@ services:
   - type: web
     name: stylegrapher
     env: python
-    buildCommand: pip install -r requirements.txt && flask db upgrade
+    buildCommand: pip install -r requirements.txt && python migrate_db.py
     startCommand: gunicorn wsgi:app
     envVars:
       - key: PYTHON_VERSION
