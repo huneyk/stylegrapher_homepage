@@ -40,7 +40,7 @@ class ServiceOption(db.Model):
     refund_policy = db.Column(db.Text)  # 예약 변경 및 환불 규정 (구 버전 호환용)
     refund_policy_text = db.Column(db.Text)  # 환불 규정 기본 안내
     refund_policy_table = db.Column(db.Text)  # 환불 규정 테이블 데이터
-    overtime_charge_table = db.Column(db.Text)  # 시간외 업차지 테이블 데이터
+    # overtime_charge_table = db.Column(db.Text, nullable=True)  # 시간외 업차지 테이블 데이터 - 임시 비활성화
     
     # Service 모델과의 관계 설정
     service = db.relationship('Service', backref=db.backref('options', lazy=True, cascade="all, delete-orphan"))

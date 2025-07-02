@@ -919,7 +919,7 @@ def edit_option(option_id):
         option.guide_info = request.form.get('guide_info', '')
         option.refund_policy_text = request.form.get('refund_policy_text', '')
         option.refund_policy_table = request.form.get('refund_policy_table', '')
-        option.overtime_charge_table = request.form.get('overtime_charge_table', '')
+        # option.overtime_charge_table = request.form.get('overtime_charge_table', '')  # 임시 비활성화
         
         # 상세 내용 처리 (각 줄을 배열로 변환)
         details_text = request.form.get('details', '')
