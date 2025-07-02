@@ -913,36 +913,13 @@ def edit_option(option_id):
         option.description = request.form['description']
         option.detailed_description = request.form.get('detailed_description', '')
         
-        # 예약 조건 필드들 업데이트 (빈 값으로 덮어쓰기 방지 - 기존 데이터 보호)
-        booking_method = request.form.get('booking_method')
-        if booking_method is not None and booking_method.strip():
-            option.booking_method = booking_method
-        # 빈 값인 경우 기존 값 유지 (덮어쓰지 않음)
-        
-        payment_info = request.form.get('payment_info')
-        if payment_info is not None and payment_info.strip():
-            option.payment_info = payment_info
-        # 빈 값인 경우 기존 값 유지 (덮어쓰지 않음)
-        
-        guide_info = request.form.get('guide_info')
-        if guide_info is not None and guide_info.strip():
-            option.guide_info = guide_info
-        # 빈 값인 경우 기존 값 유지 (덮어쓰지 않음)
-        
-        refund_policy_text = request.form.get('refund_policy_text')
-        if refund_policy_text is not None and refund_policy_text.strip():
-            option.refund_policy_text = refund_policy_text
-        # 빈 값인 경우 기존 값 유지 (덮어쓰지 않음)
-        
-        refund_policy_table = request.form.get('refund_policy_table')
-        if refund_policy_table is not None and refund_policy_table.strip():
-            option.refund_policy_table = refund_policy_table
-        # 빈 값인 경우 기존 값 유지 (덮어쓰지 않음)
-        
-        overtime_charge_table = request.form.get('overtime_charge_table')
-        if overtime_charge_table is not None and overtime_charge_table.strip():
-            option.overtime_charge_table = overtime_charge_table
-        # 빈 값인 경우 기존 값 유지 (덮어쓰지 않음)
+        # 예약 조건 필드들 업데이트 (폼에서 전송된 값으로 정상 업데이트)
+        option.booking_method = request.form.get('booking_method', '')
+        option.payment_info = request.form.get('payment_info', '')
+        option.guide_info = request.form.get('guide_info', '')
+        option.refund_policy_text = request.form.get('refund_policy_text', '')
+        option.refund_policy_table = request.form.get('refund_policy_table', '')
+        option.overtime_charge_table = request.form.get('overtime_charge_table', '')
         
         # 상세 내용 처리 (각 줄을 배열로 변환)
         details_text = request.form.get('details', '')

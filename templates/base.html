@@ -860,10 +860,8 @@
             console.log('floatingMenu:', floatingMenu);
             console.log('menuOverlay:', menuOverlay);
 
-            if (!hamburgerMenu || !sideMenu || !closeMenu) {
-                console.error('메뉴 요소를 찾을 수 없습니다.');
-                return;
-            }
+            // 메뉴 요소들이 모두 존재할 때만 메뉴 관련 기능 활성화
+            if (hamburgerMenu && sideMenu && closeMenu) {
 
             // 사이드 메뉴 열기
             function openSideMenu() {
@@ -906,7 +904,7 @@
             
             // ESC 키로 메뉴 닫기
             document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && sideMenu.classList.contains('active')) {
+                if (e.key === 'Escape' && sideMenu && sideMenu.classList.contains('active')) {
                     closeSideMenu();
                 }
                 // ESC 키로 카카오톡 모달 닫기
@@ -920,7 +918,8 @@
 
             // 사이드 메뉴 외부 클릭 시 닫기
             document.addEventListener('click', function(event) {
-                if (sideMenu.classList.contains('active') && 
+                if (sideMenu && hamburgerMenu && 
+                    sideMenu.classList.contains('active') && 
                     !sideMenu.contains(event.target) && 
                     !hamburgerMenu.contains(event.target)) {
                     closeSideMenu();
@@ -949,6 +948,10 @@
             sideMenuLinks.forEach(link => {
                 link.addEventListener('click', closeSideMenu);
             });
+            
+            } else {
+                console.warn('일부 메뉴 요소가 없어서 메뉴 기능이 비활성화되었습니다.');
+            }
 
 
 
