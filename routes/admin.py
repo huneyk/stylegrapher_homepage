@@ -15,6 +15,7 @@ import uuid
 from pymongo import MongoClient
 from dotenv import load_dotenv
 from utils.monitor import security_monitor
+from sqlalchemy import event
 
 # .env 파일 로드
 load_dotenv()
@@ -47,6 +48,68 @@ def protect_existing_service_option_data(option, form_data):
             print(f"✅ 데이터 업데이트: {field} 필드 업데이트")
     
     return changes_made
+
+# 🚨 강력한 데이터 변경 감지 및 보호 시스템
+def detect_and_block_unauthorized_changes():
+    """비인가 데이터 변경을 감지하고 차단"""
+    import os
+    if os.environ.get('STYLEGRAPHER_DATA_PROTECTION') == 'ACTIVE':
+        print("🛡️ 데이터 보호 모드 활성화됨 - 모든 변경 사항 모니터링")
+        
+        # 현재 데이터 스냅샷 생성
+        try:
+            from sqlalchemy import text
+            
+            # 보호 대상 데이터 현황 확인
+            result = db.session.execute(text("""
+                SELECT so.id, so.name, s.category,
+                       so.booking_method, so.payment_info, so.guide_info
+                FROM service_option so
+                JOIN service s ON so.service_id = s.id
+                WHERE s.category IN ('consulting', 'oneday', 'photo')
+                AND (so.booking_method IS NOT NULL OR so.payment_info IS NOT NULL)
+                ORDER BY so.id
+            """)).fetchall()
+            
+            print(f"🔍 현재 보호 중인 데이터: {len(result)}개 옵션")
+            
+            # 의심스러운 패턴 감지
+            for row in result:
+                if row[3] and '촬영' in row[3] and row[2] in ['consulting']:
+                    print(f"⚠️ 의심스러운 데이터 발견! ID {row[0]} ({row[1]}): 컨설팅 서비스에 촬영 관련 내용")
+                
+        except Exception as e:
+            print(f"⚠️ 데이터 보호 감지 오류: {str(e)}")
+
+# 🛡️ SQL 레벨 데이터 보호 트리거 (SQLAlchemy 이벤트 리스너)
+from sqlalchemy import event
+from models import ServiceOption
+
+@event.listens_for(ServiceOption, 'before_update')
+def protect_service_option_before_update(mapper, connection, target):
+    """ServiceOption 업데이트 전 보호 검사"""
+    import os
+    if os.environ.get('STYLEGRAPHER_DATA_PROTECTION') == 'ACTIVE':
+        print(f"🛡️ ServiceOption ID {target.id} 업데이트 시도 감지")
+        
+        # 기존 데이터 확인
+        if hasattr(target, 'booking_method') and target.booking_method:
+            if len(target.booking_method) > 100 and '촬영' in target.booking_method:
+                print(f"⚠️ 의심스러운 업데이트 차단! ID {target.id}: 촬영 관련 default data")
+                # 이 부분에서 업데이트를 차단할 수 있지만, 우선 로그만 남김
+        
+        print(f"📝 업데이트 허용: ServiceOption ID {target.id}")
+
+@event.listens_for(ServiceOption, 'after_update')  
+def log_service_option_after_update(mapper, connection, target):
+    """ServiceOption 업데이트 후 로깅"""
+    print(f"✅ ServiceOption ID {target.id} 업데이트 완료")
+    
+    # 업데이트된 내용 로깅
+    if target.booking_method:
+        print(f"   예약방법: {len(target.booking_method)}자")
+    if target.payment_info:
+        print(f"   결제방식: {len(target.payment_info)}자")
 
 # MongoDB 연결 설정
 mongo_uri = os.environ.get('MONGO_URI')

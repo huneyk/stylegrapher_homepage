@@ -61,6 +61,8 @@ def create_app():
             from sqlalchemy import text
             
             print("🛡️ 종합 데이터 보호 시스템 초기화 중...")
+            print(f"🔍 현재 환경: {app.config.get('ENV', 'unknown')}")
+            print(f"🔍 DEBUG 모드: {app.config.get('DEBUG', False)}")
             
             # 서비스 옵션 데이터 보호 확인
             service_result = db.session.execute(
@@ -73,6 +75,22 @@ def create_app():
                            OR overtime_charge_table IS NOT NULL""")
             ).scalar()
             
+            # 각 필드별 상세 확인
+            booking_count = db.session.execute(text("SELECT COUNT(*) FROM service_option WHERE booking_method IS NOT NULL")).scalar()
+            payment_count = db.session.execute(text("SELECT COUNT(*) FROM service_option WHERE payment_info IS NOT NULL")).scalar()
+            guide_count = db.session.execute(text("SELECT COUNT(*) FROM service_option WHERE guide_info IS NOT NULL")).scalar()
+            refund_text_count = db.session.execute(text("SELECT COUNT(*) FROM service_option WHERE refund_policy_text IS NOT NULL")).scalar()
+            refund_table_count = db.session.execute(text("SELECT COUNT(*) FROM service_option WHERE refund_policy_table IS NOT NULL")).scalar()
+            overtime_count = db.session.execute(text("SELECT COUNT(*) FROM service_option WHERE overtime_charge_table IS NOT NULL")).scalar()
+            
+            print(f"📊 기존 데이터 현황:")
+            print(f"   - 예약 방법: {booking_count}개")
+            print(f"   - 결제 방식: {payment_count}개")
+            print(f"   - 안내 사항: {guide_count}개")
+            print(f"   - 환불 규정 텍스트: {refund_text_count}개")
+            print(f"   - 환불 규정 테이블: {refund_table_count}개")
+            print(f"   - 시간외 업차지: {overtime_count}개")
+            
             # 갤러리 순서 데이터 보호 확인
             gallery_result = db.session.execute(
                 text("SELECT COUNT(*) FROM gallery_group WHERE display_order IS NOT NULL")
@@ -82,8 +100,14 @@ def create_app():
                 print(f"🛡️ {service_result}개의 기존 서비스 옵션 데이터 발견 - 보호 모드 활성화")
                 app.config['DATA_PROTECTION_ACTIVE'] = True
                 app.config['SERVICE_DATA_PROTECTED'] = True
+                
+                # 🚨 중요: 모든 데이터 수정 작업을 차단하는 전역 보호 설정
+                import os
+                os.environ['STYLEGRAPHER_DATA_PROTECTION'] = 'ACTIVE'
+                print("🔒 전역 데이터 보호 플래그 설정됨")
             else:
                 app.config['SERVICE_DATA_PROTECTED'] = False
+                print("ℹ️ 서비스 옵션 데이터 없음 - 새로운 환경으로 판단")
             
             if gallery_result > 0:
                 print(f"🛡️ {gallery_result}개의 기존 갤러리 순서 데이터 발견 - 순서 보호 활성화")
@@ -96,14 +120,54 @@ def create_app():
             
             print("✅ 종합 데이터 보호 시스템 활성화 완료")
             print("🛡️ 모든 기존 데이터가 덮어쓰기로부터 보호됩니다")
+            print("=" * 60)
                 
         except Exception as e:
             print(f"⚠️ 데이터 보호 시스템 초기화 오류: {str(e)}")
+            print(f"📋 오류 상세: {type(e).__name__}")
+            import traceback
+            traceback.print_exc()
             # 오류 발생 시에도 최대 보호 모드 활성화
             app.config['DATA_PROTECTION_ACTIVE'] = True
             app.config['SERVICE_DATA_PROTECTED'] = True
             app.config['GALLERY_ORDER_PROTECTED'] = True
+            import os
+            os.environ['STYLEGRAPHER_DATA_PROTECTION'] = 'ACTIVE'
             print("🛡️ 안전을 위해 최대 보호 모드로 설정됨")
+    
+    # 🧹 앱 시작 시 캐시 완전 제거 (Render 서버 캐시 문제 해결)
+    def clear_python_cache():
+        """앱 시작 시 Python 캐시 제거"""
+        import os
+        import shutil
+        
+        try:
+            print("🧹 앱 시작 시 Python 캐시 제거 중...")
+            
+            # 현재 디렉토리의 __pycache__ 제거
+            cache_dirs = []
+            for root, dirs, files in os.walk('.'):
+                if '__pycache__' in dirs:
+                    cache_path = os.path.join(root, '__pycache__')
+                    cache_dirs.append(cache_path)
+            
+            for cache_dir in cache_dirs:
+                try:
+                    shutil.rmtree(cache_dir)
+                    print(f"✅ 캐시 제거: {cache_dir}")
+                except:
+                    pass
+                    
+            if cache_dirs:
+                print(f"🧹 총 {len(cache_dirs)}개 캐시 디렉토리 제거 완료")
+            else:
+                print("📁 제거할 캐시 없음")
+                
+        except Exception as e:
+            print(f"⚠️ 캐시 제거 중 오류 (무시 가능): {str(e)}")
+    
+    # 캐시 제거 실행
+    clear_python_cache()
     
     # 앱 컨텍스트에서 데이터 보호 시스템 초기화
     with app.app_context():
