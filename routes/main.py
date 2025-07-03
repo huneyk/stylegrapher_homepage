@@ -95,6 +95,23 @@ def cache_with_timeout(timeout_minutes=30):
         return wrapper
     return decorator
 
+def clear_gallery_cache():
+    """갤러리 관련 캐시를 모두 클리어하는 함수"""
+    global _cache, _cache_timestamps
+    keys_to_remove = []
+    
+    for key in _cache.keys():
+        if key.startswith('gallery:') or key.startswith('index:'):
+            keys_to_remove.append(key)
+    
+    for key in keys_to_remove:
+        if key in _cache:
+            del _cache[key]
+        if key in _cache_timestamps:
+            del _cache_timestamps[key]
+    
+    print(f"🧹 갤러리 캐시 클리어 완료: {len(keys_to_remove)}개 항목 제거")
+
 def process_missing_images_background(missing_images):
     """백그라운드에서 누락된 이미지들을 MongoDB에 업로드"""
     if not images_collection:

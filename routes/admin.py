@@ -590,13 +590,15 @@ def upload_image():
             return redirect(request.url)
         
         try:
-            # 🛡️ 갤러리 순서 보호 - 기존 순서에 영향을 주지 않음
-            max_order_result = db.session.execute(
-                text("SELECT MAX(display_order) FROM gallery_group")
+            # 🛡️ 갤러리 순서 보호 - 새 갤러리를 가장 낮은 순서로 배치 (기존 순서 영향 없음)
+            min_order_result = db.session.execute(
+                text("SELECT MIN(display_order) FROM gallery_group")
             ).scalar()
-            next_order = (max_order_result or 0) + 1
+            next_order = (min_order_result or 1) - 1
+            if next_order < 0:
+                next_order = 0
             
-            print(f"🛡️ 갤러리 순서 보호: 새 갤러리를 순서 {next_order}로 배치 (기존 순서 유지)")
+            print(f"🛡️ 갤러리 순서 보호: 새 갤러리를 순서 {next_order}로 배치 (기존 갤러리들 위로 올라가지 않음)")
             
             # 갤러리 그룹 생성 (기존 갤러리 순서에 영향을 주지 않음)
             gallery_group = GalleryGroup(
@@ -621,6 +623,14 @@ def upload_image():
                     db.session.add(gallery)
             
             db.session.commit()
+            
+            # 🧹 갤러리 캐시 클리어 (새 갤러리 추가로 인한 순서 변경)
+            try:
+                from routes.main import clear_gallery_cache
+                clear_gallery_cache()
+            except Exception as cache_error:
+                print(f"⚠️ 캐시 클리어 실패 (무시 가능): {str(cache_error)}")
+            
             flash('이미지가 업로드되었습니다.')
             return redirect(url_for('admin.list_gallery'))
         except Exception as e:
@@ -642,6 +652,14 @@ def delete_gallery_group(group_id):
     
     db.session.delete(group)
     db.session.commit()
+    
+    # 🧹 갤러리 캐시 클리어 (갤러리 삭제로 인한 표출 순서 변경)
+    try:
+        from routes.main import clear_gallery_cache
+        clear_gallery_cache()
+    except Exception as cache_error:
+        print(f"⚠️ 캐시 클리어 실패 (무시 가능): {str(cache_error)}")
+    
     flash('갤러리가 삭제되었습니다.')
     return redirect(url_for('admin.list_gallery'))
 
@@ -690,6 +708,13 @@ def update_gallery_order(group_id):
             }
         )
         db.session.commit()
+        
+        # 🧹 갤러리 캐시 클리어 (순서 변경으로 인한 표출 순서 변경)
+        try:
+            from routes.main import clear_gallery_cache
+            clear_gallery_cache()
+        except Exception as cache_error:
+            print(f"⚠️ 캐시 클리어 실패 (무시 가능): {str(cache_error)}")
         
         # AJAX 요청인 경우 JSON 응답
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -769,6 +794,13 @@ def toggle_gallery_pin(group_id):
             }
         )
         db.session.commit()
+        
+        # 🧹 갤러리 캐시 클리어 (고정 상태 변경으로 인한 표출 순서 변경)
+        try:
+            from routes.main import clear_gallery_cache
+            clear_gallery_cache()
+        except Exception as cache_error:
+            print(f"⚠️ 캐시 클리어 실패 (무시 가능): {str(cache_error)}")
         
         if new_state:
             # 현재 고정된 갤러리 개수 확인
@@ -1010,33 +1042,28 @@ def edit_option(option_id):
         option.detailed_description = request.form.get('detailed_description', '')
         print(f"✅ 기본 정보 업데이트 완료 - 이름: {option.name}")
         
-        # 🛡️ 예약 조건 필드들 업데이트 (의도적 수정 허용, 빈 값 덮어쓰기만 방지)
-        def update_field_preserve_data(current_value, form_value):
-            """의도적인 수정은 허용하고, 빈 값으로 인한 덮어쓰기만 방지"""
-            # 폼에서 실제 값이 전송된 경우 - 의도적 수정이므로 즉시 업데이트
-            if form_value is not None and form_value.strip():
-                print(f"✅ 의도적 수정 감지: 새 값으로 업데이트 - {form_value[:50]}...")
-                return form_value
+        # 🛡️ 예약 조건 필드들 업데이트 (사용자 의도를 정확히 반영)
+        def update_field_smart(current_value, form_value):
+            """사용자의 의도를 정확히 파악하여 업데이트"""
+            # 폼에서 값이 전송된 경우 (빈 값이든 아니든 사용자 의도로 처리)
+            if form_value is not None:
+                if form_value.strip():
+                    print(f"✅ 새 값으로 업데이트: {form_value[:50]}...")
+                    return form_value
+                else:
+                    print(f"📝 사용자가 필드를 비움: 빈 값으로 설정")
+                    return None
             
-            # 폼에서 빈 값이 전송된 경우
-            if form_value == '' or form_value is None:
-                # 기존에 데이터가 있으면 기존 값 유지 (덮어쓰기 방지)
-                if current_value is not None and current_value.strip():
-                    print(f"🛡️ 빈 값 덮어쓰기 방지: 기존 값 유지 - {current_value[:30]}...")
-                    return current_value
-                # 기존에 데이터가 없으면 None 유지
-                print("📝 빈 필드 유지: None으로 설정")
-                return None
-            
-            # 예외 상황 - 기본적으로 form_value 사용
-            return form_value
+            # 폼에서 전송되지 않은 경우 (기존 값 유지)
+            print(f"🔄 기존 값 유지: {current_value[:30] if current_value else 'None'}...")
+            return current_value
         
-        option.booking_method = update_field_preserve_data(option.booking_method, request.form.get('booking_method'))
-        option.payment_info = update_field_preserve_data(option.payment_info, request.form.get('payment_info'))
-        option.guide_info = update_field_preserve_data(option.guide_info, request.form.get('guide_info'))
-        option.refund_policy_text = update_field_preserve_data(option.refund_policy_text, request.form.get('refund_policy_text'))
-        option.refund_policy_table = update_field_preserve_data(option.refund_policy_table, request.form.get('refund_policy_table'))
-        option.overtime_charge_table = update_field_preserve_data(option.overtime_charge_table, request.form.get('overtime_charge_table'))
+        option.booking_method = update_field_smart(option.booking_method, request.form.get('booking_method'))
+        option.payment_info = update_field_smart(option.payment_info, request.form.get('payment_info'))
+        option.guide_info = update_field_smart(option.guide_info, request.form.get('guide_info'))
+        option.refund_policy_text = update_field_smart(option.refund_policy_text, request.form.get('refund_policy_text'))
+        option.refund_policy_table = update_field_smart(option.refund_policy_table, request.form.get('refund_policy_table'))
+        option.overtime_charge_table = update_field_smart(option.overtime_charge_table, request.form.get('overtime_charge_table'))
         
         # 상세 내용 처리 (각 줄을 배열로 변환)
         details_text = request.form.get('details', '')
