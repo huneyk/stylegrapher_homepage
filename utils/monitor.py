@@ -23,6 +23,8 @@ class SecurityMonitor:
     
     def log_security_event(self, event_type, client_ip, user_agent, path, details):
         """보안 이벤트 기록"""
+        global security_events, ip_stats, attack_patterns
+        
         event = {
             'timestamp': datetime.now(),
             'type': event_type,
@@ -38,7 +40,6 @@ class SecurityMonitor:
         
         # 최근 1시간 이벤트만 유지
         cutoff_time = datetime.now() - timedelta(hours=1)
-        global security_events
         security_events = [e for e in security_events if e['timestamp'] > cutoff_time]
         
         # 알림 체크
