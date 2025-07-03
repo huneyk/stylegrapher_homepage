@@ -431,40 +431,51 @@ function loadExistingPackages() {
 }
 
 function addPackageRow(name = '', description = '', duration = '', price = '', notes = '') {
-    const tableBody = document.getElementById('packagesTableBody');
-    
-    // 빈 행 제거
-    const emptyRow = tableBody.querySelector('.empty-packages-row');
-    if (emptyRow) {
-        emptyRow.remove();
+    try {
+        console.log('addPackageRow 함수 호출됨');
+        const tableBody = document.getElementById('packagesTableBody');
+        
+        if (!tableBody) {
+            console.error('packagesTableBody 요소를 찾을 수 없습니다');
+            return;
+        }
+        
+        // 빈 행 제거
+        const emptyRow = tableBody.querySelector('.empty-packages-row');
+        if (emptyRow) {
+            emptyRow.remove();
+        }
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>
+                <input type="text" class="package-name" value="${name}" placeholder="패키지명" onchange="updatePackagesText()">
+            </td>
+            <td>
+                <input type="text" class="package-description" value="${description}" placeholder="패키지 설명" onchange="updatePackagesText()">
+            </td>
+            <td>
+                <input type="text" class="package-duration" value="${duration}" placeholder="소요시간" onchange="updatePackagesText()">
+            </td>
+            <td>
+                <input type="text" class="package-price" value="${price}" placeholder="가격" onchange="updatePackagesText()">
+            </td>
+            <td>
+                <input type="text" class="package-notes" value="${notes}" placeholder="비고" onchange="updatePackagesText()">
+            </td>
+            <td class="text-center">
+                <button type="button" class="delete-package-btn" onclick="deletePackageRow(this)">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        `;
+        
+        tableBody.appendChild(row);
+        updatePackagesText();
+        console.log('패키지 행이 성공적으로 추가되었습니다');
+    } catch (error) {
+        console.error('addPackageRow 함수 실행 중 오류:', error);
     }
-    
-    const row = document.createElement('tr');
-    row.innerHTML = `
-        <td>
-            <input type="text" class="package-name" value="${name}" placeholder="패키지명" onchange="updatePackagesText()">
-        </td>
-        <td>
-            <input type="text" class="package-description" value="${description}" placeholder="패키지 설명" onchange="updatePackagesText()">
-        </td>
-        <td>
-            <input type="text" class="package-duration" value="${duration}" placeholder="소요시간" onchange="updatePackagesText()">
-        </td>
-        <td>
-            <input type="text" class="package-price" value="${price}" placeholder="가격" onchange="updatePackagesText()">
-        </td>
-        <td>
-            <input type="text" class="package-notes" value="${notes}" placeholder="비고" onchange="updatePackagesText()">
-        </td>
-        <td class="text-center">
-            <button type="button" class="delete-package-btn" onclick="deletePackageRow(this)">
-                <i class="bi bi-trash"></i>
-            </button>
-        </td>
-    `;
-    
-    tableBody.appendChild(row);
-    updatePackagesText();
 }
 
 function deletePackageRow(button) {
@@ -544,34 +555,45 @@ function loadExistingRefundRules() {
 }
 
 function addRefundRow(period = '', rate = '', note = '') {
-    const tableBody = document.getElementById('refundTableBody');
-    
-    // 빈 행 제거
-    const emptyRow = tableBody.querySelector('.empty-refund-row');
-    if (emptyRow) {
-        emptyRow.remove();
+    try {
+        console.log('addRefundRow 함수 호출됨');
+        const tableBody = document.getElementById('refundTableBody');
+        
+        if (!tableBody) {
+            console.error('refundTableBody 요소를 찾을 수 없습니다');
+            return;
+        }
+        
+        // 빈 행 제거
+        const emptyRow = tableBody.querySelector('.empty-refund-row');
+        if (emptyRow) {
+            emptyRow.remove();
+        }
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>
+                <input type="text" class="refund-period" value="${period}" placeholder="기준일" onchange="updateRefundTableText()">
+            </td>
+            <td>
+                <input type="text" class="refund-rate" value="${rate}" placeholder="환불비율" onchange="updateRefundTableText()">
+            </td>
+            <td>
+                <input type="text" class="refund-note" value="${note}" placeholder="비고" onchange="updateRefundTableText()">
+            </td>
+            <td class="text-center">
+                <button type="button" class="delete-refund-btn" onclick="deleteRefundRow(this)">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        `;
+        
+        tableBody.appendChild(row);
+        updateRefundTableText();
+        console.log('환불 기준 행이 성공적으로 추가되었습니다');
+    } catch (error) {
+        console.error('addRefundRow 함수 실행 중 오류:', error);
     }
-    
-    const row = document.createElement('tr');
-    row.innerHTML = `
-        <td>
-            <input type="text" class="refund-period" value="${period}" placeholder="기준일" onchange="updateRefundTableText()">
-        </td>
-        <td>
-            <input type="text" class="refund-rate" value="${rate}" placeholder="환불비율" onchange="updateRefundTableText()">
-        </td>
-        <td>
-            <input type="text" class="refund-note" value="${note}" placeholder="비고" onchange="updateRefundTableText()">
-        </td>
-        <td class="text-center">
-            <button type="button" class="delete-refund-btn" onclick="deleteRefundRow(this)">
-                <i class="bi bi-trash"></i>
-            </button>
-        </td>
-    `;
-    
-    tableBody.appendChild(row);
-    updateRefundTableText();
 }
 
 function deleteRefundRow(button) {
@@ -649,34 +671,45 @@ function loadExistingOvertimeChargeRules() {
 }
 
 function addOvertimeChargeRow(timeCondition = '', additionalFee = '', note = '') {
-    const tableBody = document.getElementById('overtimeChargeTableBody');
-    
-    // 빈 행 제거
-    const emptyRow = tableBody.querySelector('.empty-overtime-charge-row');
-    if (emptyRow) {
-        emptyRow.remove();
+    try {
+        console.log('addOvertimeChargeRow 함수 호출됨');
+        const tableBody = document.getElementById('overtimeChargeTableBody');
+        
+        if (!tableBody) {
+            console.error('overtimeChargeTableBody 요소를 찾을 수 없습니다');
+            return;
+        }
+        
+        // 빈 행 제거
+        const emptyRow = tableBody.querySelector('.empty-overtime-charge-row');
+        if (emptyRow) {
+            emptyRow.remove();
+        }
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>
+                <input type="text" class="overtime-time-condition" value="${timeCondition}" placeholder="시간대/조건" onchange="updateOvertimeChargeTableText()">
+            </td>
+            <td>
+                <input type="text" class="overtime-additional-fee" value="${additionalFee}" placeholder="추가 요금" onchange="updateOvertimeChargeTableText()">
+            </td>
+            <td>
+                <input type="text" class="overtime-note" value="${note}" placeholder="비고" onchange="updateOvertimeChargeTableText()">
+            </td>
+            <td class="text-center">
+                <button type="button" class="delete-overtime-charge-btn" onclick="deleteOvertimeChargeRow(this)">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        `;
+        
+        tableBody.appendChild(row);
+        updateOvertimeChargeTableText();
+        console.log('시간외 업차지 행이 성공적으로 추가되었습니다');
+    } catch (error) {
+        console.error('addOvertimeChargeRow 함수 실행 중 오류:', error);
     }
-    
-    const row = document.createElement('tr');
-    row.innerHTML = `
-        <td>
-            <input type="text" class="overtime-time-condition" value="${timeCondition}" placeholder="시간대/조건" onchange="updateOvertimeChargeTableText()">
-        </td>
-        <td>
-            <input type="text" class="overtime-additional-fee" value="${additionalFee}" placeholder="추가 요금" onchange="updateOvertimeChargeTableText()">
-        </td>
-        <td>
-            <input type="text" class="overtime-note" value="${note}" placeholder="비고" onchange="updateOvertimeChargeTableText()">
-        </td>
-        <td class="text-center">
-            <button type="button" class="delete-overtime-charge-btn" onclick="deleteOvertimeChargeRow(this)">
-                <i class="bi bi-trash"></i>
-            </button>
-        </td>
-    `;
-    
-    tableBody.appendChild(row);
-    updateOvertimeChargeTableText();
 }
 
 function deleteOvertimeChargeRow(button) {
@@ -757,55 +790,8 @@ function clearAllOvertimeChargeRules() {
 
 // 저장 시 확인 함수 - 기존 데이터 보호
 function confirmSave() {
-    let hasModifications = false;
-    let hasIntentionalDeletions = false;
-    let emptyFieldNames = [];
-    
-    // 확인할 필드들과 현재 값
-    const fields = [
-        {name: '예약 방법', id: 'booking_method', original: '{{ option.booking_method or "" }}'},
-        {name: '제작비 결제 방식', id: 'payment_info', original: '{{ option.payment_info or "" }}'},
-        {name: '안내 사항', id: 'guide_info', original: '{{ option.guide_info or "" }}'},
-        {name: '환불 규정 기본 안내', id: 'refund_policy_text', original: '{{ option.refund_policy_text or "" }}'}
-    ];
-    
-    fields.forEach(field => {
-        const currentValue = document.getElementById(field.id).value.trim();
-        const originalValue = field.original.trim();
-        
-        // 수정이 있었는지 확인
-        if (currentValue !== originalValue) {
-            hasModifications = true;
-        }
-        
-        // 기존에 데이터가 있었는데 현재 의도적으로 비운 경우만 확인
-        if (originalValue && !currentValue) {
-            hasIntentionalDeletions = true;
-            emptyFieldNames.push(field.name);
-        }
-    });
-    
-    // 수정사항이 있으면 바로 허용
-    if (hasModifications && !hasIntentionalDeletions) {
-        console.log("✅ 정상적인 수정 감지, 저장 진행");
-        return true;
-    }
-    
-    // 의도적인 삭제가 있는 경우에만 확인
-    if (hasIntentionalDeletions) {
-        const fieldList = emptyFieldNames.join(', ');
-        return confirm(`⚠️ 다음 필드의 기존 데이터를 삭제하시겠습니까?\n\n${fieldList}\n\n확인: 삭제\n취소: 기존 데이터 유지`);
-    }
-    
-    // 수정사항이 없어도 저장 허용
-    console.log("📝 수정사항 없음, 그대로 저장 진행");
-    return true;
+    // 간단한 확인만 수행
+    return confirm('수정 내용을 저장하시겠습니까?');
 }
-
-// 페이지 로드 시 기존 데이터 로드
-document.addEventListener('DOMContentLoaded', function() {
-    loadExistingRefundRules();
-    loadExistingOvertimeChargeRules();
-});
 </script>
 {% endblock %} 
