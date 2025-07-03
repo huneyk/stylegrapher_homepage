@@ -1,0 +1,31 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /static/uploads/
+Disallow: /wp-content/
+Disallow: /wp-admin/
+Disallow: /*.php$
+Disallow: /*.asp$
+Disallow: /*.aspx$
+Disallow: /*.jsp$
+Disallow: /plugins.php
+Disallow: /wp-22.php
+Disallow: /lv.php
+Disallow: /xmrlpc.php
+Disallow: /ae.php
+
+# Allow specific legitimate bots
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+# Crawl delay for other bots
+User-agent: *
+Crawl-delay: 2
+
+# Sitemap location
+Sitemap: https://www.stylegrapher.com/sitemap.xml 

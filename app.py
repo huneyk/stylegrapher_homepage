@@ -1,6 +1,6 @@
 import os
 import json
-from flask import Flask
+from flask import Flask, request, abort, send_from_directory
 from routes.main import main
 from routes.admin import admin
 from extensions import db, login_manager, migrate, mail
@@ -8,6 +8,7 @@ from models import User
 from config import Config
 from pymongo import MongoClient
 from dotenv import load_dotenv
+from utils.security import add_security_headers, is_suspicious_request, get_client_ip, log_security_event
 
 # .env 파일 로드
 load_dotenv()
@@ -51,6 +52,42 @@ def create_app():
     mail.init_app(app)
     
     login_manager.login_view = 'admin.login'
+    
+    # 보안 미들웨어 - 모든 요청에 대해 실행
+    @app.before_request
+    def security_middleware():
+        # robots.txt 요청은 보안 검사 제외
+        if request.path == '/robots.txt':
+            return
+            
+        # 의심스러운 요청 패턴 검사
+        is_suspicious, reason = is_suspicious_request()
+        if is_suspicious:
+            log_security_event("BLOCKED_REQUEST", reason)
+            abort(404)  # 404로 위장하여 정보 노출 방지
+    
+    # 모든 응답에 보안 헤더 추가
+    @app.after_request
+    def after_request(response):
+        return add_security_headers(response)
+    
+    # robots.txt 제공
+    @app.route('/robots.txt')
+    def robots_txt():
+        return send_from_directory(app.static_folder, 'robots.txt')
+    
+    # 개선된 404 오류 핸들러
+    @app.errorhandler(404)
+    def page_not_found(error):
+        # 보안 이벤트 로깅
+        log_security_event("404_ERROR", f"Path: {request.path}")
+        return "Not Found", 404
+    
+    # 429 오류 핸들러 (Rate Limiting)
+    @app.errorhandler(429)
+    def rate_limit_exceeded(error):
+        log_security_event("RATE_LIMIT", f"IP: {get_client_ip()}")
+        return "Too Many Requests", 429
     
     # Jinja2 필터 추가
     @app.template_filter('from_json')

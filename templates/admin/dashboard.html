@@ -154,6 +154,23 @@
                 </div>
             </div>
         </div>
+
+        <!-- 보안 대시보드 카드 -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-shield-lock-fill me-2"></i>보안 대시보드
+                    </h5>
+                    <p class="card-text text-muted">실시간 보안 모니터링 및 위협 분석을 확인합니다.</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('admin.security_dashboard') }}" class="btn btn-primary">
+                            보안 대시보드
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- 최근 활동 섹션 -->

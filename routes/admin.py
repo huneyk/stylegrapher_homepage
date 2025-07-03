@@ -14,6 +14,7 @@ import io
 import uuid
 from pymongo import MongoClient
 from dotenv import load_dotenv
+from utils.monitor import security_monitor
 
 # .env 파일 로드
 load_dotenv()
@@ -1377,8 +1378,6 @@ def reset_admin_password(username, new_password):
         print(f"Error resetting password: {str(e)}")
         return f"Error resetting password: {str(e)}", 500
 
-
-
 @admin.route('/image/<image_id>')
 def get_image(image_id):
     try:
@@ -1585,8 +1584,6 @@ def update_site_colors():
         flash('색상 업데이트 중 오류가 발생했습니다.', 'error')
         return redirect(url_for('admin.site_colors'))
 
-
-
 # 이용약관 관리
 @admin.route('/terms-of-service')
 @login_required
@@ -1654,3 +1651,23 @@ def update_privacy():
         flash(f'오류가 발생했습니다: {str(e)}', 'error')
     
     return redirect(url_for('admin.manage_privacy'))
+
+@admin.route('/security-dashboard')
+@login_required
+def security_dashboard():
+    """보안 대시보드"""
+    summary = security_monitor.get_attack_summary()
+    return render_template('admin/security_dashboard.html', security_summary=summary)
+
+@admin.route('/security-report')
+@login_required
+def security_report():
+    """보안 리포트 다운로드"""
+    hours = request.args.get('hours', 24, type=int)
+    report = security_monitor.export_security_report(hours)
+    
+    response = make_response(json.dumps(report, indent=2, default=str))
+    response.headers['Content-Type'] = 'application/json'
+    response.headers['Content-Disposition'] = f'attachment; filename=security_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
+    
+    return response

@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}보안 대시보드 - StyleGrapher Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">🛡️ 보안 대시보드</h5>
+                    <small class="text-muted">실시간 보안 모니터링 및 위협 분석</small>
+                </div>
+                <div class="card-body">
+                    <!-- 보안 요약 -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body text-center">
+                                    <h3>{{ security_summary.total_events }}</h3>
+                                    <p class="mb-0">최근 1시간 이벤트</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body text-center">
+                                    <h3>{{ security_summary.unique_ips }}</h3>
+                                    <p class="mb-0">고유 IP 주소</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body text-center">
+                                    <h3>{{ security_summary.top_attack_types|length }}</h3>
+                                    <p class="mb-0">공격 유형</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <h3>활성</h3>
+                                    <p class="mb-0">보안 상태</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 공격 유형 분석 -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6>주요 공격 유형</h6>
+                                </div>
+                                <div class="card-body">
+                                    {% if security_summary.top_attack_types %}
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>공격 유형</th>
+                                                        <th>횟수</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for attack_type, count in security_summary.top_attack_types %}
+                                                    <tr>
+                                                        <td>
+                                                            {% if attack_type == 'BLOCKED_REQUEST' %}
+                                                                <span class="badge bg-danger">차단된 요청</span>
+                                                            {% elif attack_type == 'RATE_LIMIT' %}
+                                                                <span class="badge bg-warning">Rate Limit</span>
+                                                            {% elif attack_type == '404_ERROR' %}
+                                                                <span class="badge bg-info">404 오류</span>
+                                                            {% else %}
+                                                                <span class="badge bg-secondary">{{ attack_type }}</span>
+                                                            {% endif %}
+                                                        </td>
+                                                        <td><strong>{{ count }}</strong></td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    {% else %}
+                                        <p class="text-muted">최근 공격이 감지되지 않았습니다.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6>상위 공격 IP</h6>
+                                </div>
+                                <div class="card-body">
+                                    {% if security_summary.top_ips %}
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>IP 주소</th>
+                                                        <th>요청 수</th>
+                                                        <th>액션</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for ip, count in security_summary.top_ips %}
+                                                    <tr>
+                                                        <td><code>{{ ip }}</code></td>
+                                                        <td><strong>{{ count }}</strong></td>
+                                                        <td>
+                                                            <button class="btn btn-sm btn-outline-danger" onclick="blockIP('{{ ip }}')">
+                                                                차단
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    {% else %}
+                                        <p class="text-muted">의심스러운 IP가 감지되지 않았습니다.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 최근 보안 이벤트 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6>최근 보안 이벤트</h6>
+                        </div>
+                        <div class="card-body">
+                            {% if security_summary.recent_events %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>시간</th>
+                                                <th>유형</th>
+                                                <th>IP</th>
+                                                <th>경로</th>
+                                                <th>세부사항</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for event in security_summary.recent_events %}
+                                            <tr>
+                                                <td>{{ event.timestamp.strftime('%H:%M:%S') }}</td>
+                                                <td>
+                                                    {% if event.type == 'BLOCKED_REQUEST' %}
+                                                        <span class="badge bg-danger">차단</span>
+                                                    {% elif event.type == 'RATE_LIMIT' %}
+                                                        <span class="badge bg-warning">Rate Limit</span>
+                                                    {% elif event.type == '404_ERROR' %}
+                                                        <span class="badge bg-info">404</span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary">{{ event.type }}</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td><code>{{ event.client_ip }}</code></td>
+                                                <td><code>{{ event.path }}</code></td>
+                                                <td class="text-truncate" style="max-width: 200px;">{{ event.details }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p class="text-muted">최근 보안 이벤트가 없습니다.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- 액션 버튼 -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('admin.security_report', hours=1) }}" class="btn btn-outline-primary">
+                                    1시간 리포트 다운로드
+                                </a>
+                                <a href="{{ url_for('admin.security_report', hours=24) }}" class="btn btn-outline-primary">
+                                    24시간 리포트 다운로드
+                                </a>
+                                <button class="btn btn-outline-success" onclick="location.reload()">
+                                    새로고침
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function blockIP(ip) {
+    if (confirm(`IP 주소 ${ip}를 차단하시겠습니까?`)) {
+        // 실제 구현에서는 AJAX 호출로 IP 차단 처리
+        fetch('/admin/block-ip', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ip: ip})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('IP가 성공적으로 차단되었습니다.');
+                location.reload();
+            } else {
+                alert('IP 차단에 실패했습니다.');
+            }
+        });
+    }
+}
+
+// 자동 새로고침 (30초마다)
+setInterval(function() {
+    location.reload();
+}, 30000);
+</script>
+{% endblock %} 
