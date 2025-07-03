@@ -21,6 +21,33 @@ load_dotenv()
 
 admin = Blueprint('admin', __name__)
 
+# 🛡️ 데이터 보호 헬퍼 함수
+def protect_existing_service_option_data(option, form_data):
+    """서비스 옵션의 기존 데이터를 보호하는 함수"""
+    protected_fields = [
+        'booking_method', 'payment_info', 'guide_info', 
+        'refund_policy_text', 'refund_policy_table', 'overtime_charge_table'
+    ]
+    
+    changes_made = False
+    for field in protected_fields:
+        current_value = getattr(option, field, None)
+        form_value = form_data.get(field)
+        
+        # 기존 데이터가 있고, 폼에서 빈 값이 전송된 경우 기존 값 유지
+        if current_value is not None and current_value.strip():
+            if not form_value or not form_value.strip():
+                print(f"🛡️ 데이터 보호: {field} 필드의 기존 데이터 유지")
+                continue  # 기존 값 유지 (업데이트하지 않음)
+        
+        # 실제 값이 있는 경우에만 업데이트
+        if form_value and form_value.strip():
+            setattr(option, field, form_value)
+            changes_made = True
+            print(f"✅ 데이터 업데이트: {field} 필드 업데이트")
+    
+    return changes_made
+
 # MongoDB 연결 설정
 mongo_uri = os.environ.get('MONGO_URI')
 if not mongo_uri:
@@ -500,13 +527,15 @@ def upload_image():
             return redirect(request.url)
         
         try:
-            # 현재 최고 display_order 값 조회
+            # 🛡️ 갤러리 순서 보호 - 기존 순서에 영향을 주지 않음
             max_order_result = db.session.execute(
                 text("SELECT MAX(display_order) FROM gallery_group")
             ).scalar()
             next_order = (max_order_result or 0) + 1
             
-            # 갤러리 그룹 생성 (새 갤러리가 가장 앞에 배치되도록)
+            print(f"🛡️ 갤러리 순서 보호: 새 갤러리를 순서 {next_order}로 배치 (기존 순서 유지)")
+            
+            # 갤러리 그룹 생성 (기존 갤러리 순서에 영향을 주지 않음)
             gallery_group = GalleryGroup(
                 title=request.form['title'],
                 display_order=next_order
@@ -909,24 +938,42 @@ def edit_option(option_id):
     option = ServiceOption.query.get_or_404(option_id)
     
     if request.method == 'POST':
+        print(f"🔧 서비스 옵션 편집 시작 - ID: {option_id}")
+        print(f"📝 받은 폼 데이터: {dict(request.form)}")
+        
         # 기본 정보 업데이트
         option.name = request.form['name']
         option.description = request.form['description']
         option.detailed_description = request.form.get('detailed_description', '')
+        print(f"✅ 기본 정보 업데이트 완료 - 이름: {option.name}")
         
-        # 예약 조건 필드들 업데이트 (기존 None 값 유지)
-        def update_field_preserve_none(current_value, form_value):
-            """기존에 None인 필드는 빈 값 전송시에도 None을 유지"""
-            if current_value is None and (form_value == '' or form_value is None):
+        # 🛡️ 예약 조건 필드들 업데이트 (의도적 수정 허용, 빈 값 덮어쓰기만 방지)
+        def update_field_preserve_data(current_value, form_value):
+            """의도적인 수정은 허용하고, 빈 값으로 인한 덮어쓰기만 방지"""
+            # 폼에서 실제 값이 전송된 경우 - 의도적 수정이므로 즉시 업데이트
+            if form_value is not None and form_value.strip():
+                print(f"✅ 의도적 수정 감지: 새 값으로 업데이트 - {form_value[:50]}...")
+                return form_value
+            
+            # 폼에서 빈 값이 전송된 경우
+            if form_value == '' or form_value is None:
+                # 기존에 데이터가 있으면 기존 값 유지 (덮어쓰기 방지)
+                if current_value is not None and current_value.strip():
+                    print(f"🛡️ 빈 값 덮어쓰기 방지: 기존 값 유지 - {current_value[:30]}...")
+                    return current_value
+                # 기존에 데이터가 없으면 None 유지
+                print("📝 빈 필드 유지: None으로 설정")
                 return None
-            return form_value if form_value is not None else ''
+            
+            # 예외 상황 - 기본적으로 form_value 사용
+            return form_value
         
-        option.booking_method = update_field_preserve_none(option.booking_method, request.form.get('booking_method'))
-        option.payment_info = update_field_preserve_none(option.payment_info, request.form.get('payment_info'))
-        option.guide_info = update_field_preserve_none(option.guide_info, request.form.get('guide_info'))
-        option.refund_policy_text = update_field_preserve_none(option.refund_policy_text, request.form.get('refund_policy_text'))
-        option.refund_policy_table = update_field_preserve_none(option.refund_policy_table, request.form.get('refund_policy_table'))
-        option.overtime_charge_table = update_field_preserve_none(option.overtime_charge_table, request.form.get('overtime_charge_table'))
+        option.booking_method = update_field_preserve_data(option.booking_method, request.form.get('booking_method'))
+        option.payment_info = update_field_preserve_data(option.payment_info, request.form.get('payment_info'))
+        option.guide_info = update_field_preserve_data(option.guide_info, request.form.get('guide_info'))
+        option.refund_policy_text = update_field_preserve_data(option.refund_policy_text, request.form.get('refund_policy_text'))
+        option.refund_policy_table = update_field_preserve_data(option.refund_policy_table, request.form.get('refund_policy_table'))
+        option.overtime_charge_table = update_field_preserve_data(option.overtime_charge_table, request.form.get('overtime_charge_table'))
         
         # 상세 내용 처리 (각 줄을 배열로 변환)
         details_text = request.form.get('details', '')
@@ -977,8 +1024,15 @@ def edit_option(option_id):
         else:
             option.packages = None
         
-        db.session.commit()
-        flash('옵션이 수정되었습니다.')
+        try:
+            db.session.commit()
+            print(f"✅ 데이터베이스 커밋 성공 - 옵션 ID: {option_id}")
+            flash('옵션이 수정되었습니다.')
+        except Exception as e:
+            print(f"❌ 데이터베이스 커밋 실패: {str(e)}")
+            db.session.rollback()
+            flash('옵션 수정 중 오류가 발생했습니다.', 'error')
+        
         return redirect(url_for('admin.list_services'))
     
     # GET 요청 시 기존 데이터 로드

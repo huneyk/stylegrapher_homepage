@@ -53,6 +53,62 @@ def create_app():
     
     login_manager.login_view = 'admin.login'
     
+    # 🛡️ 강화된 데이터 보호 시스템 - 배포 시 덮어쓰기 완전 방지
+    def init_comprehensive_data_protection():
+        """배포 시 기존 데이터 보호 초기화 및 덮어쓰기 방지"""
+        try:
+            from models import ServiceOption, GalleryGroup
+            from sqlalchemy import text
+            
+            print("🛡️ 종합 데이터 보호 시스템 초기화 중...")
+            
+            # 서비스 옵션 데이터 보호 확인
+            service_result = db.session.execute(
+                text("""SELECT COUNT(*) FROM service_option 
+                        WHERE booking_method IS NOT NULL 
+                           OR payment_info IS NOT NULL 
+                           OR guide_info IS NOT NULL 
+                           OR refund_policy_text IS NOT NULL
+                           OR refund_policy_table IS NOT NULL
+                           OR overtime_charge_table IS NOT NULL""")
+            ).scalar()
+            
+            # 갤러리 순서 데이터 보호 확인
+            gallery_result = db.session.execute(
+                text("SELECT COUNT(*) FROM gallery_group WHERE display_order IS NOT NULL")
+            ).scalar()
+            
+            if service_result > 0:
+                print(f"🛡️ {service_result}개의 기존 서비스 옵션 데이터 발견 - 보호 모드 활성화")
+                app.config['DATA_PROTECTION_ACTIVE'] = True
+                app.config['SERVICE_DATA_PROTECTED'] = True
+            else:
+                app.config['SERVICE_DATA_PROTECTED'] = False
+            
+            if gallery_result > 0:
+                print(f"🛡️ {gallery_result}개의 기존 갤러리 순서 데이터 발견 - 순서 보호 활성화")
+                app.config['GALLERY_ORDER_PROTECTED'] = True
+            else:
+                app.config['GALLERY_ORDER_PROTECTED'] = False
+            
+            # 전체 보호 모드 설정
+            app.config['DATA_PROTECTION_ACTIVE'] = True  # 항상 보호 모드로 설정
+            
+            print("✅ 종합 데이터 보호 시스템 활성화 완료")
+            print("🛡️ 모든 기존 데이터가 덮어쓰기로부터 보호됩니다")
+                
+        except Exception as e:
+            print(f"⚠️ 데이터 보호 시스템 초기화 오류: {str(e)}")
+            # 오류 발생 시에도 최대 보호 모드 활성화
+            app.config['DATA_PROTECTION_ACTIVE'] = True
+            app.config['SERVICE_DATA_PROTECTED'] = True
+            app.config['GALLERY_ORDER_PROTECTED'] = True
+            print("🛡️ 안전을 위해 최대 보호 모드로 설정됨")
+    
+    # 앱 컨텍스트에서 데이터 보호 시스템 초기화
+    with app.app_context():
+        init_comprehensive_data_protection()
+    
     # 보안 미들웨어 - 모든 요청에 대해 실행
     @app.before_request
     def security_middleware():

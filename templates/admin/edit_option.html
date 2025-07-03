@@ -168,7 +168,7 @@
 
                         
                         <div class="text-center">
-                            <button type="submit" class="btn btn-primary">수정 완료</button>
+                            <button type="submit" class="btn btn-primary" onclick="return confirmSave()">수정 완료</button>
                             <a href="{{ url_for('admin.list_options', service_id=option.service_id) }}" 
                                class="btn btn-secondary">취소</a>
                         </div>
@@ -754,5 +754,58 @@ function clearAllOvertimeChargeRules() {
         alert('모든 시간외 업차지 기준 데이터가 삭제되었습니다.');
     }
 }
+
+// 저장 시 확인 함수 - 기존 데이터 보호
+function confirmSave() {
+    let hasModifications = false;
+    let hasIntentionalDeletions = false;
+    let emptyFieldNames = [];
+    
+    // 확인할 필드들과 현재 값
+    const fields = [
+        {name: '예약 방법', id: 'booking_method', original: '{{ option.booking_method or "" }}'},
+        {name: '제작비 결제 방식', id: 'payment_info', original: '{{ option.payment_info or "" }}'},
+        {name: '안내 사항', id: 'guide_info', original: '{{ option.guide_info or "" }}'},
+        {name: '환불 규정 기본 안내', id: 'refund_policy_text', original: '{{ option.refund_policy_text or "" }}'}
+    ];
+    
+    fields.forEach(field => {
+        const currentValue = document.getElementById(field.id).value.trim();
+        const originalValue = field.original.trim();
+        
+        // 수정이 있었는지 확인
+        if (currentValue !== originalValue) {
+            hasModifications = true;
+        }
+        
+        // 기존에 데이터가 있었는데 현재 의도적으로 비운 경우만 확인
+        if (originalValue && !currentValue) {
+            hasIntentionalDeletions = true;
+            emptyFieldNames.push(field.name);
+        }
+    });
+    
+    // 수정사항이 있으면 바로 허용
+    if (hasModifications && !hasIntentionalDeletions) {
+        console.log("✅ 정상적인 수정 감지, 저장 진행");
+        return true;
+    }
+    
+    // 의도적인 삭제가 있는 경우에만 확인
+    if (hasIntentionalDeletions) {
+        const fieldList = emptyFieldNames.join(', ');
+        return confirm(`⚠️ 다음 필드의 기존 데이터를 삭제하시겠습니까?\n\n${fieldList}\n\n확인: 삭제\n취소: 기존 데이터 유지`);
+    }
+    
+    // 수정사항이 없어도 저장 허용
+    console.log("📝 수정사항 없음, 그대로 저장 진행");
+    return true;
+}
+
+// 페이지 로드 시 기존 데이터 로드
+document.addEventListener('DOMContentLoaded', function() {
+    loadExistingRefundRules();
+    loadExistingOvertimeChargeRules();
+});
 </script>
 {% endblock %} 
