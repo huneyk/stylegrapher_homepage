@@ -16,6 +16,15 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 from utils.monitor import security_monitor
 from sqlalchemy import event
+from utils.translation_helper import trigger_translation
+from utils.gridfs_helper import (
+    save_image_to_gridfs,
+    get_image_from_gridfs,
+    delete_image_from_gridfs,
+    get_mongo_connection,
+    get_gridfs_stats,
+    migrate_legacy_to_gridfs
+)
 
 # .env 파일 로드
 load_dotenv()
@@ -456,6 +465,9 @@ def add_service():
             db.session.add(service)
             db.session.commit()
             
+            # 🌐 비동기 번역 트리거
+            trigger_translation('service', service)
+            
             flash('서비스가 성공적으로 추가되었습니다. 이제 개별 옵션을 추가해보세요.')
             return redirect(url_for('admin.list_options', service_id=service.id))
             
@@ -524,62 +536,117 @@ def resize_image(image_path, size=(1600, 1200)):
         # 저장
         resized_img.save(image_path, quality=95, optimize=True)
 
-# 이미지 리사이징 및 MongoDB 저장 헬퍼 함수
-def resize_image_memory(img, width=1080):
+# 웹 최적화 설정 (GridFS 헬퍼와 동일)
+WEB_IMAGE_CONFIG = {
+    'max_width': 800,           # 최대 너비 (px)
+    'max_height': 1200,         # 최대 높이 (px)
+    'jpeg_quality': 82,         # JPEG 품질 (80-85가 웹에 최적)
+    'progressive_jpeg': True,   # Progressive JPEG 사용
+}
+
+
+def resize_image_memory(img, max_width=None, max_height=None):
     """
-    메모리 상의 이미지를 리사이즈하는 함수
-    width: 타겟 너비 (픽셀)
+    메모리 상의 이미지를 웹 최적화 크기로 리사이즈하는 함수
+    
+    Args:
+        img: PIL Image 객체
+        max_width: 최대 너비 (픽셀)
+        max_height: 최대 높이 (픽셀)
+    
+    Returns:
+        리사이즈된 PIL Image 객체
     """
-    # 원본 크기 저장
+    max_width = max_width or WEB_IMAGE_CONFIG['max_width']
+    max_height = max_height or WEB_IMAGE_CONFIG['max_height']
+    
     original_width, original_height = img.size
     
-    # 너비를 지정된 픽셀로 고정하고 비율 유지
-    ratio = width / original_width
-    target_height = int(original_height * ratio)
+    # 이미 작은 이미지는 리사이즈하지 않음
+    if original_width <= max_width and original_height <= max_height:
+        return img
     
-    # 이미지 리사이즈
-    resized_img = img.resize((width, target_height), Image.Resampling.LANCZOS)
+    # 가로/세로 비율 계산
+    width_ratio = max_width / original_width
+    height_ratio = max_height / original_height
+    ratio = min(width_ratio, height_ratio)
     
+    new_width = int(original_width * ratio)
+    new_height = int(original_height * ratio)
+    
+    resized_img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
     return resized_img
+
 
 def save_image_to_mongodb(file, group_id=None, order=0):
     """
-    파일을 MongoDB에 저장하는 함수
+    파일을 GridFS에 저장하는 함수 (웹 최적화 적용)
+    
     file: 업로드된 파일 객체
     group_id: 갤러리 그룹 ID (선택적)
     order: 그룹 내 순서 (선택적)
+    
+    Returns:
+        저장된 이미지의 ID (문자열)
+    
+    웹 최적화:
+        - 최대 크기: 800x1200px
+        - JPEG 품질: 82%
+        - Progressive JPEG 사용
     """
-    filename = secure_filename(file.filename)
-    
-    # 이미지 데이터 읽기
-    img_data = file.read()
-    
-    # 이미지 리사이즈
-    img = Image.open(io.BytesIO(img_data))
-    resized_img = resize_image_memory(img, width=1080)
-    
-    # 이미지를 바이트로 변환
-    buffer = io.BytesIO()
-    resized_img.save(buffer, format=img.format or 'JPEG', quality=95, optimize=True)
-    img_binary = buffer.getvalue()
-    
-    # MongoDB에 이미지 저장
-    image_id = str(uuid.uuid4())  # 고유 ID 생성
-    image_doc = {
-        '_id': image_id,
-        'filename': filename,
-        'content_type': file.content_type,
-        'binary_data': img_binary,
-        'created_at': datetime.now()
-    }
-    
-    # 갤러리 그룹 ID가 있는 경우
-    if group_id is not None:
-        image_doc['group_id'] = group_id
-        image_doc['order'] = order
-    
-    images_collection.insert_one(image_doc)
-    return image_id
+    try:
+        # GridFS를 사용하여 이미지 저장 (최적화 자동 적용)
+        image_id = save_image_to_gridfs(file, group_id=group_id, order=order)
+        print(f"GridFS: 이미지 저장 성공 - ID: {image_id}")
+        return image_id
+    except Exception as e:
+        print(f"GridFS 저장 실패, 레거시 방식으로 저장 시도: {str(e)}")
+        
+        # GridFS 실패 시 레거시 방식으로 폴백 (동일한 최적화 적용)
+        file.seek(0)
+        filename = secure_filename(file.filename)
+        
+        img_data = file.read()
+        original_size = len(img_data)
+        
+        img = Image.open(io.BytesIO(img_data))
+        resized_img = resize_image_memory(img)
+        
+        buffer = io.BytesIO()
+        if resized_img.mode in ('RGBA', 'P'):
+            resized_img = resized_img.convert('RGB')
+        resized_img.save(
+            buffer, 
+            format='JPEG', 
+            quality=WEB_IMAGE_CONFIG['jpeg_quality'],
+            optimize=True,
+            progressive=WEB_IMAGE_CONFIG['progressive_jpeg']
+        )
+        img_binary = buffer.getvalue()
+        
+        # 압축 결과 로깅
+        compressed_size = len(img_binary)
+        compression_ratio = (1 - compressed_size / original_size) * 100 if original_size > 0 else 0
+        print(f"레거시 저장: 이미지 최적화 - {original_size/1024:.1f}KB → {compressed_size/1024:.1f}KB [{compression_ratio:.1f}% 절약]")
+        
+        image_id = str(uuid.uuid4())
+        image_doc = {
+            '_id': image_id,
+            'filename': filename,
+            'content_type': 'image/jpeg',
+            'binary_data': img_binary,
+            'created_at': datetime.now()
+        }
+        
+        if group_id is not None:
+            image_doc['group_id'] = group_id
+            image_doc['order'] = order
+        
+        if images_collection is not None:
+            images_collection.insert_one(image_doc)
+            print(f"레거시 방식으로 이미지 저장 성공 - ID: {image_id}")
+        
+        return image_id
 
 # 갤러리 이미지 업로드 함수 수정
 @admin.route('/gallery/upload', methods=['GET', 'POST'])
@@ -630,6 +697,13 @@ def upload_image():
             
             db.session.commit()
             
+            # 🌐 갤러리 제목 다국어 번역 트리거
+            try:
+                trigger_translation('gallery_group', gallery_group)
+                print(f"🌐 갤러리 그룹 '{gallery_group.title}' 번역 시작됨")
+            except Exception as trans_error:
+                print(f"⚠️ 번역 트리거 실패 (무시 가능): {str(trans_error)}")
+            
             # 🧹 갤러리 캐시 클리어 (새 갤러리 추가로 인한 순서 변경)
             try:
                 from routes.main import clear_gallery_cache
@@ -652,9 +726,17 @@ def upload_image():
 def delete_gallery_group(group_id):
     group = GalleryGroup.query.get_or_404(group_id)
     
-    # MongoDB에서 이미지 삭제
+    # GridFS 및 레거시 MongoDB에서 이미지 삭제
     for image in group.images:
-        images_collection.delete_one({'_id': image.image_path})
+        try:
+            # GridFS에서 삭제 시도
+            deleted = delete_image_from_gridfs(image.image_path)
+            if not deleted and images_collection is not None:
+                # GridFS에 없으면 레거시 컬렉션에서 삭제
+                images_collection.delete_one({'_id': image.image_path})
+            print(f"이미지 삭제 완료: {image.image_path}")
+        except Exception as e:
+            print(f"이미지 삭제 중 오류 (무시): {str(e)}")
     
     db.session.delete(group)
     db.session.commit()
@@ -862,6 +944,10 @@ def edit_service(id):
         service.packages = json.dumps(packages)
         
         db.session.commit()
+        
+        # 🌐 비동기 번역 트리거
+        trigger_translation('service', service)
+        
         flash('서비스가 수정되었습니다.')
         return redirect(url_for('admin.list_services'))
     
@@ -958,6 +1044,10 @@ def add_option_standalone():
         
         db.session.add(option)
         db.session.commit()
+        
+        # 🌐 비동기 번역 트리거
+        trigger_translation('service_option', option)
+        
         flash(f'{service.name} 카테고리에 "{option.name}" 서비스가 추가되었습니다.')
         return redirect(url_for('admin.list_services'))
     
@@ -1028,6 +1118,10 @@ def add_option(service_id):
         
         db.session.add(option)
         db.session.commit()
+        
+        # 🌐 비동기 번역 트리거
+        trigger_translation('service_option', option)
+        
         flash('옵션이 추가되었습니다.')
         return redirect(url_for('admin.list_options', service_id=service_id))
     
@@ -1131,6 +1225,10 @@ def edit_option(option_id):
             db.session.commit()
             print(f"✅ 데이터베이스 커밋 성공 - 옵션 ID: {option_id}")
             flash('옵션이 수정되었습니다.')
+            
+            # 🌐 비동기 번역 트리거
+            trigger_translation('service_option', option)
+            
         except Exception as e:
             print(f"❌ 데이터베이스 커밋 실패: {str(e)}")
             db.session.rollback()
@@ -1537,6 +1635,7 @@ def reset_admin_password(username, new_password):
 
 @admin.route('/image/<image_id>')
 def get_image(image_id):
+    """GridFS 및 레거시 저장소에서 이미지 조회"""
     try:
         print(f"이미지 요청: {image_id}")
         
@@ -1547,7 +1646,7 @@ def get_image(image_id):
             
             if os.path.exists(file_path):
                 print(f"로컬 파일 시스템에서 이미지 발견: {file_path}")
-                content_type = 'image/jpeg'  # 기본값
+                content_type = 'image/jpeg'
                 if image_id.lower().endswith('.png'):
                     content_type = 'image/png'
                 elif image_id.lower().endswith('.gif'):
@@ -1558,45 +1657,46 @@ def get_image(image_id):
                 
                 response = make_response(image_data)
                 response.headers.set('Content-Type', content_type)
+                response.headers.set('Cache-Control', 'public, max-age=86400')
                 return response
             
             print(f"이미지를 찾을 수 없음: {image_id}")
             return None
         
-        # MongoDB 연결이 없으면 로컬 저장소에서 검색
-        if images_collection is None:
-            print("MongoDB 연결이 설정되지 않았습니다.")
-            local_response = get_from_local()
-            if local_response:
-                return local_response
-            return "Image not found", 404
-        
+        # 1. GridFS에서 이미지 검색 시도
         try:
-            # MongoDB에서 이미지 검색
-            print(f"MongoDB에서 이미지 검색: {image_id}")
-            image_doc = images_collection.find_one({'_id': image_id})
-            
-            if image_doc:
-                print(f"MongoDB에서 이미지 발견: {image_id}")
-                # MongoDB에서 찾은 경우 바이너리 데이터 반환
-                response = make_response(image_doc['binary_data'])
-                response.headers.set('Content-Type', image_doc['content_type'])
+            binary_data, content_type = get_image_from_gridfs(image_id)
+            if binary_data:
+                print(f"GridFS에서 이미지 발견: {image_id}")
+                response = make_response(binary_data)
+                response.headers.set('Content-Type', content_type)
+                response.headers.set('Cache-Control', 'public, max-age=86400')
                 return response
-            else:
-                print(f"MongoDB에서 이미지를 찾을 수 없음: {image_id}")
-                # MongoDB에서 찾을 수 없는 경우, 로컬 파일 시스템에서 시도
-                local_response = get_from_local()
-                if local_response:
-                    return local_response
-                return "Image not found", 404
-        except Exception as mongo_error:
-            print(f"MongoDB에서 이미지 검색 중 오류 발생: {str(mongo_error)}")
-            # MongoDB 검색 중 오류 발생 시 로컬 파일 시스템에서 시도
-            local_response = get_from_local()
-            if local_response:
-                return local_response
-            # 로컬에서도 찾을 수 없으면 오류 반환
-            return "Error retrieving image", 500
+        except Exception as gridfs_error:
+            print(f"GridFS 조회 중 오류: {str(gridfs_error)}")
+        
+        # 2. 레거시 MongoDB 컬렉션에서 검색
+        if images_collection is not None:
+            try:
+                print(f"레거시 MongoDB에서 이미지 검색: {image_id}")
+                image_doc = images_collection.find_one({'_id': image_id})
+                
+                if image_doc and 'binary_data' in image_doc:
+                    print(f"레거시 MongoDB에서 이미지 발견: {image_id}")
+                    response = make_response(image_doc['binary_data'])
+                    response.headers.set('Content-Type', image_doc.get('content_type', 'image/jpeg'))
+                    response.headers.set('Cache-Control', 'public, max-age=86400')
+                    return response
+            except Exception as mongo_error:
+                print(f"레거시 MongoDB 검색 중 오류: {str(mongo_error)}")
+        
+        # 3. 로컬 파일 시스템에서 검색
+        local_response = get_from_local()
+        if local_response:
+            return local_response
+        
+        print(f"이미지를 어디서도 찾을 수 없음: {image_id}")
+        return "Image not found", 404
             
     except Exception as e:
         print(f"이미지 검색 중 오류 발생: {str(e)}")
@@ -1632,6 +1732,9 @@ def add_fade_text():
             db.session.add(fade_text)
             db.session.commit()
             
+            # 🌐 비동기 번역 트리거
+            trigger_translation('collage_text', fade_text)
+            
             flash('Fade Text가 추가되었습니다.')
             return redirect(url_for('admin.list_fade_texts'))
         except Exception as e:
@@ -1657,6 +1760,9 @@ def edit_fade_text(id):
             fade_text.text = text
             fade_text.order = order
             db.session.commit()
+            
+            # 🌐 비동기 번역 트리거
+            trigger_translation('collage_text', fade_text)
             
             flash('Fade Text가 수정되었습니다.')
             return redirect(url_for('admin.list_fade_texts'))
@@ -1828,3 +1934,130 @@ def security_report():
     response.headers['Content-Disposition'] = f'attachment; filename=security_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
     
     return response
+
+
+# 다국어 번역 관리
+@admin.route('/translations')
+@login_required
+def translations_dashboard():
+    """번역 관리 대시보드"""
+    from utils.translation import translations_collection, SUPPORTED_LANGUAGES
+    
+    # 번역 통계 조회
+    stats = {
+        'total': 0,
+        'by_type': {},
+        'languages': SUPPORTED_LANGUAGES
+    }
+    
+    if translations_collection:
+        try:
+            stats['total'] = translations_collection.count_documents({})
+            
+            # 타입별 통계
+            pipeline = [
+                {"$group": {"_id": "$source_type", "count": {"$sum": 1}}}
+            ]
+            for doc in translations_collection.aggregate(pipeline):
+                stats['by_type'][doc['_id']] = doc['count']
+        except Exception as e:
+            print(f"번역 통계 조회 오류: {str(e)}")
+    
+    return render_template('admin/translations.html', stats=stats)
+
+
+@admin.route('/translations/migrate', methods=['POST'])
+@login_required
+def migrate_translations():
+    """전체 데이터 번역 마이그레이션 (비동기)"""
+    import threading
+    
+    def run_migration():
+        try:
+            from utils.translation import migrate_all_translations
+            migrate_all_translations()
+        except Exception as e:
+            print(f"번역 마이그레이션 오류: {str(e)}")
+    
+    # 백그라운드에서 실행
+    thread = threading.Thread(target=run_migration)
+    thread.daemon = True
+    thread.start()
+    
+    flash('번역 마이그레이션이 백그라운드에서 시작되었습니다. 완료까지 몇 분이 소요될 수 있습니다.', 'info')
+    return redirect(url_for('admin.translations_dashboard'))
+
+
+@admin.route('/translations/translate/<source_type>/<int:source_id>', methods=['POST'])
+@login_required
+def translate_single(source_type, source_id):
+    """단일 항목 번역"""
+    try:
+        if source_type == 'service':
+            service = Service.query.get_or_404(source_id)
+            trigger_translation('service', service)
+            flash(f'서비스 "{service.name}" 번역이 시작되었습니다.', 'success')
+        elif source_type == 'service_option':
+            option = ServiceOption.query.get_or_404(source_id)
+            trigger_translation('service_option', option)
+            flash(f'서비스 옵션 "{option.name}" 번역이 시작되었습니다.', 'success')
+        elif source_type == 'collage_text':
+            ct = CollageText.query.get_or_404(source_id)
+            trigger_translation('collage_text', ct)
+            flash(f'Fade Text 번역이 시작되었습니다.', 'success')
+        elif source_type == 'gallery_group':
+            gg = GalleryGroup.query.get_or_404(source_id)
+            trigger_translation('gallery_group', gg)
+            flash(f'갤러리 "{gg.title}" 번역이 시작되었습니다.', 'success')
+        else:
+            flash('지원하지 않는 타입입니다.', 'error')
+    except Exception as e:
+        flash(f'번역 중 오류가 발생했습니다: {str(e)}', 'error')
+    
+    return redirect(url_for('admin.translations_dashboard'))
+
+
+# ========== GridFS 저장소 관리 ==========
+
+@admin.route('/storage')
+@login_required
+def storage_dashboard():
+    """GridFS 저장소 대시보드"""
+    stats = get_gridfs_stats()
+    
+    # 용량을 읽기 쉬운 형태로 변환
+    if 'gridfs_total_size' in stats:
+        size_mb = stats['gridfs_total_size'] / (1024 * 1024)
+        stats['gridfs_total_size_mb'] = f"{size_mb:.2f}"
+    
+    return render_template('admin/storage_dashboard.html', stats=stats)
+
+
+@admin.route('/storage/migrate', methods=['POST'])
+@login_required
+def migrate_to_gridfs():
+    """레거시 이미지를 GridFS로 마이그레이션 (백그라운드)"""
+    import threading
+    
+    def run_migration():
+        try:
+            success, fail, skip = migrate_legacy_to_gridfs(batch_size=50)
+            print(f"GridFS 마이그레이션 완료: 성공 {success}, 실패 {fail}, 건너뜀 {skip}")
+        except Exception as e:
+            print(f"GridFS 마이그레이션 오류: {str(e)}")
+    
+    # 백그라운드에서 실행
+    thread = threading.Thread(target=run_migration)
+    thread.daemon = True
+    thread.start()
+    
+    flash('GridFS 마이그레이션이 백그라운드에서 시작되었습니다. 완료까지 몇 분이 소요될 수 있습니다.', 'info')
+    return redirect(url_for('admin.storage_dashboard'))
+
+
+@admin.route('/storage/stats')
+@login_required
+def storage_stats_json():
+    """GridFS 저장소 통계 JSON 반환"""
+    stats = get_gridfs_stats()
+    return jsonify(stats)

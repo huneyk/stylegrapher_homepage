@@ -1,4 +1,5 @@
 {% for group in gallery_groups %}
+{% set translated_title = t('gallery_group', group.id, 'title', group.title) %}
 <div class="col-md-4">
     <div class="card gallery-item">
         <a href="{{ url_for('main.gallery_detail', group_id=group.id) }}" class="gallery-item-link">
@@ -16,7 +17,7 @@
                         <div class="gallery-image-wrapper">
                             <img src="{{ url_for('main.serve_image', image_path=image.image_path) }}"
                                  class="d-block w-100" 
-                                 alt="{{ group.title }}"
+                                 alt="{{ translated_title }}"
                                  loading="lazy">
                         </div>
                     </div>
@@ -45,7 +46,7 @@
             </div>
         </a>
         <div class="card-body text-center">
-            <h5 class="gallery-preview-title">{{ group.title }}</h5>
+            <h5 class="gallery-preview-title">{{ translated_title }}</h5>
             <p class="gallery-image-count">
                 <i class="bi bi-images me-1"></i>{{ _('사진') }} {{ group.images|length }}{{ _('장') }}
             </p>
@@ -175,11 +176,12 @@
 
 .gallery-preview-title {
     font-family: 'Cormorant Garamond', serif;
-    font-weight: 400;
-    font-size: 1.1rem;
-    color: var(--neon-lavender);
+    font-weight: 500;
+    font-size: 1.15rem;
+    color: #E8D4F8;
     margin: 0 0 0.5rem;
-    text-shadow: 0 0 15px rgba(181, 126, 220, 0.3);
+    text-shadow: 0 0 20px rgba(181, 126, 220, 0.5);
+    letter-spacing: 0.02em;
 }
 
 .gallery-image-count {

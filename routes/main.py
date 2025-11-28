@@ -13,6 +13,14 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 import functools
 import hashlib
+from utils.translation_helper import (
+    get_current_language, 
+    get_translated_service, 
+    get_translated_service_option,
+    get_translated_collage_text,
+    get_translated_gallery_group
+)
+from utils.gridfs_helper import get_image_from_gridfs, get_mongo_connection
 
 # MongoDB 설정 불러오기
 load_dotenv()
@@ -203,22 +211,36 @@ def index():
     services = Service.query.all()
     
     # Fade Text 데이터 가져오기 (순서별로 정렬)
-    fade_texts = CollageText.query.order_by(CollageText.order.asc()).all()
+    fade_texts_raw = CollageText.query.order_by(CollageText.order.asc()).all()
+    
+    # 현재 언어에 맞게 번역된 Fade Text 가져오기
+    lang = get_current_language()
+    fade_texts = [get_translated_collage_text(ft, lang) for ft in fade_texts_raw]
+    
+    # 갤러리 그룹 번역
+    translated_recent = [get_translated_gallery_group(g, lang) for g in recent_galleries]
+    translated_preview = [get_translated_gallery_group(g, lang) for g in preview_galleries]
     
     # 디버깅을 위한 출력
     print(f"Total galleries: {len(all_galleries)}")
     print(f"Recent galleries: {len(recent_galleries)}")
     print(f"Preview galleries: {len(preview_galleries)}")
     print(f"Fade texts: {len(fade_texts)}")
+    print(f"Current language: {lang}")
     
     return render_template('index.html', 
                          recent_galleries=recent_galleries,
                          preview_galleries=preview_galleries,
+                         translated_recent=translated_recent,
+                         translated_preview=translated_preview,
                          services=services,
                          fade_texts=fade_texts)
 
 @main.route('/services')
 def services():
+    # 현재 언어 가져오기
+    lang = get_current_language()
+    
     # 카테고리별로 서비스와 옵션을 그룹화
     categories_data = {
         'ai_analysis': {
@@ -252,21 +274,39 @@ def services():
     }
     
     # 모든 서비스와 옵션 조회
-    services = Service.query.all()
-    for service in services:
+    services_list = Service.query.all()
+    
+    # 번역된 서비스 옵션 데이터를 담을 딕셔너리
+    translated_options = {}
+    
+    for service in services_list:
         if service.category and service.category in categories_data:
             categories_data[service.category]['services'].append(service)
+            
+            # 각 서비스 옵션에 대해 번역된 데이터 준비
+            for option in service.options:
+                translated_options[option.id] = get_translated_service_option(option, lang)
     
-    return render_template('services_new.html', categories_data=categories_data)
+    return render_template('services_new.html', 
+                         categories_data=categories_data,
+                         translated_options=translated_options,
+                         current_lang=lang)
 
 @main.route('/service/<int:id>')
 def service_detail(id):
     service = Service.query.get_or_404(id)
-    # JSON 문자열을 파이썬 객체로 변환
-    details = json.loads(service.details) if service.details else []
-    packages = json.loads(service.packages) if service.packages else []
+    
+    # 현재 언어에 맞는 번역된 데이터 가져오기
+    lang = get_current_language()
+    translated = get_translated_service(service, lang)
+    
+    # 번역된 데이터 사용
+    details = translated.get('details', [])
+    packages = translated.get('packages', [])
+    
     return render_template('service_detail.html', 
-                         service=service, 
+                         service=service,
+                         translated=translated,
                          details=details,
                          packages=packages)
 
@@ -274,34 +314,52 @@ def service_detail(id):
 def service_option_detail(id):
     service_option = ServiceOption.query.get_or_404(id)
     
-    # JSON 문자열을 파이썬 객체로 변환
-    details = json.loads(service_option.details) if service_option.details else []
-    packages = json.loads(service_option.packages) if service_option.packages else []
+    # 현재 언어에 맞는 번역된 데이터 가져오기
+    lang = get_current_language()
+    translated = get_translated_service_option(service_option, lang)
+    
+    # 번역된 데이터 사용
+    details = translated.get('details', [])
+    packages = translated.get('packages', [])
     
     return render_template('service_option_detail.html', 
-                         service_option=service_option, 
+                         service_option=service_option,
+                         translated=translated,
                          details=details,
                          packages=packages)
 
 @main.route('/image/<path:image_path>')
 def serve_image(image_path):
-    """이미지를 효율적으로 서빙하는 라우트"""
+    """GridFS 및 레거시 저장소에서 이미지를 효율적으로 서빙하는 라우트"""
     try:
         print(f"이미지 요청: {image_path}")
         
-        # MongoDB에서 이미지 조회
-        if images_collection is not None:
-            image_doc = images_collection.find_one({'_id': image_path})
-            if image_doc and 'binary_data' in image_doc:
-                print(f"MongoDB에서 이미지 발견: {image_path} (크기: {len(image_doc['binary_data'])} bytes)")
-                response = make_response(image_doc['binary_data'])
-                response.headers['Content-Type'] = image_doc.get('content_type', 'image/jpeg')
+        # 1. GridFS에서 이미지 조회 시도
+        try:
+            binary_data, content_type = get_image_from_gridfs(image_path)
+            if binary_data:
+                print(f"GridFS에서 이미지 발견: {image_path} (크기: {len(binary_data)} bytes)")
+                response = make_response(binary_data)
+                response.headers['Content-Type'] = content_type
                 response.headers['Cache-Control'] = 'public, max-age=86400'  # 1일 캐시
                 return response
-            else:
-                print(f"MongoDB에서 이미지 없음: {image_path}")
+        except Exception as gridfs_error:
+            print(f"GridFS 조회 중 오류: {str(gridfs_error)}")
         
-        # MongoDB에 없으면 파일 시스템에서 서빙
+        # 2. 레거시 MongoDB 컬렉션에서 조회
+        if images_collection is not None:
+            try:
+                image_doc = images_collection.find_one({'_id': image_path})
+                if image_doc and 'binary_data' in image_doc:
+                    print(f"레거시 MongoDB에서 이미지 발견: {image_path} (크기: {len(image_doc['binary_data'])} bytes)")
+                    response = make_response(image_doc['binary_data'])
+                    response.headers['Content-Type'] = image_doc.get('content_type', 'image/jpeg')
+                    response.headers['Cache-Control'] = 'public, max-age=86400'
+                    return response
+            except Exception as mongo_error:
+                print(f"레거시 MongoDB 조회 중 오류: {str(mongo_error)}")
+        
+        # 3. 파일 시스템에서 서빙
         file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_path)
         print(f"파일 시스템에서 확인: {file_path}")
         if os.path.exists(file_path):

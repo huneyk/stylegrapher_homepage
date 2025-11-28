@@ -403,8 +403,8 @@ msgid "카카오톡 : 스타일그래퍼"
 msgstr ""
 
 #: templates/base.html:327
-msgid "대표자 : 이사금"
-msgstr ""
+msgid "대표자"
+msgstr "대표자"
 
 #: templates/base.html:327
 msgid "사업자 등록번호"
@@ -652,5 +652,22 @@ msgstr ""
 
 #: templates/services.html:15
 msgid "당신의 무한한 가능성을 탐험하는 여정"
+msgstr ""
+
+# Service Descriptions (from database)
+msgid "나를 해석하는 시작점. 나를 알고, 더 나답게 시작하는 첫 단계입니다."
+msgstr ""
+
+msgid "AI 분석 기반 제안으로 나만의 스타일 전략을 설계하고 전문가에게 직접 배우는 서비스입니다."
+msgstr ""
+
+msgid "AI 분석을 바탕으로 하루 만에 스타일을 완성해보는 체험형 서비스입니다."
+msgstr ""
+
+msgid "최고의 전문가들과 함께 나의 무한한 가능성을 기록하는 결과물 서비스입니다."
+msgstr ""
+
+# Services Page - Default Description
+msgid "상세 페이지에서 자세한 내용을 확인하세요."
 msgstr ""
 

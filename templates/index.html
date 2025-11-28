@@ -35,6 +35,7 @@
         <!-- Main Gallery Grid -->
         <div class="prismatic-grid">
             {% for group in recent_galleries %}
+            {% set translated_group = get_translated_gallery_group(group) %}
             <div class="prism-card prism-card-{{ loop.index }}" data-depth="{{ loop.index }}">
                 <div class="prism-glass-edge"></div>
                 <div class="prism-inner">
@@ -42,7 +43,7 @@
                         {% for image in group.images %}
                         <div class="prism-image {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}">
                             <img src="{{ url_for('main.serve_image', image_path=image.image_path) }}" 
-                                 alt="{{ group.title }}"
+                                 alt="{{ translated_group.title }}"
                                  loading="lazy">
                         </div>
                         {% endfor %}
@@ -195,49 +196,147 @@
     font-weight: 300;
     letter-spacing: 0.35em;
     text-transform: uppercase;
-    color: transparent;
-    background: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.95) 0%,
-        rgba(220, 200, 255, 0.9) 50%,
-        rgba(200, 170, 255, 0.85) 100%
-    );
-    -webkit-background-clip: text;
-    background-clip: text;
-    text-shadow: 
-        0 0 80px rgba(200, 170, 255, 0.6),
-        0 0 120px rgba(180, 140, 255, 0.4);
     opacity: 0;
     display: block;
     white-space: nowrap;
 }
 
 .slogan-1 {
-    animation: sloganReveal 8s ease-in-out infinite;
+    animation: sloganRevealLight 16s ease-in-out infinite;
 }
 
 .slogan-2 {
-    animation: sloganReveal 8s ease-in-out infinite;
+    animation: sloganRevealDark 16s ease-in-out infinite;
     animation-delay: 4s;
 }
 
-@keyframes sloganReveal {
+/* Light color version (white-lavender gradient) */
+@keyframes sloganRevealLight {
     0% {
         opacity: 0;
         transform: translateY(30px) scale(0.95);
         filter: blur(10px);
+        color: transparent;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(220, 200, 255, 0.9) 50%, rgba(200, 170, 255, 0.85) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        text-shadow: 0 0 80px rgba(200, 170, 255, 0.6), 0 0 120px rgba(180, 140, 255, 0.4);
     }
-    10% {
+    5% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+        color: transparent;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(220, 200, 255, 0.9) 50%, rgba(200, 170, 255, 0.85) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        text-shadow: 0 0 80px rgba(200, 170, 255, 0.6), 0 0 120px rgba(180, 140, 255, 0.4);
+    }
+    20% {
         opacity: 1;
         transform: translateY(0) scale(1);
         filter: blur(0);
     }
-    40% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-        filter: blur(0);
+    25% {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+        filter: blur(10px);
     }
     50% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+        filter: blur(10px);
+        color: #8B5CF6;
+        background: none;
+        -webkit-background-clip: unset;
+        background-clip: unset;
+        text-shadow: 0 0 60px rgba(139, 92, 246, 0.8), 0 0 100px rgba(109, 40, 217, 0.6);
+    }
+    55% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+        color: #8B5CF6;
+        background: none;
+        -webkit-background-clip: unset;
+        background-clip: unset;
+        text-shadow: 0 0 60px rgba(139, 92, 246, 0.8), 0 0 100px rgba(109, 40, 217, 0.6);
+    }
+    70% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+    75% {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+        filter: blur(10px);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+        filter: blur(10px);
+    }
+}
+
+/* Dark purple version */
+@keyframes sloganRevealDark {
+    0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+        filter: blur(10px);
+        color: #8B5CF6;
+        background: none;
+        -webkit-background-clip: unset;
+        background-clip: unset;
+        text-shadow: 0 0 60px rgba(139, 92, 246, 0.8), 0 0 100px rgba(109, 40, 217, 0.6);
+    }
+    5% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+        color: #8B5CF6;
+        background: none;
+        -webkit-background-clip: unset;
+        background-clip: unset;
+        text-shadow: 0 0 60px rgba(139, 92, 246, 0.8), 0 0 100px rgba(109, 40, 217, 0.6);
+    }
+    20% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+    25% {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+        filter: blur(10px);
+    }
+    50% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+        filter: blur(10px);
+        color: transparent;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(220, 200, 255, 0.9) 50%, rgba(200, 170, 255, 0.85) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        text-shadow: 0 0 80px rgba(200, 170, 255, 0.6), 0 0 120px rgba(180, 140, 255, 0.4);
+    }
+    55% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+        color: transparent;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(220, 200, 255, 0.9) 50%, rgba(200, 170, 255, 0.85) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        text-shadow: 0 0 80px rgba(200, 170, 255, 0.6), 0 0 120px rgba(180, 140, 255, 0.4);
+    }
+    70% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+    75% {
         opacity: 0;
         transform: translateY(-30px) scale(0.95);
         filter: blur(10px);
@@ -263,7 +362,7 @@
         rgba(255, 255, 255, 0.3),
         transparent
     );
-    animation: sloganShimmer 8s ease-in-out infinite;
+    animation: sloganShimmer 16s ease-in-out infinite;
 }
 
 .slogan-1::after {
@@ -275,10 +374,16 @@
 }
 
 @keyframes sloganShimmer {
-    0%, 45% {
+    0%, 20% {
         left: -100%;
     }
-    50%, 100% {
+    25%, 45% {
+        left: 200%;
+    }
+    50%, 70% {
+        left: -100%;
+    }
+    75%, 100% {
         left: 200%;
     }
 }
@@ -805,6 +910,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <h1 class="text-center mb-5 gallery-main-title">Gallery</h1>
             <div class="row g-4">
                 {% for group in preview_galleries %}
+                {% set translated_preview_group = get_translated_gallery_group(group) %}
                 <div class="col-md-4">
                     <div class="gallery-preview-card h-100">
                         <div class="preview-carousel-container">
@@ -814,7 +920,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <div class="carousel-item {% if loop.first %}active{% endif %}">
                                         <img src="{{ url_for('main.serve_image', image_path=image.image_path) }}" 
                                              class="d-block w-100" 
-                                             alt="{{ group.title }}"
+                                             alt="{{ translated_preview_group.title }}"
                                              loading="lazy">
                                     </div>
                                     {% endfor %}
@@ -909,9 +1015,9 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .gallery-more-btn {
-    background: transparent;
-    border: 2px solid var(--neon-lavender);
-    color: var(--neon-lavender);
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    color: #FFFFFF;
     padding: 1rem 3rem;
     border-radius: 40px;
     font-size: 1rem;
@@ -919,6 +1025,8 @@ document.addEventListener('DOMContentLoaded', function() {
     transition: all 0.4s ease;
     position: relative;
     overflow: hidden;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
 }
 
 .gallery-more-btn::before {
@@ -933,11 +1041,12 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .gallery-more-btn:hover {
-    background: linear-gradient(135deg, var(--neon-lavender), var(--electric-violet));
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(232, 220, 255, 0.9));
     border-color: transparent;
-    color: white;
-    box-shadow: 0 0 30px rgba(181, 126, 220, 0.5), 0 0 60px rgba(138, 43, 226, 0.3);
+    color: #1a0030;
+    box-shadow: 0 0 35px rgba(255, 255, 255, 0.5), 0 0 60px rgba(200, 170, 255, 0.4);
     transform: translateY(-3px);
+    text-shadow: none;
 }
 
 .gallery-more-btn:hover::before {
@@ -1052,27 +1161,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .additional-card-icon {
     font-size: 3.5rem;
-    color: var(--neon-lavender);
+    color: #E0C8FF;
     transition: all 0.4s ease;
-    filter: drop-shadow(0 0 20px rgba(181, 126, 220, 0.5));
+    filter: drop-shadow(0 0 25px rgba(200, 170, 255, 0.7));
 }
 
 .additional-card:hover .additional-card-icon {
     transform: scale(1.15) rotate(5deg);
-    filter: drop-shadow(0 0 30px rgba(181, 126, 220, 0.8));
+    color: #F0E0FF;
+    filter: drop-shadow(0 0 40px rgba(200, 170, 255, 1));
 }
 
 .additional-card-title {
     font-family: 'Cormorant Garamond', serif;
     font-weight: 500;
     font-size: 1.6rem;
-    color: var(--neon-lavender);
+    color: #FFFFFF;
     margin-bottom: 1rem;
-    text-shadow: 0 0 20px rgba(181, 126, 220, 0.3);
+    text-shadow: 0 0 30px rgba(200, 170, 255, 0.7), 0 0 60px rgba(181, 126, 220, 0.4);
 }
 
 .additional-card-text {
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255, 255, 255, 0.9);
     font-size: 1rem;
     line-height: 1.6;
     margin: 0;

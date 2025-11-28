@@ -458,8 +458,8 @@ msgid "카카오톡 : 스타일그래퍼"
 msgstr "KakaoTalk : Stylegrapher"
 
 #: templates/base.html:327
-msgid "대표자 : 이사금"
-msgstr "Representative : Lee Sa-geum"
+msgid "대표자"
+msgstr "Representative"
 
 #: templates/base.html:327
 msgid "사업자 등록번호"
@@ -581,11 +581,11 @@ msgstr "There are no photos in this gallery yet."
 # Index Page
 #: templates/index.html:50
 msgid "당신의 무한한 가능성을"
-msgstr "A Journey of Exploring"
+msgstr "A journey exploring"
 
 #: templates/index.html:51
 msgid "탐험하는 여정"
-msgstr "Your Infinite Potential"
+msgstr "your infinite potential"
 
 #: templates/index.html:494
 msgid "고객들의 변화와 감동의 이야기"
@@ -744,4 +744,8 @@ msgstr "An experiential service that completes your style in just one day based 
 
 msgid "최고의 전문가들과 함께 나의 무한한 가능성을 기록하는 결과물 서비스입니다."
 msgstr "A result-oriented service that records your infinite potential with top experts."
+
+# Services Page - Default Description
+msgid "상세 페이지에서 자세한 내용을 확인하세요."
+msgstr "Please check the detail page for more information."
 

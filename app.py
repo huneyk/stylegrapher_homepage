@@ -1,6 +1,6 @@
 import os
 import json
-from flask import Flask, request, abort, send_from_directory, session, g, redirect, url_for
+from flask import Flask, request, abort, send_from_directory, session, g, redirect, url_for, jsonify
 from routes.main import main
 from routes.admin import admin
 from extensions import db, login_manager, migrate, mail, babel
@@ -9,6 +9,8 @@ from config import Config
 from pymongo import MongoClient
 from dotenv import load_dotenv
 from utils.security import add_security_headers, is_suspicious_request, get_client_ip, log_security_event
+from utils.translation_helper import register_template_helpers
+from utils.gridfs_helper import get_mongo_connection, get_gridfs_stats
 
 # 지원하는 언어 목록
 SUPPORTED_LANGUAGES = {
@@ -22,7 +24,7 @@ SUPPORTED_LANGUAGES = {
 # .env 파일 로드
 load_dotenv()
 
-# MongoDB 연결 설정
+# MongoDB 연결 설정 (GridFS 포함)
 mongo_uri = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/')
 try:
     mongo_client = MongoClient(
@@ -39,8 +41,15 @@ try:
     mongo_client.server_info()
     print("app.py: MongoDB 연결 성공!")
     mongo_db = mongo_client['STG-DB'] if 'mongodb.net' in mongo_uri else mongo_client['stylegrapher_db']
-    images_collection = mongo_db['gallery']
+    images_collection = mongo_db['gallery']  # 레거시 호환성
     print(f"app.py: MongoDB 데이터베이스 '{mongo_db.name}' 및 컬렉션 '{images_collection.name}' 사용 준비 완료")
+    
+    # GridFS 초기화 확인
+    gridfs_instance, _, _ = get_mongo_connection()
+    if gridfs_instance:
+        print("app.py: GridFS 연결 성공!")
+        stats = get_gridfs_stats()
+        print(f"app.py: GridFS 통계 - 파일 수: {stats.get('gridfs_files_count', 0)}, 레거시 데이터: {stats.get('legacy_with_binary', 0)}개")
 except Exception as e:
     print(f"app.py: MongoDB 연결 오류: {str(e)}")
     mongo_client = None
@@ -271,7 +280,14 @@ def create_app():
     def set_language(lang):
         if lang in SUPPORTED_LANGUAGES:
             session['lang'] = lang
-        # 이전 페이지로 리다이렉트
+        
+        # AJAX 요청인 경우 JSON 응답 반환 (스크롤 위치 유지를 위해)
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
+           'application/json' in request.headers.get('Accept', '') or \
+           request.headers.get('Sec-Fetch-Mode') == 'cors':
+            return jsonify({'success': True, 'lang': lang})
+        
+        # 일반 요청인 경우 이전 페이지로 리다이렉트
         referrer = request.referrer
         if referrer:
             return redirect(referrer)
@@ -351,6 +367,9 @@ def create_app():
     # Import blueprints from routes package
     app.register_blueprint(main)
     app.register_blueprint(admin, url_prefix='/admin')
+    
+    # 번역 헬퍼 함수 등록
+    register_template_helpers(app)
     
     @login_manager.user_loader
     def load_user(user_id):

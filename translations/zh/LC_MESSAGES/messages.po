@@ -410,8 +410,8 @@ msgid "카카오톡 : 스타일그래퍼"
 msgstr "KakaoTalk：Stylegrapher"
 
 #: templates/base.html:327
-msgid "대표자 : 이사금"
-msgstr "代表人：李沙金"
+msgid "대표자"
+msgstr "代表人"
 
 #: templates/base.html:327
 msgid "사업자 등록번호"
@@ -683,4 +683,8 @@ msgstr "基于AI分析，在一天内完成造型的体验式服务。"
 
 msgid "최고의 전문가들과 함께 나의 무한한 가능성을 기록하는 결과물 서비스입니다."
 msgstr "与顶尖专家一起记录您无限可能的成果服务。"
+
+# Services Page - Default Description
+msgid "상세 페이지에서 자세한 내용을 확인하세요."
+msgstr "请在详情页面查看详细内容。"
 

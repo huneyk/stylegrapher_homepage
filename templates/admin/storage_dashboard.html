@@ -1,0 +1,164 @@
+{% extends "admin/dashboard.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2><i class="bi bi-hdd-stack me-2"></i>이미지 저장소 관리</h2>
+            <p class="text-muted">MongoDB GridFS를 사용한 이미지 저장소 관리</p>
+        </div>
+    </div>
+
+    <!-- 저장소 통계 카드 -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">GridFS 파일 수</h6>
+                            <h2 class="mb-0">{{ stats.gridfs_files_count | default(0) }}</h2>
+                        </div>
+                        <i class="bi bi-images fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">GridFS 총 용량</h6>
+                            <h2 class="mb-0">{{ stats.gridfs_total_size_mb | default('0.00') }} MB</h2>
+                        </div>
+                        <i class="bi bi-hdd fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">레거시 문서</h6>
+                            <h2 class="mb-0">{{ stats.legacy_count | default(0) }}</h2>
+                        </div>
+                        <i class="bi bi-archive fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card {% if stats.legacy_with_binary > 0 %}bg-warning{% else %}bg-secondary{% endif %} text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">마이그레이션 필요</h6>
+                            <h2 class="mb-0">{{ stats.legacy_with_binary | default(0) }}</h2>
+                        </div>
+                        <i class="bi bi-arrow-repeat fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 마이그레이션 섹션 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-arrow-left-right me-2"></i>GridFS 마이그레이션</h5>
+                </div>
+                <div class="card-body">
+                    {% if stats.legacy_with_binary > 0 %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>{{ stats.legacy_with_binary }}개</strong>의 이미지가 레거시 형식으로 저장되어 있습니다.
+                        GridFS로 마이그레이션하면 더 효율적인 저장 및 검색이 가능합니다.
+                    </div>
+                    
+                    <form action="{{ url_for('admin.migrate_to_gridfs') }}" method="POST" 
+                          onsubmit="return confirm('레거시 이미지를 GridFS로 마이그레이션하시겠습니까?\n이 작업은 백그라운드에서 실행됩니다.');">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-cloud-upload me-2"></i>마이그레이션 시작
+                        </button>
+                    </form>
+                    {% else %}
+                    <div class="alert alert-success mb-0">
+                        <i class="bi bi-check-circle me-2"></i>
+                        모든 이미지가 GridFS에 저장되어 있습니다. 마이그레이션이 필요하지 않습니다.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GridFS 정보 -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>GridFS란?</h5>
+                </div>
+                <div class="card-body">
+                    <p>GridFS는 MongoDB에서 16MB 이상의 대용량 파일을 저장하기 위한 사양입니다.</p>
+                    <ul>
+                        <li>파일을 255KB 청크로 분할하여 저장</li>
+                        <li>메타데이터와 파일 내용을 별도 컬렉션에 저장</li>
+                        <li>스트리밍 방식으로 효율적인 읽기/쓰기</li>
+                        <li>대용량 이미지 저장에 최적화</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-diagram-3 me-2"></i>저장소 구조</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>컬렉션</th>
+                                <th>설명</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>gallery_images.files</code></td>
+                                <td>GridFS 파일 메타데이터</td>
+                            </tr>
+                            <tr>
+                                <td><code>gallery_images.chunks</code></td>
+                                <td>GridFS 파일 청크 데이터</td>
+                            </tr>
+                            <tr>
+                                <td><code>gallery</code></td>
+                                <td>레거시 이미지 (마이그레이션 대상)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 통계 새로고침 버튼 -->
+    <div class="row mt-4">
+        <div class="col text-center">
+            <a href="{{ url_for('admin.storage_dashboard') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-clockwise me-2"></i>통계 새로고침
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

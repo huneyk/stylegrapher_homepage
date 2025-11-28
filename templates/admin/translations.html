@@ -1,0 +1,242 @@
+{% extends "admin/dashboard.html" %}
+
+{% block title %}다국어 번역 관리{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">
+        <i class="bi bi-globe2 me-2"></i>다국어 번역 관리
+    </h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">대시보드</a></li>
+        <li class="breadcrumb-item active">번역 관리</li>
+    </ol>
+    
+    <!-- 통계 카드 -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-white-50 small">총 번역 항목</div>
+                            <div class="h3 mb-0">{{ stats.total }}</div>
+                        </div>
+                        <i class="bi bi-translate fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-success text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-white-50 small">지원 언어</div>
+                            <div class="h3 mb-0">{{ stats.languages|length }}</div>
+                        </div>
+                        <i class="bi bi-flag fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-info text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-white-50 small">서비스 옵션</div>
+                            <div class="h3 mb-0">{{ stats.by_type.get('service_option', 0) }}</div>
+                        </div>
+                        <i class="bi bi-gear fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-warning text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-white-50 small">Fade Text</div>
+                            <div class="h3 mb-0">{{ stats.by_type.get('collage_text', 0) }}</div>
+                        </div>
+                        <i class="bi bi-chat-quote fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 지원 언어 목록 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="bi bi-flag me-1"></i>
+            지원 언어
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for code, name in stats.languages.items() %}
+                <div class="col-md-2 col-4 mb-3">
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-secondary me-2">{{ code }}</span>
+                        <span>{{ name }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- 번역 타입별 현황 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="bi bi-bar-chart me-1"></i>
+            타입별 번역 현황
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>타입</th>
+                            <th>번역 완료 항목</th>
+                            <th>상태</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><i class="bi bi-box me-2"></i>서비스 (Service)</td>
+                            <td>{{ stats.by_type.get('service', 0) }}</td>
+                            <td>
+                                {% if stats.by_type.get('service', 0) > 0 %}
+                                <span class="badge bg-success">완료</span>
+                                {% else %}
+                                <span class="badge bg-warning">미완료</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><i class="bi bi-gear me-2"></i>서비스 옵션 (ServiceOption)</td>
+                            <td>{{ stats.by_type.get('service_option', 0) }}</td>
+                            <td>
+                                {% if stats.by_type.get('service_option', 0) > 0 %}
+                                <span class="badge bg-success">완료</span>
+                                {% else %}
+                                <span class="badge bg-warning">미완료</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><i class="bi bi-chat-quote me-2"></i>Fade Text (CollageText)</td>
+                            <td>{{ stats.by_type.get('collage_text', 0) }}</td>
+                            <td>
+                                {% if stats.by_type.get('collage_text', 0) > 0 %}
+                                <span class="badge bg-success">완료</span>
+                                {% else %}
+                                <span class="badge bg-warning">미완료</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><i class="bi bi-images me-2"></i>갤러리 그룹 (GalleryGroup)</td>
+                            <td>{{ stats.by_type.get('gallery_group', 0) }}</td>
+                            <td>
+                                {% if stats.by_type.get('gallery_group', 0) > 0 %}
+                                <span class="badge bg-success">완료</span>
+                                {% else %}
+                                <span class="badge bg-warning">미완료</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><i class="bi bi-file-text me-2"></i>이용약관 (TermsOfService)</td>
+                            <td>{{ stats.by_type.get('terms_of_service', 0) }}</td>
+                            <td>
+                                {% if stats.by_type.get('terms_of_service', 0) > 0 %}
+                                <span class="badge bg-success">완료</span>
+                                {% else %}
+                                <span class="badge bg-warning">미완료</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><i class="bi bi-shield-check me-2"></i>개인정보처리방침 (PrivacyPolicy)</td>
+                            <td>{{ stats.by_type.get('privacy_policy', 0) }}</td>
+                            <td>
+                                {% if stats.by_type.get('privacy_policy', 0) > 0 %}
+                                <span class="badge bg-success">완료</span>
+                                {% else %}
+                                <span class="badge bg-warning">미완료</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 번역 액션 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="bi bi-lightning me-1"></i>
+            번역 작업
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>전체 번역 마이그레이션</strong><br>
+                        모든 텍스트 데이터를 GPT를 사용하여 영어, 일본어, 중국어, 스페인어로 번역합니다.
+                        <br><small class="text-muted">* 이 작업은 API 비용이 발생할 수 있습니다.</small>
+                    </div>
+                    
+                    <form action="{{ url_for('admin.migrate_translations') }}" method="POST" 
+                          onsubmit="return confirm('전체 번역 마이그레이션을 시작하시겠습니까? 이 작업은 몇 분이 소요될 수 있습니다.');">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-play-circle me-2"></i>전체 번역 마이그레이션 시작
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="alert alert-secondary">
+                        <i class="bi bi-clock-history me-2"></i>
+                        <strong>자동 번역</strong><br>
+                        데이터가 추가되거나 수정될 때 자동으로 번역이 수행됩니다.
+                        <br><small class="text-muted">* 비동기로 처리되어 저장 후 잠시 후 번역이 완료됩니다.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 사용 안내 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="bi bi-question-circle me-1"></i>
+            사용 안내
+        </div>
+        <div class="card-body">
+            <h5>다국어 시스템 작동 방식</h5>
+            <ol>
+                <li><strong>자동 번역:</strong> 서비스, 옵션, Fade Text 등을 추가/수정하면 GPT가 자동으로 4개 언어로 번역합니다.</li>
+                <li><strong>언어 선택:</strong> 사용자가 웹사이트에서 언어를 선택하면 해당 언어의 번역된 텍스트가 표시됩니다.</li>
+                <li><strong>번역 저장:</strong> 번역된 텍스트는 MongoDB에 저장되어 빠르게 조회됩니다.</li>
+                <li><strong>폴백:</strong> 번역이 없는 경우 원본 한국어 텍스트가 표시됩니다.</li>
+            </ol>
+            
+            <h5 class="mt-4">환경 변수 설정</h5>
+            <pre class="bg-dark text-light p-3 rounded"><code># .env 파일에 다음 변수를 추가하세요
+OPENAI_API_KEY=sk-your-openai-api-key
+MONGO_URI=mongodb+srv://your-mongo-uri</code></pre>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

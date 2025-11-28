@@ -62,11 +62,11 @@
                         {% if category_key == 'ai_analysis' %}
                         {{ _('나를 해석하는 시작점. 나를 알고, 더 나답게 시작하는 첫 단계입니다.') }}
                         {% elif category_key == 'consulting' %}
-                        {{ _('AI 분석 제안을 기반으로 나만의 스타일 전략을 설계하고, 전문가에게 직접 배우는 서비스입니다.') }}
+                        {{ _('AI 분석 기반 제안으로 나만의 스타일 전략을 설계하고 전문가에게 직접 배우는 서비스입니다.') }}
                         {% elif category_key == 'oneday' %}
-                        {{ _('AI 분석 결과를 바탕으로 하루 동안 스타일링을 완성하는 체험형 서비스입니다.') }}
+                        {{ _('AI 분석을 바탕으로 하루 만에 스타일을 완성해보는 체험형 서비스입니다.') }}
                         {% else %}
-                        {{ _('당신의 무한한 가능성을 최상급의 전문가들과 함께 기록으로 남기는 결과물 서비스입니다.') }}
+                        {{ _('최고의 전문가들과 함께 나의 무한한 가능성을 기록하는 결과물 서비스입니다.') }}
                         {% endif %}
                     </p>
                 </div>
@@ -75,14 +75,16 @@
                 <div class="prism-services-grid">
                     {% for service in category.services %}
                         {% for option in service.options %}
+                        {% set trans_option = translated_options.get(option.id, {}) %}
                         <a href="{{ url_for('main.service_option_detail', id=option.id) }}" class="prism-service-card-link">
                             <div class="prism-service-card">
                                 <div class="prism-glass-edge"></div>
                                 <div class="prism-service-inner">
                                     <div class="service-option-content">
-                                        <h4 class="service-option-name">{{ _(option.name) }}</h4>
-                                        {% if option.description and option.description.strip() %}
-                                        <p class="service-option-description">{{ _(option.description) }}</p>
+                                        <h4 class="service-option-name">{{ trans_option.get('name', option.name) }}</h4>
+                                        {% set desc = trans_option.get('description', option.description) %}
+                                        {% if desc and desc.strip() %}
+                                        <p class="service-option-description">{{ desc }}</p>
                                         {% else %}
                                         <p class="service-option-description">{{ _('상세 페이지에서 자세한 내용을 확인하세요.') }}</p>
                                         {% endif %}

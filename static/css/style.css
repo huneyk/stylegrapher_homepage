@@ -429,7 +429,7 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
 }
 
 .floating-menu-right.visible {
-    opacity: 0.9;
+    opacity: 0.6;
 }
 
 .floating-nav {
@@ -712,8 +712,8 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
    Footer
    ============================================ */
 .footer {
-    background: linear-gradient(180deg, transparent 0%, var(--rich-black) 100%);
-    border-top: 1px solid var(--glass-border);
+    background: linear-gradient(180deg, rgba(10, 0, 26, 0.8) 0%, var(--rich-black) 100%);
+    border-top: 1px solid rgba(200, 170, 255, 0.25);
     padding: 3rem 0 2rem;
     margin-top: auto;
 }
@@ -723,40 +723,43 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
 }
 
 .social-link {
-    color: var(--text-secondary);
-    font-size: 1.5rem;
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 1.6rem;
     margin: 0 1rem;
     text-decoration: none;
     transition: var(--transition-smooth);
     display: inline-block;
+    text-shadow: 0 0 10px rgba(200, 170, 255, 0.3);
 }
 
 .social-link:hover {
-    color: var(--neon-lavender);
-    text-shadow: var(--neon-glow);
-    transform: translateY(-3px);
+    color: #FFFFFF;
+    text-shadow: 0 0 20px rgba(200, 170, 255, 0.8), 0 0 40px rgba(180, 140, 255, 0.5);
+    transform: translateY(-3px) scale(1.1);
 }
 
 .footer-info {
-    color: var(--text-muted);
-    font-size: 0.85rem;
-    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 0.9rem;
+    line-height: 1.9;
 }
 
 .footer-info p {
-    margin: 0.3rem 0;
+    margin: 0.4rem 0;
     word-break: keep-all;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
 .contact-link, .footer-link {
-    color: var(--neon-lavender);
+    color: #E0CFFF;
     text-decoration: none;
     transition: var(--transition-fast);
+    text-shadow: 0 0 8px rgba(200, 170, 255, 0.4);
 }
 
 .contact-link:hover, .footer-link:hover {
-    color: var(--text-primary);
-    text-shadow: 0 0 10px rgba(200, 170, 255, 0.5);
+    color: #FFFFFF;
+    text-shadow: 0 0 15px rgba(200, 170, 255, 0.7);
 }
 
 /* ============================================
@@ -942,27 +945,31 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
 
 .gallery-preview-title {
     font-family: 'Noto Sans KR', sans-serif;
-    font-weight: 400;
-    font-size: 0.95rem;
-    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 1rem;
+    color: #E8D4F8;
     text-align: center;
     padding: 1rem;
+    text-shadow: 0 0 15px rgba(181, 126, 220, 0.4);
 }
 
 .gallery-more-btn {
-    background: transparent;
-    border: 1px solid var(--neon-lavender);
-    color: var(--neon-lavender);
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    color: #FFFFFF;
     padding: 0.6rem 2.5rem;
     border-radius: 30px;
     transition: var(--transition-smooth);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
 }
 
 .gallery-more-btn:hover {
-    background: linear-gradient(135deg, var(--neon-lavender), var(--electric-violet));
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(232, 220, 255, 0.9));
     border-color: transparent;
-    color: var(--text-primary);
-    box-shadow: var(--neon-glow);
+    color: #1a0030;
+    box-shadow: 0 0 35px rgba(255, 255, 255, 0.5), 0 0 60px rgba(200, 170, 255, 0.4);
+    text-shadow: none;
 }
 
 /* ============================================
@@ -1058,8 +1065,8 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
 }
 
 .additional-card-icon i {
-    color: var(--neon-lavender) !important;
-    filter: drop-shadow(0 0 10px rgba(200, 170, 255, 0.5));
+    color: #E0C8FF !important;
+    filter: drop-shadow(0 0 25px rgba(200, 170, 255, 0.7));
 }
 
 .additional-card:hover .additional-card-icon {
@@ -1067,20 +1074,21 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
 }
 
 .additional-card:hover .additional-card-icon i {
-    filter: drop-shadow(0 0 20px rgba(200, 170, 255, 0.8));
+    color: #F0E0FF !important;
+    filter: drop-shadow(0 0 40px rgba(200, 170, 255, 1));
 }
 
 .additional-card-title {
     font-family: 'Cormorant Garamond', serif;
     font-weight: 500;
     font-size: 1.5rem;
-    color: #FDFCFF;
+    color: #FFFFFF;
     margin-bottom: 1rem;
-    text-shadow: 0 0 15px rgba(200, 170, 255, 0.5);
+    text-shadow: 0 0 30px rgba(200, 170, 255, 0.7), 0 0 60px rgba(181, 126, 220, 0.4);
 }
 
 .additional-card-text {
-    color: var(--text-secondary);
+    color: rgba(255, 255, 255, 0.9);
     font-size: 1rem;
     line-height: 1.6;
 }
@@ -1477,8 +1485,8 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
    Utility Classes
    ============================================ */
 .text-neon {
-    color: var(--neon-lavender);
-    text-shadow: 0 0 20px rgba(200, 170, 255, 0.5);
+    color: #E8D4FF;
+    text-shadow: 0 0 20px rgba(200, 170, 255, 0.6), 0 0 40px rgba(180, 140, 255, 0.3);
 }
 
 .bg-glass {
