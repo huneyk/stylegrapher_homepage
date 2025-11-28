@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}예약{% endblock %}
+{% block title %}{{ _('예약') }}{% endblock %}
 
 {% block content %}
 <div class="container py-5">
@@ -8,7 +8,7 @@
         <div class="col-md-8 col-lg-6">
             <div class="card">
                 <div class="card-body p-4">
-                    <h2 class="text-center mb-4">예약하기</h2>
+                    <h2 class="text-center mb-4">{{ _('예약하기') }}</h2>
                     
                     {% with messages = get_flashed_messages() %}
                         {% if messages %}
@@ -22,26 +22,26 @@
 
                     <form method="POST">
                         <div class="mb-3">
-                            <label for="name" class="form-label">이름</label>
+                            <label for="name" class="form-label">{{ _('이름') }}</label>
                             <input type="text" class="form-control" id="name" name="name" required>
                         </div>
                         <div class="mb-3">
-                            <label for="contact" class="form-label">휴대폰 번호</label>
+                            <label for="contact" class="form-label">{{ _('휴대폰 번호') }}</label>
                             <input type="tel" class="form-control" id="contact" name="contact" 
                                    pattern="[0-9]{11}" 
                                    minlength="11" maxlength="11"
                                    placeholder="01012345678" required>
-                            <div class="form-text">숫자 11자리를 입력해주세요 ('-' 제외)</div>
+                            <div class="form-text">{{ _("숫자 11자리를 입력해주세요 ('-' 제외)") }}</div>
                         </div>
                         <div class="mb-3">
-                            <label for="email" class="form-label">이메일 주소</label>
+                            <label for="email" class="form-label">{{ _('이메일 주소') }}</label>
                             <input type="email" class="form-control" id="email" name="email" 
                                    placeholder="example@email.com" required>
                         </div>
                         <div class="mb-3">
-                            <label for="service" class="form-label">문의 대상 서비스</label>
+                            <label for="service" class="form-label">{{ _('문의 대상 서비스') }}</label>
                             <select class="form-select" id="service" name="service" required>
-                                <option value="">선택해주세요</option>
+                                <option value="">{{ _('선택해주세요') }}</option>
                                 {% for service in services %}
                                 <option value="{{ service.id }}" 
                                     {% if selected_service_id and service.id == selected_service_id|int %}selected{% endif %}>
@@ -51,11 +51,11 @@
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label for="message" class="form-label">메시지</label>
+                            <label for="message" class="form-label">{{ _('메시지') }}</label>
                             <textarea class="form-control" id="message" name="message" rows="4"></textarea>
                         </div>
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg">예약 신청</button>
+                            <button type="submit" class="btn btn-primary btn-lg">{{ _('예약 신청') }}</button>
                         </div>
                     </form>
                 </div>
@@ -130,7 +130,7 @@ document.getElementById('add-datetime').addEventListener('click', function() {
                             <option value="15:30">오후 3:30</option>
                             <option value="16:00">오후 4:00</option>
                         </select>
-                        <button type="button" class="btn btn-outline-danger remove-datetime">삭제</button>
+                        <button type="button" class="btn btn-outline-danger remove-datetime">{{ _('삭제') }}</button>
                     </div>
                 </div>
             </div>

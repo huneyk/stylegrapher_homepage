@@ -27,42 +27,82 @@
                         data-bs-target="#carousel{{ group.id }}" data-bs-slide="prev" 
                         onclick="event.preventDefault(); event.stopPropagation();">
                     <span class="carousel-control-prev-icon"></span>
-                    <span class="visually-hidden">Previous</span>
+                    <span class="visually-hidden">{{ _('이전') }}</span>
                 </button>
                 <button class="carousel-control-next" type="button" 
                         data-bs-target="#carousel{{ group.id }}" data-bs-slide="next"
                         onclick="event.preventDefault(); event.stopPropagation();">
                     <span class="carousel-control-next-icon"></span>
-                    <span class="visually-hidden">Next</span>
+                    <span class="visually-hidden">{{ _('다음') }}</span>
                 </button>
                 {% endif %}
             </div>
-            <div class="gallery-item-overlay">
+            <div class="gallery-item-hover-overlay">
                 <div class="gallery-overlay-content">
-                    <i class="fas fa-eye fa-2x"></i>
-                    <p class="mt-2 mb-0">모든 사진 보기</p>
+                    <i class="bi bi-eye-fill"></i>
+                    <p>{{ _('모든 사진 보기') }}</p>
                 </div>
             </div>
         </a>
-        <div class="card-body">
+        <div class="card-body text-center">
             <h5 class="gallery-preview-title">{{ group.title }}</h5>
             <p class="gallery-image-count">
-                사진 {{ group.images|length }}장
+                <i class="bi bi-images me-1"></i>{{ _('사진') }} {{ group.images|length }}{{ _('장') }}
             </p>
-            <p class="lead">{{ group.description }}</p>
         </div>
     </div>
 </div>
 {% endfor %}
 
 <style>
-.gallery-image-count {
-    text-align: center;
-    color: #999999;
-    font-size: 0.9rem;
-    margin: 0.5rem 0 0 0;
+/* Gallery Item Card */
+.gallery-item {
+    background: rgba(18, 0, 36, 0.5);
+    border: 1px solid rgba(181, 126, 220, 0.15);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.gallery-item:hover {
+    border-color: var(--neon-lavender);
+    box-shadow: 0 0 40px rgba(181, 126, 220, 0.3), 0 20px 60px rgba(0, 0, 0, 0.4);
+    transform: translateY(-10px);
+}
+
+/* Gallery Image */
+.gallery-item .carousel {
+    position: relative;
+    width: 100%;
+    padding-top: 133.33%;
+}
+
+.gallery-item .carousel-inner,
+.gallery-item .carousel-item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.gallery-image-wrapper {
+    width: 100%;
+    height: 100%;
+}
+
+.gallery-item .carousel-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.gallery-item:hover .carousel-item img {
+    transform: scale(1.08);
+}
+
+/* Gallery Link */
 .gallery-item-link {
     position: relative;
     display: block;
@@ -75,97 +115,143 @@
     color: inherit;
 }
 
-.gallery-item-overlay {
+/* Hover Overlay */
+.gallery-item-hover-overlay {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(139, 95, 191, 0.8);
+    background: linear-gradient(135deg, rgba(181, 126, 220, 0.85), rgba(138, 43, 226, 0.85));
     display: flex;
     align-items: center;
     justify-content: center;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: all 0.4s ease;
     z-index: 10;
-    border-radius: 10px 10px 0 0;
 }
 
-.gallery-item:hover .gallery-item-overlay {
+.gallery-item:hover .gallery-item-hover-overlay {
     opacity: 1;
 }
 
-.gallery-item-link .gallery-overlay-content {
+.gallery-overlay-content {
     text-align: center;
-    color: white !important;
-    background-color: rgba(0, 0, 0, 0.6);
-    padding: 20px;
-    border-radius: 10px;
-    backdrop-filter: blur(5px);
+    color: white;
+    background: rgba(18, 0, 36, 0.6);
+    backdrop-filter: blur(10px);
+    padding: 25px 35px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transform: scale(0.9);
+    transition: transform 0.4s ease;
 }
 
-.gallery-item-link .gallery-overlay-content * {
-    color: white !important;
+.gallery-item:hover .gallery-overlay-content {
+    transform: scale(1);
 }
 
-.gallery-item-link .gallery-overlay-content i {
+.gallery-overlay-content i {
+    font-size: 2.5rem;
+    color: white;
+    margin-bottom: 10px;
     display: block;
-    margin-bottom: 8px;
-    color: white !important;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
 }
 
-.gallery-item-link .gallery-overlay-content p {
-    font-size: 0.9rem;
+.gallery-overlay-content p {
+    font-size: 1rem;
     font-weight: 500;
-    color: white !important;
+    color: white;
+    margin: 0;
+    letter-spacing: 0.05em;
+}
+
+/* Card Body */
+.gallery-item .card-body {
+    padding: 1.25rem;
+    background: transparent;
+}
+
+.gallery-preview-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: 1.1rem;
+    color: var(--neon-lavender);
+    margin: 0 0 0.5rem;
+    text-shadow: 0 0 15px rgba(181, 126, 220, 0.3);
+}
+
+.gallery-image-count {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.85rem;
     margin: 0;
 }
 
-/* 링크 색상 상속 방지 - 모든 상태에서 흰색 강제 적용 */
-.gallery-item-link .gallery-overlay-content,
-.gallery-item-link .gallery-overlay-content *,
-.gallery-item-link:hover .gallery-overlay-content,
-.gallery-item-link:hover .gallery-overlay-content *,
-.gallery-item-link:visited .gallery-overlay-content,
-.gallery-item-link:visited .gallery-overlay-content *,
-.gallery-item-link:focus .gallery-overlay-content,
-.gallery-item-link:focus .gallery-overlay-content *,
-.gallery-item-link:active .gallery-overlay-content,
-.gallery-item-link:active .gallery-overlay-content * {
-    color: white !important;
-    text-decoration: none !important;
-}
-
-/* 캐러셀 컨트롤 버튼 스타일 개선 */
+/* Carousel Controls */
 .carousel-control-prev,
 .carousel-control-next {
     width: 15%;
     z-index: 15;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.gallery-item:hover .carousel-control-prev,
+.gallery-item:hover .carousel-control-next {
+    opacity: 0.8;
 }
 
 .carousel-control-prev:hover,
 .carousel-control-next:hover {
-    opacity: 0.8;
+    opacity: 1;
 }
 
-/* 캐러셀 인디케이터 z-index 조정 */
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
+}
+
+/* Carousel Indicators */
 .carousel-indicators {
     z-index: 15;
+    margin-bottom: 10px;
 }
 
 .carousel-indicators button {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.7);
-    margin: 0 3px;
+    background-color: rgba(255, 255, 255, 0.4);
+    border: none;
+    margin: 0 4px;
     transition: all 0.3s ease;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 }
 
 .carousel-indicators button.active {
-    background-color: rgba(139, 95, 191, 0.8);
-    border-color: rgba(139, 95, 191, 1);
-    transform: scale(1.2);
+    background-color: var(--neon-lavender);
+    transform: scale(1.3);
+    box-shadow: 0 0 15px rgba(181, 126, 220, 0.7);
 }
-</style> 
+
+/* Responsive */
+@media (max-width: 768px) {
+    .gallery-item {
+        border-radius: 16px;
+    }
+    
+    .gallery-overlay-content {
+        padding: 20px 25px;
+    }
+    
+    .gallery-overlay-content i {
+        font-size: 2rem;
+    }
+    
+    .gallery-preview-title {
+        font-size: 1rem;
+    }
+}
+</style>

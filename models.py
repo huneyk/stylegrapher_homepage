@@ -113,15 +113,15 @@ class Inquiry(db.Model):
 
 class SiteSettings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    main_color_r = db.Column(db.Integer, default=139)  # 기본값: rgba(139, 95, 191, 0.8)
-    main_color_g = db.Column(db.Integer, default=95)
-    main_color_b = db.Column(db.Integer, default=191)
-    sub_color_r = db.Column(db.Integer, default=65)   # 기본값: rgba(65, 26, 75, 0.8)
-    sub_color_g = db.Column(db.Integer, default=26)
-    sub_color_b = db.Column(db.Integer, default=75)
-    background_color_r = db.Column(db.Integer, default=255)  # 기본값: white
-    background_color_g = db.Column(db.Integer, default=255)
-    background_color_b = db.Column(db.Integer, default=255)
+    main_color_r = db.Column(db.Integer, default=181)  # 기본값: Neon Lavender #B57EDC
+    main_color_g = db.Column(db.Integer, default=126)
+    main_color_b = db.Column(db.Integer, default=220)
+    sub_color_r = db.Column(db.Integer, default=138)   # 기본값: Electric Violet #8A2BE2
+    sub_color_g = db.Column(db.Integer, default=43)
+    sub_color_b = db.Column(db.Integer, default=226)
+    background_color_r = db.Column(db.Integer, default=18)  # 기본값: Deep Violet #120024
+    background_color_g = db.Column(db.Integer, default=0)
+    background_color_b = db.Column(db.Integer, default=36)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

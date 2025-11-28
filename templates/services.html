@@ -1,43 +1,97 @@
 {% extends "base.html" %}
 
-{% block title %}서비스{% endblock %}
+{% block title %}{{ _('서비스') }}{% endblock %}
 
-{% block meta_description %}스타일그래퍼의 AI 얼굴분석, AI 체형분석, 퍼스널컬러 진단, 메이크업/헤어/패션 스타일링 레슨, 원데이 스타일링, 화보 및 프로필 촬영 서비스를 만나보세요.{% endblock %}
+{% block meta_description %}{{ _('스타일그래퍼의 AI 얼굴분석, AI 체형분석, 퍼스널컬러 진단, 메이크업/헤어/패션 스타일링 레슨, 원데이 스타일링, 화보 및 프로필 촬영 서비스를 만나보세요.') }}{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="card">
-        <div class="card-body p-4">
-            <h1 class="text-center mb-5 gallery-main-title">Services</h1>
-            {% include '_services.html' %}
+<section class="services-page py-5">
+    <div class="container">
+        <div class="services-main-card glass-card">
+            <div class="card-body p-4 p-md-5">
+                <!-- Header -->
+                <div class="services-header text-center mb-5">
+                    <h1 class="services-page-title">Services</h1>
+                    <p class="services-page-subtitle">{{ _('당신의 무한한 가능성을 탐험하는 여정') }}</p>
+                    <div class="title-divider"></div>
+                </div>
+                
+                {% include '_services.html' %}
+            </div>
         </div>
     </div>
-</div>
+</section>
 
 <style>
-.card {
-    border: 1.5px solid rgba(var(--main-color-rgb), 0.4) !important;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(var(--main-color-rgb), 0.15);
+.services-page {
+    min-height: 100vh;
 }
 
-.gallery-main-title {
-    font-family: 'Nanum Gothic', sans-serif;
-    font-size: 2.5rem;
-    color: rgba(var(--main-color-rgb), 0.8);
-    margin-bottom: 2rem;
-    transition: color 0.3s ease;
-    font-weight: normal;
+.services-main-card {
+    background: rgba(18, 0, 36, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(181, 126, 220, 0.2);
+    border-radius: 28px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    position: relative;
+    overflow: hidden;
 }
 
-.gallery-main-title:hover {
-    color: rgba(var(--main-color-rgb), 1);
+.services-main-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--neon-lavender), var(--electric-violet), transparent);
+    box-shadow: 0 0 30px rgba(181, 126, 220, 0.6);
+}
+
+.services-header {
+    position: relative;
+    padding-bottom: 2rem;
+}
+
+.services-page-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 4rem;
+    color: var(--neon-lavender);
+    text-shadow: 0 0 50px rgba(181, 126, 220, 0.5);
+    font-weight: 300;
+    letter-spacing: 0.15em;
+    margin-bottom: 0.5rem;
+}
+
+.services-page-subtitle {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 300;
+    letter-spacing: 0.05em;
+}
+
+.title-divider {
+    width: 120px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--neon-lavender), transparent);
+    margin: 1.5rem auto 0;
+    box-shadow: 0 0 25px rgba(181, 126, 220, 0.6);
 }
 
 @media (max-width: 768px) {
-    .gallery-main-title {
-        font-size: 1.8rem;
+    .services-main-card {
+        border-radius: 20px;
+    }
+    
+    .services-page-title {
+        font-size: 2.8rem;
+    }
+    
+    .services-page-subtitle {
+        font-size: 1rem;
     }
 }
 </style>
-{% endblock %} 
+{% endblock %}

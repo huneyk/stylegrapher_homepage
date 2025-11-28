@@ -1,32 +1,31 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="{{ current_lang }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stylegrapher 스타일그래퍼 {% block title %}{% endblock %}</title>
-    <meta name="description" content="{% block meta_description %}스타일그래퍼는 AI 얼굴분석, 퍼스널컬러 진단, 스타일링 컨설팅, 화보 및 프로필 촬영 서비스를 제공하는 전문 스타일링 스튜디오입니다.{% endblock %}">
+    <title>Stylegrapher {{ _('스타일그래퍼') }} {% block title %}{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}{{ _('스타일그래퍼는 AI 얼굴분석, 퍼스널컬러 진단, 스타일링 컨설팅, 화보 및 프로필 촬영 서비스를 제공하는 전문 스타일링 스튜디오입니다.') }}{% endblock %}">
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
-    <!-- Critical CSS preload -->
-    <link rel="preload" href="{{ url_for('static', filename='css/style.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"></noscript>
     
-    <!-- Bootstrap CSS & Icons with optimized loading -->
-    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"></noscript>
+    <!-- Google Fonts - Cormorant Garamond (Serif) & Noto Sans KR (Sans-serif) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
     
+    <!-- Bootstrap CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     
-    <!-- Google Fonts - 나눔고딕 with font-display swap -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap"></noscript>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     
-    <!-- Bootstrap JS - 페이지 로드 후 실행 -->
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
     
-    <!-- 동적 사이트 색상 변수 -->
+    <!-- Dynamic Site Colors -->
     <style>
         :root {
             --main-color-rgb: {{ site_colors.main_rgb }};
@@ -35,597 +34,62 @@
             --main-color: rgb(var(--main-color-rgb));
             --sub-color: rgb(var(--sub-color-rgb));
             --background-color: rgb(var(--background-color-rgb));
-            --main-color-alpha: rgba(var(--main-color-rgb), 0.8);
+            --main-color-alpha: rgba(var(--main-color-rgb), 0.9);
             --sub-color-alpha: rgba(var(--sub-color-rgb), 0.8);
-        }
-        
-        /* 페이지 제목들에 main color 적용 */
-        .service-title, 
-        .section-title, 
-        .page-title, 
-        .hero-title, 
-        .gallery-detail-title, 
-        .category-title, 
-        .services-main-title,
-        .card-title {
-            color: var(--main-color) !important;
-        }
-        
-        /* Admin 페이지 테이블 헤더에 sub color 배경 적용 */
-        .table thead th, 
-        .table-light,
-        .packages-table thead th {
-            background-color: rgba(var(--sub-color-rgb), 0.15) !important;
-            border-color: rgba(var(--sub-color-rgb), 0.3) !important;
-            color: rgba(var(--main-color-rgb), 0.9) !important;
-        }
-        
-        /* 모든 테이블 셀 텍스트에 main color 적용 */
-        .table td, .table th,
-        .packages-table td, .packages-table th {
-            color: rgba(var(--main-color-rgb), 0.8) !important;
-        }
-        
-        /* 테이블 셀 hover 효과에 sub color 적용 */
-        .table-hover tbody tr:hover {
-            background-color: rgba(var(--sub-color-rgb), 0.05) !important;
+            
+            /* Neon Theme Override */
+            --neon-lavender: rgb(var(--main-color-rgb));
+            --electric-violet: rgb(var(--sub-color-rgb));
         }
     </style>
     
-    <!-- 전체 폰트 설정 -->
-    <style>
-        * {
-            font-family: 'Nanum Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-        }
-        
-        body {
-            font-family: 'Nanum Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-        }
-        
-        /* 카드 본문 텍스트 스타일 */
-        .card-text,
-        .service-description,
-        .card-body p:not(.card-title):not(.card-subtitle),
-        .card-body small {
-            font-size: 1rem !important;
-            color: #6c757d !important;
-            line-height: 1.4;
-            word-break: keep-all;
-            overflow-wrap: break-word;
-            line-break: strict;
-        }
-        
-        /* 관리자 대시보드의 카드 본문 텍스트 */
-        .card-body p.text-muted {
-            font-size: 1rem !important;
-            color: #6c757d !important;
-            word-break: keep-all;
-            overflow-wrap: break-word;
-            line-break: strict;
-        }
-
-        /* 모든 카드 내 텍스트 요소의 단어 줄바꿈 규칙 */
-        .card h1, .card h2, .card h3, .card h4, .card h5, .card h6,
-        .card .lead,
-        .card .gallery-image-count,
-        .card .service-title,
-        .card .option-title {
-            word-break: keep-all;
-            overflow-wrap: break-word;
-            line-break: strict;
-        }
-        .navbar {
-            padding: 4rem 0 calc(2.6rem + 10px) 0 !important;
-            position: relative;
-            background-color: white !important;
-        }
-        
-        .navbar .container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .navbar-brand {
-            padding: 0;
-            transition: transform 0.3s ease;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-        
-        .navbar-brand:hover {
-            transform: translateX(-50%) scale(1.05);
-        }
-        
-        .navbar-brand img {
-            height: 144px;
-            width: auto;
-            transition: all 0.3s ease;
-        }
-        
-        .navbar-spacer {
-            width: 60px; /* 햄버거 메뉴와 같은 너비 */
-        }
-
-        /* 햄버거 메뉴 스타일 */
-        .hamburger-menu, .floating-hamburger {
-            background: none;
-            border: none;
-            padding: 15px;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            z-index: 10000;
-            transition: opacity 0.3s ease;
-            position: relative;
-            min-width: 50px;
-            min-height: 50px;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .hamburger-menu.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .hamburger-menu span, .floating-hamburger span {
-            width: 25px;
-            height: 3px;
-            background-color: var(--main-color-alpha);
-            transition: all 0.3s ease;
-            border-radius: 2px;
-            display: block;
-        }
-
-        .hamburger-menu:hover span, .floating-hamburger:hover span {
-            background-color: var(--main-color);
-        }
-        
-        .hamburger-menu:active {
-            transform: scale(0.95);
-        }
-        
-        /* 햄버거 메뉴 active 상태 애니메이션 */
-        .hamburger-menu.active span:nth-child(1) {
-            transform: rotate(45deg) translate(5px, 5px);
-        }
-        
-        .hamburger-menu.active span:nth-child(2) {
-            opacity: 0;
-        }
-        
-        .hamburger-menu.active span:nth-child(3) {
-            transform: rotate(-45deg) translate(7px, -6px);
-        }
-
-        /* 메뉴 오버레이 스타일 */
-        .menu-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 9998;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .menu-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        /* 사이드 메뉴 스타일 */
-        .side-menu {
-            position: fixed;
-            top: 0;
-            left: -300px;
-            width: 300px;
-            height: 100vh;
-            background: rgba(var(--main-color-rgb), 0.95);
-            backdrop-filter: blur(10px);
-            transition: left 0.3s ease;
-            z-index: 9999;
-        }
-
-        .side-menu.active {
-            left: 0;
-        }
-
-        .side-menu-content {
-            padding: 1rem 0;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-        }
-
-        .close-menu {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 2rem;
-            cursor: pointer;
-            padding: 1rem 2rem;
-            align-self: flex-end;
-            margin-bottom: 1rem;
-        }
-
-        .side-menu-nav {
-            list-style: none;
-            padding: 0 1rem;
-            margin: 0;
-            flex-grow: 1;
-        }
-
-        .main-menu-item {
-            margin-bottom: 0.5rem;
-        }
-
-        .main-menu-link {
-            color: white;
-            text-decoration: none;
-            font-size: 1.1rem;
-            display: block;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            font-weight: 600;
-        }
-
-        .main-menu-link:hover {
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
-        }
-
-
-
-        /* 카테고리 메뉴 스타일 */
-        .category-menu {
-            margin-bottom: 0.5rem;
-        }
-
-        .category-header {
-            color: white;
-            text-decoration: none;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            cursor: pointer;
-            background: none;
-            border: none;
-            width: 100%;
-        }
-
-        .category-header:hover {
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
-        }
-
-
-
-        .category-toggle {
-            font-size: 0.8rem;
-            transition: transform 0.3s ease;
-        }
-
-        .category-toggle.rotated {
-            transform: rotate(180deg);
-        }
-
-        /* 서브메뉴 스타일 */
-        .sub-menu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 0 0 8px 8px;
-        }
-
-        .sub-menu.open {
-            max-height: 500px;
-        }
-
-        .sub-menu-item {
-            margin: 0;
-        }
-
-        .sub-menu-link {
-            color: rgba(255, 255, 255, 0.85);
-            text-decoration: none;
-            font-size: 0.95rem;
-            display: block;
-            padding: 0.75rem 1.5rem 0.75rem 3rem;
-            transition: all 0.3s ease;
-        }
-
-        .sub-menu-link:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            transform: translateX(5px);
-        }
-
-        /* 플로팅 메뉴 스타일 */
-        .floating-menu-right {
-            position: fixed;
-            top: 50%;
-            right: 20px;
-            transform: translateY(-50%);
-            z-index: 1500;
-            opacity: 0;
-            transition: all 0.3s ease;
-        }
-
-        .floating-menu-right.visible {
-            opacity: 0.6;
-        }
-
-        .floating-nav {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .floating-item {
-            background: rgba(var(--main-color-rgb), 0.9);
-            color: white;
-            text-decoration: none;
-            border-radius: 25px;
-            display: flex;
-            align-items: center;
-            padding: 8px 15px 8px 8px;
-            margin-bottom: 10px;
-            box-shadow: 0 4px 15px rgba(var(--main-color-rgb), 0.3);
-            transition: all 0.3s ease;
-            min-width: 120px;
-        }
-
-        .floating-icon {
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-            margin-right: 10px;
-            flex-shrink: 0;
-        }
-
-        .floating-text {
-            font-size: 0.9rem;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-
-        .floating-item:hover {
-            color: white;
-            background: var(--main-color);
-            transform: translateX(-10px);
-            opacity: 1 !important;
-        }
-
-        .floating-item:hover .floating-icon {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        @media (max-width: 768px) {
-            body {
-                padding-bottom: 100px;
-            }
-            
-            .navbar {
-                padding: 3rem 0 2rem 0 !important;
-                background-color: white !important;
-            }
-            
-            .navbar-brand img {
-                height: 96px;
-            }
-            
-            .navbar-spacer {
-                width: 45px;
-            }
-            
-            .hamburger-menu span, .floating-hamburger span {
-                width: 20px;
-                height: 2px;
-            }
-            
-            .side-menu {
-                width: 250px;
-                left: -250px;
-            }
-            
-            .side-menu-nav a {
-                font-size: 1rem;
-                padding: 0.8rem;
-            }
-            
-            .floating-menu-right {
-                top: auto;
-                bottom: 20px;
-                right: 0;
-                left: 0;
-                transform: none;
-                padding: 0 20px;
-                background: rgba(255, 255, 255, 0.95);
-                backdrop-filter: blur(10px);
-                border-radius: 20px 20px 0 0;
-                box-shadow: 0 -4px 20px rgba(var(--main-color-rgb), 0.2);
-            }
-            
-            .floating-nav {
-                flex-direction: row;
-                gap: 8px;
-                justify-content: center;
-                overflow-x: auto;
-                padding: 10px 0;
-            }
-            
-            .floating-item {
-                min-width: 80px;
-                padding: 8px 10px;
-                flex-direction: column;
-                text-align: center;
-                border-radius: 15px;
-                flex-shrink: 0;
-            }
-            
-            .floating-icon {
-                width: 25px;
-                height: 25px;
-                font-size: 0.8rem;
-                margin-right: 0;
-                margin-bottom: 4px;
-            }
-            
-            .floating-text {
-                font-size: 0.7rem;
-                line-height: 1;
-            }
-            
-            .floating-item:hover {
-                transform: translateY(-3px);
-            }
-        }
-
-
-
-        /* 카카오톡 모달 스타일 */
-        .kakao-modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            animation: fadeIn 0.3s ease;
-        }
-
-        .kakao-modal-content {
-            background-color: #fefefe;
-            margin: 10% auto;
-            padding: 2rem;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            animation: slideIn 0.3s ease;
-            text-align: center;
-        }
-
-        .kakao-modal-header {
-            margin-bottom: 1.5rem;
-        }
-
-        .kakao-modal-title {
-            color: #3C1E1E;
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-
-        .kakao-modal-message {
-            color: #333;
-            line-height: 1.6;
-            margin-bottom: 2rem;
-            font-size: 1rem;
-        }
-
-        .kakao-modal-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-        }
-
-        .kakao-continue-btn {
-            background: #FEE500;
-            color: #3C1E1E;
-            border: none;
-            padding: 0.75rem 2rem;
-            border-radius: 20px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1rem;
-        }
-
-        .kakao-continue-btn:hover {
-            background: #FFD700;
-            transform: translateY(-1px);
-            box-shadow: 0 3px 10px rgba(254, 229, 0, 0.4);
-        }
-
-        .kakao-cancel-btn {
-            background: #f8f9fa;
-            color: #6c757d;
-            border: 1px solid #dee2e6;
-            padding: 0.75rem 2rem;
-            border-radius: 20px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1rem;
-        }
-
-        .kakao-cancel-btn:hover {
-            background: #e9ecef;
-            color: #495057;
-        }
-
-        @keyframes slideIn {
-            from { 
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to { 
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-    </style>
+    {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <nav class="navbar navbar-light">
+    <!-- Animated Background Particles -->
+    <div class="bg-particles" id="bgParticles"></div>
+    
+    <nav class="navbar" id="mainNav">
         <div class="container">
-            <!-- 왼쪽 빈 공간 (레이아웃 균형을 위함) -->
+            <!-- Left Spacer -->
             <div class="navbar-spacer"></div>
             
-            <!-- 로고 (중앙) -->
+            <!-- Logo (Center) -->
             <a class="navbar-brand mx-auto" href="{{ url_for('main.index') }}">
-                <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Stylegrapher" class="logo-img">
+                <img src="{{ url_for('static', filename='images/logo_new.png') }}" alt="Stylegrapher" class="logo-img">
             </a>
             
-            <!-- 햄버거 메뉴 버튼 (오른쪽) -->
-            <button class="hamburger-menu" id="hamburgerMenu" aria-label="메뉴 열기/닫기">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
+            <!-- Language Selector & Hamburger Menu Button (Right) -->
+            <div class="nav-right-controls">
+                <!-- Language Selector Dropdown -->
+                <div class="language-selector" id="languageSelector">
+                    <button class="language-btn" id="languageBtn" aria-label="{{ _('언어 선택') }}">
+                        <i class="bi bi-globe2"></i>
+                        <span class="current-lang">{{ supported_languages[current_lang][:2] if current_lang in supported_languages else 'KO' }}</span>
+                    </button>
+                    <div class="language-dropdown" id="languageDropdown">
+                        {% for lang_code, lang_name in supported_languages.items() %}
+                        <a href="{{ url_for('set_language', lang=lang_code) }}" 
+                           class="language-option {% if current_lang == lang_code %}active{% endif %}">
+                            {{ lang_name }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <button class="hamburger-menu" id="hamburgerMenu" aria-label="{{ _('메뉴 열기/닫기') }}">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
         </div>
     </nav>
 
-    <!-- 메뉴 배경 오버레이 -->
+    <!-- Menu Overlay -->
     <div class="menu-overlay" id="menuOverlay"></div>
     
-    <!-- 사이드 메뉴 -->
+    <!-- Side Menu -->
     <div class="side-menu" id="sideMenu">
         <div class="side-menu-content">
             <button class="close-menu" id="closeMenu">&times;</button>
@@ -633,7 +97,7 @@
                 <!-- 1. 홈 -->
                 <li class="main-menu-item">
                     <a href="{{ url_for('main.index') }}" class="main-menu-link">
-                        홈
+                        <i class="bi bi-house-heart me-2"></i>{{ _('홈') }}
                     </a>
                 </li>
                 
@@ -641,19 +105,20 @@
                 <li class="category-menu">
                     <button class="category-header" onclick="toggleCategory('stg-ai')">
                         <div>
-                            <span>STG AI 분석</span>
+                            <i class="bi bi-cpu me-2"></i>
+                            <span>{{ _('STG AI 분석') }}</span>
                         </div>
                         <i class="bi bi-chevron-down category-toggle" id="toggle-stg-ai"></i>
                     </button>
                     <ul class="sub-menu" id="submenu-stg-ai">
                         <li class="sub-menu-item">
                             <a href="{{ url_for('main.service_option_detail', id=1) }}" class="sub-menu-link">
-                                AI 얼굴 분석
+                                {{ _('AI 얼굴 분석') }}
                             </a>
                         </li>
                         <li class="sub-menu-item">
                             <a href="{{ url_for('main.service_option_detail', id=2) }}" class="sub-menu-link">
-                                AI 체형 분석
+                                {{ _('AI 체형 분석') }}
                             </a>
                         </li>
                     </ul>
@@ -663,29 +128,30 @@
                 <li class="category-menu">
                     <button class="category-header" onclick="toggleCategory('styling-consulting')">
                         <div>
-                            <span>스타일링 컨설팅</span>
+                            <i class="bi bi-palette me-2"></i>
+                            <span>{{ _('스타일링 컨설팅') }}</span>
                         </div>
                         <i class="bi bi-chevron-down category-toggle" id="toggle-styling-consulting"></i>
                     </button>
                     <ul class="sub-menu" id="submenu-styling-consulting">
                         <li class="sub-menu-item">
                             <a href="{{ url_for('main.service_option_detail', id=3) }}" class="sub-menu-link">
-                                퍼스널 컬러 진단
+                                {{ _('퍼스널 컬러 진단') }}
                             </a>
                         </li>
                         <li class="sub-menu-item">
                             <a href="{{ url_for('main.service_option_detail', id=4) }}" class="sub-menu-link">
-                                메이크업 레슨
+                                {{ _('메이크업 레슨') }}
                             </a>
                         </li>
                         <li class="sub-menu-item">
                             <a href="{{ url_for('main.service_option_detail', id=5) }}" class="sub-menu-link">
-                                헤어 스타일링 레슨
+                                {{ _('헤어 스타일링 레슨') }}
                             </a>
                         </li>
                         <li class="sub-menu-item">
                             <a href="{{ url_for('main.service_option_detail', id=6) }}" class="sub-menu-link">
-                                패션 스타일링 레슨
+                                {{ _('패션 스타일링 레슨') }}
                             </a>
                         </li>
                     </ul>
@@ -695,24 +161,25 @@
                 <li class="category-menu">
                     <button class="category-header" onclick="toggleCategory('oneday-styling')">
                         <div>
-                            <span>원데이 스타일링</span>
+                            <i class="bi bi-magic me-2"></i>
+                            <span>{{ _('원데이 스타일링') }}</span>
                         </div>
                         <i class="bi bi-chevron-down category-toggle" id="toggle-oneday-styling"></i>
                     </button>
                     <ul class="sub-menu" id="submenu-oneday-styling">
                         <li class="sub-menu-item">
                             <a href="{{ url_for('main.service_option_detail', id=7) }}" class="sub-menu-link">
-                                메이크업
+                                {{ _('메이크업') }}
                             </a>
                         </li>
                         <li class="sub-menu-item">
                             <a href="{{ url_for('main.service_option_detail', id=8) }}" class="sub-menu-link">
-                                헤어 드라이
+                                {{ _('헤어 드라이') }}
                             </a>
                         </li>
                         <li class="sub-menu-item">
                             <a href="{{ url_for('main.service_option_detail', id=9) }}" class="sub-menu-link">
-                                패션 스타일링
+                                {{ _('패션 스타일링') }}
                             </a>
                         </li>
                     </ul>
@@ -722,24 +189,25 @@
                 <li class="category-menu">
                     <button class="category-header" onclick="toggleCategory('photo-profile')">
                         <div>
-                            <span>화보 & 프로필</span>
+                            <i class="bi bi-camera me-2"></i>
+                            <span>{{ _('화보 & 프로필') }}</span>
                         </div>
                         <i class="bi bi-chevron-down category-toggle" id="toggle-photo-profile"></i>
                     </button>
                     <ul class="sub-menu" id="submenu-photo-profile">
                         <li class="sub-menu-item">
                             <a href="{{ url_for('main.service_option_detail', id=10) }}" class="sub-menu-link">
-                                개인화보
+                                {{ _('개인화보') }}
                             </a>
                         </li>
                         <li class="sub-menu-item">
                             <a href="{{ url_for('main.service_option_detail', id=11) }}" class="sub-menu-link">
-                                프로필 촬영
+                                {{ _('프로필 촬영') }}
                             </a>
                         </li>
                         <li class="sub-menu-item">
                             <a href="{{ url_for('main.gallery') }}" class="sub-menu-link">
-                                갤러리
+                                {{ _('갤러리') }}
                             </a>
                         </li>
                     </ul>
@@ -748,79 +216,77 @@
                 <!-- 6. 고객 스토리 -->
                 <li class="main-menu-item">
                     <a href="{{ url_for('main.customer_story') }}" class="main-menu-link">
-                        고객 스토리
+                        <i class="bi bi-chat-heart me-2"></i>{{ _('고객 스토리') }}
                     </a>
                 </li>
                 
                 <!-- 7. 커머셜 포트폴리오 -->
                 <li class="main-menu-item">
                     <a href="{{ url_for('main.commercial_portfolio') }}" class="main-menu-link">
-                        커머셜 포트폴리오
+                        <i class="bi bi-briefcase me-2"></i>{{ _('커머셜 포트폴리오') }}
                     </a>
                 </li>
                 
                 <!-- 8. 스타일그래퍼 소개 -->
                 <li class="main-menu-item">
                     <a href="{{ url_for('main.about') }}" class="main-menu-link">
-                        스타일그래퍼 소개
+                        <i class="bi bi-person-circle me-2"></i>{{ _('스타일그래퍼 소개') }}
                     </a>
                 </li>
             </ul>
         </div>
     </div>
 
-    <!-- 플로팅 메뉴 (스크롤 시 나타남) -->
+    <!-- Floating Menu (Visible on Scroll) -->
     <div class="floating-menu-right" id="floatingMenu">
         <div class="floating-nav">
             <a href="{{ url_for('main.index') }}" class="floating-item">
                 <div class="floating-icon">
                     <i class="bi bi-house-fill"></i>
                 </div>
-                <span class="floating-text">홈</span>
+                <span class="floating-text">{{ _('홈') }}</span>
             </a>
             <a href="{{ url_for('main.services') }}" class="floating-item">
                 <div class="floating-icon">
-                    <i class="bi bi-gear-wide-connected"></i>
+                    <i class="bi bi-stars"></i>
                 </div>
-                <span class="floating-text">서비스</span>
+                <span class="floating-text">{{ _('서비스') }}</span>
             </a>
             <a href="{{ url_for('main.gallery') }}" class="floating-item">
                 <div class="floating-icon">
                     <i class="bi bi-images"></i>
                 </div>
-                <span class="floating-text">갤러리</span>
+                <span class="floating-text">{{ _('갤러리') }}</span>
             </a>
             <a href="javascript:void(0)" onclick="showKakaoModal()" class="floating-item">
                 <div class="floating-icon">
                     <i class="bi bi-calendar-check"></i>
                 </div>
-                <span class="floating-text">예약 신청</span>
+                <span class="floating-text">{{ _('예약 신청') }}</span>
             </a>
             <a href="{{ url_for('main.customer_story') }}" class="floating-item">
                 <div class="floating-icon">
                     <i class="bi bi-chat-heart"></i>
                 </div>
-                <span class="floating-text">고객 스토리</span>
+                <span class="floating-text">{{ _('고객 스토리') }}</span>
             </a>
         </div>
     </div>
 
-
-
-    <!-- 카카오톡 모달 -->
+    <!-- Kakao Modal -->
     <div id="kakaoModal" class="kakao-modal">
         <div class="kakao-modal-content">
             <div class="kakao-modal-header">
-                <h4 class="kakao-modal-title">카카오톡 채널 안내</h4>
+                <h4 class="kakao-modal-title">{{ _('카카오톡 채널 안내') }}</h4>
             </div>
             <div class="kakao-modal-message">
-                안녕하세요?<br><br>
-                카카오톡 채널에 고객님의 성함과 희망 서비스, 희망 예약시간, 휴대전화 번호, 그리고 궁금하신 점을 알려주시면 최대한 빠른 시간 안에 회신 드리겠습니다.<br><br>
-                감사합니다.
+                {{ _('안녕하세요?') }}<br><br>
+                {{ _('카카오톡 채널에 고객님의 성함과 희망 서비스, 희망 예약시간, 휴대전화 번호, 그리고 궁금하신 점을 알려주시면 최대한 빠른 시간 안에 회신 드리겠습니다.') }}<br><br>
+                {{ _('감사합니다.') }}
             </div>
             <div class="kakao-modal-buttons">
-                <button class="kakao-continue-btn" onclick="goToKakaoChannel()">계속하기</button>
-                <button class="kakao-cancel-btn" onclick="closeKakaoModal()">취소</button>
+                <button class="kakao-continue-btn" onclick="goToKakaoChannel()">{{ _('계속하기') }}</button>
+                <button class="kakao-cancel-btn" onclick="closeKakaoModal()">{{ _('취소') }}</button>
             </div>
         </div>
     </div>
@@ -843,118 +309,156 @@
         {% block content %}{% endblock %}
     </main>
 
+    <footer class="footer mt-auto py-4">
+        <div class="container">
+            <div class="social-links text-center mb-4">
+                <a href="https://www.instagram.com/stylegrapher_official?igsh=MXVoMjhvMXJ1NHZkOA==" class="social-link" target="_blank" aria-label="{{ _('스타일그래퍼 인스타그램 페이지') }}">
+                    <i class="bi bi-instagram"></i>
+                </a>
+                <a href="https://www.youtube.com/@stylegrapher" class="social-link" target="_blank" aria-label="{{ _('스타일그래퍼 유튜브 채널') }}">
+                    <i class="bi bi-youtube"></i>
+                </a>
+                <a href="https://www.facebook.com/stylegrapher.us" class="social-link" target="_blank" aria-label="{{ _('스타일그래퍼 페이스북 페이지') }}">
+                    <i class="bi bi-facebook"></i>
+                </a>
+            </div>
+            <div class="footer-info text-center">
+                <p class="mb-1">{{ _('OPEN : 화-토 9:00-18:00') }} ㅣ {{ _('카카오톡 : 스타일그래퍼') }}</p>
+                <p class="mb-1">{{ _('대표자 : 이사금') }} ㅣ {{ _('사업자 등록번호') }} [412-26-00896]</p>
+                <p class="mb-1">{{ _('서울시 강남구 압구정로 46길 5-6 A동 502호') }}</p>
+                <p class="mb-3">TEL 02-545-5028 | E-mail <a href="mailto:stylegrapher.ysg@gmail.com" class="contact-link">stylegrapher.ysg@gmail.com</a></p>
+                <p class="mb-3">
+                    <a href="{{ url_for('main.terms_of_service') }}" class="footer-link">{{ _('이용약관') }}</a> | 
+                    <a href="{{ url_for('main.privacy_policy') }}" class="footer-link">{{ _('개인정보처리방침') }}</a>
+                </p>
+                <p class="mb-1 text-neon">Stylegrapher® Trademark Registered</p>
+                <p class="mb-1">Copyright@2025 All rights reserved by {{ _('스타일그래퍼') }}®</p>
+                <p class="mb-0">{{ _('사전 허가 없이 무단 복제나 전재, 배포, 상업적 비상업적 사용을 모두 금합니다.') }}</p>
+            </div>
+        </div>
+    </footer>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // 메뉴 요소들
+            // Language Selector Elements
+            const languageBtn = document.getElementById('languageBtn');
+            const languageDropdown = document.getElementById('languageDropdown');
+            
+            if (languageBtn && languageDropdown) {
+                languageBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    languageDropdown.classList.toggle('active');
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!languageBtn.contains(e.target) && !languageDropdown.contains(e.target)) {
+                        languageDropdown.classList.remove('active');
+                    }
+                });
+            }
+            
+            // Menu Elements
             const hamburgerMenu = document.getElementById('hamburgerMenu');
             const sideMenu = document.getElementById('sideMenu');
             const closeMenu = document.getElementById('closeMenu');
             const floatingMenu = document.getElementById('floatingMenu');
             const menuOverlay = document.getElementById('menuOverlay');
+            const navbar = document.getElementById('mainNav');
 
-            // 요소들이 제대로 찾아졌는지 확인
-            console.log('hamburgerMenu:', hamburgerMenu);
-            console.log('sideMenu:', sideMenu);
-            console.log('closeMenu:', closeMenu);
-            console.log('floatingMenu:', floatingMenu);
-            console.log('menuOverlay:', menuOverlay);
-
-            // 메뉴 요소들이 모두 존재할 때만 메뉴 관련 기능 활성화
             if (hamburgerMenu && sideMenu && closeMenu) {
+                // Open Side Menu
+                function openSideMenu() {
+                    sideMenu.classList.add('active');
+                    hamburgerMenu.classList.add('active');
+                    if (menuOverlay) menuOverlay.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
 
-            // 사이드 메뉴 열기
-            function openSideMenu() {
-                console.log('햄버거 메뉴 클릭됨');
-                sideMenu.classList.add('active');
-                hamburgerMenu.classList.add('active');
-                if (menuOverlay) menuOverlay.classList.add('active');
-                document.body.style.overflow = 'hidden'; // 스크롤 방지
-            }
+                // Close Side Menu
+                function closeSideMenu() {
+                    sideMenu.classList.remove('active');
+                    hamburgerMenu.classList.remove('active');
+                    if (menuOverlay) menuOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
 
-            // 사이드 메뉴 닫기
-            function closeSideMenu() {
-                console.log('사이드 메뉴 닫기');
-                sideMenu.classList.remove('active');
-                hamburgerMenu.classList.remove('active');
-                if (menuOverlay) menuOverlay.classList.remove('active');
-                document.body.style.overflow = ''; // 스크롤 복원
-            }
-
-            // 이벤트 리스너들
-            hamburgerMenu.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                openSideMenu();
-            });
-            
-            closeMenu.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                closeSideMenu();
-            });
-            
-            // 오버레이 클릭 시 메뉴 닫기
-            if (menuOverlay) {
-                menuOverlay.addEventListener('click', function(e) {
+                // Event Listeners
+                hamburgerMenu.addEventListener('click', function(e) {
                     e.preventDefault();
+                    e.stopPropagation();
+                    openSideMenu();
+                });
+                
+                closeMenu.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     closeSideMenu();
                 });
-            }
-            
-            // ESC 키로 메뉴 닫기
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && sideMenu && sideMenu.classList.contains('active')) {
-                    closeSideMenu();
+                
+                if (menuOverlay) {
+                    menuOverlay.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        closeSideMenu();
+                    });
                 }
-                // ESC 키로 카카오톡 모달 닫기
-                if (e.key === 'Escape') {
-                    const kakaoModal = document.getElementById('kakaoModal');
-                    if (kakaoModal && kakaoModal.style.display === 'block') {
-                        closeKakaoModal();
+                
+                // ESC Key Handler
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        if (sideMenu.classList.contains('active')) {
+                            closeSideMenu();
+                        }
+                        const kakaoModal = document.getElementById('kakaoModal');
+                        if (kakaoModal && kakaoModal.style.display === 'block') {
+                            closeKakaoModal();
+                        }
                     }
-                }
-            });
+                });
 
-            // 사이드 메뉴 외부 클릭 시 닫기
-            document.addEventListener('click', function(event) {
-                if (sideMenu && hamburgerMenu && 
-                    sideMenu.classList.contains('active') && 
-                    !sideMenu.contains(event.target) && 
-                    !hamburgerMenu.contains(event.target)) {
-                    closeSideMenu();
-                }
-            });
+                // Click Outside Handler
+                document.addEventListener('click', function(event) {
+                    if (sideMenu.classList.contains('active') && 
+                        !sideMenu.contains(event.target) && 
+                        !hamburgerMenu.contains(event.target)) {
+                        closeSideMenu();
+                    }
+                });
 
-            // 스크롤 이벤트 - 플로팅 메뉴 표시/숨김, 햄버거 메뉴 숨김/표시
-            let lastScrollTop = 0;
-            window.addEventListener('scroll', function() {
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                
-                // 스크롤이 200px 이상일 때 플로팅 메뉴 표시, 햄버거 메뉴 숨김
-                if (scrollTop > 200) {
-                    if (floatingMenu) floatingMenu.classList.add('visible');
-                    if (hamburgerMenu) hamburgerMenu.classList.add('hidden');
-                } else {
-                    if (floatingMenu) floatingMenu.classList.remove('visible');
-                    if (hamburgerMenu) hamburgerMenu.classList.remove('hidden');
-                }
-                
-                lastScrollTop = scrollTop;
-            });
+                // Scroll Handler - Floating Menu & Navbar
+                let lastScrollTop = 0;
+                window.addEventListener('scroll', function() {
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    
+                    // Floating Menu Visibility
+                    if (scrollTop > 200) {
+                        if (floatingMenu) floatingMenu.classList.add('visible');
+                        if (hamburgerMenu) hamburgerMenu.classList.add('hidden');
+                    } else {
+                        if (floatingMenu) floatingMenu.classList.remove('visible');
+                        if (hamburgerMenu) hamburgerMenu.classList.remove('hidden');
+                    }
+                    
+                    // Navbar Background on Scroll
+                    if (navbar) {
+                        if (scrollTop > 50) {
+                            navbar.classList.add('scrolled');
+                        } else {
+                            navbar.classList.remove('scrolled');
+                        }
+                    }
+                    
+                    lastScrollTop = scrollTop;
+                });
 
-            // 사이드 메뉴 링크 클릭 시 메뉴 닫기
-            const sideMenuLinks = document.querySelectorAll('.side-menu-nav a');
-            sideMenuLinks.forEach(link => {
-                link.addEventListener('click', closeSideMenu);
-            });
-            
-            } else {
-                console.warn('일부 메뉴 요소가 없어서 메뉴 기능이 비활성화되었습니다.');
+                // Side Menu Links Close Menu
+                const sideMenuLinks = document.querySelectorAll('.side-menu-nav a');
+                sideMenuLinks.forEach(link => {
+                    link.addEventListener('click', closeSideMenu);
+                });
             }
 
-
-
-            // 카카오톡 모달 관련 함수들
+            // Kakao Modal Functions
             window.showKakaoModal = function() {
                 const modal = document.getElementById('kakaoModal');
                 if (modal) {
@@ -974,236 +478,217 @@
                 closeKakaoModal();
             };
 
-            // 카카오톡 모달 외부 클릭시 닫기
+            // Kakao Modal Outside Click
             document.addEventListener('click', function(event) {
                 const modal = document.getElementById('kakaoModal');
                 if (event.target === modal) {
                     closeKakaoModal();
                 }
             });
-
-            // 갤러리 관련 로딩 모달 제거됨
+            
+            // Fade In Animation on Scroll
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('fade-in');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+            
+            document.querySelectorAll('.card, .service-simple-card, .additional-card, .gallery-item').forEach(el => {
+                el.style.opacity = '0';
+                observer.observe(el);
+            });
         });
 
-        // 카테고리 토글 함수
+        // Category Toggle Function
         function toggleCategory(categoryKey) {
             const submenu = document.getElementById('submenu-' + categoryKey);
             const toggle = document.getElementById('toggle-' + categoryKey);
             
-            // 요소가 존재하지 않으면 함수 종료
-            if (!submenu || !toggle) {
-                console.warn('toggleCategory: 요소를 찾을 수 없습니다.', categoryKey);
-                return;
-            }
+            if (!submenu || !toggle) return;
             
             if (submenu.classList.contains('open')) {
                 submenu.classList.remove('open');
                 toggle.classList.remove('rotated');
             } else {
-                // 다른 열린 서브메뉴들 닫기 (안전한 null 체크 포함)
+                // Close other open submenus
                 document.querySelectorAll('.sub-menu.open').forEach(menu => {
-                    if (menu && menu.classList) {
-                        menu.classList.remove('open');
-                    }
+                    menu.classList.remove('open');
                 });
                 document.querySelectorAll('.category-toggle.rotated').forEach(tog => {
-                    if (tog && tog.classList) {
-                        tog.classList.remove('rotated');
-                    }
+                    tog.classList.remove('rotated');
                 });
                 
-                // 현재 서브메뉴 열기
+                // Open current submenu
                 submenu.classList.add('open');
                 toggle.classList.add('rotated');
             }
         }
     </script>
 
-    <footer class="footer mt-auto py-4">
-        <div class="container">
-            <div class="social-links text-center mb-3">
-                <a href="https://www.instagram.com/stylegrapher_official?igsh=MXVoMjhvMXJ1NHZkOA==" class="social-link" target="_blank" aria-label="스타일그래퍼 인스타그램 페이지">
-                    <i class="bi bi-instagram"></i>
-                </a>
-                <a href="https://www.youtube.com/@stylegrapher" class="social-link" target="_blank" aria-label="스타일그래퍼 유튜브 채널">
-                    <i class="bi bi-youtube"></i>
-                </a>
-                <a href="https://www.facebook.com/stylegrapher.us" class="social-link" target="_blank" aria-label="스타일그래퍼 페이스북 페이지">
-                    <i class="bi bi-facebook"></i>
-                </a>
-            </div>
-            <div class="footer-info text-center">
-                <p class="mb-1">OPEN : 화-토 9:00-18:00 ㅣ 카카오톡 : 스타일그래퍼</p>
-                <p class="mb-1">대표자 : 이사금 ㅣ 사업자 등록번호 [412-26-00896]</p>
-                <p class="mb-1">서울시 강남구 압구정로 46길 5-6 A동 502호</p>
-                <p class="mb-3">TEL 02-545-5028 | E-mail <a href="mailto:stylegrapher.ysg@gmail.com" class="contact-link">stylegrapher.ysg@gmail.com</a></p>
-                <p class="mb-3">
-                    <a href="{{ url_for('main.terms_of_service') }}" class="footer-link">이용약관</a> | 
-                    <a href="{{ url_for('main.privacy_policy') }}" class="footer-link">개인정보처리방침</a>
-                </p>
-                <p class="mb-1">Stylegrapher® Trademark Registered</p>
-                <p class="mb-1">Copyright@2025 All rights reserved by 스타일그래퍼®</p>
-                <p class="mb-0">사전 허가 없이 무단 복제나 전재, 배포, 상업적 비상업적 사용을 모두 금합니다.</p>
-            </div>
-        </div>
-    </footer>
-
-
-
     <style>
-    .footer {
-                    background-color: var(--main-color);
-            border-top: 1px solid rgba(var(--main-color-rgb), 0.3);
+    /* Language Selector Styles */
+    .nav-right-controls {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
     }
-
-    .social-links {
-        margin-bottom: 1.5rem;
+    
+    .language-selector {
+        position: relative;
     }
-
-    .social-link {
-        color: #fff;
-        font-size: 1.5rem;
-        margin: 0 1rem;
-        text-decoration: none;
-        transition: opacity 0.3s ease;
-    }
-
-    .social-link:hover {
-        color: #fff;
-        opacity: 0.8;
-    }
-
-    .footer-info {
-        color: rgba(255, 255, 255, 0.9);
+    
+    .language-btn {
+        background: rgba(181, 126, 220, 0.15);
+        border: 1px solid rgba(181, 126, 220, 0.3);
+        color: var(--neon-lavender, #B57EDC);
+        padding: 0.5rem 0.8rem;
+        border-radius: 20px;
         font-size: 0.85rem;
-        line-height: 1.4;
-    }
-
-    .footer-info p {
-        margin: 0;
-        word-break: keep-all;
-        overflow-wrap: break-word;
-        line-break: strict;
-    }
-
-    .contact-link, .footer-link {
-        color: #fff;
-        text-decoration: none;
-        transition: opacity 0.3s ease;
-    }
-
-    .contact-link:hover, .footer-link:hover {
-        color: #fff;
-        opacity: 0.8;
-        text-decoration: underline;
-    }
-
-    @media (max-width: 768px) {
-        .social-link {
-            font-size: 1.2rem;
-            margin: 0 0.8rem;
-        }
-        
-        .footer-info {
-            font-size: 0.8rem;
-        }
-    }
-
-    .mobile-nav {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background-color: rgba(var(--main-color-rgb), 0.25);
-        padding: 8px 0;
-        border-top: 1px solid rgba(var(--main-color-rgb), 0.4);
-        z-index: 1000;
-    }
-
-    .mobile-nav .nav-link {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        color: var(--main-color-alpha);
-        text-decoration: none;
-    }
-
-    .mobile-nav .nav-link i {
-        font-size: 1.4rem;
-    }
-
-    /* Add padding to main content to prevent overlap with mobile nav */
-    @media (max-width: 767px) {
-        main {
-            padding-bottom: 60px;
-        }
-    }
-
-    .floating-menu {
-        position: fixed;
-        right: 20px;
-        top: 50%;
-        transform: translateY(-50%);
-        flex-direction: column;
-        gap: 15px;
-        z-index: 1000;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .floating-menu.show {
-        opacity: 0.8;
-    }
-
-    .floating-menu:hover {
-        opacity: 1;
-    }
-
-    .float-item {
-        width: 40px;
-        height: 40px;
-        background-color: rgba(var(--main-color-rgb), 0.1);
-        border-radius: 50%;
+        cursor: pointer;
         display: flex;
         align-items: center;
-        justify-content: center;
-        color: var(--main-color-alpha);
-        text-decoration: none;
+        gap: 0.4rem;
         transition: all 0.3s ease;
     }
-
-    .float-item:hover {
-        background-color: rgba(var(--main-color-rgb), 0.2);
-        color: var(--main-color);
+    
+    .language-btn:hover {
+        background: rgba(181, 126, 220, 0.25);
+        border-color: rgba(181, 126, 220, 0.5);
+        box-shadow: 0 0 15px rgba(181, 126, 220, 0.3);
     }
-
-    .float-item i {
-        font-size: 1.2rem;
+    
+    .language-btn i {
+        font-size: 1rem;
+    }
+    
+    .current-lang {
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+    
+    .language-dropdown {
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        background: rgba(18, 0, 36, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(181, 126, 220, 0.3);
+        border-radius: 12px;
+        padding: 0.5rem 0;
+        min-width: 120px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+        z-index: 1000;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    
+    .language-dropdown.active {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+    
+    .language-option {
+        display: block;
+        padding: 0.6rem 1rem;
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+    }
+    
+    .language-option:hover {
+        background: rgba(181, 126, 220, 0.2);
+        color: var(--neon-lavender, #B57EDC);
+    }
+    
+    .language-option.active {
+        color: var(--neon-lavender, #B57EDC);
+        background: rgba(181, 126, 220, 0.15);
+    }
+    
+    .language-option.active::before {
+        content: '✓';
+        margin-right: 0.5rem;
+    }
+    
+    @media (max-width: 576px) {
+        .language-btn {
+            padding: 0.4rem 0.6rem;
+            font-size: 0.75rem;
+        }
+        
+        .language-btn i {
+            font-size: 0.9rem;
+        }
+        
+        .nav-right-controls {
+            gap: 0.6rem;
+        }
+    }
+    
+    /* Background Particles Effect */
+    .bg-particles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -1;
+        overflow: hidden;
+    }
+    
+    .bg-particles::before,
+    .bg-particles::after {
+        content: '';
+        position: absolute;
+        border-radius: 50%;
+        animation: float 20s ease-in-out infinite;
+    }
+    
+    .bg-particles::before {
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(181, 126, 220, 0.15) 0%, transparent 70%);
+        top: 10%;
+        left: 10%;
+        animation-delay: 0s;
+    }
+    
+    .bg-particles::after {
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(138, 43, 226, 0.1) 0%, transparent 70%);
+        bottom: 20%;
+        right: 15%;
+        animation-delay: -10s;
+    }
+    
+    @keyframes float {
+        0%, 100% {
+            transform: translate(0, 0) scale(1);
+        }
+        25% {
+            transform: translate(50px, -50px) scale(1.1);
+        }
+        50% {
+            transform: translate(100px, 50px) scale(0.9);
+        }
+        75% {
+            transform: translate(-50px, 100px) scale(1.05);
+        }
     }
     </style>
-
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const floatingMenu = document.querySelector('.floating-menu');
-        const navbar = document.querySelector('.navbar');
-        let lastScrollTop = 0;
-
-        window.addEventListener('scroll', function() {
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const navbarBottom = navbar.getBoundingClientRect().bottom;
-
-            // 네비게이션 바가 화면에서 벗어났을 때
-            if (navbarBottom < 0) {
-                floatingMenu.classList.add('show');
-            } else {
-                floatingMenu.classList.remove('show');
-            }
-
-            lastScrollTop = scrollTop;
-        });
-    });
-    </script>
-
-
 </body>
-</html> 
+</html>

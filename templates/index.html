@@ -1,17 +1,21 @@
 {% extends "base.html" %}
 
-{% block title %}홈{% endblock %}
+{% block title %}{{ _('홈') }}{% endblock %}
 
 {% block content %}
 
-
-<!-- Collage Section -->
-<div class="hero-section position-relative">
+<!-- Hero Section with Collage -->
+<section class="hero-section">
+    <div class="hero-background">
+        <div class="hero-gradient"></div>
+        <div class="hero-particles"></div>
+    </div>
+    
     <div class="collage-container">
-        <div class="row g-0">
+        <div class="row g-3 g-md-4 justify-content-center">
             {% for group in recent_galleries %}
-            <div class="col-md-4">
-                <div class="collage-item">
+            <div class="col-12 col-md-4">
+                <div class="collage-item fade-in stagger-{{ loop.index }}">
                     <div id="heroCarousel{{ loop.index }}" class="carousel slide" data-bs-ride="carousel" data-bs-interval="{{ 3000 + (loop.index0 * 500) }}">
                         <div class="carousel-inner">
                             {% for image in group.images %}
@@ -25,96 +29,101 @@
                         </div>
                     </div>
                     <div class="collage-overlay">
-                        <h3 class="gallery-title lead">{{ group.title }}</h3>
+                        <h3 class="gallery-title">{{ group.title }}</h3>
                     </div>
+                    <div class="collage-glow"></div>
                 </div>
             </div>
             {% endfor %}
         </div>
     </div>
-</div>
+</section>
 
 <!-- Fade Text Section -->
-<div class="fade-text-section">
+<section class="fade-text-section">
     <div class="fade-text">
         {% if fade_texts %}
             {% for fade_text in fade_texts %}
-                <h2 class="fade-title{% if not loop.first %} delayed{% endif %}">{{ fade_text.text }}</h2>
+                <h2 class="fade-title{% if not loop.first %} delayed{% endif %}">{{ _(fade_text.text) }}</h2>
             {% endfor %}
         {% else %}
-            <!-- 기본값 (데이터베이스에 데이터가 없을 때) -->
-            <h2 class="fade-title">스타일그래퍼와 함께</h2>
-            <h2 class="fade-title delayed">나를 찾아가는 여정</h2>
+            <h2 class="fade-title">{{ _('당신의 무한한 가능성을') }}</h2>
+            <h2 class="fade-title delayed">{{ _('탐험하는 여정') }}</h2>
         {% endif %}
     </div>
-</div>
+    <div class="fade-text-glow"></div>
+</section>
 
 <style>
+/* Hero Section */
 .hero-section {
-    min-height: 650px;  /* 최소 높이로 변경 */
-    overflow: visible;
-    background-color: #fff;
     position: relative;
-    padding: 2rem 0 0.25rem 0;
+    min-height: 700px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 0;
+    overflow: hidden;
+}
+
+.hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.hero-gradient {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at 50% 30%, rgba(181, 126, 220, 0.15) 0%, transparent 60%);
+}
+
+.hero-particles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(2px 2px at 20% 30%, rgba(181, 126, 220, 0.4), transparent),
+        radial-gradient(2px 2px at 40% 70%, rgba(138, 43, 226, 0.3), transparent),
+        radial-gradient(2px 2px at 80% 40%, rgba(181, 126, 220, 0.4), transparent),
+        radial-gradient(2px 2px at 60% 80%, rgba(138, 43, 226, 0.3), transparent);
+    background-size: 200px 200px;
+    animation: particleMove 30s linear infinite;
+}
+
+@keyframes particleMove {
+    0% { background-position: 0 0; }
+    100% { background-position: 200px 200px; }
 }
 
 .collage-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 15px;
-    perspective: 1000px;
-}
-
-.row.g-0 {
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 5px 25px rgba(65, 26, 75, 0.2);
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.row.g-0:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 30px rgba(65, 26, 75, 0.3);
+    padding: 0 20px;
+    position: relative;
+    z-index: 1;
 }
 
 .collage-item {
     position: relative;
-    padding-top: 133.33%;  /* 3:4 비율 (4/3 * 100) */
-    transform-style: preserve-3d;
-    transition: transform 0.5s ease;
+    padding-top: 133.33%;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(181, 126, 220, 0.2);
 }
 
-/* 각 아이템별 기울기 설정 */
-.col-md-4:nth-child(1) .collage-item {
-    transform: rotate(-5deg) translateZ(0);
-    z-index: 1;
-}
-
-.col-md-4:nth-child(2) .collage-item {
-    transform: rotate(3deg) translateZ(0) translateY(20px);
-    z-index: 2;
-}
-
-.col-md-4:nth-child(3) .collage-item {
-    transform: rotate(-2deg) translateZ(0);
-    z-index: 1;
-}
-
-/* hover 효과 */
-.col-md-4:nth-child(1) .collage-item:hover {
-    transform: rotate(-5deg) translateZ(30px) scale(1.05);
-    z-index: 3;
-}
-
-.col-md-4:nth-child(2) .collage-item:hover {
-    transform: rotate(3deg) translateZ(30px) translateY(20px) scale(1.05);
-    z-index: 3;
-}
-
-.col-md-4:nth-child(3) .collage-item:hover {
-    transform: rotate(-2deg) translateZ(30px) scale(1.05);
-    z-index: 3;
+.collage-item:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 0 50px rgba(181, 126, 220, 0.4), 0 20px 60px rgba(0, 0, 0, 0.6);
+    border-color: rgba(181, 126, 220, 0.5);
 }
 
 .collage-item .carousel {
@@ -123,11 +132,9 @@
     left: 0;
     width: 100%;
     height: 100%;
-    border-radius: 10px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-    overflow: hidden;
 }
 
+.collage-item .carousel-inner,
 .collage-item .carousel-item {
     height: 100%;
 }
@@ -136,7 +143,11 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
+    transition: transform 0.5s ease;
+}
+
+.collage-item:hover .carousel-item img {
+    transform: scale(1.05);
 }
 
 .collage-overlay {
@@ -144,72 +155,52 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(to top, rgba(65, 26, 75, 0.8), transparent);
-    padding: 25px 20px;  /* 패딩 약간 증가 */
-    color: white;
+    background: linear-gradient(to top, rgba(18, 0, 36, 0.95) 0%, rgba(18, 0, 36, 0.7) 50%, transparent 100%);
+    padding: 40px 25px 25px;
     opacity: 0;
-    transition: opacity 0.3s ease;
-    border-radius: 0 0 10px 10px;
-}
-
-.gallery-title {
-    font-family: 'Nanum Gothic', sans-serif;
-    font-weight: 500;
-    font-size: 1.5rem;
-    letter-spacing: 0.5px;
-    margin: 0;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
     transform: translateY(10px);
-    transition: transform 0.3s ease;
+    transition: all 0.4s ease;
 }
 
 .collage-item:hover .collage-overlay {
     opacity: 1;
-}
-
-.collage-item:hover .gallery-title {
     transform: translateY(0);
 }
 
-/* 텍스트 관련 스타일 제거 */
-.hero-text-overlay,
-.typing-text {
-    display: none;
+.collage-overlay .gallery-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: 1.3rem;
+    color: var(--neon-lavender);
+    margin: 0;
+    text-shadow: 0 0 20px rgba(181, 126, 220, 0.6);
+    letter-spacing: 0.05em;
 }
 
-/* 반응형 디자인을 위한 미디어 쿼리 */
-@media (max-width: 768px) {
-    .hero-section {
-        padding: 1rem 0 0.15rem 0;
-    }
-    
-    .collage-item {
-        padding-top: 133.33%;  /* 모바일에서도 3:4 비율 유지 */
-        transform: none !important;
-        margin-bottom: 20px;
-    }
-    
-    .collage-item:hover {
-        transform: none !important;
-    }
-    
-    .row.g-0 {
-        margin: 0 15px;
-    }
-
-    .gallery-title {
-        font-size: 1.2rem;
-        letter-spacing: 0.3px;
-    }
+.collage-glow {
+    position: absolute;
+    bottom: -50%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 100px;
+    background: radial-gradient(ellipse, rgba(181, 126, 220, 0.3) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
 }
 
+.collage-item:hover .collage-glow {
+    opacity: 1;
+}
+
+/* Fade Text Section */
 .fade-text-section {
-    background-color: #fff;
-    padding: 2rem 0;
+    position: relative;
+    padding: 5rem 0;
     text-align: center;
     overflow: hidden;
-    margin-top: -1rem;
-    min-height: 160px;
+    min-height: 200px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -217,42 +208,73 @@
 
 .fade-text {
     position: relative;
+    z-index: 1;
 }
 
 .fade-title {
-    font-family: 'Nanum Gothic', sans-serif;
-    font-weight: 700;
-    font-size: 2.2rem;
-    color: var(--main-color);
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: 2.8rem;
+    color: #B88BE8;
     margin: 0.5rem 0;
     opacity: 0;
-    animation: fadeInOut 4s ease;
+    animation: fadeInGlow 6s ease;
     animation-iteration-count: 3;
+    text-shadow: 0 0 50px rgba(180, 100, 220, 0.8), 0 0 80px rgba(138, 43, 226, 0.5);
+    letter-spacing: 0.1em;
 }
 
 .fade-title.delayed {
-    animation-delay: 0.3s;
+    animation-delay: 0.6s;
 }
 
-@keyframes fadeInOut {
+@keyframes fadeInGlow {
     0%, 100% {
         opacity: 0;
+        text-shadow: 0 0 20px rgba(181, 126, 220, 0.3);
     }
     25%, 75% {
         opacity: 1;
+        text-shadow: 0 0 60px rgba(181, 126, 220, 0.8), 0 0 100px rgba(138, 43, 226, 0.5);
     }
 }
 
+.fade-text-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    height: 200px;
+    background: radial-gradient(ellipse, rgba(181, 126, 220, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+
 @media (max-width: 768px) {
+    .hero-section {
+        padding: 2rem 0;
+        min-height: auto;
+    }
+    
+    .collage-item {
+        border-radius: 16px;
+        margin-bottom: 1rem;
+    }
+    
+    .collage-item:hover {
+        transform: translateY(-5px);
+    }
+    
+    .collage-overlay .gallery-title {
+        font-size: 1.1rem;
+    }
+    
     .fade-text-section {
-        padding: 1.5rem 0;
-        margin-top: -0.5rem;
-        min-height: 120px;
+        padding: 3rem 0;
     }
     
     .fade-title {
         font-size: 1.8rem;
-        margin: 0.3rem 0;
     }
 }
 </style>
@@ -266,33 +288,27 @@ document.addEventListener('DOMContentLoaded', function() {
         title.addEventListener('animationend', function() {
             this.style.opacity = '1';
             this.style.animation = 'none';
+            this.style.textShadow = '0 0 40px rgba(181, 126, 220, 0.6)';
             animationsCompleted++;
-            
-            // 모든 애니메이션이 완료되면 텍스트를 영구적으로 표시
-            if (animationsCompleted === titles.length) {
-                titles.forEach(t => {
-                    t.style.opacity = '1';
-                });
-            }
         });
     });
 });
 </script>
 
 <!-- Services Preview Section -->
-<div class="container py-0">
+<section class="container py-5">
     {% include '_services_simple.html' %}
-</div>
+</section>
 
 <!-- Gallery Preview Section -->
-<div class="container py-5">
+<section class="container py-5">
     <div class="card gallery-section-card">
-        <div class="card-body p-4">
+        <div class="card-body p-4 p-md-5">
             <h1 class="text-center mb-5 gallery-main-title">Gallery</h1>
             <div class="row g-4">
                 {% for group in preview_galleries %}
                 <div class="col-md-4">
-                    <div class="card gallery-preview-card h-100">
+                    <div class="gallery-preview-card h-100">
                         <div class="preview-carousel-container">
                             <div id="previewCarousel{{ loop.index }}" class="carousel slide" data-bs-ride="carousel" data-bs-interval="{{ 4000 + (loop.index0 * 500) }}">
                                 <div class="carousel-inner">
@@ -314,49 +330,56 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 {% endfor %}
             </div>
-            <div class="text-center mt-4">
-                <a href="{{ url_for('main.gallery') }}" class="btn gallery-more-btn">더 많은 갤러리 보기</a>
+            <div class="text-center mt-5">
+                <a href="{{ url_for('main.gallery') }}" class="btn gallery-more-btn btn-lg">
+                    <i class="bi bi-images me-2"></i>{{ _('더 많은 갤러리 보기') }}
+                </a>
             </div>
         </div>
     </div>
-</div>
+</section>
 
 <style>
 .gallery-section-card {
-    border: 1px solid rgba(139, 95, 191, 0.3);
-    border-radius: 15px;
-    box-shadow: 0 4px 20px rgba(139, 95, 191, 0.2);
-    background-color: #fff;
-    transition: box-shadow 0.3s ease;
+    background: rgba(18, 0, 36, 0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(181, 126, 220, 0.2);
+    border-radius: 30px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    position: relative;
+    overflow: hidden;
 }
 
-.gallery-section-card:hover {
-    box-shadow: 0 8px 30px rgba(139, 95, 191, 0.3);
+.gallery-section-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--neon-lavender), transparent);
+    box-shadow: 0 0 30px rgba(181, 126, 220, 0.6);
+}
+
+.gallery-main-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3.5rem;
+    color: var(--neon-lavender);
+    text-shadow: 0 0 50px rgba(181, 126, 220, 0.5);
+    font-weight: 300;
+    letter-spacing: 0.15em;
 }
 
 .preview-carousel-container {
     position: relative;
     width: 100%;
-    padding-top: 133.33%;  /* 3:4 비율 (4/3 * 100) */
+    padding-top: 133.33%;
     overflow: hidden;
+    border-radius: 16px;
 }
 
-.preview-carousel-container .carousel {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-}
-
-.preview-carousel-container .carousel-inner {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-}
-
+.preview-carousel-container .carousel,
+.preview-carousel-container .carousel-inner,
 .preview-carousel-container .carousel-item {
     position: absolute;
     top: 0;
@@ -369,101 +392,107 @@ document.addEventListener('DOMContentLoaded', function() {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.5s ease;
 }
 
 .gallery-preview-card {
-    border: none;
-    border-radius: 10px;
+    background: rgba(18, 0, 36, 0.5);
+    border: 1px solid rgba(181, 126, 220, 0.15);
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .gallery-preview-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(139, 95, 191, 0.2);
+    border-color: var(--neon-lavender);
+    box-shadow: 0 0 40px rgba(181, 126, 220, 0.3), 0 15px 50px rgba(0, 0, 0, 0.4);
+    transform: translateY(-10px);
+}
+
+.gallery-preview-card:hover .carousel-item img {
+    transform: scale(1.08);
 }
 
 .gallery-preview-title {
-    font-family: 'Nanum Gothic', sans-serif;
-    font-weight: normal;
-    font-size: 0.9rem;
-    color: rgba(var(--sub-color-rgb), 0.8);
-    margin: 0;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 400;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.8);
     text-align: center;
-    letter-spacing: 0.02em;
-    word-break: keep-all;
-    overflow-wrap: break-word;
-    line-break: strict;
-}
-
-@media (max-width: 768px) {
-    .preview-carousel-container {
-        padding-top: 133.33%;  /* 모바일에서도 3:4 비율 유지 */
-    }
-    
-    .gallery-preview-title {
-        font-size: 0.9rem;
-    }
+    margin: 0;
+    padding: 0.5rem;
 }
 
 .gallery-more-btn {
-    background-color: white;
-    border: 1px solid rgba(var(--sub-color-rgb), 0.5);
-    color: rgba(var(--main-color-rgb), 0.8);
-    padding: 0.4rem 2rem;  /* 세로 패딩 줄이고 가로 패딩 늘림 */
-    border-radius: 20px;  /* 둥근 모서리 */
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
-    text-decoration: none;
+    background: transparent;
+    border: 2px solid var(--neon-lavender);
+    color: var(--neon-lavender);
+    padding: 1rem 3rem;
+    border-radius: 40px;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.gallery-more-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(181, 126, 220, 0.2), transparent);
+    transition: left 0.5s ease;
 }
 
 .gallery-more-btn:hover {
-    background-color: rgba(var(--main-color-rgb), 0.05);
-    border-color: rgba(var(--sub-color-rgb), 0.8);
-    color: rgba(var(--main-color-rgb), 1);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(var(--main-color-rgb), 0.2);
+    background: linear-gradient(135deg, var(--neon-lavender), var(--electric-violet));
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 0 30px rgba(181, 126, 220, 0.5), 0 0 60px rgba(138, 43, 226, 0.3);
+    transform: translateY(-3px);
 }
 
-.gallery-more-btn:active {
-    transform: translateY(0);
-    box-shadow: none;
-}
-
-.gallery-main-title {
-    font-family: 'Nanum Gothic', sans-serif;
-    font-size: 2.5rem;
-    color: var(--main-color-alpha);
-    margin-bottom: 2rem;
-    transition: color 0.3s ease;
-    font-weight: normal;
-}
-
-.gallery-main-title:hover {
-    color: var(--main-color);
+.gallery-more-btn:hover::before {
+    left: 100%;
 }
 
 @media (max-width: 768px) {
+    .gallery-section-card {
+        border-radius: 20px;
+    }
+    
     .gallery-main-title {
-        font-size: 1.8rem;
+        font-size: 2.5rem;
+    }
+    
+    .gallery-preview-card {
+        border-radius: 16px;
+    }
+    
+    .gallery-more-btn {
+        padding: 0.8rem 2rem;
+        font-size: 0.9rem;
     }
 }
 </style>
 
 <!-- Additional Cards Section -->
-<div class="container py-5">
+<section class="container py-5">
     <div class="row g-4">
         <!-- 고객 스토리 카드 -->
         <div class="col-md-4">
             <a href="{{ url_for('main.customer_story') }}" class="text-decoration-none">
-                <div class="card additional-card h-100">
-                    <div class="card-body text-center p-4">
-                        <div class="additional-card-icon mb-3">
-                            <i class="bi bi-chat-heart-fill" style="font-size: 3rem; color: var(--main-color-alpha);"></i>
+                <div class="additional-card h-100">
+                    <div class="card-body text-center p-4 d-flex flex-column justify-content-center">
+                        <div class="additional-card-icon mb-4">
+                            <i class="bi bi-chat-heart-fill"></i>
                         </div>
-                        <h5 class="additional-card-title">고객 스토리</h5>
-                        <p class="additional-card-text">고객들의 변화와 감동의 이야기</p>
+                        <h5 class="additional-card-title">{{ _('고객 스토리') }}</h5>
+                        <p class="additional-card-text">{{ _('고객들의 변화와 감동의 이야기') }}</p>
+                        <div class="card-glow"></div>
                     </div>
                 </div>
             </a>
@@ -472,13 +501,14 @@ document.addEventListener('DOMContentLoaded', function() {
         <!-- 커머셜 포트폴리오 카드 -->
         <div class="col-md-4">
             <a href="{{ url_for('main.commercial_portfolio') }}" class="text-decoration-none">
-                <div class="card additional-card h-100">
-                    <div class="card-body text-center p-4">
-                        <div class="additional-card-icon mb-3">
-                            <i class="bi bi-briefcase-fill" style="font-size: 3rem; color: var(--main-color-alpha);"></i>
+                <div class="additional-card h-100">
+                    <div class="card-body text-center p-4 d-flex flex-column justify-content-center">
+                        <div class="additional-card-icon mb-4">
+                            <i class="bi bi-briefcase-fill"></i>
                         </div>
-                        <h5 class="additional-card-title">커머셜 포트폴리오</h5>
-                        <p class="additional-card-text">전문적인 상업 촬영 포트폴리오</p>
+                        <h5 class="additional-card-title">{{ _('커머셜 포트폴리오') }}</h5>
+                        <p class="additional-card-text">{{ _('전문적인 상업 촬영 포트폴리오') }}</p>
+                        <div class="card-glow"></div>
                     </div>
                 </div>
             </a>
@@ -487,333 +517,203 @@ document.addEventListener('DOMContentLoaded', function() {
         <!-- 스타일그래퍼 소개 카드 -->
         <div class="col-md-4">
             <a href="{{ url_for('main.about') }}" class="text-decoration-none">
-                <div class="card additional-card h-100">
-                    <div class="card-body text-center p-4">
-                        <div class="additional-card-icon mb-3">
-                            <i class="bi bi-person-circle" style="font-size: 3rem; color: var(--main-color-alpha);"></i>
+                <div class="additional-card h-100">
+                    <div class="card-body text-center p-4 d-flex flex-column justify-content-center">
+                        <div class="additional-card-icon mb-4">
+                            <i class="bi bi-person-circle"></i>
                         </div>
-                        <h5 class="additional-card-title">스타일그래퍼 소개</h5>
-                        <p class="additional-card-text">스타일그래퍼와 함께하는 스타일 여정</p>
+                        <h5 class="additional-card-title">{{ _('스타일그래퍼 소개') }}</h5>
+                        <p class="additional-card-text">{{ _('스타일그래퍼와 함께하는 스타일 여정') }}</p>
+                        <div class="card-glow"></div>
                     </div>
                 </div>
             </a>
         </div>
     </div>
-</div>
+</section>
 
 <style>
 .additional-card {
-    border: 1px solid rgba(var(--main-color-rgb), 0.3);
-    border-radius: 15px;
-    box-shadow: 0 4px 20px rgba(var(--main-color-rgb), 0.2);
-    background-color: #fff;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    min-height: 250px;
+    background: rgba(18, 0, 36, 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(181, 126, 220, 0.2);
+    border-radius: 24px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 300px;
+    position: relative;
+    overflow: hidden;
+}
+
+.additional-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(181, 126, 220, 0.1), transparent);
+    transition: left 0.6s ease;
+}
+
+.additional-card:hover::before {
+    left: 100%;
 }
 
 .additional-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 30px rgba(var(--main-color-rgb), 0.3);
-    border-color: rgba(var(--main-color-rgb), 0.5);
-}
-
-.additional-card-title {
-    font-family: 'Nanum Gothic', sans-serif;
-    font-weight: 700;
-    font-size: 1.3rem;
-    color: var(--main-color);
-    margin-bottom: 1rem;
-    transition: color 0.3s ease;
-    word-break: keep-all;
-    overflow-wrap: break-word;
-    line-break: strict;
-}
-
-.additional-card:hover .additional-card-title {
-    color: var(--main-color);
-}
-
-.additional-card-text {
-    font-family: 'Nanum Gothic', sans-serif;
-    font-size: 1rem;
-    color: #6c757d;
-    margin: 0;
-    line-height: 1.5;
-    word-break: keep-all;
-    overflow-wrap: break-word;
-    line-break: strict;
+    transform: translateY(-15px);
+    border-color: rgba(181, 126, 220, 0.5);
+    box-shadow: 0 0 50px rgba(181, 126, 220, 0.3), 0 25px 70px rgba(0, 0, 0, 0.5);
 }
 
 .additional-card-icon {
-    transition: transform 0.3s ease;
+    font-size: 3.5rem;
+    color: var(--neon-lavender);
+    transition: all 0.4s ease;
+    filter: drop-shadow(0 0 20px rgba(181, 126, 220, 0.5));
 }
 
 .additional-card:hover .additional-card-icon {
-    transform: scale(1.1);
+    transform: scale(1.15) rotate(5deg);
+    filter: drop-shadow(0 0 30px rgba(181, 126, 220, 0.8));
+}
+
+.additional-card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500;
+    font-size: 1.6rem;
+    color: var(--neon-lavender);
+    margin-bottom: 1rem;
+    text-shadow: 0 0 20px rgba(181, 126, 220, 0.3);
+}
+
+.additional-card-text {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.card-glow {
+    position: absolute;
+    bottom: -30%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 100px;
+    background: radial-gradient(ellipse, rgba(181, 126, 220, 0.2) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.additional-card:hover .card-glow {
+    opacity: 1;
 }
 
 @media (max-width: 768px) {
     .additional-card {
-        min-height: 200px;
-        margin-bottom: 1rem;
+        min-height: 250px;
+        border-radius: 20px;
+    }
+    
+    .additional-card-icon {
+        font-size: 2.8rem;
     }
     
     .additional-card-title {
-        font-size: 1.1rem;
-    }
-    
-    .additional-card-text {
-        font-size: 0.9rem;
-    }
-    
-    .additional-card-icon i {
-        font-size: 2.5rem !important;
+        font-size: 1.4rem;
     }
 }
 </style>
 
 <!-- Contact Section -->
-<div class="container py-5">
-    <div class="text-center">
-        <p class="contact-text mb-4 lead">궁금하신 점이나 예약신청은 카카오톡 채널을 이용해주시기 바랍니다.</p>
-        <div class="contact-buttons">
-            <button type="button" class="btn kakao-btn contact-btn" onclick="showKakaoModal()">
-                💬 문의/예약신청
+<section class="container py-5">
+    <div class="contact-section text-center">
+        <div class="contact-content">
+            <p class="contact-text mb-4">{{ _('궁금하신 점이나 예약신청은 카카오톡 채널을 이용해주시기 바랍니다.') }}</p>
+            <button type="button" class="btn-neon contact-btn" onclick="showKakaoModal()">
+                <i class="bi bi-chat-dots-fill me-2"></i>{{ _('문의/예약신청') }}
             </button>
         </div>
+        <div class="contact-glow"></div>
     </div>
-</div>
+</section>
 
 <style>
+.contact-section {
+    position: relative;
+    padding: 3rem;
+    background: rgba(18, 0, 36, 0.5);
+    backdrop-filter: blur(15px);
+    border-radius: 30px;
+    border: 1px solid rgba(181, 126, 220, 0.2);
+}
+
+.contact-content {
+    position: relative;
+    z-index: 1;
+}
+
 .contact-text {
-    font-family: 'Nanum Gothic', sans-serif;
-    color: rgba(139, 95, 191, 0.8);
-    font-size: 1.1rem;
-    font-weight: 700;
-    word-break: keep-all;
-    overflow-wrap: break-word;
-    line-break: strict;
+    font-family: 'Cormorant Garamond', serif;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.3rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
 }
 
-.contact-buttons {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.contact-btn {
-    padding: 0.75rem 2rem;
-    font-size: 1rem;
-    font-weight: 600;
-    border-radius: 25px;
-    transition: all 0.3s ease;
-    text-decoration: none;
+.btn-neon.contact-btn {
+    background: linear-gradient(135deg, #FEE500, #FFD700);
+    color: #3C1E1E;
     border: none;
-    cursor: pointer;
-    min-width: 200px;
-}
-
-.contact-btn.btn-primary {
-    background-color: rgba(139, 95, 191, 0.8);
-    border-color: rgba(139, 95, 191, 0.8);
-    color: white;
-}
-
-.contact-btn.btn-primary:hover {
-    background-color: rgba(139, 95, 191, 1);
-    border-color: rgba(139, 95, 191, 1);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.3);
-}
-
-.contact-btn.kakao-btn {
-    background-color: #FEE500;
-    color: #3C1E1E;
-    border: 2px solid #FEE500;
+    padding: 1rem 3rem;
+    border-radius: 35px;
     font-weight: 600;
+    font-size: 1.1rem;
+    box-shadow: 0 0 30px rgba(254, 229, 0, 0.4);
+    transition: all 0.4s ease;
+    animation: kakaoGlow 2s ease-in-out infinite;
 }
 
-.contact-btn.kakao-btn:hover {
-    background-color: #FFD700;
-    border-color: #FFD700;
-    color: #3C1E1E;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(254, 229, 0, 0.4);
+@keyframes kakaoGlow {
+    0%, 100% {
+        box-shadow: 0 0 30px rgba(254, 229, 0, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 50px rgba(254, 229, 0, 0.6), 0 0 80px rgba(254, 229, 0, 0.3);
+    }
 }
 
-.contact-btn:active {
-    transform: translateY(0);
-    box-shadow: none;
+.btn-neon.contact-btn:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 0 50px rgba(254, 229, 0, 0.6), 0 15px 40px rgba(0, 0, 0, 0.3);
+}
+
+.contact-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    height: 200px;
+    background: radial-gradient(ellipse, rgba(181, 126, 220, 0.1) 0%, transparent 70%);
+    pointer-events: none;
 }
 
 @media (max-width: 768px) {
+    .contact-section {
+        padding: 2rem 1.5rem;
+        border-radius: 20px;
+    }
+    
     .contact-text {
+        font-size: 1.1rem;
+    }
+    
+    .btn-neon.contact-btn {
+        padding: 0.9rem 2rem;
         font-size: 1rem;
-    }
-    
-    .contact-buttons {
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-    
-    .contact-btn {
-        min-width: 280px;
-        padding: 0.65rem 1.5rem;
-        font-size: 0.95rem;
-    }
-}
-
-/* 카카오톡 모달 스타일 */
-.kakao-modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-    animation: fadeIn 0.3s ease;
-}
-
-.kakao-modal-content {
-    background-color: #fefefe;
-    margin: 10% auto;
-    padding: 2rem;
-    border-radius: 15px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    animation: slideIn 0.3s ease;
-    text-align: center;
-}
-
-.kakao-modal-header {
-    margin-bottom: 1.5rem;
-}
-
-.kakao-modal-title {
-    color: #3C1E1E;
-    font-size: 1.3rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-}
-
-.kakao-modal-message {
-    color: #333;
-    line-height: 1.6;
-    margin-bottom: 2rem;
-    font-size: 1rem;
-}
-
-.kakao-modal-buttons {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-}
-
-.kakao-continue-btn {
-    background: #FEE500;
-    color: #3C1E1E;
-    border: none;
-    padding: 0.75rem 2rem;
-    border-radius: 20px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 1rem;
-}
-
-.kakao-continue-btn:hover {
-    background: #FFD700;
-    transform: translateY(-1px);
-    box-shadow: 0 3px 10px rgba(254, 229, 0, 0.4);
-}
-
-.kakao-cancel-btn {
-    background: #f8f9fa;
-    color: #6c757d;
-    border: 1px solid #dee2e6;
-    padding: 0.75rem 2rem;
-    border-radius: 20px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 1rem;
-}
-
-.kakao-cancel-btn:hover {
-    background: #e9ecef;
-    color: #495057;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes slideIn {
-    from { 
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to { 
-        opacity: 1;
-        transform: translateY(0);
     }
 }
 </style>
 
-<!-- 카카오톡 모달 -->
-<div id="kakaoModal" class="kakao-modal">
-    <div class="kakao-modal-content">
-        <div class="kakao-modal-header">
-            <h4 class="kakao-modal-title">카카오톡 채널 안내</h4>
-        </div>
-        <div class="kakao-modal-message">
-            안녕하세요?<br><br>
-            카카오톡 채널에 고객님의 성함과 희망 서비스, 희망 예약시간, 휴대전화 번호, 그리고 궁금하신 점을 알려주시면 최대한 빠른 시간 안에 회신 드리겠습니다.<br><br>
-            감사합니다.
-        </div>
-        <div class="kakao-modal-buttons">
-            <button class="kakao-continue-btn" onclick="goToKakaoChannel()">계속하기</button>
-            <button class="kakao-cancel-btn" onclick="closeKakaoModal()">취소</button>
-        </div>
-    </div>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // 카카오톡 모달 관련 함수들
-    window.showKakaoModal = function() {
-        const modal = document.getElementById('kakaoModal');
-        if (modal) {
-            modal.style.display = 'block';
-        }
-    };
-
-    window.closeKakaoModal = function() {
-        const modal = document.getElementById('kakaoModal');
-        if (modal) {
-            modal.style.display = 'none';
-        }
-    };
-
-    window.goToKakaoChannel = function() {
-        window.open('https://pf.kakao.com/_xgDcFK', '_blank');
-        closeKakaoModal();
-    };
-
-    // 모달 외부 클릭시 닫기
-    document.addEventListener('click', function(event) {
-        const modal = document.getElementById('kakaoModal');
-        if (event.target === modal) {
-            closeKakaoModal();
-        }
-    });
-});
-</script>
-{% endblock %} 
+{% endblock %}

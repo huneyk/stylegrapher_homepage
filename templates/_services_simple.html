@@ -1,26 +1,46 @@
-<!-- Index 페이지용 간단한 서비스 템플릿 -->
+<!-- Index 페이지용 서비스 템플릿 - Dark Mode Theme -->
 <div class="services-simple-section">
+    <div class="section-header text-center mb-5">
+        <h2 class="services-section-title">Services</h2>
+        <div class="title-divider"></div>
+    </div>
+    
     <div class="row g-4 justify-content-center">
         {% for service in services %}
-        <div class="col-md-6">
+        <div class="col-lg-6">
             <div class="service-simple-card h-100">
-                <div class="card-body text-center p-4 d-flex flex-column">
+                <div class="card-glow-effect"></div>
+                <div class="card-body text-center p-4 p-md-5 d-flex flex-column">
                     <div class="card-content flex-grow-1">
-                        <h3 class="service-card-title mb-3">{{ service.name }}</h3>
+                        <div class="service-icon mb-3">
+                            {% if loop.index == 1 %}
+                            <i class="bi bi-cpu-fill"></i>
+                            {% elif loop.index == 2 %}
+                            <i class="bi bi-palette-fill"></i>
+                            {% elif loop.index == 3 %}
+                            <i class="bi bi-magic"></i>
+                            {% else %}
+                            <i class="bi bi-camera-fill"></i>
+                            {% endif %}
+                        </div>
+                        <h3 class="service-card-title mb-3">{{ _(service.name) }}</h3>
                         <p class="service-card-description mb-4">
                             {% if service.options %}
-                                {{ service.options[0].description }}
+                                {{ _(service.options[0].description) }}
                             {% else %}
-                                {{ service.description }}
+                                {{ _(service.description) }}
                             {% endif %}
                         </p>
                         
-                        <!-- 서비스 옵션 버튼들 (2개씩 배치) -->
+                        <!-- 서비스 옵션 버튼들 -->
                         {% if service.options %}
-                        <div class="service-options-buttons mb-4">
+                        <div class="service-options-buttons">
                             {% for option in service.options %}
                             <div class="option-button-wrapper">
-                                <a href="{{ url_for('main.service_option_detail', id=option.id) }}" class="option-button">{{ option.name }}</a>
+                                <a href="{{ url_for('main.service_option_detail', id=option.id) }}" class="option-button">
+                                    <span class="option-text">{{ _(option.name) }}</span>
+                                    <i class="bi bi-arrow-right-short option-arrow"></i>
+                                </a>
                             </div>
                             {% endfor %}
                         </div>
@@ -35,20 +55,45 @@
 
 <style>
 .services-simple-section {
-    padding: 3rem 0;
-    background: linear-gradient(135deg, rgba(248, 249, 250, 0.5), rgba(255, 255, 255, 0.8));
+    padding: 4rem 0;
+    position: relative;
+}
+
+.services-section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3rem;
+    color: #FDFCFF !important;
+    text-shadow: 0 0 40px rgba(200, 170, 255, 0.6);
+    font-weight: 300;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.5rem;
+}
+
+.services-section-subtitle {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 300;
+    letter-spacing: 0.05em;
+}
+
+.title-divider {
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #FDFCFF, transparent);
+    margin: 1.5rem auto 0;
+    box-shadow: 0 0 20px rgba(200, 170, 255, 0.7);
 }
 
 .service-simple-card {
-    background: white;
-    border: 1.5px solid rgba(139, 95, 191, 0.15);
-    border-radius: 20px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.08);
-    overflow: hidden;
+    background: rgba(18, 0, 36, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(200, 170, 255, 0.25);
+    border-radius: 28px;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    max-width: 500px;
-    margin: 0 auto;
+    overflow: hidden;
 }
 
 .service-simple-card::before {
@@ -57,44 +102,72 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, rgba(139, 95, 191, 0.6), rgba(139, 95, 191, 0.8), rgba(139, 95, 191, 0.6));
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #FDFCFF, #E8DCFF, transparent);
+    box-shadow: 0 0 25px rgba(200, 170, 255, 0.8);
+    opacity: 0.9;
+}
+
+.card-glow-effect {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at center, rgba(200, 170, 255, 0.15) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
 }
 
 .service-simple-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 8px 30px rgba(139, 95, 191, 0.2);
-    border-color: rgba(139, 95, 191, 0.3);
+    transform: translateY(-12px);
+    border-color: rgba(200, 170, 255, 0.5);
+    box-shadow: 0 0 60px rgba(200, 170, 255, 0.35), 0 30px 80px rgba(0, 0, 0, 0.5);
+}
+
+.service-simple-card:hover .card-glow-effect {
+    opacity: 1;
+}
+
+.service-icon {
+    font-size: 2.8rem;
+    color: #FDFCFF;
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0 15px rgba(200, 170, 255, 0.7));
+    transition: all 0.4s ease;
+}
+
+.service-simple-card:hover .service-icon {
+    transform: scale(1.15);
+    filter: drop-shadow(0 0 25px rgba(200, 170, 255, 0.95));
 }
 
 .service-card-title {
-    font-family: 'Nanum Gothic', sans-serif;
-    font-size: 1.4rem;
-    color: var(--main-color);
-    font-weight: 600;
-    line-height: 1.3;
-    margin-bottom: 1rem;
-    background-color: rgba(var(--sub-color-rgb), 0.1);
-    padding: 0.75rem 1.5rem;
-    border-radius: 12px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    color: #FDFCFF !important;
+    font-weight: 400;
+    background: rgba(200, 170, 255, 0.12);
+    padding: 0.8rem 2rem;
+    border-radius: 16px;
+    display: inline-block;
+    text-shadow: 0 0 20px rgba(200, 170, 255, 0.5);
+    border: 1px solid rgba(200, 170, 255, 0.2);
 }
 
 .service-card-description {
-    color: #6c757d;
+    color: rgba(255, 255, 255, 0.9);
     font-size: 1rem;
-    line-height: 1.6;
-    margin-bottom: 1.5rem;
-    padding: 0 0.5rem;
+    line-height: 1.8;
+    padding: 0 1rem;
 }
 
 .service-options-buttons {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.8rem;
-    margin-bottom: 0.5rem;
-    padding: 0 1rem;
-    min-height: 120px;
-    align-content: start;
+    gap: 1rem;
+    padding: 0.5rem;
 }
 
 .option-button-wrapper {
@@ -103,64 +176,112 @@
 
 .option-button {
     width: 100%;
-    background: rgba(var(--main-color-rgb), 0.1);
-    color: var(--main-color-alpha);
-    border: 1px solid rgba(var(--sub-color-rgb), 0.4);
-    padding: 0.6rem 0.8rem;
-    border-radius: 12px;
+    background: rgba(200, 170, 255, 0.1);
+    color: #FDFCFF;
+    border: 1px solid rgba(200, 170, 255, 0.3);
+    padding: 0.85rem 1rem;
+    border-radius: 14px;
     font-size: 0.9rem;
     font-weight: 500;
-    transition: all 0.3s ease;
+    transition: all 0.4s ease;
     cursor: pointer;
     text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     text-decoration: none;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.option-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(200, 170, 255, 0.25), transparent);
+    transition: left 0.4s ease;
+}
+
+.option-button:hover::before {
+    left: 100%;
+}
+
+.option-arrow {
+    font-size: 1.2rem;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s ease;
 }
 
 .option-button:hover {
-    background: rgba(var(--main-color-rgb), 0.2);
-    border-color: rgba(var(--sub-color-rgb), 0.6);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(var(--sub-color-rgb), 0.2);
-    color: var(--main-color);
-    text-decoration: none;
+    background: linear-gradient(135deg, #F8F4FF, #E8DCFF);
+    border-color: transparent;
+    color: #1a0030;
+    box-shadow: 0 0 25px rgba(200, 170, 255, 0.5);
+    transform: translateY(-3px);
 }
 
+.option-button:hover .option-arrow {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.option-button:hover .option-text {
+    transform: translateX(-5px);
+}
+
+.option-text {
+    transition: transform 0.3s ease;
+}
 
 .card-content {
-    min-height: 220px;
+    min-height: 280px;
     display: flex;
     flex-direction: column;
+    position: relative;
+    z-index: 1;
 }
 
 /* 반응형 디자인 */
 @media (max-width: 992px) {
-    .service-options-buttons {
-        padding: 0 0.5rem;
-        gap: 0.6rem;
-        min-height: 110px;
+    .services-section-title {
+        font-size: 2.5rem;
     }
     
-    .card-content {
-        min-height: 200px;
+    .service-options-buttons {
+        gap: 0.8rem;
     }
     
     .option-button {
         font-size: 0.85rem;
-        padding: 0.5rem 0.6rem;
+        padding: 0.75rem 0.8rem;
+    }
+    
+    .card-content {
+        min-height: 260px;
     }
 }
 
 @media (max-width: 768px) {
     .services-simple-section {
-        padding: 2rem 0;
+        padding: 3rem 0;
+    }
+    
+    .services-section-title {
+        font-size: 2.2rem;
+    }
+    
+    .services-section-subtitle {
+        font-size: 1rem;
     }
     
     .service-card-title {
-        font-size: 1.2rem;
+        font-size: 1.5rem;
+        padding: 0.6rem 1.5rem;
     }
     
     .service-card-description {
@@ -170,17 +291,20 @@
     
     .service-options-buttons {
         padding: 0;
-        gap: 0.5rem;
-        min-height: 100px;
-    }
-    
-    .card-content {
-        min-height: 180px;
+        gap: 0.6rem;
     }
     
     .option-button {
         font-size: 0.8rem;
-        padding: 0.5rem 0.4rem;
+        padding: 0.7rem 0.6rem;
+    }
+    
+    .card-content {
+        min-height: 240px;
+    }
+    
+    .service-icon {
+        font-size: 2.3rem;
     }
 }
 
@@ -192,16 +316,15 @@
     .service-options-buttons {
         grid-template-columns: 1fr;
         gap: 0.5rem;
-        min-height: 160px;
     }
     
     .card-content {
-        min-height: 220px;
+        min-height: auto;
     }
     
     .option-button {
         font-size: 0.85rem;
-        padding: 0.6rem 0.8rem;
+        padding: 0.8rem 1rem;
     }
 }
-</style> 
+</style>

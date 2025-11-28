@@ -8,7 +8,7 @@
                 <h3 class="card-title mb-1">{{ gallery.title }}</h3>
                 <h4 class="card-subtitle mb-3">{{ gallery.subtitle }}</h4>
                 <p class="card-text">{{ gallery.description }}</p>
-                <a href="{{ url_for('main.gallery_detail', id=gallery.id) }}" class="btn btn-primary">자세히 보기</a>
+                <a href="{{ url_for('main.gallery_detail', id=gallery.id) }}" class="btn btn-primary">{{ _('자세히 보기') }}</a>
             </div>
         </div>
     </div>

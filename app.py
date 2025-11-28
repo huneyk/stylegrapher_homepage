@@ -1,14 +1,23 @@
 import os
 import json
-from flask import Flask, request, abort, send_from_directory
+from flask import Flask, request, abort, send_from_directory, session, g, redirect, url_for
 from routes.main import main
 from routes.admin import admin
-from extensions import db, login_manager, migrate, mail
+from extensions import db, login_manager, migrate, mail, babel
 from models import User
 from config import Config
 from pymongo import MongoClient
 from dotenv import load_dotenv
 from utils.security import add_security_headers, is_suspicious_request, get_client_ip, log_security_event
+
+# 지원하는 언어 목록
+SUPPORTED_LANGUAGES = {
+    'ko': '한국어',
+    'en': 'English',
+    'ja': '日本語',
+    'zh': '中文',
+    'es': 'Español'
+}
 
 # .env 파일 로드
 load_dotenv()
@@ -45,11 +54,38 @@ def create_app():
     # 업로드 폴더 설정
     app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static/uploads')
     
+    # Babel 설정
+    app.config['BABEL_DEFAULT_LOCALE'] = 'ko'
+    app.config['BABEL_SUPPORTED_LOCALES'] = list(SUPPORTED_LANGUAGES.keys())
+    app.config['LANGUAGES'] = SUPPORTED_LANGUAGES
+    
     # 확장 기능 초기화
     db.init_app(app)
     login_manager.init_app(app)
     migrate.init_app(app, db)
     mail.init_app(app)
+    
+    # Babel 초기화 with locale selector
+    def get_locale():
+        # 1. URL 파라미터에서 언어 확인
+        lang = request.args.get('lang')
+        if lang and lang in SUPPORTED_LANGUAGES:
+            session['lang'] = lang
+            return lang
+        
+        # 2. 세션에서 저장된 언어 확인
+        if 'lang' in session and session['lang'] in SUPPORTED_LANGUAGES:
+            return session['lang']
+        
+        # 3. 브라우저 Accept-Language 헤더에서 자동 감지
+        best_match = request.accept_languages.best_match(list(SUPPORTED_LANGUAGES.keys()))
+        if best_match:
+            return best_match
+        
+        # 4. 기본값: 한국어
+        return 'ko'
+    
+    babel.init_app(app, locale_selector=get_locale)
     
     login_manager.login_view = 'admin.login'
     
@@ -219,6 +255,27 @@ def create_app():
             return json.loads(value)
         except (json.JSONDecodeError, TypeError):
             return []
+    
+    # 전역 컨텍스트 추가 - 언어 설정
+    @app.context_processor
+    def inject_language_data():
+        from flask_babel import get_locale
+        current_locale = get_locale()
+        return dict(
+            current_lang=str(current_locale) if current_locale else 'ko',
+            supported_languages=SUPPORTED_LANGUAGES
+        )
+    
+    # 언어 변경 라우트
+    @app.route('/set-language/<lang>')
+    def set_language(lang):
+        if lang in SUPPORTED_LANGUAGES:
+            session['lang'] = lang
+        # 이전 페이지로 리다이렉트
+        referrer = request.referrer
+        if referrer:
+            return redirect(referrer)
+        return redirect(url_for('main.index'))
     
     # 전역 컨텍스트 추가 - 사이드 메뉴용 카테고리별 서비스
     @app.context_processor

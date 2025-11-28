@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}개인정보처리방침{% endblock %}
+{% block title %}{{ _('개인정보처리방침') }}{% endblock %}
 
 {% block content %}
 <div class="container py-5">
     <div class="card">
         <div class="card-body p-5">
-            <h1 class="text-center mb-5 page-title">개인정보처리방침</h1>
+            <h1 class="text-center mb-5 page-title">{{ _('개인정보처리방침') }}</h1>
             
             <div class="privacy-content">
                 {{ policy.content | safe }}
@@ -15,7 +15,7 @@
                     <p class="text-center text-muted">
                         <small>
                             <i class="fas fa-clock me-1"></i>
-                            최종 업데이트: {{ policy.updated_at.strftime('%Y년 %m월 %d일') if policy.updated_at else '최초 생성' }}
+                            {{ _('최종 업데이트') }}: {{ policy.updated_at.strftime('%Y-%m-%d') if policy.updated_at else _('최초 생성') }}
                         </small>
                     </p>
                 </div>

@@ -1,63 +1,187 @@
 {% extends "base.html" %}
 
-{% block title %}고객 스토리{% endblock %}
+{% block title %}{{ _('고객 스토리') }}{% endblock %}
 
-{% block meta_description %}스타일그래퍼를 경험한 고객들의 생생한 후기와 변화 과정을 만나보세요. 전문 스타일링으로 완성된 고객들의 아름다운 변신 스토리를 확인하세요.{% endblock %}
+{% block meta_description %}{{ _('스타일그래퍼를 경험한 고객들의 생생한 후기와 변화 과정을 만나보세요. 전문 스타일링으로 완성된 고객들의 아름다운 변신 스토리를 확인하세요.') }}{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-12">
-            <div class="page-header text-center mb-5">
-                <h1 class="page-title">고객 스토리</h1>
-                <p class="page-subtitle">스타일그래퍼와 함께한 고객들의 생생한 후기</p>
+<section class="customer-story-page py-5">
+    <div class="container">
+        <!-- Header -->
+        <div class="page-header text-center mb-5">
+            <div class="header-icon mb-4">
+                <i class="bi bi-chat-heart-fill"></i>
             </div>
+            <h1 class="page-title">{{ _('고객 스토리') }}</h1>
+            <p class="page-subtitle">{{ _('스타일그래퍼와 함께한 고객들의 생생한 후기') }}</p>
+            <div class="title-divider"></div>
         </div>
-    </div>
 
-    <div class="row">
-        <div class="col-12">
-            <div class="coming-soon-section text-center py-5">
+        <!-- Coming Soon Section -->
+        <div class="coming-soon-card glass-card">
+            <div class="card-body text-center py-5">
                 <div class="coming-soon-icon mb-4">
-                    <i class="bi bi-chat-heart" style="font-size: 5rem; color: rgba(139, 95, 191, 0.6);"></i>
+                    <i class="bi bi-stars"></i>
                 </div>
-                <h2 class="mb-3">Coming Soon</h2>
-                <p class="text-muted">고객들의 특별한 스토리를 준비 중입니다.<br>
-                곧 다양한 변화와 경험담을 만나보실 수 있습니다.</p>
+                <h2 class="coming-soon-title mb-3">Coming Soon</h2>
+                <p class="coming-soon-text">
+                    {{ _('고객들의 특별한 스토리를 준비 중입니다.') }}<br>
+                    {{ _('곧 다양한 변화와 경험담을 만나보실 수 있습니다.') }}
+                </p>
+                <div class="coming-soon-glow"></div>
             </div>
         </div>
     </div>
-</div>
+</section>
 
 <style>
+.customer-story-page {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+}
+
 .page-header {
-    padding: 2rem 0;
-    background: linear-gradient(135deg, rgba(139, 95, 191, 0.1), rgba(139, 95, 191, 0.05));
-    border-radius: 15px;
-    margin-bottom: 3rem;
+    position: relative;
+}
+
+.header-icon {
+    font-size: 4rem;
+    color: var(--neon-lavender);
+    filter: drop-shadow(0 0 30px rgba(181, 126, 220, 0.6));
+    animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        filter: drop-shadow(0 0 20px rgba(181, 126, 220, 0.5));
+        transform: scale(1);
+    }
+    50% {
+        filter: drop-shadow(0 0 40px rgba(181, 126, 220, 0.8));
+        transform: scale(1.05);
+    }
 }
 
 .page-title {
-    color: rgba(139, 95, 191, 0.8);
-    font-weight: 700;
-    margin-bottom: 1rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3.5rem;
+    color: var(--neon-lavender);
+    text-shadow: 0 0 50px rgba(181, 126, 220, 0.5);
+    font-weight: 400;
+    letter-spacing: 0.1em;
 }
 
 .page-subtitle {
-    color: #6c757d;
+    color: rgba(255, 255, 255, 0.6);
     font-size: 1.1rem;
-    margin: 0;
+    margin-bottom: 1.5rem;
 }
 
-.coming-soon-section {
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.1);
+.title-divider {
+    width: 100px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--neon-lavender), transparent);
+    margin: 0 auto;
+    box-shadow: 0 0 20px rgba(181, 126, 220, 0.6);
+}
+
+.coming-soon-card {
+    background: rgba(18, 0, 36, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(181, 126, 220, 0.2);
+    border-radius: 28px;
     min-height: 400px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.coming-soon-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--neon-lavender), var(--electric-violet), transparent);
+    box-shadow: 0 0 30px rgba(181, 126, 220, 0.6);
+}
+
+.coming-soon-icon {
+    font-size: 5rem;
+    color: var(--neon-lavender);
+    opacity: 0.7;
+    filter: drop-shadow(0 0 30px rgba(181, 126, 220, 0.5));
+    animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-15px);
+    }
+}
+
+.coming-soon-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    color: var(--neon-lavender);
+    font-weight: 400;
+    text-shadow: 0 0 30px rgba(181, 126, 220, 0.4);
+    letter-spacing: 0.1em;
+}
+
+.coming-soon-text {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1.1rem;
+    line-height: 1.9;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.coming-soon-glow {
+    position: absolute;
+    bottom: -50%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    height: 300px;
+    background: radial-gradient(ellipse, rgba(181, 126, 220, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+@media (max-width: 768px) {
+    .page-title {
+        font-size: 2.5rem;
+    }
+    
+    .header-icon {
+        font-size: 3rem;
+    }
+    
+    .coming-soon-card {
+        min-height: 350px;
+        border-radius: 20px;
+    }
+    
+    .coming-soon-icon {
+        font-size: 4rem;
+    }
+    
+    .coming-soon-title {
+        font-size: 2rem;
+    }
+    
+    .coming-soon-text {
+        font-size: 1rem;
+    }
 }
 </style>
-{% endblock %} 
+{% endblock %}

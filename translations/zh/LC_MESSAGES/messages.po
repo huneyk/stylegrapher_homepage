@@ -1,0 +1,686 @@
+# Chinese translations for Stylegrapher.
+# Copyright (C) 2025 Stylegrapher
+# This file is distributed under the same license as the Stylegrapher
+# project.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Stylegrapher 1.0\n"
+"Report-Msgid-Bugs-To: stylegrapher.ysg@gmail.com\n"
+"POT-Creation-Date: 2025-11-28 11:09+0900\n"
+"PO-Revision-Date: 2025-01-01 00:00+0000\n"
+"Last-Translator: Stylegrapher Team\n"
+"Language: zh\n"
+"Language-Team: zh <zh@stylegrapher.com>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: templates/_gallery.html:11
+msgid "자세히 보기"
+msgstr ""
+
+#: templates/_gallery_items.html:30
+msgid "이전"
+msgstr ""
+
+#: templates/_gallery_items.html:36
+msgid "다음"
+msgstr ""
+
+#: templates/_gallery_items.html:43
+msgid "모든 사진 보기"
+msgstr ""
+
+#: templates/_gallery_items.html:50
+msgid "사진"
+msgstr ""
+
+#: templates/_gallery_items.html:50
+msgid "장"
+msgstr ""
+
+# Main Menu Categories
+#: templates/_services.html:3 templates/base.html:109
+msgid "STG AI 분석"
+msgstr "STG AI分析"
+
+#: templates/_services.html:4 templates/base.html:132
+msgid "스타일링 컨설팅"
+msgstr "造型咨询"
+
+#: templates/_services.html:5 templates/base.html:165
+msgid "원데이 스타일링"
+msgstr "一日造型"
+
+#: templates/_services.html:6 templates/base.html:193
+msgid "화보 & 프로필"
+msgstr "画报 & 个人照"
+
+#: templates/about.html:3 templates/base.html:233 templates/index.html:525
+msgid "스타일그래퍼 소개"
+msgstr "关于Stylegrapher"
+
+#: templates/about.html:5
+msgid ""
+"스타일그래퍼는 국내 유일하게 헤어, 메이크업, 의상의 토탈 스타일링으로 고객 개인의 고유한 아름다움을 찾아 완성해드리는 전문 "
+"스타일링 스튜디오입니다."
+msgstr "Stylegrapher是韩国唯一一家通过发型、化妆、服装的全方位造型来发现并完成每位客户独特美丽的专业造型工作室。"
+
+# Common Text
+#: templates/about.html:14 templates/base.html:6 templates/base.html:335
+msgid "스타일그래퍼"
+msgstr "Stylegrapher"
+
+# About Page
+#: templates/about.html:15
+msgid "나를 브랜딩하는 아름다움과 스타일을 완성해 드립니다."
+msgstr "为您打造属于自己的美丽与风格。"
+
+#: templates/about.html:17
+msgid "국내에서 최초로, 그리고 유일하게"
+msgstr "在韩国首创且唯一"
+
+#: templates/about.html:18
+msgid "고도로 트레이닝된 아티스트들이"
+msgstr "经过高度培训的艺术家们"
+
+#: templates/about.html:19
+msgid "헤어와 메이크업, 의상의 토탈 스타일링으로"
+msgstr "通过发型、化妆和服装的全方位造型"
+
+#: templates/about.html:20
+msgid "고객 한 분 한 분만을 위한 아름다움과 스타일을 찾아 완성해 드립니다."
+msgstr "为每一位客户找到并完成属于他们独特的美丽与风格。"
+
+#: templates/about.html:23
+msgid "획일화되고 정형화된 미의 기준이 아니라"
+msgstr "不是千篇一律的审美标准"
+
+#: templates/about.html:24
+msgid "나만의 스타일로 완성된 아름다움을 경험해 보세요!"
+msgstr "体验用属于自己的风格完成的美丽！"
+
+#: templates/about.html:25
+msgid "지금 그 눈빛, 그 미소 그대로..."
+msgstr "此刻的眼神，那微笑依旧..."
+
+#: templates/about.html:26
+msgid "가장 아름답게 브랜딩 해드립니다."
+msgstr "为您打造最美的形象。"
+
+#: templates/about.html:49
+msgid "는 'style'에 기록자를 뜻하는 어미 'grapher'를 더해"
+msgstr "是将'style'与表示记录者的后缀'grapher'结合而成"
+
+#: templates/about.html:50
+msgid "'스타일기록자'"
+msgstr "\"风格记录者\""
+
+#: templates/about.html:50
+msgid ""
+"라는 뜻의 합성어입니다. 저희는 고객 한 분 한 분의 고유한 분위기와 매력을 파악해 헤어와 메이크업과 의상의 조화와 밸런스 "
+"찾아냅니다. 그 한 분만의 아름다움을 실현해 드리는 사람을"
+msgstr "的合成词。我们了解每位客户独特的气质与魅力，找到发型、化妆和服装的和谐与平衡。实现每位客户独特美丽的人被称为"
+
+#: templates/about.html:51
+msgid "'스타일그래퍼'"
+msgstr "\"Stylegrapher\""
+
+#: templates/about.html:51
+msgid "라고 합니다."
+msgstr "。"
+
+#: templates/about.html:69
+msgid ""
+"마를레네 디트리히, 그레타 가르보, 마릴린 먼로, 오드리 햅번, 그레이스 캘리, 트위기, 제인 버킨, 재클린 케네디, 데보라 해리,"
+" 다이애나 스펜서, 마돈나 - 각 시대별로 패션에 가장 큰 영향력을 지니고 있었던 그녀들을 기억하시나요? 각각의 스타일에서 상징적인"
+" 존재들이었던 이들을 우리는"
+msgstr "玛琳·黛德丽、葛丽泰·嘉宝、玛丽莲·梦露、奥黛丽·赫本、格蕾丝·凯利、崔姬、简·伯金、杰奎琳·肯尼迪、黛比·哈里、戴安娜·斯宾塞、麦当娜——您还记得这些在各个时代对时尚影响最大的女性吗？我们将这些在各自风格中具有象征意义的人物称为"
+
+#: templates/about.html:70
+msgid "'패션 아이콘'"
+msgstr "\"时尚偶像\""
+
+#: templates/about.html:70
+msgid "이라고 합니다."
+msgstr "。"
+
+#: templates/about.html:73
+#, fuzzy
+msgid ""
+"이미 클래식한 미의 기준이 되어버린 오드리 햅번의 곱슬거리는 짧은 뱅헤어와 짙은 눈썹, 결코 유행을 타지 않는 옷차림은 영원불멸의 "
+"스타일로 남아있습니다. 지금도 여전히 '햅번룩', '햅번스타일'로 리바이벌되며 패션, 뷰티계에 지대한 영향을 끼치고 있습니다."
+msgstr "奥黛丽·赫本卷曲的短刘海和浓眉，以及永不过时的着装，已经成为经典的审美标准，作为永恒的风格存在。至今仍以\"赫本造型\"、\"赫本风格\"的形式复兴，对时尚和美容界产生着巨大影响。"
+
+#: templates/about.html:91
+msgid "요즘은 일반인과 연예인의 경계가 허물어진 시대입니다. 시대별 패션 아이콘들은 그 시대의 아름다움을 따라가는 사람들이 아니라"
+msgstr "如今是普通人与明星之间界限模糊的时代。各个时代的时尚偶像不是追随那个时代审美的人，而是"
+
+#: templates/about.html:91
+msgid "'나다움'"
+msgstr "\"做自己\""
+
+#: templates/about.html:91
+msgid ""
+"으로 새로운 미의 기준을 세운 사람들이었습니다. 이제는 일반인들도 누구라도 개인의 브랜딩이 잘 되면 연예인 못지 않은 인기와 경제적"
+" 이익을 누릴 수 있게 되었습니다."
+msgstr "——用这种方式建立新审美标准的人。现在，即使是普通人，只要个人品牌打造得好，也可以享受不亚于明星的人气和经济利益。"
+
+#: templates/about.html:94
+msgid "기업 CEO나 정치인과 같이 수많은 사람들을 이끄는 리더들의 비주얼 스타일링이 중요해진 것은 더이상 말할 필요도 없습니다."
+msgstr "像企业CEO和政治家这样领导众多人的领袖们的视觉造型变得重要，这一点不言而喻。"
+
+#: templates/about.html:112
+msgid ""
+"스타일그래퍼는 수많은 방송과 광고촬영 현장에서 오랜 시간 동안 많은 셀럽들과 작업을 해왔습니다. 스타일그래퍼가 만난 연예인들 모두가"
+" 완벽한 외모와 몸매를 가지고 있었던 것은 아니었습니다. 저희가 했던 일은 셀럽들을 오랜 시간 곁에서 보고 연구하며 그 장점을 "
+"최대한 부각시키고 단점을 최대한 가려서 가장 매력적이고 완벽해 보일 수 있도록 하는 것이었습니다."
+msgstr "Stylegrapher在众多电视和广告拍摄现场长期与许多名人合作。Stylegrapher遇到的明星们并非都拥有完美的外貌和身材。我们所做的是长期观察和研究这些名人，最大限度地突出他们的优点，隐藏缺点，使他们看起来最有魅力和最完美。"
+
+#: templates/about.html:115
+msgid "저희는 결국"
+msgstr "我们最终得出结论"
+
+#: templates/about.html:115
+msgid "미(美)라는 것은 자신만의 스타일을 찾아낼 때 완성되는 것"
+msgstr "美是在找到自己独特风格时才得以完成"
+
+#: templates/about.html:115
+msgid ""
+"이라는 결론을 내렸습니다. 저희는 이렇게 쌓은 다양한 노하우로 이제 그 누구라도 대중에게 저희의 역할을 확장해서 고객 한 분 한 "
+"분이 갖고 있는 본질적인 아름다움을 찾아내 드리는 역할을 스타일그래퍼의 사명이자 목표로 삼았습니다."
+msgstr "。我们将积累的各种专业知识扩展到大众，将发现每位客户本质美丽作为Stylegrapher的使命和目标。"
+
+#: templates/about.html:133
+msgid ""
+"똑같은 청소부여도 매일 기계적으로 청소를 반복하는 사람과 내가 지구 한구석을 깨끗이 하고 있다는 사명을 가지고 청소를 하는 사람의 "
+"퍼포먼스는 분명 다릅니다. 조직과 개인에서 퍼포먼스의 차이를 만들어주는 것은 바로 그가 가지고 있는"
+msgstr "即使是同样的清洁工，每天机械重复清洁的人和抱着\"我正在清洁地球一角\"这一使命进行清洁的人，其表现显然是不同的。在组织和个人中创造表现差异的正是他们所拥有的"
+
+#: templates/about.html:133
+msgid "가치"
+msgstr "价值"
+
+#: templates/about.html:133
+msgid "입니다."
+msgstr "。"
+
+#: templates/about.html:136
+msgid ""
+"기술이나 기능은 언제든 따라 잡힐 수 있지만 철학과 가치는 쉽게 흉내 낼 수 없습니다. 스타일그래퍼는 고객 한 분 한 분에 대한 "
+"애정과 깊은 이해를 바탕으로 고객의 이름으로 고객 한 분만의 스타일과 아름다움을 찾아 드리기 위해 끝까지 노력하겠습니다."
+msgstr "技术或功能随时可能被赶超，但哲学和价值不易被模仿。Stylegrapher将以对每位客户的关爱和深入了解为基础，为每位客户找到属于他们独特的风格和美丽而不懈努力。"
+
+#: templates/about.html:150
+msgid "드림"
+msgstr "Dream"
+
+#: templates/about.html:152
+msgid "스타일그래퍼는 상표등록돼 있습니다."
+msgstr "Stylegrapher是注册商标。"
+
+#: templates/ask.html:3 templates/ask.html:11 templates/ask.html:70
+msgid "문의하기"
+msgstr ""
+
+#: templates/ask.html:15 templates/booking.html:25
+msgid "이름"
+msgstr ""
+
+#: templates/ask.html:21 templates/booking.html:29
+msgid "휴대폰 번호"
+msgstr ""
+
+#: templates/ask.html:26 templates/booking.html:34
+msgid "숫자 11자리를 입력해주세요 ('-' 제외)"
+msgstr ""
+
+#: templates/ask.html:31 templates/booking.html:37
+msgid "이메일 주소"
+msgstr ""
+
+#: templates/ask.html:38 templates/booking.html:42
+msgid "문의 대상 서비스"
+msgstr ""
+
+#: templates/ask.html:40
+msgid "서비스를 선택해주세요"
+msgstr ""
+
+#: templates/ask.html:62 templates/booking.html:54
+msgid "메시지"
+msgstr ""
+
+#: templates/ask.html:87
+msgid "문의 접수 완료"
+msgstr ""
+
+#: templates/ask.html:92
+msgid "문의 사항이 잘 접수됐습니다."
+msgstr ""
+
+#: templates/ask.html:93
+msgid "곧 회신 드리겠습니다. 감사합니다!"
+msgstr ""
+
+#: templates/ask.html:97
+msgid "이메일 발송에 일시적인 문제가 발생했지만, 문의사항은 정상적으로 접수되었습니다."
+msgstr ""
+
+#: templates/ask.html:103
+msgid "확인"
+msgstr ""
+
+#: templates/base.html:7
+msgid ""
+"스타일그래퍼는 AI 얼굴분석, 퍼스널컬러 진단, 스타일링 컨설팅, 화보 및 프로필 촬영 서비스를 제공하는 전문 스타일링 "
+"스튜디오입니다."
+msgstr "Stylegrapher是一家提供AI面部分析、个人色彩诊断、造型咨询、画报及个人照拍摄服务的专业造型工作室。"
+
+#: templates/base.html:66
+msgid "언어 선택"
+msgstr "选择语言"
+
+#: templates/base.html:80
+msgid "메뉴 열기/닫기"
+msgstr "打开/关闭菜单"
+
+# Navigation
+#: templates/base.html:100 templates/base.html:247 templates/index.html:3
+msgid "홈"
+msgstr "首页"
+
+#: templates/base.html:116
+msgid "AI 얼굴 분석"
+msgstr "AI面部分析"
+
+#: templates/base.html:121
+msgid "AI 체형 분석"
+msgstr "AI体型分析"
+
+#: templates/base.html:139
+msgid "퍼스널 컬러 진단"
+msgstr "个人色彩诊断"
+
+#: templates/base.html:144
+msgid "메이크업 레슨"
+msgstr "化妆课程"
+
+#: templates/base.html:149
+msgid "헤어 스타일링 레슨"
+msgstr "发型造型课程"
+
+#: templates/base.html:154
+msgid "패션 스타일링 레슨"
+msgstr "时尚造型课程"
+
+#: templates/base.html:172
+msgid "메이크업"
+msgstr "化妆"
+
+#: templates/base.html:177
+msgid "헤어 드라이"
+msgstr "发型造型"
+
+#: templates/base.html:182
+msgid "패션 스타일링"
+msgstr "时尚造型"
+
+#: templates/base.html:200
+msgid "개인화보"
+msgstr "个人画报"
+
+#: templates/base.html:205
+msgid "프로필 촬영"
+msgstr "个人照拍摄"
+
+#: templates/base.html:210 templates/base.html:259 templates/gallery.html:3
+#: templates/gallery_detail.html:3
+msgid "갤러리"
+msgstr "画廊"
+
+#: templates/base.html:219 templates/base.html:271
+#: templates/customer_story.html:3 templates/customer_story.html:15
+#: templates/index.html:493
+msgid "고객 스토리"
+msgstr "客户故事"
+
+#: templates/base.html:226 templates/commercial_portfolio.html:3
+#: templates/commercial_portfolio.html:15 templates/index.html:509
+msgid "커머셜 포트폴리오"
+msgstr "商业作品集"
+
+#: templates/base.html:253 templates/services.html:3
+msgid "서비스"
+msgstr "服务"
+
+#: templates/base.html:265 templates/booking.html:58
+msgid "예약 신청"
+msgstr "预约申请"
+
+# Kakao Modal
+#: templates/base.html:280 templates/service_detail.html:514
+msgid "카카오톡 채널 안내"
+msgstr "KakaoTalk频道指南"
+
+#: templates/base.html:283 templates/service_detail.html:517
+msgid "안녕하세요?"
+msgstr "您好？"
+
+#: templates/base.html:284 templates/service_detail.html:518
+msgid ""
+"카카오톡 채널에 고객님의 성함과 희망 서비스, 희망 예약시간, 휴대전화 번호, 그리고 궁금하신 점을 알려주시면 최대한 빠른 시간 "
+"안에 회신 드리겠습니다."
+msgstr "请通过KakaoTalk频道告知您的姓名、所需服务、希望预约时间、手机号码以及任何问题，我们将尽快回复。"
+
+#: templates/base.html:285 templates/service_detail.html:519
+msgid "감사합니다."
+msgstr "谢谢。"
+
+#: templates/base.html:288 templates/service_detail.html:522
+msgid "계속하기"
+msgstr "继续"
+
+#: templates/base.html:289 templates/service_detail.html:523
+msgid "취소"
+msgstr "取消"
+
+#: templates/base.html:315
+msgid "스타일그래퍼 인스타그램 페이지"
+msgstr "Stylegrapher Instagram"
+
+#: templates/base.html:318
+msgid "스타일그래퍼 유튜브 채널"
+msgstr "Stylegrapher YouTube"
+
+#: templates/base.html:321
+msgid "스타일그래퍼 페이스북 페이지"
+msgstr "Stylegrapher Facebook"
+
+# Footer
+#: templates/base.html:326
+msgid "OPEN : 화-토 9:00-18:00"
+msgstr "营业时间：周二至周六 9:00-18:00"
+
+#: templates/base.html:326
+msgid "카카오톡 : 스타일그래퍼"
+msgstr "KakaoTalk：Stylegrapher"
+
+#: templates/base.html:327
+msgid "대표자 : 이사금"
+msgstr "代表人：李沙金"
+
+#: templates/base.html:327
+msgid "사업자 등록번호"
+msgstr "营业执照号"
+
+#: templates/base.html:328
+msgid "서울시 강남구 압구정로 46길 5-6 A동 502호"
+msgstr "首尔市江南区狎鸥亭路46街5-6号A栋502室"
+
+#: templates/base.html:331 templates/terms_of_service.html:3
+#: templates/terms_of_service.html:9
+msgid "이용약관"
+msgstr "使用条款"
+
+#: templates/base.html:332 templates/privacy_policy.html:3
+#: templates/privacy_policy.html:9
+msgid "개인정보처리방침"
+msgstr "隐私政策"
+
+#: templates/base.html:336
+msgid "사전 허가 없이 무단 복제나 전재, 배포, 상업적 비상업적 사용을 모두 금합니다."
+msgstr "未经事先许可，禁止任何形式的复制、转载、分发或商业/非商业使用。"
+
+#: templates/booking.html:3
+msgid "예약"
+msgstr ""
+
+#: templates/booking.html:11
+msgid "예약하기"
+msgstr ""
+
+#: templates/booking.html:44
+msgid "선택해주세요"
+msgstr ""
+
+#: templates/booking.html:133
+msgid "삭제"
+msgstr ""
+
+# Commercial Portfolio Page
+#: templates/commercial_portfolio.html:5
+msgid "스타일그래퍼의 전문적인 상업 촬영 포트폴리오를 확인하세요. 브랜드 협업과 다양한 커머셜 프로젝트 사례를 만나보실 수 있습니다."
+msgstr "查看Stylegrapher的专业商业摄影作品集。您可以看到品牌合作和各种商业项目案例。"
+
+#: templates/commercial_portfolio.html:16
+msgid "스타일그래퍼의 상업적 프로젝트와 협업 사례"
+msgstr "Stylegrapher的商业项目与合作案例"
+
+#: templates/commercial_portfolio.html:28
+msgid "스타일그래퍼의 다양한 커머셜 프로젝트를 준비 중입니다."
+msgstr "正在准备Stylegrapher的各种商业项目。"
+
+#: templates/commercial_portfolio.html:29
+msgid "브랜드 협업과 상업적 촬영 포트폴리오를 곧 공개합니다."
+msgstr "品牌合作和商业摄影作品集即将公开。"
+
+#: templates/customer_story.html:5
+#, fuzzy
+msgid ""
+"스타일그래퍼를 경험한 고객들의 생생한 후기와 변화 과정을 만나보세요. 전문 스타일링으로 완성된 고객들의 아름다운 변신 스토리를 "
+"확인하세요."
+msgstr "了解体验过Stylegrapher的客户们的真实评价和蜕变过程。查看通过专业造型完成的客户美丽蜕变故事。"
+
+# Customer Story Page
+#: templates/customer_story.html:16
+msgid "스타일그래퍼와 함께한 고객들의 생생한 후기"
+msgstr "与Stylegrapher共度的客户真实评价"
+
+#: templates/customer_story.html:28
+msgid "고객들의 특별한 스토리를 준비 중입니다."
+msgstr "正在准备客户的特别故事。"
+
+#: templates/customer_story.html:29
+msgid "곧 다양한 변화와 경험담을 만나보실 수 있습니다."
+msgstr "您很快就可以看到各种蜕变和体验故事。"
+
+#: templates/gallery.html:5
+msgid ""
+"스타일그래퍼의 개인화보, 커플화보, 프로필 촬영 포트폴리오를 갤러리에서 확인해보세요. 전문적인 스타일링과 촬영으로 완성된 다양한 "
+"작품들을 만나볼 수 있습니다."
+msgstr "在画廊查看Stylegrapher的个人画报、情侣画报、个人照拍摄作品集。您可以欣赏到通过专业造型和拍摄完成的各种作品。"
+
+# Gallery Page
+#: templates/gallery.html:14
+msgid "당신만의 특별한 순간을 담다"
+msgstr "记录属于您的特别时刻"
+
+#: templates/gallery.html:32 templates/index.html:335
+msgid "더 많은 갤러리 보기"
+msgstr "查看更多画廊"
+
+#: templates/gallery_detail.html:15
+msgid "총"
+msgstr ""
+
+#: templates/gallery_detail.html:15
+msgid "장의 사진"
+msgstr ""
+
+#: templates/gallery_detail.html:19
+#, fuzzy
+msgid "갤러리 목록"
+msgstr "画廊"
+
+#: templates/gallery_detail.html:51
+msgid "이 갤러리에는 아직 사진이 없습니다."
+msgstr ""
+
+# Index Page
+#: templates/index.html:50
+msgid "당신의 무한한 가능성을"
+msgstr "您无限的可能性"
+
+#: templates/index.html:51
+msgid "탐험하는 여정"
+msgstr "探索之旅"
+
+#: templates/index.html:494
+msgid "고객들의 변화와 감동의 이야기"
+msgstr "客户的蜕变与感动故事"
+
+#: templates/index.html:510
+msgid "전문적인 상업 촬영 포트폴리오"
+msgstr "专业商业摄影作品集"
+
+#: templates/index.html:526
+msgid "스타일그래퍼와 함께하는 스타일 여정"
+msgstr "与Stylegrapher共同的风格之旅"
+
+#: templates/index.html:632 templates/service_detail.html:87
+#: templates/service_option_detail.html:228
+msgid "궁금하신 점이나 예약신청은 카카오톡 채널을 이용해주시기 바랍니다."
+msgstr "如有疑问或需要预约，请使用KakaoTalk频道。"
+
+#: templates/index.html:634 templates/service_detail.html:90
+#: templates/service_option_detail.html:230
+msgid "문의/예약신청"
+msgstr "咨询/预约"
+
+#: templates/privacy_policy.html:18 templates/terms_of_service.html:18
+msgid "최종 업데이트"
+msgstr ""
+
+#: templates/privacy_policy.html:18 templates/terms_of_service.html:18
+msgid "최초 생성"
+msgstr ""
+
+#: templates/service_detail.html:20
+#, fuzzy
+msgid "서비스 특징"
+msgstr "服务内容"
+
+#: templates/service_detail.html:37
+#, fuzzy
+msgid "추천 패키지"
+msgstr "套餐名称"
+
+#: templates/service_detail.html:58
+msgid "개별 서비스 옵션"
+msgstr ""
+
+#: templates/service_detail.html:70 templates/service_option_detail.html:56
+msgid "가격"
+msgstr "价格"
+
+#: templates/service_detail.html:71
+msgid "원"
+msgstr ""
+
+#: templates/service_detail.html:74 templates/service_option_detail.html:55
+msgid "소요시간"
+msgstr "所需时间"
+
+# Service Detail Page
+#: templates/service_option_detail.html:31
+msgid "상세 내용"
+msgstr "详细内容"
+
+#: templates/service_option_detail.html:48
+msgid "패키지 및 가격"
+msgstr "套餐及价格"
+
+#: templates/service_option_detail.html:53
+msgid "패키지명"
+msgstr "套餐名称"
+
+#: templates/service_option_detail.html:54
+msgid "서비스 내용"
+msgstr "服务内容"
+
+#: templates/service_option_detail.html:57
+#: templates/service_option_detail.html:165
+#: templates/service_option_detail.html:203
+msgid "비고"
+msgstr "备注"
+
+#: templates/service_option_detail.html:81
+msgid "예약 방법"
+msgstr "预约方式"
+
+#: templates/service_option_detail.html:93
+msgid "카카오톡채널로 문의/예약신청 하기"
+msgstr "通过KakaoTalk频道咨询/预约"
+
+#: templates/service_option_detail.html:105
+msgid "제작비 결제 방식"
+msgstr "制作费支付方式"
+
+#: templates/service_option_detail.html:115
+msgid "입금 계좌"
+msgstr "汇款账户"
+
+#: templates/service_option_detail.html:116
+msgid "*카드 결제는 스타일그래퍼 샵으로 직접 방문하시면 가능합니다."
+msgstr "*可亲临Stylegrapher店铺进行刷卡支付。"
+
+#: templates/service_option_detail.html:127
+msgid "안내 사항"
+msgstr "注意事项"
+
+#: templates/service_option_detail.html:143
+msgid "예약 변경 및 환불 규정"
+msgstr "预约变更及退款规定"
+
+#: templates/service_option_detail.html:159
+msgid "환불 기준표"
+msgstr "退款标准表"
+
+#: templates/service_option_detail.html:163
+msgid "기준일"
+msgstr "基准日"
+
+#: templates/service_option_detail.html:164
+msgid "환불비율"
+msgstr "退款比例"
+
+#: templates/service_option_detail.html:193
+msgid "시간외 업차지"
+msgstr "超时加收费用"
+
+#: templates/service_option_detail.html:201
+msgid "시간대/조건"
+msgstr "时间段/条件"
+
+#: templates/service_option_detail.html:202
+msgid "추가 요금"
+msgstr "附加费用"
+
+#: templates/services.html:5
+msgid ""
+"스타일그래퍼의 AI 얼굴분석, AI 체형분석, 퍼스널컬러 진단, 메이크업/헤어/패션 스타일링 레슨, 원데이 스타일링, 화보 및 "
+"프로필 촬영 서비스를 만나보세요."
+msgstr "体验Stylegrapher的AI面部分析、AI体型分析、个人色彩诊断、化妆/发型/时尚造型课程、一日造型、画报及个人照拍摄服务。"
+
+# Services Page
+#: templates/services.html:15
+msgid "당신의 무한한 가능성을 탐험하는 여정"
+msgstr "探索您无限可能的旅程"
+
+# Service Descriptions (from database)
+msgid "나를 해석하는 시작점. 나를 알고, 더 나답게 시작하는 첫 단계입니다."
+msgstr "解读自己的起点。了解自己，更真实地开始的第一步。"
+
+msgid "AI 분석 기반 제안으로 나만의 스타일 전략을 설계하고 전문가에게 직접 배우는 서비스입니다."
+msgstr "基于AI分析建议设计您专属风格策略，并直接向专家学习的服务。"
+
+msgid "AI 분석을 바탕으로 하루 만에 스타일을 완성해보는 체험형 서비스입니다."
+msgstr "基于AI分析，在一天内完成造型的体验式服务。"
+
+msgid "최고의 전문가들과 함께 나의 무한한 가능성을 기록하는 결과물 서비스입니다."
+msgstr "与顶尖专家一起记录您无限可能的成果服务。"
+

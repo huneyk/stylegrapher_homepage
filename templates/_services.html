@@ -1,44 +1,54 @@
-<!-- 2단계 서비스 구성 템플릿 -->
+<!-- 2단계 서비스 구성 템플릿 - Dark Mode Theme -->
 {% set service_categories = {
-    'ai_analysis': 'STG AI 분석',
-    'consulting': '스타일링 컨설팅',
-    'oneday': '원데이 스타일링',
-    'photo': '화보 & 프로필'
+    'ai_analysis': _('STG AI 분석'),
+    'consulting': _('스타일링 컨설팅'),
+    'oneday': _('원데이 스타일링'),
+    'photo': _('화보 & 프로필')
+} %}
+
+{% set category_icons = {
+    'ai_analysis': 'bi-cpu-fill',
+    'consulting': 'bi-palette-fill',
+    'oneday': 'bi-magic',
+    'photo': 'bi-camera-fill'
 } %}
 
 {% for category, category_title in service_categories.items() %}
     {% set category_services = services | selectattr('category', 'equalto', category) | list %}
     {% if category_services %}
     <div class="service-category mb-5">
-        <h2 class="category-title mb-4">{{ category_title }}</h2>
+        <div class="category-header text-center mb-4">
+            <div class="category-icon mb-3">
+                <i class="bi {{ category_icons[category] }}"></i>
+            </div>
+            <h2 class="category-title">{{ category_title }}</h2>
+            <div class="category-divider"></div>
+        </div>
         
         {% for service in category_services %}
         <div class="service-group mb-4">
             <div class="service-header">
-                <h3 class="service-title">{{ service.name }}</h3>
-                <p class="service-description">{{ service.description }}</p>
+                <h3 class="service-title">{{ _(service.name) }}</h3>
+                <p class="service-description">{{ _(service.description) }}</p>
             </div>
             
             <div class="service-options row g-3">
                 {% for option in service.options %}
                 <div class="col-md-6 col-lg-4">
-                    <div class="option-card h-100">
-                        <div class="card-body">
-                            <h5 class="option-name">{{ option.name }}</h5>
-                            <p class="option-description">{{ option.description }}</p>
-                            <div class="option-details">
-                                <span class="price">{{ "{:,}".format(option.price) }}원</span>
-                                <span class="duration">{{ option.duration }}</span>
+                    <a href="{{ url_for('main.service_option_detail', id=option.id) }}" class="option-card-link">
+                        <div class="option-card h-100">
+                            <div class="card-body">
+                                <h5 class="option-name">{{ _(option.name) }}</h5>
+                                <p class="option-description">{{ _(option.description) }}</p>
+                                <div class="option-arrow">
+                                    <i class="bi bi-arrow-right"></i>
+                                </div>
                             </div>
+                            <div class="option-glow"></div>
                         </div>
-                    </div>
+                    </a>
                 </div>
                 {% endfor %}
-            </div>
-            
-            <div class="service-actions mt-3">
-                <a href="{{ url_for('main.service_detail', id=service.id) }}" class="btn btn-primary">자세히 보기</a>
-                <a href="{{ url_for('main.contact') }}?service={{ service.id }}" class="btn btn-outline-primary">예약 문의</a>
             </div>
         </div>
         {% endfor %}
@@ -48,48 +58,54 @@
 
 <style>
 .service-category {
-    border-bottom: 2px solid rgba(139, 95, 191, 0.1);
-    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(200, 170, 255, 0.15);
+    padding-bottom: 3rem;
 }
 
 .service-category:last-child {
     border-bottom: none;
 }
 
-.category-title {
-    font-family: 'Nanum Gothic', sans-serif;
-    font-size: 1.8rem;
-    color: rgba(139, 95, 191, 0.9);
-    font-weight: 600;
-    text-align: center;
-    position: relative;
-    padding-bottom: 1rem;
+.category-header {
+    margin-bottom: 2rem;
 }
 
-.category-title:after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
+.category-icon {
+    font-size: 2.5rem;
+    color: #FDFCFF;
+    filter: drop-shadow(0 0 20px rgba(200, 170, 255, 0.6));
+}
+
+.category-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    color: #FDFCFF !important;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-shadow: 0 0 30px rgba(200, 170, 255, 0.5);
+}
+
+.category-divider {
     width: 60px;
-    height: 3px;
-    background: linear-gradient(90deg, rgba(139, 95, 191, 0.3), rgba(139, 95, 191, 0.8), rgba(139, 95, 191, 0.3));
-    border-radius: 2px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #FDFCFF, transparent);
+    margin: 1rem auto 0;
+    box-shadow: 0 0 15px rgba(200, 170, 255, 0.6);
 }
 
 .service-group {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 249, 250, 0.9));
-    border: 1.5px solid rgba(139, 95, 191, 0.2);
-    border-radius: 15px;
+    background: rgba(18, 0, 36, 0.5);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(200, 170, 255, 0.2);
+    border-radius: 20px;
     padding: 2rem;
-    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.1);
-    transition: all 0.3s ease;
+    transition: all 0.4s ease;
 }
 
 .service-group:hover {
-    box-shadow: 0 6px 25px rgba(139, 95, 191, 0.15);
-    transform: translateY(-2px);
+    border-color: rgba(200, 170, 255, 0.4);
+    box-shadow: 0 0 40px rgba(200, 170, 255, 0.2);
 }
 
 .service-header {
@@ -98,109 +114,96 @@
 }
 
 .service-title {
-    font-family: 'Nanum Gothic', sans-serif;
-    font-size: 1.5rem;
-    color: rgba(139, 95, 191, 0.8);
-    font-weight: 600;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    color: #FDFCFF !important;
+    font-weight: 400;
     margin-bottom: 0.5rem;
+    text-shadow: 0 0 20px rgba(200, 170, 255, 0.4);
 }
 
 .service-description {
-    color: #6c757d;
-    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 1rem;
     margin-bottom: 0;
 }
 
+/* Option Cards */
+.option-card-link {
+    text-decoration: none;
+    display: block;
+}
+
 .option-card {
-    border: 1px solid rgba(139, 95, 191, 0.2);
-    border-radius: 12px;
-    background: white;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(139, 95, 191, 0.08);
+    background: rgba(18, 0, 36, 0.6);
+    border: 1px solid rgba(200, 170, 255, 0.25);
+    border-radius: 16px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
 }
 
 .option-card:hover {
-    border-color: rgba(139, 95, 191, 0.4);
-    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.15);
-    transform: translateY(-2px);
+    border-color: #FDFCFF;
+    transform: translateY(-8px);
+    box-shadow: 0 0 35px rgba(200, 170, 255, 0.4), 0 15px 40px rgba(0, 0, 0, 0.3);
+}
+
+.option-card .card-body {
+    padding: 1.5rem;
+    position: relative;
+    z-index: 1;
 }
 
 .option-name {
-    font-family: 'Nanum Gothic', sans-serif;
+    font-family: 'Noto Sans KR', sans-serif;
     font-size: 1.1rem;
-    color: rgba(139, 95, 191, 0.8);
-    font-weight: 600;
+    color: #FDFCFF;
+    font-weight: 500;
     margin-bottom: 0.75rem;
 }
 
 .option-description {
-    color: #6c757d;
+    color: rgba(255, 255, 255, 0.85);
     font-size: 0.9rem;
-    line-height: 1.4;
+    line-height: 1.6;
     margin-bottom: 1rem;
 }
 
-.option-details {
+.option-arrow {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 0.75rem;
-    border-top: 1px solid rgba(139, 95, 191, 0.1);
+    justify-content: flex-end;
+    padding-top: 0.5rem;
 }
 
-.price {
-    font-weight: 600;
-    color: rgba(139, 95, 191, 0.8);
-    font-size: 1rem;
-}
-
-.duration {
-    background: rgba(139, 95, 191, 0.1);
-    color: rgba(139, 95, 191, 0.8);
-    padding: 0.25rem 0.5rem;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    font-weight: 500;
-}
-
-.service-actions {
-    text-align: center;
-    padding-top: 1rem;
-    border-top: 1px solid rgba(139, 95, 191, 0.1);
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, rgba(139, 95, 191, 0.8), rgba(139, 95, 191, 0.9));
-    border: none;
-    padding: 0.75rem 2rem;
-    border-radius: 25px;
-    font-weight: 500;
+.option-arrow i {
+    color: #FDFCFF;
+    font-size: 1.2rem;
     transition: all 0.3s ease;
-    margin-right: 1rem;
+    opacity: 0.7;
 }
 
-.btn-primary:hover {
-    background: linear-gradient(135deg, rgba(139, 95, 191, 0.9), rgba(139, 95, 191, 1));
-    transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.3);
+.option-card:hover .option-arrow i {
+    opacity: 1;
+    transform: translateX(5px);
+    filter: drop-shadow(0 0 10px rgba(200, 170, 255, 0.7));
 }
 
-.btn-outline-primary {
-    border: 2px solid rgba(139, 95, 191, 0.6);
-    color: rgba(139, 95, 191, 0.8);
-    padding: 0.75rem 2rem;
-    border-radius: 25px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    background: transparent;
+.option-glow {
+    position: absolute;
+    bottom: -30%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 60px;
+    background: radial-gradient(ellipse, rgba(200, 170, 255, 0.25) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
 }
 
-.btn-outline-primary:hover {
-    background: rgba(139, 95, 191, 0.8);
-    border-color: rgba(139, 95, 191, 0.8);
-    color: white;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.2);
+.option-card:hover .option-glow {
+    opacity: 1;
 }
 
 @media (max-width: 768px) {
@@ -209,24 +212,15 @@
     }
     
     .category-title {
-        font-size: 1.5rem;
+        font-size: 1.6rem;
     }
     
     .service-title {
-        font-size: 1.3rem;
+        font-size: 1.4rem;
     }
     
-    .btn-primary,
-    .btn-outline-primary {
-        display: block;
-        width: 100%;
-        margin: 0.5rem 0;
-    }
-    
-    .option-details {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
+    .category-icon {
+        font-size: 2rem;
     }
 }
-</style> 
+</style>

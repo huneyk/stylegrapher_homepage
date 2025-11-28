@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ service.name }}{% endblock %}
+{% block title %}{{ _(service.name) }}{% endblock %}
 
 {% block content %}
 <div class="container py-5">
@@ -8,8 +8,8 @@
         <div class="col-lg-10 mx-auto">
             <!-- 서비스 카테고리별 아이콘 설정 -->
             <div class="service-header text-center mb-5">
-                <h1 class="service-title mb-3">{{ service.name }}</h1>
-                <p class="service-subtitle">{{ service.description }}</p>
+                <h1 class="service-title mb-3">{{ _(service.name) }}</h1>
+                <p class="service-subtitle">{{ _(service.description) }}</p>
             </div>
             
             <!-- 서비스 상세 정보 -->
@@ -17,7 +17,7 @@
                 <!-- 왼쪽: 서비스 개요 -->
                 <div class="col-lg-6 mb-4">
                     <div class="info-card h-100">
-                        <h2 class="section-title">서비스 특징</h2>
+                        <h2 class="section-title">{{ _('서비스 특징') }}</h2>
                         {% if details %}
                         <ul class="feature-list">
                             {% for detail in details %}
@@ -34,7 +34,7 @@
                 <!-- 오른쪽: 패키지 정보 -->
                 <div class="col-lg-6 mb-4">
                     <div class="info-card h-100">
-                        <h2 class="section-title">추천 패키지</h2>
+                        <h2 class="section-title">{{ _('추천 패키지') }}</h2>
                         {% if packages %}
                         <div class="package-list">
                             {% for package in packages %}
@@ -55,23 +55,23 @@
             
             <!-- 개별 서비스 옵션 -->
             <div class="options-section mb-5">
-                <h2 class="section-title text-center mb-4">개별 서비스 옵션</h2>
+                <h2 class="section-title text-center mb-4">{{ _('개별 서비스 옵션') }}</h2>
                 <div class="row g-4">
                     {% for option in service.options %}
                     <div class="col-md-6 col-lg-4">
                         <div class="option-card h-100">
                             <div class="option-header">
-                                <h3 class="option-name">{{ option.name }}</h3>
+                                <h3 class="option-name">{{ _(option.name) }}</h3>
                             </div>
                             <div class="option-body">
-                                <p class="option-description">{{ option.description }}</p>
+                                <p class="option-description">{{ _(option.description) }}</p>
                                 <div class="option-details">
                                     <div class="price-info">
-                                        <span class="price-label">가격</span>
-                                        <span class="price-value">{{ "{:,}".format(option.price) }}원</span>
+                                        <span class="price-label">{{ _('가격') }}</span>
+                                        <span class="price-value">{{ "{:,}".format(option.price) }}{{ _('원') }}</span>
                                     </div>
                                     <div class="duration-info">
-                                        <span class="duration-label">소요시간</span>
+                                        <span class="duration-label">{{ _('소요시간') }}</span>
                                         <span class="duration-value">{{ option.duration }}</span>
                                     </div>
                                 </div>
@@ -84,10 +84,10 @@
 
             <!-- 예약 및 문의 버튼 -->
             <div class="text-center">
-                <p class="contact-text mb-4 lead">궁금하신 점이나 예약신청은 카카오톡 채널을 이용해주시기 바랍니다.</p>
+                <p class="contact-text mb-4 lead">{{ _('궁금하신 점이나 예약신청은 카카오톡 채널을 이용해주시기 바랍니다.') }}</p>
                 <div class="action-buttons">
                     <button type="button" class="kakao-btn" onclick="showKakaoModal()">
-                        <span class="kakao-logo">💬</span> 문의/예약신청
+                        <span class="kakao-logo">💬</span> {{ _('문의/예약신청') }}
                     </button>
                 </div>
             </div>
@@ -511,16 +511,16 @@
 <div id="kakaoModal" class="kakao-modal">
     <div class="kakao-modal-content">
         <div class="kakao-modal-header">
-            <h4 class="kakao-modal-title">카카오톡 채널 안내</h4>
+            <h4 class="kakao-modal-title">{{ _('카카오톡 채널 안내') }}</h4>
         </div>
         <div class="kakao-modal-message">
-            안녕하세요?<br><br>
-            카카오톡 채널에 고객님의 성함과 희망 서비스, 희망 예약시간, 휴대전화 번호, 그리고 궁금하신 점을 알려주시면 최대한 빠른 시간 안에 회신 드리겠습니다.<br><br>
-            감사합니다.
+            {{ _('안녕하세요?') }}<br><br>
+            {{ _('카카오톡 채널에 고객님의 성함과 희망 서비스, 희망 예약시간, 휴대전화 번호, 그리고 궁금하신 점을 알려주시면 최대한 빠른 시간 안에 회신 드리겠습니다.') }}<br><br>
+            {{ _('감사합니다.') }}
         </div>
         <div class="kakao-modal-buttons">
-            <button class="kakao-continue-btn" onclick="goToKakaoChannel()">계속하기</button>
-            <button class="kakao-cancel-btn" onclick="closeKakaoModal()">취소</button>
+            <button class="kakao-continue-btn" onclick="goToKakaoChannel()">{{ _('계속하기') }}</button>
+            <button class="kakao-cancel-btn" onclick="closeKakaoModal()">{{ _('취소') }}</button>
         </div>
     </div>
 </div>
