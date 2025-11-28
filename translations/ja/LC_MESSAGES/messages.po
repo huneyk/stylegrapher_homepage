@@ -576,7 +576,7 @@ msgstr "価格"
 
 #: templates/service_detail.html:71
 msgid "원"
-msgstr "ウォン"
+msgstr " KRW"
 
 #: templates/service_detail.html:74 templates/service_option_detail.html:55
 msgid "소요시간"
