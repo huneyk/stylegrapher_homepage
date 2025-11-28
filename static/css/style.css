@@ -644,16 +644,32 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
 .table thead th,
 .table-light,
 .packages-table thead th {
-    background: rgba(200, 170, 255, 0.15) !important;
+    background: rgba(100, 60, 150, 0.9) !important;
     border-color: rgba(200, 170, 255, 0.3) !important;
-    color: var(--neon-lavender) !important;
+    color: #FFFFFF !important;
     font-weight: 600;
+}
+
+.table thead,
+.packages-table thead {
+    background: rgba(100, 60, 150, 0.9) !important;
 }
 
 .table td, .table th,
 .packages-table td, .packages-table th {
     color: var(--text-secondary) !important;
     border-color: rgba(200, 170, 255, 0.2) !important;
+    background: rgba(18, 0, 36, 0.6) !important;
+}
+
+.table tbody,
+.packages-table tbody {
+    background: rgba(18, 0, 36, 0.6) !important;
+}
+
+.table tbody tr,
+.packages-table tbody tr {
+    background: transparent !important;
 }
 
 .table-hover tbody tr:hover {
@@ -1295,8 +1311,8 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
 
 .refund-table th,
 .overtime-charge-table th {
-    background: rgba(200, 170, 255, 0.2);
-    color: var(--neon-lavender);
+    background: rgba(100, 60, 150, 0.9) !important;
+    color: #FFFFFF !important;
     padding: 1rem;
     font-weight: 600;
     border-bottom: 1px solid var(--glass-border);
@@ -1305,9 +1321,10 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
 .refund-table td,
 .overtime-charge-table td {
     padding: 0.8rem 1rem;
-    color: var(--text-secondary);
+    color: var(--text-secondary) !important;
     border-bottom: 1px solid rgba(200, 170, 255, 0.15);
     text-align: center;
+    background: rgba(18, 0, 36, 0.6) !important;
 }
 
 .refund-table tr:last-child td,

@@ -39,7 +39,11 @@
                         <div class="option-card h-100">
                             <div class="card-body">
                                 <h5 class="option-name">{{ _(option.name) }}</h5>
+                                {% if option.description and option.description.strip() %}
                                 <p class="option-description">{{ _(option.description) }}</p>
+                                {% else %}
+                                <p class="option-description">{{ _('상세 페이지에서 자세한 내용을 확인하세요.') }}</p>
+                                {% endif %}
                                 <div class="option-arrow">
                                     <i class="bi bi-arrow-right"></i>
                                 </div>

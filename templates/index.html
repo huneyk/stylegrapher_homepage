@@ -4,37 +4,61 @@
 
 {% block content %}
 
-<!-- Hero Section with Collage -->
+<!-- Hero Section with Prismatic Crystal Gallery -->
 <section class="hero-section">
     <div class="hero-background">
         <div class="hero-gradient"></div>
-        <div class="hero-particles"></div>
+        <div class="hero-particles">
+            <div class="prism-light prism-light-1"></div>
+            <div class="prism-light prism-light-2"></div>
+            <div class="prism-light prism-light-3"></div>
+        </div>
     </div>
     
-    <div class="collage-container">
-        <div class="row g-3 g-md-4 justify-content-center">
+    <!-- Hero Slogans -->
+    <div class="hero-slogans">
+        <div class="slogan-wrapper">
+            <span class="hero-slogan slogan-1">MEET THE NEW ME</span>
+            <span class="hero-slogan slogan-2">LET YOU OUT</span>
+        </div>
+    </div>
+    
+    <!-- Prismatic Crystal Gallery -->
+    <div class="prismatic-gallery-container">
+        <!-- Floating Crystal Fragments -->
+        <div class="crystal-fragments">
+            <div class="crystal-fragment fragment-1"></div>
+            <div class="crystal-fragment fragment-2"></div>
+            <div class="crystal-fragment fragment-3"></div>
+        </div>
+        
+        <!-- Main Gallery Grid -->
+        <div class="prismatic-grid">
             {% for group in recent_galleries %}
-            <div class="col-12 col-md-4">
-                <div class="collage-item fade-in stagger-{{ loop.index }}">
-                    <div id="heroCarousel{{ loop.index }}" class="carousel slide" data-bs-ride="carousel" data-bs-interval="{{ 3000 + (loop.index0 * 500) }}">
-                        <div class="carousel-inner">
-                            {% for image in group.images %}
-                            <div class="carousel-item {% if loop.first %}active{% endif %}">
-                                <img src="{{ url_for('main.serve_image', image_path=image.image_path) }}" 
-                                     class="d-block w-100" 
-                                     alt="{{ group.title }}"
-                                     loading="lazy">
-                            </div>
-                            {% endfor %}
+            <div class="prism-card prism-card-{{ loop.index }}" data-depth="{{ loop.index }}">
+                <div class="prism-glass-edge"></div>
+                <div class="prism-inner">
+                    <div class="prism-image-stack">
+                        {% for image in group.images %}
+                        <div class="prism-image {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}">
+                            <img src="{{ url_for('main.serve_image', image_path=image.image_path) }}" 
+                                 alt="{{ group.title }}"
+                                 loading="lazy">
                         </div>
+                        {% endfor %}
                     </div>
-                    <div class="collage-overlay">
-                        <h3 class="gallery-title">{{ group.title }}</h3>
-                    </div>
-                    <div class="collage-glow"></div>
+                    <div class="prism-reflection"></div>
                 </div>
+                <div class="prism-aura"></div>
             </div>
             {% endfor %}
+        </div>
+        
+        <!-- Brand Signature -->
+        <div class="brand-signature">
+            <div class="signature-line"></div>
+            <span class="signature-text">Stylegrapher</span>
+            <div class="signature-line"></div>
         </div>
     </div>
 </section>
@@ -55,14 +79,16 @@
 </section>
 
 <style>
-/* Hero Section */
+/* ============================================
+   Prismatic Crystal Gallery - Hero Section
+   ============================================ */
 .hero-section {
     position: relative;
-    min-height: 700px;
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 3rem 0;
+    padding: 4rem 0;
     overflow: hidden;
 }
 
@@ -81,117 +107,529 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(ellipse at 50% 30%, rgba(181, 126, 220, 0.15) 0%, transparent 60%);
+    background: 
+        radial-gradient(ellipse at 30% 20%, rgba(200, 170, 255, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 80%, rgba(138, 43, 226, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(181, 126, 220, 0.05) 0%, transparent 70%);
 }
 
 .hero-particles {
     position: absolute;
     width: 100%;
     height: 100%;
-    background-image: 
-        radial-gradient(2px 2px at 20% 30%, rgba(181, 126, 220, 0.4), transparent),
-        radial-gradient(2px 2px at 40% 70%, rgba(138, 43, 226, 0.3), transparent),
-        radial-gradient(2px 2px at 80% 40%, rgba(181, 126, 220, 0.4), transparent),
-        radial-gradient(2px 2px at 60% 80%, rgba(138, 43, 226, 0.3), transparent);
-    background-size: 200px 200px;
-    animation: particleMove 30s linear infinite;
-}
-
-@keyframes particleMove {
-    0% { background-position: 0 0; }
-    100% { background-position: 200px 200px; }
-}
-
-.collage-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-    position: relative;
-    z-index: 1;
-}
-
-.collage-item {
-    position: relative;
-    padding-top: 133.33%;
-    border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 1px solid rgba(181, 126, 220, 0.2);
 }
 
-.collage-item:hover {
-    transform: translateY(-10px) scale(1.02);
-    box-shadow: 0 0 50px rgba(181, 126, 220, 0.4), 0 20px 60px rgba(0, 0, 0, 0.6);
-    border-color: rgba(181, 126, 220, 0.5);
-}
-
-.collage-item .carousel {
+/* Prismatic Light Beams */
+.prism-light {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-}
-
-.collage-item .carousel-inner,
-.collage-item .carousel-item {
-    height: 100%;
-}
-
-.collage-item .carousel-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
-}
-
-.collage-item:hover .carousel-item img {
-    transform: scale(1.05);
-}
-
-.collage-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(to top, rgba(18, 0, 36, 0.95) 0%, rgba(18, 0, 36, 0.7) 50%, transparent 100%);
-    padding: 40px 25px 25px;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.4s ease;
-}
-
-.collage-item:hover .collage-overlay {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.collage-overlay .gallery-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-weight: 400;
-    font-size: 1.3rem;
-    color: var(--neon-lavender);
-    margin: 0;
-    text-shadow: 0 0 20px rgba(181, 126, 220, 0.6);
-    letter-spacing: 0.05em;
-}
-
-.collage-glow {
-    position: absolute;
-    bottom: -50%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80%;
-    height: 100px;
-    background: radial-gradient(ellipse, rgba(181, 126, 220, 0.3) 0%, transparent 70%);
-    opacity: 0;
-    transition: opacity 0.4s ease;
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0) 0%,
+        rgba(200, 170, 255, 0.03) 45%,
+        rgba(255, 200, 255, 0.05) 50%,
+        rgba(200, 170, 255, 0.03) 55%,
+        rgba(255, 255, 255, 0) 100%);
+    transform-origin: center;
     pointer-events: none;
 }
 
-.collage-item:hover .collage-glow {
+.prism-light-1 {
+    width: 200%;
+    height: 2px;
+    top: 30%;
+    left: -50%;
+    transform: rotate(-15deg);
+    animation: prismBeam 12s ease-in-out infinite;
+}
+
+.prism-light-2 {
+    width: 200%;
+    height: 1px;
+    top: 50%;
+    left: -50%;
+    transform: rotate(25deg);
+    animation: prismBeam 15s ease-in-out infinite reverse;
+    animation-delay: -4s;
+}
+
+.prism-light-3 {
+    width: 200%;
+    height: 1.5px;
+    top: 70%;
+    left: -50%;
+    transform: rotate(-8deg);
+    animation: prismBeam 18s ease-in-out infinite;
+    animation-delay: -8s;
+}
+
+@keyframes prismBeam {
+    0%, 100% { opacity: 0; transform: rotate(-15deg) translateX(-20%); }
+    50% { opacity: 1; transform: rotate(-15deg) translateX(20%); }
+}
+
+/* Hero Slogans */
+.hero-slogans {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    text-align: center;
+    pointer-events: none;
+    width: 100%;
+    max-width: 1400px;
+    padding: 0 20px;
+}
+
+.slogan-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.hero-slogan {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 5vw, 4rem);
+    font-weight: 300;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: transparent;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.95) 0%,
+        rgba(220, 200, 255, 0.9) 50%,
+        rgba(200, 170, 255, 0.85) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    text-shadow: 
+        0 0 80px rgba(200, 170, 255, 0.6),
+        0 0 120px rgba(180, 140, 255, 0.4);
+    opacity: 0;
+    display: block;
+    white-space: nowrap;
+}
+
+.slogan-1 {
+    animation: sloganReveal 8s ease-in-out infinite;
+}
+
+.slogan-2 {
+    animation: sloganReveal 8s ease-in-out infinite;
+    animation-delay: 4s;
+}
+
+@keyframes sloganReveal {
+    0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+        filter: blur(10px);
+    }
+    10% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+    40% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+    50% {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+        filter: blur(10px);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+        filter: blur(10px);
+    }
+}
+
+/* Slogan shimmer effect */
+.hero-slogan::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    animation: sloganShimmer 8s ease-in-out infinite;
+}
+
+.slogan-1::after {
+    animation-delay: 1s;
+}
+
+.slogan-2::after {
+    animation-delay: 5s;
+}
+
+@keyframes sloganShimmer {
+    0%, 45% {
+        left: -100%;
+    }
+    50%, 100% {
+        left: 200%;
+    }
+}
+
+/* Mobile responsiveness for slogans */
+@media (max-width: 768px) {
+    .hero-slogan {
+        font-size: clamp(1.8rem, 8vw, 3rem);
+        letter-spacing: 0.12em;
+        text-shadow: 
+            0 0 60px rgba(200, 170, 255, 0.7),
+            0 0 100px rgba(180, 140, 255, 0.5);
+    }
+    
+    .slogan-wrapper {
+        gap: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-slogan {
+        font-size: clamp(1.5rem, 8vw, 2.5rem);
+        letter-spacing: 0.1em;
+    }
+}
+
+/* Crystal Fragments */
+.crystal-fragments {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.crystal-fragment {
+    position: absolute;
+    border: 1px solid rgba(200, 170, 255, 0.15);
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.02) 0%,
+        rgba(200, 170, 255, 0.04) 100%);
+    backdrop-filter: blur(1px);
+}
+
+.fragment-1 {
+    width: 120px;
+    height: 120px;
+    top: 15%;
+    left: 8%;
+    clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+    animation: floatCrystal 20s ease-in-out infinite;
+}
+
+.fragment-2 {
+    width: 80px;
+    height: 80px;
+    top: 60%;
+    right: 10%;
+    clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+    animation: floatCrystal 25s ease-in-out infinite reverse;
+    animation-delay: -5s;
+}
+
+.fragment-3 {
+    width: 60px;
+    height: 60px;
+    bottom: 20%;
+    left: 15%;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    animation: floatCrystal 18s ease-in-out infinite;
+    animation-delay: -10s;
+}
+
+@keyframes floatCrystal {
+    0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.4; }
+    25% { transform: translateY(-20px) rotate(5deg); opacity: 0.6; }
+    50% { transform: translateY(-10px) rotate(-3deg); opacity: 0.5; }
+    75% { transform: translateY(-25px) rotate(8deg); opacity: 0.7; }
+}
+
+/* Prismatic Gallery Container */
+.prismatic-gallery-container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Prismatic Grid */
+.prismatic-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    perspective: 1500px;
+}
+
+/* Individual Prism Cards */
+.prism-card {
+    position: relative;
+    aspect-ratio: 3/4;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.prism-card-1 {
+    animation: floatCard1 8s ease-in-out infinite;
+}
+
+.prism-card-2 {
+    animation: floatCard2 9s ease-in-out infinite;
+    animation-delay: -3s;
+}
+
+.prism-card-3 {
+    animation: floatCard3 7s ease-in-out infinite;
+    animation-delay: -6s;
+}
+
+@keyframes floatCard1 {
+    0%, 100% { transform: translateY(0) rotateY(0deg) rotateX(0deg); }
+    50% { transform: translateY(-15px) rotateY(2deg) rotateX(1deg); }
+}
+
+@keyframes floatCard2 {
+    0%, 100% { transform: translateY(0) rotateY(0deg) rotateX(0deg); }
+    50% { transform: translateY(-20px) rotateY(-2deg) rotateX(-1deg); }
+}
+
+@keyframes floatCard3 {
+    0%, 100% { transform: translateY(0) rotateY(0deg) rotateX(0deg); }
+    50% { transform: translateY(-12px) rotateY(1.5deg) rotateX(0.5deg); }
+}
+
+/* Glass Edge Effect */
+.prism-glass-edge {
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.08) 0%,
+        rgba(255, 255, 255, 0.02) 50%,
+        rgba(200, 170, 255, 0.05) 100%);
+    backdrop-filter: blur(2px);
+    z-index: 1;
+    pointer-events: none;
+    transition: all 0.5s ease;
+}
+
+.prism-card:hover .prism-glass-edge {
+    border-color: rgba(200, 170, 255, 0.4);
+    box-shadow: 
+        0 0 30px rgba(200, 170, 255, 0.2),
+        inset 0 0 30px rgba(200, 170, 255, 0.05);
+}
+
+/* Prism Inner Container */
+.prism-inner {
+    position: absolute;
+    inset: 8px;
+    border-radius: 20px;
+    overflow: hidden;
+    z-index: 2;
+}
+
+/* Image Stack for Crossfade */
+.prism-image-stack {
+    position: absolute;
+    inset: 0;
+}
+
+.prism-image {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 1.5s ease-in-out, transform 8s ease-in-out;
+    transform: scale(1);
+}
+
+.prism-image.active {
     opacity: 1;
+    transform: scale(1.05);
+}
+
+.prism-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: contrast(1.02) saturate(1.05);
+}
+
+/* Reflection Overlay */
+.prism-reflection {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        165deg,
+        rgba(255, 255, 255, 0.15) 0%,
+        rgba(255, 255, 255, 0.05) 20%,
+        transparent 40%,
+        transparent 60%,
+        rgba(200, 170, 255, 0.03) 80%,
+        rgba(200, 170, 255, 0.08) 100%
+    );
+    pointer-events: none;
+    z-index: 3;
+    transition: all 0.5s ease;
+}
+
+.prism-card:hover .prism-reflection {
+    background: linear-gradient(
+        165deg,
+        rgba(255, 255, 255, 0.2) 0%,
+        rgba(255, 255, 255, 0.08) 20%,
+        transparent 40%,
+        transparent 60%,
+        rgba(200, 170, 255, 0.05) 80%,
+        rgba(200, 170, 255, 0.12) 100%
+    );
+}
+
+/* Aura Glow Effect */
+.prism-aura {
+    position: absolute;
+    inset: -20px;
+    border-radius: 30px;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(200, 170, 255, 0.15) 0%,
+        rgba(138, 43, 226, 0.05) 50%,
+        transparent 70%
+    );
+    z-index: 0;
+    opacity: 0;
+    filter: blur(20px);
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+}
+
+.prism-card:hover .prism-aura {
+    opacity: 1;
+}
+
+/* Brand Signature */
+.brand-signature {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 60px;
+    opacity: 0.7;
+}
+
+.signature-line {
+    width: 80px;
+    height: 1px;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(200, 170, 255, 0.5) 50%, 
+        transparent 100%);
+}
+
+.signature-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-weight: 300;
+    color: rgba(200, 170, 255, 0.6);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+}
+
+/* Hover Effects */
+.prism-card:hover {
+    transform: translateY(-25px) scale(1.02);
+    z-index: 10;
+}
+
+.prism-card:hover .prism-image.active {
+    transform: scale(1.1);
+}
+
+/* Responsive Styles */
+@media (max-width: 992px) {
+    .hero-section {
+        min-height: auto;
+        padding: 3rem 0;
+    }
+    
+    .prismatic-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+    
+    .prism-card {
+        aspect-ratio: 3/4;
+    }
+    
+    .crystal-fragment {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 2rem 0;
+    }
+    
+    .prismatic-grid {
+        grid-template-columns: 1fr;
+        gap: 25px;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    
+    .prism-card {
+        aspect-ratio: 4/5;
+    }
+    
+    .prism-inner {
+        inset: 6px;
+        border-radius: 16px;
+    }
+    
+    .prism-glass-edge {
+        border-radius: 20px;
+    }
+    
+    .brand-signature {
+        margin-top: 40px;
+    }
+    
+    .signature-line {
+        width: 50px;
+    }
+    
+    .signature-text {
+        font-size: 1rem;
+    }
+    
+    /* Disable hover animations on touch */
+    .prism-card:hover {
+        transform: none;
+    }
+    
+    .prism-card-1,
+    .prism-card-2,
+    .prism-card-3 {
+        animation: none;
+    }
 }
 
 /* Fade Text Section */
@@ -281,15 +719,75 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Fade Title Animation
     const titles = document.querySelectorAll('.fade-title');
-    let animationsCompleted = 0;
-    
     titles.forEach(title => {
         title.addEventListener('animationend', function() {
             this.style.opacity = '1';
             this.style.animation = 'none';
             this.style.textShadow = '0 0 40px rgba(181, 126, 220, 0.6)';
-            animationsCompleted++;
+        });
+    });
+    
+    // Prismatic Gallery - Image Crossfade
+    const prismCards = document.querySelectorAll('.prism-card');
+    
+    prismCards.forEach((card, cardIndex) => {
+        const images = card.querySelectorAll('.prism-image');
+        if (images.length <= 1) return;
+        
+        let currentIndex = 0;
+        const interval = 4000 + (cardIndex * 800); // Staggered intervals
+        
+        setInterval(() => {
+            images[currentIndex].classList.remove('active');
+            currentIndex = (currentIndex + 1) % images.length;
+            images[currentIndex].classList.add('active');
+        }, interval);
+    });
+    
+    // Parallax Effect on Mouse Move
+    const prismaticContainer = document.querySelector('.prismatic-gallery-container');
+    if (prismaticContainer && window.innerWidth > 768) {
+        document.addEventListener('mousemove', (e) => {
+            const { clientX, clientY } = e;
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            
+            const moveX = (clientX - centerX) / centerX;
+            const moveY = (clientY - centerY) / centerY;
+            
+            prismCards.forEach((card, index) => {
+                const depth = (index + 1) * 0.5;
+                const rotateY = moveX * 3 * depth;
+                const rotateX = -moveY * 2 * depth;
+                const translateZ = Math.abs(moveX) * 10;
+                
+                card.style.transform = `
+                    translateY(${card.dataset.floatY || 0}px) 
+                    perspective(1500px) 
+                    rotateY(${rotateY}deg) 
+                    rotateX(${rotateX}deg)
+                    translateZ(${translateZ}px)
+                `;
+            });
+            
+            // Move crystal fragments
+            const fragments = document.querySelectorAll('.crystal-fragment');
+            fragments.forEach((fragment, index) => {
+                const speed = (index + 1) * 0.3;
+                fragment.style.transform = `
+                    translate(${moveX * 15 * speed}px, ${moveY * 10 * speed}px) 
+                    rotate(${moveX * 5}deg)
+                `;
+            });
+        });
+    }
+    
+    // Reset transform on mouse leave
+    document.addEventListener('mouseleave', () => {
+        prismCards.forEach(card => {
+            card.style.transform = '';
         });
     });
 });
@@ -322,9 +820,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                     {% endfor %}
                                 </div>
                             </div>
-                        </div>
-                        <div class="card-body">
-                            <h5 class="gallery-preview-title">{{ group.title }}</h5>
                         </div>
                     </div>
                 </div>
@@ -411,16 +906,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .gallery-preview-card:hover .carousel-item img {
     transform: scale(1.08);
-}
-
-.gallery-preview-title {
-    font-family: 'Noto Sans KR', sans-serif;
-    font-weight: 400;
-    font-size: 0.95rem;
-    color: rgba(255, 255, 255, 0.8);
-    text-align: center;
-    margin: 0;
-    padding: 0.5rem;
 }
 
 .gallery-more-btn {

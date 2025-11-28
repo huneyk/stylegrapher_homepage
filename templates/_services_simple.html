@@ -25,10 +25,12 @@
                         </div>
                         <h3 class="service-card-title mb-3">{{ _(service.name) }}</h3>
                         <p class="service-card-description mb-4">
-                            {% if service.options %}
+                            {% if service.options and service.options[0].description and service.options[0].description.strip() %}
                                 {{ _(service.options[0].description) }}
-                            {% else %}
+                            {% elif service.description and service.description.strip() %}
                                 {{ _(service.description) }}
+                            {% else %}
+                                {{ _('상세 페이지에서 자세한 내용을 확인하세요.') }}
                             {% endif %}
                         </p>
                         

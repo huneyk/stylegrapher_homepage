@@ -22,9 +22,15 @@ load_dotenv()
 
 admin = Blueprint('admin', __name__)
 
-# 🛡️ 데이터 보호 헬퍼 함수
+# 🛡️ 데이터 보호 헬퍼 함수 - 기존 데이터 덮어쓰기 완전 방지
 def protect_existing_service_option_data(option, form_data):
-    """서비스 옵션의 기존 데이터를 보호하는 함수"""
+    """서비스 옵션의 기존 데이터를 보호하는 함수
+    
+    핵심 원칙:
+    - 새 값이 입력되면 → 업데이트
+    - 빈 값이 전송되고 기존 값이 있으면 → 기존 값 유지 (절대 삭제 안함)
+    - 빈 값이 전송되고 기존 값도 없으면 → 그대로 빈 상태
+    """
     protected_fields = [
         'booking_method', 'payment_info', 'guide_info', 
         'refund_policy_text', 'refund_policy_table', 'overtime_charge_table'
@@ -35,17 +41,17 @@ def protect_existing_service_option_data(option, form_data):
         current_value = getattr(option, field, None)
         form_value = form_data.get(field)
         
-        # 기존 데이터가 있고, 폼에서 빈 값이 전송된 경우 기존 값 유지
-        if current_value is not None and current_value.strip():
-            if not form_value or not form_value.strip():
-                print(f"🛡️ 데이터 보호: {field} 필드의 기존 데이터 유지")
-                continue  # 기존 값 유지 (업데이트하지 않음)
-        
-        # 실제 값이 있는 경우에만 업데이트
+        # 새로운 값이 입력된 경우에만 업데이트
         if form_value and form_value.strip():
             setattr(option, field, form_value)
             changes_made = True
-            print(f"✅ 데이터 업데이트: {field} 필드 업데이트")
+            print(f"✅ 데이터 업데이트: {field} 필드 업데이트됨")
+        # 빈 값이 전송되었지만 기존 데이터가 있는 경우 - 보호
+        elif current_value is not None and str(current_value).strip():
+            print(f"🛡️ 데이터 보호: {field} 필드의 기존 데이터 유지 (빈 폼 제출로 인한 삭제 방지)")
+            # 아무것도 하지 않음 - 기존 값 유지
+        else:
+            print(f"📝 {field} 필드: 기존 값도 없고 새 값도 없음 - 변경 없음")
     
     return changes_made
 
@@ -1042,21 +1048,28 @@ def edit_option(option_id):
         option.detailed_description = request.form.get('detailed_description', '')
         print(f"✅ 기본 정보 업데이트 완료 - 이름: {option.name}")
         
-        # 🛡️ 예약 조건 필드들 업데이트 (사용자 의도를 정확히 반영)
+        # 🛡️ 예약 조건 필드들 업데이트 (기존 데이터 보호 - 덮어쓰기 방지)
         def update_field_smart(current_value, form_value):
-            """사용자의 의도를 정확히 파악하여 업데이트"""
-            # 폼에서 값이 전송된 경우 (빈 값이든 아니든 사용자 의도로 처리)
-            if form_value is not None:
-                if form_value.strip():
-                    print(f"✅ 새 값으로 업데이트: {form_value[:50]}...")
-                    return form_value
-                else:
-                    print(f"📝 사용자가 필드를 비움: 빈 값으로 설정")
-                    return None
+            """기존 데이터를 보호하면서 사용자의 의도를 반영하여 업데이트
             
-            # 폼에서 전송되지 않은 경우 (기존 값 유지)
-            print(f"🔄 기존 값 유지: {current_value[:30] if current_value else 'None'}...")
-            return current_value
+            핵심 원칙:
+            1. 새 값이 입력되면 -> 새 값으로 업데이트
+            2. 빈 값이 전송되었지만 기존 값이 있으면 -> 기존 값 유지 (보호)
+            3. 명시적으로 삭제하려면 별도 삭제 기능 사용
+            """
+            # 새로운 값이 입력된 경우
+            if form_value is not None and form_value.strip():
+                print(f"✅ 새 값으로 업데이트: {form_value[:50]}...")
+                return form_value
+            
+            # 빈 값이 전송된 경우 - 기존 데이터 보호
+            if current_value is not None and str(current_value).strip():
+                print(f"🛡️ 기존 데이터 보호: 빈 폼 제출로 인한 덮어쓰기 방지 - 기존 값 유지")
+                return current_value
+            
+            # 둘 다 빈 값인 경우
+            print(f"📝 빈 상태 유지 (기존 값도 없음)")
+            return None
         
         option.booking_method = update_field_smart(option.booking_method, request.form.get('booking_method'))
         option.payment_info = update_field_smart(option.payment_info, request.form.get('payment_info'))

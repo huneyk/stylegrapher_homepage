@@ -1,523 +1,814 @@
 {% extends "base.html" %}
 
-{% block title %}서비스{% endblock %}
+{% block title %}{{ _('서비스') }}{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="card main-card">
-        <div class="card-body p-5">
-            <h1 class="text-center mb-5 services-main-title">StyleGrapher Services</h1>
-            <p class="text-center mb-5 services-subtitle">스타일그래퍼만의 전문적이고 다양한 서비스를 만나보세요</p>
-            
-            {% for category_key, category in categories_data.items() %}
-                {% if category.services %}
-                <div class="service-category mb-5">
-                    <div class="category-header text-center mb-4">
-                        <h2 class="category-title">{{ category.title }}</h2>
+<!-- Hero Section with Prismatic Effects -->
+<section class="services-hero-section">
+    <div class="services-hero-background">
+        <div class="services-hero-gradient"></div>
+        <div class="services-hero-particles">
+            <div class="prism-light prism-light-1"></div>
+            <div class="prism-light prism-light-2"></div>
+            <div class="prism-light prism-light-3"></div>
+        </div>
+    </div>
+    
+    <!-- Crystal Fragments -->
+    <div class="crystal-fragments">
+        <div class="crystal-fragment fragment-1"></div>
+        <div class="crystal-fragment fragment-2"></div>
+        <div class="crystal-fragment fragment-3"></div>
+    </div>
+    
+    <!-- Hero Content -->
+    <div class="services-hero-content">
+        <div class="services-hero-title-wrapper">
+            <h1 class="services-hero-title">Services</h1>
+            <div class="services-hero-subtitle">
+                <span class="hero-slogan-text">{{ _('당신의 무한한 가능성을 탐험하는 여정') }}</span>
+            </div>
+            <div class="brand-signature">
+                <div class="signature-line"></div>
+                <span class="signature-text">Stylegrapher</span>
+                <div class="signature-line"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Content -->
+<section class="services-content-section">
+    <div class="container">
+        {% for category_key, category in categories_data.items() %}
+            {% if category.services %}
+            <div class="service-category-block" data-category="{{ category_key }}">
+                <!-- Category Header -->
+                <div class="category-prism-header">
+                    <div class="category-icon-wrapper">
                         {% if category_key == 'ai_analysis' %}
-                        <div class="category-basic-description">
-                            <p>스타일그래퍼의 독자적인 AI 기술을 활용하여 고객님의 얼굴형, 피부톤, 체형 등을 정밀 분석합니다.</p>
-                            <p>개인의 고유한 특성을 파악하여 가장 어울리는 스타일을 과학적으로 제안드립니다.</p>
-                        </div>
+                        <i class="bi bi-cpu-fill"></i>
                         {% elif category_key == 'consulting' %}
-                        <div class="category-basic-description">
-                            <p>전문 스타일리스트와의 1:1 맞춤 컨설팅을 통해 개인의 라이프스타일과 선호도를 반영한 스타일링을 제공합니다.</p>
-                            <p>퍼스널 컬러 진단부터 토탈 이미지 메이킹까지 체계적인 스타일 솔루션을 만나보세요.</p>
-                        </div>
+                        <i class="bi bi-palette-fill"></i>
                         {% elif category_key == 'oneday' %}
-                        <div class="category-basic-description">
-                            <p>바쁜 일상 속에서도 완벽한 변신을 원하는 분들을 위한 원데이 스타일링 서비스입니다.</p>
-                            <p>헤어, 메이크업, 스타일링을 한 번에 완성하여 특별한 하루를 선사해드립니다.</p>
-                        </div>
-                        {% elif category_key == 'photo' %}
-                        <div class="category-basic-description">
-                            <p>인생의 소중한 순간을 기록하는 전문 화보 촬영 서비스입니다.</p>
-                            <p>개인 프로필부터 가족 사진, 커플 화보까지 특별한 추억을 아름다운 작품으로 남겨드립니다.</p>
-                        </div>
+                        <i class="bi bi-magic"></i>
+                        {% else %}
+                        <i class="bi bi-camera-fill"></i>
                         {% endif %}
                     </div>
-                    
-                    <div class="services-grid">
-                        {% for service in category.services %}
-                            {% for option in service.options %}
-                            <div class="service-card">
-                                <div class="service-card-header">
-                                    <h4 class="service-name">{{ option.name }}</h4>
-                                </div>
-                                <div class="service-card-body">
-                                    <p class="service-description">{{ option.description }}</p>
-                                </div>
-                                <div class="service-card-footer">
-                                    <a href="{{ url_for('main.service_option_detail', id=option.id) }}" 
-                                       class="btn service-btn detail-btn">상세 보기</a>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        {% endfor %}
-                    </div>
+                    <h2 class="category-prism-title">{{ _(category.title) }}</h2>
+                    <div class="category-divider-line"></div>
+                    <p class="category-prism-description">
+                        {% if category_key == 'ai_analysis' %}
+                        {{ _('나를 해석하는 시작점. 나를 알고, 더 나답게 시작하는 첫 단계입니다.') }}
+                        {% elif category_key == 'consulting' %}
+                        {{ _('AI 분석 제안을 기반으로 나만의 스타일 전략을 설계하고, 전문가에게 직접 배우는 서비스입니다.') }}
+                        {% elif category_key == 'oneday' %}
+                        {{ _('AI 분석 결과를 바탕으로 하루 동안 스타일링을 완성하는 체험형 서비스입니다.') }}
+                        {% else %}
+                        {{ _('당신의 무한한 가능성을 최상급의 전문가들과 함께 기록으로 남기는 결과물 서비스입니다.') }}
+                        {% endif %}
+                    </p>
                 </div>
-                {% endif %}
-            {% endfor %}
-        </div>
+                
+                <!-- Service Options Grid -->
+                <div class="prism-services-grid">
+                    {% for service in category.services %}
+                        {% for option in service.options %}
+                        <a href="{{ url_for('main.service_option_detail', id=option.id) }}" class="prism-service-card-link">
+                            <div class="prism-service-card">
+                                <div class="prism-glass-edge"></div>
+                                <div class="prism-service-inner">
+                                    <div class="service-option-content">
+                                        <h4 class="service-option-name">{{ _(option.name) }}</h4>
+                                        {% if option.description and option.description.strip() %}
+                                        <p class="service-option-description">{{ _(option.description) }}</p>
+                                        {% else %}
+                                        <p class="service-option-description">{{ _('상세 페이지에서 자세한 내용을 확인하세요.') }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="service-option-arrow">
+                                        <i class="bi bi-arrow-right"></i>
+                                    </div>
+                                </div>
+                                <div class="prism-aura"></div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
     </div>
-</div>
+</section>
 
 <!-- Contact Section -->
-<div class="container py-5">
-    <div class="text-center">
-        <p class="contact-text mb-4 lead">궁금하신 점이나 예약신청은 카카오톡 채널을 이용해주시기 바랍니다.</p>
-        <div class="contact-buttons">
-            <button type="button" class="btn kakao-btn contact-btn" onclick="showKakaoModal()">
-                💬 문의/예약신청
-            </button>
+<section class="services-contact-section">
+    <div class="container">
+        <div class="contact-prism-card">
+            <div class="contact-content">
+                <p class="contact-text">{{ _('궁금하신 점이나 예약신청은 카카오톡 채널을 이용해주시기 바랍니다.') }}</p>
+                <button type="button" class="btn-neon contact-btn" onclick="showKakaoModal()">
+                    <i class="bi bi-chat-dots-fill me-2"></i>{{ _('문의/예약신청') }}
+                </button>
+            </div>
+            <div class="contact-glow"></div>
         </div>
     </div>
-</div>
+</section>
 
 <style>
-/* 메인 카드 스타일 */
-.main-card {
-    border: 1.5px solid rgba(var(--main-color-rgb), 0.2) !important;
-    border-radius: 20px;
-    box-shadow: 0 6px 30px rgba(var(--main-color-rgb), 0.1);
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 249, 250, 0.95));
+/* ============================================
+   Services Hero Section - Prismatic Style
+   ============================================ */
+.services-hero-section {
+    position: relative;
+    min-height: 50vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6rem 0 4rem;
+    overflow: hidden;
 }
 
-/* 제목 스타일 */
-.services-main-title {
-    font-family: 'Nanum Gothic', sans-serif;
-    font-size: 3rem;
-    background: linear-gradient(45deg, rgba(var(--main-color-rgb), 0.8), rgba(var(--main-color-rgb), 1));
+.services-hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.services-hero-gradient {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(ellipse at 30% 20%, rgba(200, 170, 255, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 80%, rgba(138, 43, 226, 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(181, 126, 220, 0.08) 0%, transparent 70%);
+}
+
+.services-hero-particles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Prismatic Light Beams */
+.prism-light {
+    position: absolute;
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0) 0%,
+        rgba(200, 170, 255, 0.03) 45%,
+        rgba(255, 200, 255, 0.05) 50%,
+        rgba(200, 170, 255, 0.03) 55%,
+        rgba(255, 255, 255, 0) 100%);
+    transform-origin: center;
+    pointer-events: none;
+}
+
+.prism-light-1 {
+    width: 200%;
+    height: 2px;
+    top: 30%;
+    left: -50%;
+    transform: rotate(-15deg);
+    animation: prismBeam 12s ease-in-out infinite;
+}
+
+.prism-light-2 {
+    width: 200%;
+    height: 1px;
+    top: 50%;
+    left: -50%;
+    transform: rotate(25deg);
+    animation: prismBeam 15s ease-in-out infinite reverse;
+    animation-delay: -4s;
+}
+
+.prism-light-3 {
+    width: 200%;
+    height: 1.5px;
+    top: 70%;
+    left: -50%;
+    transform: rotate(-8deg);
+    animation: prismBeam 18s ease-in-out infinite;
+    animation-delay: -8s;
+}
+
+@keyframes prismBeam {
+    0%, 100% { opacity: 0; transform: rotate(-15deg) translateX(-20%); }
+    50% { opacity: 1; transform: rotate(-15deg) translateX(20%); }
+}
+
+/* Crystal Fragments */
+.crystal-fragments {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.crystal-fragment {
+    position: absolute;
+    border: 1px solid rgba(200, 170, 255, 0.15);
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.02) 0%,
+        rgba(200, 170, 255, 0.04) 100%);
+    backdrop-filter: blur(1px);
+}
+
+.fragment-1 {
+    width: 80px;
+    height: 80px;
+    top: 15%;
+    left: 10%;
+    clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+    animation: floatCrystal 20s ease-in-out infinite;
+}
+
+.fragment-2 {
+    width: 60px;
+    height: 60px;
+    top: 60%;
+    right: 12%;
+    clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+    animation: floatCrystal 25s ease-in-out infinite reverse;
+    animation-delay: -5s;
+}
+
+.fragment-3 {
+    width: 50px;
+    height: 50px;
+    bottom: 25%;
+    left: 18%;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    animation: floatCrystal 18s ease-in-out infinite;
+    animation-delay: -10s;
+}
+
+@keyframes floatCrystal {
+    0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.4; }
+    25% { transform: translateY(-20px) rotate(5deg); opacity: 0.6; }
+    50% { transform: translateY(-10px) rotate(-3deg); opacity: 0.5; }
+    75% { transform: translateY(-25px) rotate(8deg); opacity: 0.7; }
+}
+
+/* Hero Content */
+.services-hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    max-width: 900px;
+    padding: 0 20px;
+}
+
+.services-hero-title-wrapper {
+    animation: fadeInUp 1s ease;
+}
+
+.services-hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(3rem, 8vw, 5rem);
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    color: transparent;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.95) 0%,
+        rgba(220, 200, 255, 0.9) 50%,
+        rgba(200, 170, 255, 0.85) 100%
+    );
     -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
     background-clip: text;
-    font-weight: 700;
+    text-shadow: 0 0 80px rgba(200, 170, 255, 0.6);
     margin-bottom: 1rem;
 }
 
-.services-subtitle {
+.services-hero-subtitle {
+    margin-bottom: 2rem;
+}
+
+.hero-slogan-text {
+    font-family: 'Noto Sans KR', sans-serif;
     font-size: 1.2rem;
-    color: #6c757d;
     font-weight: 300;
+    color: rgba(255, 255, 255, 0.8);
+    letter-spacing: 0.1em;
 }
 
-/* 카테고리 스타일 */
-.service-category {
-    padding: 2rem 0;
-    border-bottom: 2px solid rgba(var(--main-color-rgb), 0.1);
-    margin-bottom: 3rem;
-}
-
-.service-category:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-}
-
-.category-header {
-    margin-bottom: 2.5rem;
-}
-
-.category-title {
-    font-family: 'Nanum Gothic', sans-serif;
-    font-size: 2.2rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: rgba(var(--main-color-rgb), 0.8) !important;
-    word-break: keep-all;
-    overflow-wrap: break-word;
-    line-break: strict;
-}
-
-.category-basic-description {
-    max-width: 800px;
-    margin: 1.5rem auto 0 auto;
-    padding: 0 1rem;
-}
-
-.category-basic-description p {
-    font-size: 1rem;
-    color: #495057;
-    line-height: 1.6;
-    margin-bottom: 0.75rem;
-    font-weight: 400;
-    word-break: keep-all;
-    overflow-wrap: break-word;
-    line-break: strict;
-}
-
-.category-basic-description p:last-child {
-    margin-bottom: 0;
-}
-
-/* 서비스 그리드 */
-.services-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 2rem;
+/* Brand Signature */
+.brand-signature {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 25px;
+    opacity: 0.7;
     margin-top: 2rem;
 }
 
-/* 서비스 카드 */
-.service-card {
-    background: white;
-    border: 1.5px solid rgba(var(--main-color-rgb), 0.15);
-    border-radius: 15px;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(var(--main-color-rgb), 0.08);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+.signature-line {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(200, 170, 255, 0.5) 50%, 
+        transparent 100%);
 }
 
-.service-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 30px rgba(var(--main-color-rgb), 0.15);
-    border-color: rgba(var(--main-color-rgb), 0.3);
-}
-
-.service-card-header {
-    background: linear-gradient(135deg, rgba(var(--main-color-rgb), 0.05), rgba(var(--main-color-rgb), 0.1));
-    padding: 1.5rem;
-    text-align: center;
-}
-
-.service-name {
-    font-family: 'Nanum Gothic', sans-serif;
-    font-size: 1.3rem;
-    color: rgba(var(--main-color-rgb), 0.9);
-    font-weight: 600;
-    margin-bottom: 0;
-    word-break: keep-all;
-    overflow-wrap: break-word;
-    line-break: strict;
-}
-
-.service-card-body {
-    padding: 1.5rem;
-    flex-grow: 1;
-}
-
-.service-description {
-    color: #495057;
-    line-height: 1.6;
-    margin-bottom: 1.5rem;
-    word-break: keep-all;
-    overflow-wrap: break-word;
-    line-break: strict;
-}
-
-/* 버튼 스타일 */
-.service-card-footer {
-    padding: 1.5rem;
-    background: rgba(249, 249, 249, 0.5);
-    border-top: 1px solid rgba(var(--main-color-rgb), 0.1);
-    display: flex;
-    justify-content: center;
-    gap: 0.75rem;
-}
-
-.service-btn {
-    padding: 0.75rem 2rem;
+.signature-text {
+    font-family: 'Cormorant Garamond', serif;
     font-size: 1rem;
-    font-weight: 600;
-    border-radius: 25px;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
-    min-width: 140px;
-    text-align: center;
+    font-weight: 300;
+    color: rgba(200, 170, 255, 0.6);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
 }
 
-.detail-btn {
-    background-color: white;
-    border: 1px solid rgba(var(--sub-color-rgb), 0.5);
-    color: rgba(var(--main-color-rgb), 0.8);
-    padding: 0.4rem 2rem;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    font-weight: normal;
-    text-decoration: none;
-}
-
-.detail-btn:hover {
-    background-color: rgba(var(--main-color-rgb), 0.05);
-    border-color: rgba(var(--sub-color-rgb), 0.8);
-    color: rgba(var(--main-color-rgb), 1);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(var(--main-color-rgb), 0.2);
-}
-
-.detail-btn:active {
-    transform: translateY(0);
-    box-shadow: none;
-}
-
-
-
-.service-btn:active {
-    transform: translateY(0);
-    box-shadow: none;
-}
-
-/* 반응형 디자인 */
-@media (max-width: 768px) {
-    .services-main-title {
-        font-size: 2.2rem;
-    }
-    
-    .services-subtitle {
-        font-size: 1rem;
-    }
-    
-    .category-title {
-        font-size: 1.8rem;
-    }
-    
-    .services-grid {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
-    
-    .main-card .card-body {
-        padding: 2rem !important;
-    }
-}
-
-@media (max-width: 576px) {
-    .services-main-title {
-        font-size: 1.8rem;
-    }
-    
-    .category-title {
-        font-size: 1.5rem;
-    }
-    
-    .services-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .main-card .card-body {
-        padding: 1.5rem !important;
-    }
-}
-
-/* Contact Section 스타일 */
-.contact-text {
-    font-family: 'Nanum Gothic', sans-serif;
-    color: rgba(139, 95, 191, 0.8);
-    font-size: 1.1rem;
-    font-weight: 700;
-    word-break: keep-all;
-    overflow-wrap: break-word;
-    line-break: strict;
-}
-
-.contact-buttons {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.contact-btn {
-    padding: 0.75rem 2rem;
-    font-size: 1rem;
-    font-weight: 600;
-    border-radius: 25px;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
-    min-width: 200px;
-}
-
-.contact-btn.kakao-btn {
-    background-color: #FEE500;
-    color: #3C1E1E;
-    border: 2px solid #FEE500;
-    font-weight: 600;
-}
-
-.contact-btn.kakao-btn:hover {
-    background-color: #FFD700;
-    border-color: #FFD700;
-    color: #3C1E1E;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(254, 229, 0, 0.4);
-}
-
-.contact-btn:active {
-    transform: translateY(0);
-    box-shadow: none;
-}
-
-/* 카카오톡 모달 스타일 */
-.kakao-modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-    animation: fadeIn 0.3s ease;
-}
-
-.kakao-modal-content {
-    background-color: #fefefe;
-    margin: 10% auto;
-    padding: 2rem;
-    border-radius: 15px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    animation: slideIn 0.3s ease;
-    text-align: center;
-}
-
-.kakao-modal-header {
-    margin-bottom: 1.5rem;
-}
-
-.kakao-modal-title {
-    color: #3C1E1E;
-    font-size: 1.3rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-}
-
-.kakao-modal-message {
-    color: #333;
-    line-height: 1.6;
-    margin-bottom: 2rem;
-    font-size: 1rem;
-}
-
-.kakao-modal-buttons {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-}
-
-.kakao-continue-btn {
-    background: #FEE500;
-    color: #3C1E1E;
-    border: none;
-    padding: 0.75rem 2rem;
-    border-radius: 20px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 1rem;
-}
-
-.kakao-continue-btn:hover {
-    background: #FFD700;
-    transform: translateY(-1px);
-    box-shadow: 0 3px 10px rgba(254, 229, 0, 0.4);
-}
-
-.kakao-cancel-btn {
-    background: #f8f9fa;
-    color: #6c757d;
-    border: 1px solid #dee2e6;
-    padding: 0.75rem 2rem;
-    border-radius: 20px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 1rem;
-}
-
-.kakao-cancel-btn:hover {
-    background: #e9ecef;
-    color: #495057;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes slideIn {
-    from { 
+@keyframes fadeInUp {
+    from {
         opacity: 0;
-        transform: translateY(-20px);
+        transform: translateY(30px);
     }
-    to { 
+    to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
+/* ============================================
+   Services Content Section
+   ============================================ */
+.services-content-section {
+    padding: 4rem 0;
+    position: relative;
+}
+
+/* Category Block */
+.service-category-block {
+    margin-bottom: 5rem;
+    padding-bottom: 4rem;
+    border-bottom: 1px solid rgba(200, 170, 255, 0.1);
+}
+
+.service-category-block:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+/* Category Prism Header */
+.category-prism-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.category-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(18, 0, 36, 0.6);
+    border: 1px solid rgba(200, 170, 255, 0.3);
+    border-radius: 50%;
+    font-size: 2rem;
+    color: #FDFCFF;
+    filter: drop-shadow(0 0 20px rgba(200, 170, 255, 0.5));
+    transition: all 0.4s ease;
+}
+
+.service-category-block:hover .category-icon-wrapper {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 30px rgba(200, 170, 255, 0.8));
+    border-color: rgba(200, 170, 255, 0.5);
+}
+
+.category-prism-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 400;
+    color: #FDFCFF !important;
+    letter-spacing: 0.1em;
+    text-shadow: 0 0 40px rgba(200, 170, 255, 0.5);
+    margin-bottom: 1rem;
+}
+
+.category-divider-line {
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(200, 170, 255, 0.6), transparent);
+    margin: 0 auto 1.5rem;
+    box-shadow: 0 0 15px rgba(200, 170, 255, 0.4);
+}
+
+.category-prism-description {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.75);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.8;
+}
+
+/* Prism Services Grid */
+.prism-services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    perspective: 1500px;
+}
+
+/* Prism Service Card */
+.prism-service-card-link {
+    text-decoration: none;
+    display: block;
+}
+
+.prism-service-card {
+    position: relative;
+    min-height: 200px;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Glass Edge Effect */
+.prism-glass-edge {
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.08) 0%,
+        rgba(255, 255, 255, 0.02) 50%,
+        rgba(200, 170, 255, 0.05) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 1;
+    pointer-events: none;
+    transition: all 0.4s ease;
+}
+
+.prism-service-card:hover .prism-glass-edge {
+    border-color: rgba(200, 170, 255, 0.5);
+    box-shadow: 
+        0 0 30px rgba(200, 170, 255, 0.25),
+        inset 0 0 30px rgba(200, 170, 255, 0.05);
+}
+
+/* Prism Inner Container */
+.prism-service-inner {
+    position: relative;
+    padding: 2rem;
+    z-index: 2;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.service-option-content {
+    flex-grow: 1;
+}
+
+.service-option-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: #FDFCFF;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 20px rgba(200, 170, 255, 0.4);
+    transition: all 0.3s ease;
+    /* 테두리 스타일 추가 */
+    display: inline-block;
+    padding: 0.6rem 1.2rem;
+    background: rgba(200, 170, 255, 0.1);
+    border: 1px solid rgba(200, 170, 255, 0.3);
+    border-radius: 12px;
+}
+
+.prism-service-card:hover .service-option-name {
+    text-shadow: 0 0 30px rgba(200, 170, 255, 0.7);
+    border-color: rgba(200, 170, 255, 0.5);
+    background: rgba(200, 170, 255, 0.15);
+    box-shadow: 0 0 15px rgba(200, 170, 255, 0.2);
+}
+
+.service-option-description {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.75);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+}
+
+.service-option-arrow {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 0.5rem;
+}
+
+.service-option-arrow i {
+    color: rgba(200, 170, 255, 0.6);
+    font-size: 1.3rem;
+    transition: all 0.3s ease;
+    opacity: 0.6;
+}
+
+.prism-service-card:hover .service-option-arrow i {
+    opacity: 1;
+    color: #FDFCFF;
+    transform: translateX(8px);
+    filter: drop-shadow(0 0 10px rgba(200, 170, 255, 0.7));
+}
+
+/* Aura Glow Effect */
+.prism-aura {
+    position: absolute;
+    inset: -15px;
+    border-radius: 25px;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(200, 170, 255, 0.15) 0%,
+        rgba(138, 43, 226, 0.05) 50%,
+        transparent 70%
+    );
+    z-index: 0;
+    opacity: 0;
+    filter: blur(15px);
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+}
+
+.prism-service-card:hover .prism-aura {
+    opacity: 1;
+}
+
+/* Hover Effects */
+.prism-service-card:hover {
+    transform: translateY(-12px);
+}
+
+/* ============================================
+   Contact Section
+   ============================================ */
+.services-contact-section {
+    padding: 4rem 0 5rem;
+}
+
+.contact-prism-card {
+    position: relative;
+    padding: 3rem;
+    background: rgba(18, 0, 36, 0.5);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: 30px;
+    border: 1px solid rgba(200, 170, 255, 0.2);
+    text-align: center;
+    overflow: hidden;
+}
+
+.contact-content {
+    position: relative;
+    z-index: 1;
+}
+
+.contact-text {
+    font-family: 'Cormorant Garamond', serif;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.3rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    margin-bottom: 1.5rem;
+}
+
+.btn-neon.contact-btn {
+    background: linear-gradient(135deg, #FEE500, #FFD700);
+    color: #3C1E1E;
+    border: none;
+    padding: 1rem 3rem;
+    border-radius: 35px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    box-shadow: 0 0 30px rgba(254, 229, 0, 0.4);
+    transition: all 0.4s ease;
+    animation: kakaoGlow 2s ease-in-out infinite;
+}
+
+@keyframes kakaoGlow {
+    0%, 100% {
+        box-shadow: 0 0 30px rgba(254, 229, 0, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 50px rgba(254, 229, 0, 0.6), 0 0 80px rgba(254, 229, 0, 0.3);
+    }
+}
+
+.btn-neon.contact-btn:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 0 50px rgba(254, 229, 0, 0.6), 0 15px 40px rgba(0, 0, 0, 0.3);
+}
+
+.contact-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    height: 200px;
+    background: radial-gradient(ellipse, rgba(200, 170, 255, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* ============================================
+   Responsive Design
+   ============================================ */
+@media (max-width: 992px) {
+    .services-hero-section {
+        min-height: 40vh;
+        padding: 5rem 0 3rem;
+    }
+    
+    .services-hero-title {
+        font-size: clamp(2.5rem, 7vw, 4rem);
+    }
+    
+    .category-prism-title {
+        font-size: 2rem;
+    }
+    
+    .prism-services-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+    
+    .crystal-fragment {
+        display: none;
+    }
+}
+
 @media (max-width: 768px) {
-    .contact-text {
+    .services-hero-section {
+        min-height: 35vh;
+        padding: 4rem 0 2rem;
+    }
+    
+    .services-hero-title {
+        font-size: clamp(2rem, 10vw, 3rem);
+        letter-spacing: 0.12em;
+    }
+    
+    .hero-slogan-text {
         font-size: 1rem;
     }
     
-    .contact-buttons {
-        flex-direction: column;
-        gap: 0.75rem;
+    .brand-signature {
+        gap: 15px;
+        margin-top: 1.5rem;
     }
     
-    .contact-btn {
-        min-width: 280px;
-        padding: 0.65rem 1.5rem;
+    .signature-line {
+        width: 40px;
+    }
+    
+    .signature-text {
+        font-size: 0.85rem;
+    }
+    
+    .category-icon-wrapper {
+        width: 65px;
+        height: 65px;
+        font-size: 1.6rem;
+    }
+    
+    .category-prism-title {
+        font-size: 1.8rem;
+    }
+    
+    .category-prism-description {
         font-size: 0.95rem;
+    }
+    
+    .prism-services-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .prism-service-card {
+        min-height: 180px;
+    }
+    
+    .prism-service-inner {
+        padding: 1.5rem;
+    }
+    
+    .service-option-name {
+        font-size: 1.25rem;
+        padding: 0.5rem 1rem;
+    }
+    
+    .service-option-description {
+        font-size: 0.9rem;
+    }
+    
+    .service-category-block {
+        margin-bottom: 3rem;
+        padding-bottom: 3rem;
+    }
+    
+    .contact-prism-card {
+        padding: 2rem 1.5rem;
+        border-radius: 20px;
+    }
+    
+    .contact-text {
+        font-size: 1.1rem;
+    }
+    
+    .btn-neon.contact-btn {
+        padding: 0.9rem 2rem;
+        font-size: 1rem;
+    }
+    
+    /* Disable hover animations on touch */
+    .prism-service-card:hover {
+        transform: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .services-hero-title {
+        font-size: 2rem;
+        letter-spacing: 0.1em;
+    }
+    
+    .category-prism-title {
+        font-size: 1.5rem;
+    }
+    
+    .service-option-name {
+        font-size: 1.15rem;
+        padding: 0.5rem 0.9rem;
     }
 }
 </style>
 
-<!-- 카카오톡 모달 -->
-<div id="kakaoModal" class="kakao-modal">
-    <div class="kakao-modal-content">
-        <div class="kakao-modal-header">
-            <h4 class="kakao-modal-title">카카오톡 채널 안내</h4>
-        </div>
-        <div class="kakao-modal-message">
-            안녕하세요?<br><br>
-            카카오톡 채널에 고객님의 성함과 희망 서비스, 희망 예약시간, 휴대전화 번호, 그리고 궁금하신 점을 알려주시면 최대한 빠른 시간 안에 회신 드리겠습니다.<br><br>
-            감사합니다.
-        </div>
-        <div class="kakao-modal-buttons">
-            <button class="kakao-continue-btn" onclick="goToKakaoChannel()">계속하기</button>
-            <button class="kakao-cancel-btn" onclick="closeKakaoModal()">취소</button>
-        </div>
-    </div>
-</div>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 카카오톡 모달 관련 함수들
-    window.showKakaoModal = function() {
-        const modal = document.getElementById('kakaoModal');
-        if (modal) {
-            modal.style.display = 'block';
-        }
+    // Parallax effect on service cards
+    const serviceCards = document.querySelectorAll('.prism-service-card');
+    
+    if (window.innerWidth > 768) {
+        document.addEventListener('mousemove', (e) => {
+            const { clientX, clientY } = e;
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            
+            const moveX = (clientX - centerX) / centerX;
+            const moveY = (clientY - centerY) / centerY;
+            
+            // Move crystal fragments
+            const fragments = document.querySelectorAll('.crystal-fragment');
+            fragments.forEach((fragment, index) => {
+                const speed = (index + 1) * 0.3;
+                fragment.style.transform = `
+                    translate(${moveX * 15 * speed}px, ${moveY * 10 * speed}px) 
+                    rotate(${moveX * 5}deg)
+                `;
+            });
+        });
+    }
+    
+    // Intersection Observer for fade-in animations
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
     };
-
-    window.closeKakaoModal = function() {
-        const modal = document.getElementById('kakaoModal');
-        if (modal) {
-            modal.style.display = 'none';
-        }
-    };
-
-    window.goToKakaoChannel = function() {
-        window.open('https://pf.kakao.com/_xgDcFK', '_blank');
-        closeKakaoModal();
-    };
-
-    // 모달 외부 클릭시 닫기
-    document.addEventListener('click', function(event) {
-        const modal = document.getElementById('kakaoModal');
-        if (event.target === modal) {
-            closeKakaoModal();
-        }
+    
+    const fadeInObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+    
+    document.querySelectorAll('.service-category-block').forEach((block, index) => {
+        block.style.opacity = '0';
+        block.style.transform = 'translateY(30px)';
+        block.style.transition = `opacity 0.6s ease ${index * 0.15}s, transform 0.6s ease ${index * 0.15}s`;
+        fadeInObserver.observe(block);
     });
 });
 </script>
-{% endblock %} 
+{% endblock %}
