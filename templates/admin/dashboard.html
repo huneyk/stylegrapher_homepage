@@ -255,36 +255,37 @@
 
 <style>
 .list-group-item {
-    border-color: rgba(139, 95, 191, 0.2);
+    border-color: rgba(200, 170, 255, 0.3);
     transition: all 0.2s ease;
+    background: rgba(18, 0, 36, 0.6);
 }
 
 .list-group-item:hover {
-    background-color: rgba(139, 95, 191, 0.05);
+    background-color: rgba(200, 170, 255, 0.15);
 }
 
 .list-group-item h6 {
-    color: rgba(139, 95, 191, 0.8);
+    color: #E8D4FF;
     font-weight: 500;
 }
 
 .list-group-item small {
     font-size: 0.8rem !important;
-    color: #6c757d !important;
+    color: rgba(255, 255, 255, 0.7) !important;
 }
 
 .btn-outline-primary {
-    border-color: rgba(139, 95, 191, 0.5);
-    color: rgba(139, 95, 191, 0.8);
+    border-color: rgba(200, 170, 255, 0.6);
+    color: #E8D4FF;
     transition: all 0.3s ease;
 }
 
 .btn-outline-primary:hover {
-    background-color: rgba(139, 95, 191, 0.1);
-    border-color: rgba(139, 95, 191, 0.8);
-    color: rgba(139, 95, 191, 1);
+    background-color: rgba(200, 170, 255, 0.2);
+    border-color: #E8D4FF;
+    color: #FFFFFF;
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(139, 95, 191, 0.2);
+    box-shadow: 0 4px 15px rgba(200, 170, 255, 0.3);
 }
 
 .btn-outline-primary:active {
@@ -293,22 +294,36 @@
 }
 
 .text-muted {
-    color: #6c757d !important;
+    color: rgba(255, 255, 255, 0.7) !important;
 }
 
 .card {
-    border: 1px solid rgba(139, 95, 191, 0.3);
+    border: 1px solid rgba(200, 170, 255, 0.3);
     border-radius: 15px;
     transition: all 0.3s ease;
 }
 
 .card:hover {
-    box-shadow: 0 8px 25px rgba(139, 95, 191, 0.2);
+    box-shadow: 0 8px 25px rgba(200, 170, 255, 0.25);
 }
 
 .card-title {
-    color: rgba(139, 95, 191, 0.8);
+    color: #F0E8FF;
     font-weight: 500;
+    text-shadow: 0 0 15px rgba(200, 170, 255, 0.4);
+}
+
+.card-text {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+h2 {
+    color: #FFFFFF;
+    text-shadow: 0 0 20px rgba(200, 170, 255, 0.5);
+}
+
+h6.text-muted {
+    color: #E0C8FF !important;
 }
 </style>
 {% endblock %} 

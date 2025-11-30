@@ -38,20 +38,19 @@ def init_comprehensive_data_protection():
 - 보호 플래그 설정 (`DATA_PROTECTION_ACTIVE = True`)
 - 모든 데이터 수정 작업에 보호막 적용
 
-### 2층: 관리자 페이지 보호 (`routes/admin.py`)
+### 2층: 관리자 페이지 데이터 관리 (`routes/admin.py`)
 ```python
-def update_field_preserve_data(current_value, form_value):
-    """기존 데이터가 있는 경우 빈 값으로 덮어쓰지 않고 보호"""
-    if form_value == '' or form_value is None:
-        if current_value is not None and current_value.strip():
-            return current_value  # 기존 값 유지
-    return form_value
+def update_field_smart(current_value, form_value):
+    """사용자의 입력을 그대로 반영하여 업데이트"""
+    if form_value is not None and form_value.strip():
+        return form_value  # 새 값으로 업데이트
+    return None  # 빈 값이면 삭제 (사용자의 의도 반영)
 ```
 
 **작동 방식:**
-- 관리자가 편집 시 빈 값으로 저장해도 기존 데이터 유지
-- 실제 값이 입력된 경우에만 업데이트
-- 실시간 로그로 보호 상태 확인
+- 관리자가 값을 입력하면 새 값으로 업데이트
+- 관리자가 필드를 비우면 해당 항목이 서비스 페이지에 표시되지 않음
+- 실시간 로그로 데이터 변경 상태 확인
 
 ### 3층: 마이그레이션 보호 (`migrations/`)
 ```python
@@ -121,13 +120,13 @@ function confirmSave() {
 
 ### 기존 데이터 수정
 1. 수정하고 싶은 필드만 변경
-2. 다른 필드는 비워둬도 안전함
-3. **빈 필드는 기존 값 자동 유지**
+2. 변경 내용을 입력하고 "수정 완료" 클릭
+3. **변경 사항이 즉시 반영됨**
 
 ### 데이터 삭제 (의도적)
 1. 삭제하려는 필드를 완전히 비움
 2. 확인창에서 "확인" 클릭
-3. 정말 삭제됨
+3. **해당 항목이 서비스 페이지에 더 이상 표시되지 않음**
 
 ## 🔍 보호 상태 확인
 

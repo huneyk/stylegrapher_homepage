@@ -37,16 +37,36 @@
                         <h2 class="section-title">{{ _('추천 패키지') }}</h2>
                         {% if packages %}
                         <div class="package-list">
-                            {% for package in packages %}
-                            <div class="package-item">
-                                <h4 class="package-name">{{ package.name }}</h4>
-                                <p class="package-description">{{ package.description }}</p>
-                                <div class="package-details">
-                                    <span class="package-price">{{ package.price }}</span>
-                                    <span class="package-duration">{{ package.duration }}</span>
+                            {% if packages.tables is defined %}
+                                {# 새로운 다중 테이블 형식 - 모든 테이블의 패키지를 표시 #}
+                                {% for table in packages.tables %}
+                                    {% if table.title %}
+                                    <h5 class="package-table-label">{{ table.title }}</h5>
+                                    {% endif %}
+                                    {% for package in table.packages %}
+                                    <div class="package-item">
+                                        <h4 class="package-name">{{ package.name }}</h4>
+                                        <p class="package-description">{{ package.description }}</p>
+                                        <div class="package-details">
+                                            <span class="package-price">{{ package.price }}</span>
+                                            <span class="package-duration">{{ package.duration }}</span>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                {% endfor %}
+                            {% else %}
+                                {# 기존 단일 배열 형식 #}
+                                {% for package in packages %}
+                                <div class="package-item">
+                                    <h4 class="package-name">{{ package.name }}</h4>
+                                    <p class="package-description">{{ package.description }}</p>
+                                    <div class="package-details">
+                                        <span class="package-price">{{ package.price }}</span>
+                                        <span class="package-duration">{{ package.duration }}</span>
+                                    </div>
                                 </div>
-                            </div>
-                            {% endfor %}
+                                {% endfor %}
+                            {% endif %}
                         </div>
                         {% endif %}
                     </div>
@@ -124,6 +144,7 @@
     font-size: 1.2rem;
     color: #6c757d;
     margin-bottom: 0;
+    white-space: pre-line;
 }
 
 .info-card {
@@ -188,6 +209,19 @@
     gap: 1.5rem;
 }
 
+.package-table-label {
+    color: rgba(139, 95, 191, 0.7);
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 1rem 0 0.5rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed rgba(139, 95, 191, 0.3);
+}
+
+.package-table-label:first-child {
+    margin-top: 0;
+}
+
 .package-item {
     background: rgba(139, 95, 191, 0.05);
     border: 1px solid rgba(139, 95, 191, 0.2);
@@ -212,6 +246,7 @@
     color: #6c757d;
     font-size: 0.95rem;
     margin-bottom: 1rem;
+    white-space: pre-line;
 }
 
 .package-details {
@@ -278,6 +313,7 @@
     font-size: 0.95rem;
     line-height: 1.5;
     margin-bottom: 1.5rem;
+    white-space: pre-line;
 }
 
 .option-details {

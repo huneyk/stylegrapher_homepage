@@ -49,31 +49,19 @@
                         
                         <div class="mb-3">
                             <label class="form-label">패키지 정보</label>
-                            <div class="packages-table-container">
-                                <table class="table table-bordered packages-table" id="packagesTable">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th style="width: 18%">패키지명</th>
-                                            <th style="width: 30%">설명</th>
-                                            <th style="width: 15%">소요시간</th>
-                                            <th style="width: 12%">가격</th>
-                                            <th style="width: 15%">비고</th>
-                                            <th style="width: 10%">삭제</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="packagesTableBody">
-                                        <!-- 패키지 행들이 여기에 동적으로 추가됩니다 -->
-                                    </tbody>
-                                </table>
-                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="addPackageRow()">
-                                    <i class="bi bi-plus-circle"></i> 패키지 추가
-                                </button>
-                                <button type="button" class="btn btn-outline-danger btn-sm ms-2" onclick="clearAllPackages()">
-                                    <i class="bi bi-trash3"></i> 표 내용 전체 지우기
+                            <div class="form-text mb-2">여러 개의 패키지 테이블을 추가하고 각 테이블에 패키지들을 입력할 수 있습니다. 테이블은 추가된 순서대로 서비스 페이지에 표시됩니다.</div>
+                            
+                            <div id="packageTablesContainer">
+                                <!-- 패키지 테이블들이 여기에 동적으로 추가됩니다 -->
+                            </div>
+                            
+                            <div class="mt-3">
+                                <button type="button" class="btn btn-primary" onclick="addPackageTable()">
+                                    <i class="bi bi-plus-square"></i> 새 패키지 표 추가
                                 </button>
                             </div>
+                            
                             <textarea class="form-control d-none" id="packages" name="packages">{{ packages_text or '' }}</textarea>
-                            <div class="form-text">패키지를 추가하고 각 필드를 입력하세요. 여러 패키지를 제공할 수 있습니다.</div>
                         </div>
                         
                         <!-- 예약 조건 섹션 -->
@@ -187,65 +175,171 @@
 }
 
 .form-text {
-    color: #6c757d;
+    color: rgba(255, 255, 255, 0.65);
     font-size: 0.875rem;
 }
 
 .card-title {
-    color: rgba(139, 95, 191, 0.8);
+    color: #F0E8FF;
+    text-shadow: 0 0 15px rgba(200, 170, 255, 0.4);
+}
+
+.text-muted {
+    color: rgba(255, 255, 255, 0.7) !important;
 }
 
 hr {
-    border-color: rgba(139, 95, 191, 0.2);
+    border-color: rgba(200, 170, 255, 0.3);
 }
 
 h5 {
-    color: rgba(139, 95, 191, 0.7);
+    color: #E8D4FF;
     font-weight: 600;
+    text-shadow: 0 0 10px rgba(200, 170, 255, 0.3);
+}
+
+h2.card-title {
+    color: #FFFFFF;
+    text-shadow: 0 0 20px rgba(200, 170, 255, 0.5);
+}
+
+.form-label {
+    color: #E0C8FF;
+    font-weight: 500;
+}
+
+/* 패키지 테이블 컨테이너 */
+.package-table-wrapper {
+    border: 2px solid rgba(200, 170, 255, 0.3);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    background: rgba(18, 0, 36, 0.7);
+    position: relative;
+}
+
+.package-table-wrapper:hover {
+    border-color: rgba(200, 170, 255, 0.5);
+    box-shadow: 0 4px 15px rgba(200, 170, 255, 0.2);
+}
+
+.package-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(200, 170, 255, 0.2);
+}
+
+.package-table-number {
+    background: rgba(200, 170, 255, 0.2);
+    color: #E8D4FF;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.package-table-title-input {
+    flex: 1;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    border: 1px solid rgba(200, 170, 255, 0.3);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    font-weight: 500;
+    background: rgba(18, 0, 36, 0.8);
+    color: #FFFFFF;
+    transition: all 0.2s ease;
+}
+
+.package-table-title-input:focus {
+    border-color: rgba(200, 170, 255, 0.6);
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(200, 170, 255, 0.15);
+}
+
+.package-table-title-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+}
+
+.delete-table-btn {
+    background: rgba(220, 53, 69, 0.2);
+    color: #FFB3B3;
+    border: 1px solid rgba(255, 100, 100, 0.4);
+    border-radius: 8px;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.delete-table-btn:hover {
+    background: rgba(220, 53, 69, 0.3);
+    border-color: rgba(255, 100, 100, 0.6);
+    color: #FF8080;
 }
 
 .packages-table-container {
-    border: 2px solid rgba(139, 95, 191, 0.2);
-    border-radius: 12px;
-    padding: 1rem;
-    background: rgba(248, 249, 250, 0.5);
+    border: 1px solid rgba(200, 170, 255, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(18, 0, 36, 0.6);
 }
 
 .packages-table {
-    margin-bottom: 1rem;
+    margin-bottom: 0;
 }
 
 .packages-table th {
-    background: rgba(139, 95, 191, 0.1);
-    color: rgba(139, 95, 191, 0.8);
+    background: rgba(100, 60, 150, 0.5) !important;
+    color: #FFFFFF !important;
     font-weight: 600;
-    border-color: rgba(139, 95, 191, 0.2);
+    border-color: rgba(200, 170, 255, 0.2) !important;
+    font-size: 0.9rem;
 }
 
 .packages-table td {
-    border-color: rgba(139, 95, 191, 0.15);
+    border-color: rgba(200, 170, 255, 0.15) !important;
     vertical-align: middle;
+    padding: 0.5rem;
+    background: rgba(18, 0, 36, 0.5) !important;
 }
 
 .packages-table input {
-    border: 1px solid rgba(139, 95, 191, 0.2);
+    border: 1px solid rgba(200, 170, 255, 0.3);
     border-radius: 6px;
-    padding: 0.5rem;
+    padding: 0.4rem 0.6rem;
     width: 100%;
-    background: white;
+    background: rgba(18, 0, 36, 0.8);
+    color: #FFFFFF;
     transition: border-color 0.2s ease;
+    font-size: 0.9rem;
 }
 
 .packages-table input:focus {
-    border-color: rgba(139, 95, 191, 0.5);
+    border-color: rgba(200, 170, 255, 0.6);
     outline: none;
-    box-shadow: 0 0 0 0.2rem rgba(139, 95, 191, 0.15);
+    box-shadow: 0 0 0 0.15rem rgba(200, 170, 255, 0.15);
+}
+
+.packages-table input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.package-table-actions {
+    margin-top: 0.75rem;
+    display: flex;
+    gap: 0.5rem;
 }
 
 .delete-package-btn {
     border: none;
-    background: rgba(220, 53, 69, 0.1);
-    color: #dc3545;
+    background: rgba(220, 53, 69, 0.2);
+    color: #FFB3B3;
     border-radius: 6px;
     padding: 0.25rem 0.5rem;
     cursor: pointer;
@@ -253,21 +347,43 @@ h5 {
 }
 
 .delete-package-btn:hover {
-    background: rgba(220, 53, 69, 0.2);
-    color: #c82333;
+    background: rgba(220, 53, 69, 0.3);
+    color: #FF8080;
 }
 
 .empty-packages-row {
     text-align: center;
-    color: #6c757d;
+    color: rgba(255, 255, 255, 0.6);
     font-style: italic;
 }
 
+.no-tables-message {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: rgba(18, 0, 36, 0.6);
+    border: 2px dashed rgba(200, 170, 255, 0.4);
+    border-radius: 12px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.no-tables-message i {
+    font-size: 3rem;
+    color: #E8D4FF;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.no-tables-message p {
+    margin: 0;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
 .refund-table-container {
-    border: 2px solid rgba(139, 95, 191, 0.2);
+    border: 2px solid rgba(200, 170, 255, 0.3);
     border-radius: 12px;
     padding: 1rem;
-    background: rgba(248, 249, 250, 0.5);
+    background: rgba(18, 0, 36, 0.6);
 }
 
 .refund-table {
@@ -275,36 +391,42 @@ h5 {
 }
 
 .refund-table th {
-    background: rgba(139, 95, 191, 0.1);
-    color: rgba(139, 95, 191, 0.8);
+    background: rgba(100, 60, 150, 0.5) !important;
+    color: #FFFFFF !important;
     font-weight: 600;
-    border-color: rgba(139, 95, 191, 0.2);
+    border-color: rgba(200, 170, 255, 0.2) !important;
 }
 
 .refund-table td {
-    border-color: rgba(139, 95, 191, 0.15);
+    border-color: rgba(200, 170, 255, 0.15) !important;
     vertical-align: middle;
+    background: rgba(18, 0, 36, 0.5) !important;
 }
 
 .refund-table input {
-    border: 1px solid rgba(139, 95, 191, 0.2);
+    border: 1px solid rgba(200, 170, 255, 0.3);
     border-radius: 6px;
     padding: 0.5rem;
     width: 100%;
-    background: white;
+    background: rgba(18, 0, 36, 0.8);
+    color: #FFFFFF;
     transition: border-color 0.2s ease;
 }
 
 .refund-table input:focus {
-    border-color: rgba(139, 95, 191, 0.5);
+    border-color: rgba(200, 170, 255, 0.6);
     outline: none;
-    box-shadow: 0 0 0 0.2rem rgba(139, 95, 191, 0.15);
+    box-shadow: 0 0 0 0.2rem rgba(200, 170, 255, 0.15);
+}
+
+.refund-table input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
 }
 
 .delete-refund-btn {
     border: none;
-    background: rgba(220, 53, 69, 0.1);
-    color: #dc3545;
+    background: rgba(220, 53, 69, 0.2);
+    color: #FFB3B3;
     border-radius: 6px;
     padding: 0.25rem 0.5rem;
     cursor: pointer;
@@ -312,21 +434,21 @@ h5 {
 }
 
 .delete-refund-btn:hover {
-    background: rgba(220, 53, 69, 0.2);
-    color: #c82333;
+    background: rgba(220, 53, 69, 0.3);
+    color: #FF8080;
 }
 
 .empty-refund-row {
     text-align: center;
-    color: #6c757d;
+    color: rgba(255, 255, 255, 0.6);
     font-style: italic;
 }
 
 .overtime-charge-table-container {
-    border: 2px solid rgba(139, 95, 191, 0.2);
+    border: 2px solid rgba(200, 170, 255, 0.3);
     border-radius: 12px;
     padding: 1rem;
-    background: rgba(248, 249, 250, 0.5);
+    background: rgba(18, 0, 36, 0.6);
 }
 
 .overtime-charge-table {
@@ -334,36 +456,42 @@ h5 {
 }
 
 .overtime-charge-table th {
-    background: rgba(139, 95, 191, 0.1);
-    color: rgba(139, 95, 191, 0.8);
+    background: rgba(100, 60, 150, 0.5) !important;
+    color: #FFFFFF !important;
     font-weight: 600;
-    border-color: rgba(139, 95, 191, 0.2);
+    border-color: rgba(200, 170, 255, 0.2) !important;
 }
 
 .overtime-charge-table td {
-    border-color: rgba(139, 95, 191, 0.15);
+    border-color: rgba(200, 170, 255, 0.15) !important;
     vertical-align: middle;
+    background: rgba(18, 0, 36, 0.5) !important;
 }
 
 .overtime-charge-table input {
-    border: 1px solid rgba(139, 95, 191, 0.2);
+    border: 1px solid rgba(200, 170, 255, 0.3);
     border-radius: 6px;
     padding: 0.5rem;
     width: 100%;
-    background: white;
+    background: rgba(18, 0, 36, 0.8);
+    color: #FFFFFF;
     transition: border-color 0.2s ease;
 }
 
 .overtime-charge-table input:focus {
-    border-color: rgba(139, 95, 191, 0.5);
+    border-color: rgba(200, 170, 255, 0.6);
     outline: none;
-    box-shadow: 0 0 0 0.2rem rgba(139, 95, 191, 0.15);
+    box-shadow: 0 0 0 0.2rem rgba(200, 170, 255, 0.15);
+}
+
+.overtime-charge-table input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
 }
 
 .delete-overtime-charge-btn {
     border: none;
-    background: rgba(220, 53, 69, 0.1);
-    color: #dc3545;
+    background: rgba(220, 53, 69, 0.2);
+    color: #FFB3B3;
     border-radius: 6px;
     padding: 0.25rem 0.5rem;
     cursor: pointer;
@@ -371,157 +499,350 @@ h5 {
 }
 
 .delete-overtime-charge-btn:hover {
-    background: rgba(220, 53, 69, 0.2);
-    color: #c82333;
+    background: rgba(220, 53, 69, 0.3);
+    color: #FF8080;
 }
 
 .empty-overtime-charge-row {
     text-align: center;
-    color: #6c757d;
+    color: rgba(255, 255, 255, 0.6);
     font-style: italic;
 }
 </style>
 
 <script>
+// 전역 테이블 카운터
+let tableCounter = 0;
+
 document.addEventListener('DOMContentLoaded', function() {
     // 페이지 로드 시 기존 패키지 데이터 파싱
-    loadExistingPackages();
+    loadExistingPackageTables();
     // 페이지 로드 시 기존 환불 규정 데이터 파싱
     loadExistingRefundRules();
     // 페이지 로드 시 기존 시간외 업차지 데이터 파싱
     loadExistingOvertimeChargeRules();
 });
 
-function loadExistingPackages() {
+// ========== 다중 패키지 테이블 관리 함수들 ==========
+
+function loadExistingPackageTables() {
     const packagesText = document.getElementById('packages').value;
-    const tableBody = document.getElementById('packagesTableBody');
+    const container = document.getElementById('packageTablesContainer');
     
     // 기존 데이터 클리어
-    tableBody.innerHTML = '';
+    container.innerHTML = '';
+    tableCounter = 0;
     
     if (packagesText.trim()) {
-        const lines = packagesText.split('\n');
-        let hasData = false;
-        
-        lines.forEach(line => {
-            if (line.trim() && line.includes('|')) {
-                const parts = line.split('|');
-                if (parts.length >= 5) {
-                    // 5개 필드: name, description, duration, price, notes
-                    addPackageRow(parts[0].trim(), parts[1].trim(), parts[2].trim(), parts[3].trim(), parts[4].trim());
-                    hasData = true;
-                } else if (parts.length >= 4) {
-                    // 4개 필드: name, description, duration, price (비고 없음)
-                    addPackageRow(parts[0].trim(), parts[1].trim(), parts[2].trim(), parts[3].trim(), '');
-                    hasData = true;
-                } else if (parts.length >= 3) {
-                    // 기존 3개 필드 데이터 호환성 (duration 없음)
-                    addPackageRow(parts[0].trim(), parts[1].trim(), '', parts[2].trim(), '');
-                    hasData = true;
-                }
+        try {
+            // JSON 형식인지 확인
+            const data = JSON.parse(packagesText);
+            
+            if (data.tables && Array.isArray(data.tables)) {
+                // 새 다중 테이블 형식
+                data.tables.forEach((table, index) => {
+                    addPackageTable(table.title, table.packages || []);
+                });
+            } else if (Array.isArray(data)) {
+                // 기존 단일 테이블 형식 (배열만 있는 경우) - 호환성
+                addPackageTable('', data);
             }
+        } catch (e) {
+            // JSON이 아닌 기존 파이프 형식 - 레거시 호환성
+            console.log('레거시 형식 데이터 감지, 변환 중...');
+            const packages = [];
+            const lines = packagesText.split('\n');
+            
+            lines.forEach(line => {
+                if (line.trim() && line.includes('|')) {
+                    const parts = line.split('|');
+                    if (parts.length >= 5) {
+                        packages.push({
+                            name: parts[0].trim(),
+                            description: parts[1].trim(),
+                            duration: parts[2].trim(),
+                            price: parts[3].trim(),
+                            notes: parts[4].trim()
+                        });
+                    } else if (parts.length >= 4) {
+                        packages.push({
+                            name: parts[0].trim(),
+                            description: parts[1].trim(),
+                            duration: parts[2].trim(),
+                            price: parts[3].trim(),
+                            notes: ''
+                        });
+                    } else if (parts.length >= 3) {
+                        packages.push({
+                            name: parts[0].trim(),
+                            description: parts[1].trim(),
+                            duration: '',
+                            price: parts[2].trim(),
+                            notes: ''
+                        });
+                    }
+                }
+            });
+            
+            if (packages.length > 0) {
+                addPackageTable('', packages);
+            }
+        }
+    }
+    
+    // 테이블이 없으면 빈 메시지 표시
+    if (container.children.length === 0) {
+        showNoTablesMessage();
+    }
+}
+
+function showNoTablesMessage() {
+    const container = document.getElementById('packageTablesContainer');
+    container.innerHTML = `
+        <div class="no-tables-message">
+            <i class="bi bi-table"></i>
+            <p>등록된 패키지 표가 없습니다.<br>"새 패키지 표 추가" 버튼을 클릭하여 표를 추가하세요.</p>
+        </div>
+    `;
+}
+
+function addPackageTable(title = '', packages = []) {
+    const container = document.getElementById('packageTablesContainer');
+    
+    // "등록된 표가 없습니다" 메시지 제거
+    const noTablesMsg = container.querySelector('.no-tables-message');
+    if (noTablesMsg) {
+        noTablesMsg.remove();
+    }
+    
+    tableCounter++;
+    const tableId = tableCounter;
+    
+    const wrapper = document.createElement('div');
+    wrapper.className = 'package-table-wrapper';
+    wrapper.dataset.tableId = tableId;
+    
+    wrapper.innerHTML = `
+        <div class="package-table-header">
+            <span class="package-table-number">표 ${tableId}</span>
+            <input type="text" class="package-table-title-input" value="${escapeHtml(title)}" 
+                   placeholder="표 제목을 입력하세요 (예: 스튜디오 촬영 패키지)" 
+                   onchange="updateAllPackagesData()">
+            <button type="button" class="delete-table-btn" onclick="deletePackageTable(${tableId})">
+                <i class="bi bi-trash"></i> 표 삭제
+            </button>
+        </div>
+        <div class="packages-table-container">
+            <table class="table table-bordered packages-table">
+                <thead>
+                    <tr>
+                        <th style="width: 18%">패키지명</th>
+                        <th style="width: 30%">설명</th>
+                        <th style="width: 12%">소요시간</th>
+                        <th style="width: 12%">가격</th>
+                        <th style="width: 18%">비고</th>
+                        <th style="width: 10%">삭제</th>
+                    </tr>
+                </thead>
+                <tbody class="packages-table-body">
+                </tbody>
+            </table>
+        </div>
+        <div class="package-table-actions">
+            <button type="button" class="btn btn-outline-primary btn-sm" onclick="addPackageRowToTable(${tableId})">
+                <i class="bi bi-plus-circle"></i> 패키지 추가
+            </button>
+            <button type="button" class="btn btn-outline-warning btn-sm" onclick="clearTablePackages(${tableId})">
+                <i class="bi bi-eraser"></i> 표 내용 비우기
+            </button>
+        </div>
+    `;
+    
+    container.appendChild(wrapper);
+    
+    // 기존 패키지들 추가
+    const tableBody = wrapper.querySelector('.packages-table-body');
+    if (packages && packages.length > 0) {
+        packages.forEach(pkg => {
+            addPackageRowToTableBody(tableBody, pkg.name, pkg.description, pkg.duration, pkg.price, pkg.notes);
         });
+    }
+    
+    updateTableNumbers();
+    updateAllPackagesData();
+    
+    console.log(`패키지 테이블 ${tableId} 추가됨`);
+}
+
+function deletePackageTable(tableId) {
+    if (!confirm('이 패키지 표를 삭제하시겠습니까?\n표에 포함된 모든 패키지가 함께 삭제됩니다.')) {
+        return;
+    }
+    
+    const container = document.getElementById('packageTablesContainer');
+    const wrapper = container.querySelector(`[data-table-id="${tableId}"]`);
+    
+    if (wrapper) {
+        wrapper.remove();
+        updateTableNumbers();
+        updateAllPackagesData();
         
-        // 데이터가 없어도 빈 행을 자동으로 생성하지 않음
-        // 사용자가 직접 "패키지 추가" 버튼을 클릭해야만 행이 생성됨
-    } else {
-        // 데이터가 없는 경우 아무것도 하지 않음 (빈 테이블 유지)
+        // 모든 테이블이 삭제되면 빈 메시지 표시
+        if (container.children.length === 0) {
+            showNoTablesMessage();
+        }
     }
 }
 
-function addPackageRow(name = '', description = '', duration = '', price = '', notes = '') {
-    try {
-        console.log('addPackageRow 함수 호출됨');
-        const tableBody = document.getElementById('packagesTableBody');
-        
-        if (!tableBody) {
-            console.error('packagesTableBody 요소를 찾을 수 없습니다');
-            return;
+function updateTableNumbers() {
+    const container = document.getElementById('packageTablesContainer');
+    const wrappers = container.querySelectorAll('.package-table-wrapper');
+    
+    wrappers.forEach((wrapper, index) => {
+        const numberSpan = wrapper.querySelector('.package-table-number');
+        if (numberSpan) {
+            numberSpan.textContent = `표 ${index + 1}`;
         }
-        
-        // 빈 행 제거
-        const emptyRow = tableBody.querySelector('.empty-packages-row');
-        if (emptyRow) {
-            emptyRow.remove();
-        }
-        
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>
-                <input type="text" class="package-name" value="${name}" placeholder="패키지명" onchange="updatePackagesText()">
-            </td>
-            <td>
-                <input type="text" class="package-description" value="${description}" placeholder="패키지 설명" onchange="updatePackagesText()">
-            </td>
-            <td>
-                <input type="text" class="package-duration" value="${duration}" placeholder="소요시간" onchange="updatePackagesText()">
-            </td>
-            <td>
-                <input type="text" class="package-price" value="${price}" placeholder="가격" onchange="updatePackagesText()">
-            </td>
-            <td>
-                <input type="text" class="package-notes" value="${notes}" placeholder="비고" onchange="updatePackagesText()">
-            </td>
-            <td class="text-center">
-                <button type="button" class="delete-package-btn" onclick="deletePackageRow(this)">
-                    <i class="bi bi-trash"></i>
-                </button>
-            </td>
-        `;
-        
-        tableBody.appendChild(row);
-        updatePackagesText();
-        console.log('패키지 행이 성공적으로 추가되었습니다');
-    } catch (error) {
-        console.error('addPackageRow 함수 실행 중 오류:', error);
+    });
+}
+
+function addPackageRowToTable(tableId) {
+    const container = document.getElementById('packageTablesContainer');
+    const wrapper = container.querySelector(`[data-table-id="${tableId}"]`);
+    
+    if (wrapper) {
+        const tableBody = wrapper.querySelector('.packages-table-body');
+        addPackageRowToTableBody(tableBody);
     }
 }
 
-function deletePackageRow(button) {
+function addPackageRowToTableBody(tableBody, name = '', description = '', duration = '', price = '', notes = '') {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>
+            <input type="text" class="package-name" value="${escapeHtml(name)}" placeholder="패키지명" onchange="updateAllPackagesData()">
+        </td>
+        <td>
+            <input type="text" class="package-description" value="${escapeHtml(description)}" placeholder="패키지 설명" onchange="updateAllPackagesData()">
+        </td>
+        <td>
+            <input type="text" class="package-duration" value="${escapeHtml(duration)}" placeholder="소요시간" onchange="updateAllPackagesData()">
+        </td>
+        <td>
+            <input type="text" class="package-price" value="${escapeHtml(price)}" placeholder="가격" onchange="updateAllPackagesData()">
+        </td>
+        <td>
+            <input type="text" class="package-notes" value="${escapeHtml(notes)}" placeholder="비고" onchange="updateAllPackagesData()">
+        </td>
+        <td class="text-center">
+            <button type="button" class="delete-package-btn" onclick="deletePackageRowFromTable(this)">
+                <i class="bi bi-trash"></i>
+            </button>
+        </td>
+    `;
+    
+    tableBody.appendChild(row);
+    updateAllPackagesData();
+}
+
+function deletePackageRowFromTable(button) {
     if (confirm('이 패키지를 삭제하시겠습니까?')) {
         const row = button.closest('tr');
         row.remove();
-        
-        // 모든 행이 삭제되면 빈 행 표시
-        const tableBody = document.getElementById('packagesTableBody');
-        if (tableBody.children.length === 0) {
-            showEmptyRow();
-        }
-        
-        updatePackagesText();
+        updateAllPackagesData();
     }
 }
 
-function showEmptyRow() {
-    const tableBody = document.getElementById('packagesTableBody');
-    const emptyRow = document.createElement('tr');
-    emptyRow.className = 'empty-packages-row';
-    emptyRow.innerHTML = `
-        <td colspan="6" class="py-3">
-            등록된 패키지가 없습니다. "패키지 추가" 버튼을 클릭하여 패키지를 추가하세요.
-        </td>
-    `;
-    tableBody.appendChild(emptyRow);
+function clearTablePackages(tableId) {
+    if (!confirm('이 표의 모든 패키지를 삭제하시겠습니까?')) {
+        return;
+    }
+    
+    const container = document.getElementById('packageTablesContainer');
+    const wrapper = container.querySelector(`[data-table-id="${tableId}"]`);
+    
+    if (wrapper) {
+        const tableBody = wrapper.querySelector('.packages-table-body');
+        tableBody.innerHTML = '';
+        updateAllPackagesData();
+    }
 }
 
-function updatePackagesText() {
-    const tableBody = document.getElementById('packagesTableBody');
-    const rows = tableBody.querySelectorAll('tr:not(.empty-packages-row)');
-    const packages = [];
+function updateAllPackagesData() {
+    const container = document.getElementById('packageTablesContainer');
+    const wrappers = container.querySelectorAll('.package-table-wrapper');
     
-    rows.forEach(row => {
-        const name = row.querySelector('.package-name').value.trim();
-        const description = row.querySelector('.package-description').value.trim();
-        const duration = row.querySelector('.package-duration').value.trim();
-        const price = row.querySelector('.package-price').value.trim();
-        const notes = row.querySelector('.package-notes').value.trim();
+    const tablesData = {
+        tables: []
+    };
+    
+    wrappers.forEach((wrapper, index) => {
+        const title = wrapper.querySelector('.package-table-title-input').value.trim();
+        const tableBody = wrapper.querySelector('.packages-table-body');
+        const rows = tableBody.querySelectorAll('tr');
         
-        if (name && description && duration && price) {
-            packages.push(`${name}|${description}|${duration}|${price}|${notes}`);
-        }
+        const packages = [];
+        rows.forEach(row => {
+            const name = row.querySelector('.package-name').value.trim();
+            const description = row.querySelector('.package-description').value.trim();
+            const duration = row.querySelector('.package-duration').value.trim();
+            const price = row.querySelector('.package-price').value.trim();
+            const notes = row.querySelector('.package-notes').value.trim();
+            
+            // 패키지명이 있으면 추가 (다른 필드는 선택사항)
+            if (name) {
+                packages.push({
+                    name: name,
+                    description: description,
+                    duration: duration,
+                    price: price,
+                    notes: notes
+                });
+            }
+        });
+        
+        tablesData.tables.push({
+            title: title,
+            order: index,
+            packages: packages
+        });
     });
     
-    document.getElementById('packages').value = packages.join('\n');
+    // JSON으로 저장
+    document.getElementById('packages').value = JSON.stringify(tablesData);
+}
+
+// HTML 이스케이프 헬퍼 함수
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// 레거시 호환을 위한 함수들 (기존 코드와의 호환성)
+function addPackageRow(name = '', description = '', duration = '', price = '', notes = '') {
+    // 테이블이 없으면 새로 만들고 거기에 추가
+    const container = document.getElementById('packageTablesContainer');
+    let wrapper = container.querySelector('.package-table-wrapper');
+    
+    if (!wrapper) {
+        addPackageTable('');
+        wrapper = container.querySelector('.package-table-wrapper');
+    }
+    
+    const tableBody = wrapper.querySelector('.packages-table-body');
+    addPackageRowToTableBody(tableBody, name, description, duration, price, notes);
+}
+
+function clearAllPackages() {
+    if (confirm('모든 패키지 표와 데이터를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+        const container = document.getElementById('packageTablesContainer');
+        container.innerHTML = '';
+        tableCounter = 0;
+        showNoTablesMessage();
+        document.getElementById('packages').value = '';
+    }
 }
 
 // 환불 테이블 관리 함수들

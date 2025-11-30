@@ -550,6 +550,68 @@ def translate_packages(packages_list: List[Dict]) -> Dict[str, List[Dict]]:
     return result
 
 
+def translate_multi_table_packages(packages_data: Dict) -> Dict[str, Dict]:
+    """
+    다중 테이블 형식의 패키지 데이터 번역 {'tables': [...]} 형식
+    
+    Args:
+        packages_data: {'tables': [{'title': ..., 'packages': [...]}]} 형식의 데이터
+    
+    Returns:
+        언어별 번역된 다중 테이블 패키지 데이터
+    """
+    result = {'ko': packages_data}
+    
+    tables = packages_data.get('tables', [])
+    if not tables:
+        return result
+    
+    # 모든 문자열 값 추출
+    all_strings = []
+    string_map = []  # (table_idx, 'title' or ('packages', pkg_idx, key)) 매핑
+    
+    for table_idx, table in enumerate(tables):
+        # 테이블 제목
+        if table.get('title') and table['title'].strip():
+            all_strings.append(table['title'])
+            string_map.append((table_idx, 'title'))
+        
+        # 패키지 내용
+        for pkg_idx, pkg in enumerate(table.get('packages', [])):
+            for key, value in pkg.items():
+                if isinstance(value, str) and value.strip():
+                    all_strings.append(value)
+                    string_map.append((table_idx, ('packages', pkg_idx, key)))
+    
+    if not all_strings:
+        return result
+    
+    # 각 언어로 번역
+    for lang_code in SUPPORTED_LANGUAGES.keys():
+        if lang_code == 'ko':
+            continue
+        
+        translated_strings = translate_batch_gpt(all_strings, lang_code)
+        
+        # 번역된 문자열을 다중 테이블 구조에 다시 매핑
+        import copy
+        translated_data = copy.deepcopy(packages_data)
+        
+        for idx, mapping in enumerate(string_map):
+            if idx < len(translated_strings):
+                table_idx, key_info = mapping
+                if key_info == 'title':
+                    translated_data['tables'][table_idx]['title'] = translated_strings[idx]
+                else:
+                    # ('packages', pkg_idx, key) 형식
+                    _, pkg_idx, key = key_info
+                    translated_data['tables'][table_idx]['packages'][pkg_idx][key] = translated_strings[idx]
+        
+        result[lang_code] = translated_data
+    
+    return result
+
+
 def translate_service_option(option) -> bool:
     """
     ServiceOption 모델의 모든 텍스트 필드 번역 및 저장
@@ -584,12 +646,19 @@ def translate_service_option(option) -> bool:
         except json.JSONDecodeError:
             pass
     
-    # packages (JSON 배열)
+    # packages (JSON 배열 또는 다중 테이블 형식)
     if option.packages:
         try:
-            packages_list = json.loads(option.packages)
-            if isinstance(packages_list, list) and packages_list:
-                translated_packages = translate_packages(packages_list)
+            packages_data = json.loads(option.packages)
+            
+            # 새로운 다중 테이블 형식: {'tables': [...]}
+            if isinstance(packages_data, dict) and 'tables' in packages_data:
+                translated_packages = translate_multi_table_packages(packages_data)
+                save_translation('service_option', option.id, 'packages', 
+                               option.packages, translated_packages)
+            # 기존 단순 배열 형식
+            elif isinstance(packages_data, list) and packages_data:
+                translated_packages = translate_packages(packages_data)
                 save_translation('service_option', option.id, 'packages', 
                                option.packages, translated_packages)
         except json.JSONDecodeError:

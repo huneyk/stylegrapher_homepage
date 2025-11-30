@@ -44,20 +44,20 @@ msgstr ""
 
 # Main Menu Categories
 #: templates/_services.html:3 templates/base.html:109
-msgid "STG AI 분석"
-msgstr "STG AI Analysis"
+msgid "AI 분석"
+msgstr "AI Analysis"
 
 #: templates/_services.html:4 templates/base.html:132
-msgid "스타일링 컨설팅"
-msgstr "Styling Consulting"
+msgid "컨설팅 프로그램"
+msgstr "Consulting Program"
 
 #: templates/_services.html:5 templates/base.html:165
 msgid "원데이 스타일링"
 msgstr "One-Day Styling"
 
 #: templates/_services.html:6 templates/base.html:193
-msgid "화보 & 프로필"
-msgstr "Photo & Profile"
+msgid "프리미엄 화보 제작"
+msgstr "Premium Photo Production"
 
 #: templates/about.html:3 templates/base.html:233 templates/index.html:525
 msgid "스타일그래퍼 소개"

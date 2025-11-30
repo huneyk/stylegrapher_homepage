@@ -1,16 +1,19 @@
+"""
+Flask 애플리케이션 팩토리 - MongoDB 기반
+"""
 import os
 import json
 from flask import Flask, request, abort, send_from_directory, session, g, redirect, url_for, jsonify
 from routes.main import main
 from routes.admin import admin
 from extensions import db, login_manager, migrate, mail, babel
-from models import User
 from config import Config
 from pymongo import MongoClient
 from dotenv import load_dotenv
 from utils.security import add_security_headers, is_suspicious_request, get_client_ip, log_security_event
 from utils.translation_helper import register_template_helpers
 from utils.gridfs_helper import get_mongo_connection, get_gridfs_stats
+from utils.mongo_models import get_mongo_db, init_collections, Service, SiteSettings
 
 # 지원하는 언어 목록
 SUPPORTED_LANGUAGES = {
@@ -29,32 +32,32 @@ mongo_uri = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/')
 try:
     mongo_client = MongoClient(
         mongo_uri, 
-        serverSelectionTimeoutMS=30000,  # 30초로 증가
+        serverSelectionTimeoutMS=30000,
         connectTimeoutMS=20000,
         socketTimeoutMS=20000,
         retryWrites=True,
         retryReads=True,
-        w='majority',  # 다수의 노드에 쓰기 확인
-        readPreference='primaryPreferred'  # 프라이머리 선호, 없으면 세컨더리로 전환
+        w='majority',
+        readPreference='primaryPreferred'
     )
-    # 테스트 연결
     mongo_client.server_info()
     print("app.py: MongoDB 연결 성공!")
     mongo_db = mongo_client['STG-DB'] if 'mongodb.net' in mongo_uri else mongo_client['stylegrapher_db']
-    images_collection = mongo_db['gallery']  # 레거시 호환성
-    print(f"app.py: MongoDB 데이터베이스 '{mongo_db.name}' 및 컬렉션 '{images_collection.name}' 사용 준비 완료")
+    images_collection = mongo_db['gallery']
+    print(f"app.py: MongoDB 데이터베이스 '{mongo_db.name}' 사용 준비 완료")
     
     # GridFS 초기화 확인
     gridfs_instance, _, _ = get_mongo_connection()
     if gridfs_instance:
         print("app.py: GridFS 연결 성공!")
         stats = get_gridfs_stats()
-        print(f"app.py: GridFS 통계 - 파일 수: {stats.get('gridfs_files_count', 0)}, 레거시 데이터: {stats.get('legacy_with_binary', 0)}개")
+        print(f"app.py: GridFS 통계 - 파일 수: {stats.get('gridfs_files_count', 0)}")
 except Exception as e:
     print(f"app.py: MongoDB 연결 오류: {str(e)}")
     mongo_client = None
     mongo_db = None
     images_collection = None
+
 
 def create_app():
     app = Flask(__name__)
@@ -68,170 +71,60 @@ def create_app():
     app.config['BABEL_SUPPORTED_LOCALES'] = list(SUPPORTED_LANGUAGES.keys())
     app.config['LANGUAGES'] = SUPPORTED_LANGUAGES
     
-    # 확장 기능 초기화
+    # SQLAlchemy 초기화 (마이그레이션 스크립트용으로 유지)
     db.init_app(app)
-    login_manager.init_app(app)
     migrate.init_app(app, db)
+    
+    # 확장 기능 초기화
+    login_manager.init_app(app)
     mail.init_app(app)
     
-    # Babel 초기화 with locale selector
+    # Babel 초기화
     def get_locale():
-        # 1. URL 파라미터에서 언어 확인
         lang = request.args.get('lang')
         if lang and lang in SUPPORTED_LANGUAGES:
             session['lang'] = lang
             return lang
         
-        # 2. 세션에서 저장된 언어 확인
         if 'lang' in session and session['lang'] in SUPPORTED_LANGUAGES:
             return session['lang']
         
-        # 3. 브라우저 Accept-Language 헤더에서 자동 감지
         best_match = request.accept_languages.best_match(list(SUPPORTED_LANGUAGES.keys()))
         if best_match:
             return best_match
         
-        # 4. 기본값: 한국어
         return 'ko'
     
     babel.init_app(app, locale_selector=get_locale)
     
     login_manager.login_view = 'admin.login'
     
-    # 🛡️ 강화된 데이터 보호 시스템 - 배포 시 덮어쓰기 완전 방지
-    def init_comprehensive_data_protection():
-        """배포 시 기존 데이터 보호 초기화 및 덮어쓰기 방지"""
+    # MongoDB 컬렉션 초기화
+    def init_mongodb():
+        """MongoDB 컬렉션 및 인덱스 초기화"""
         try:
-            from models import ServiceOption, GalleryGroup
-            from sqlalchemy import text
-            
-            print("🛡️ 종합 데이터 보호 시스템 초기화 중...")
-            print(f"🔍 현재 환경: {app.config.get('ENV', 'unknown')}")
-            print(f"🔍 DEBUG 모드: {app.config.get('DEBUG', False)}")
-            
-            # 서비스 옵션 데이터 보호 확인
-            service_result = db.session.execute(
-                text("""SELECT COUNT(*) FROM service_option 
-                        WHERE booking_method IS NOT NULL 
-                           OR payment_info IS NOT NULL 
-                           OR guide_info IS NOT NULL 
-                           OR refund_policy_text IS NOT NULL
-                           OR refund_policy_table IS NOT NULL
-                           OR overtime_charge_table IS NOT NULL""")
-            ).scalar()
-            
-            # 각 필드별 상세 확인
-            booking_count = db.session.execute(text("SELECT COUNT(*) FROM service_option WHERE booking_method IS NOT NULL")).scalar()
-            payment_count = db.session.execute(text("SELECT COUNT(*) FROM service_option WHERE payment_info IS NOT NULL")).scalar()
-            guide_count = db.session.execute(text("SELECT COUNT(*) FROM service_option WHERE guide_info IS NOT NULL")).scalar()
-            refund_text_count = db.session.execute(text("SELECT COUNT(*) FROM service_option WHERE refund_policy_text IS NOT NULL")).scalar()
-            refund_table_count = db.session.execute(text("SELECT COUNT(*) FROM service_option WHERE refund_policy_table IS NOT NULL")).scalar()
-            overtime_count = db.session.execute(text("SELECT COUNT(*) FROM service_option WHERE overtime_charge_table IS NOT NULL")).scalar()
-            
-            print(f"📊 기존 데이터 현황:")
-            print(f"   - 예약 방법: {booking_count}개")
-            print(f"   - 결제 방식: {payment_count}개")
-            print(f"   - 안내 사항: {guide_count}개")
-            print(f"   - 환불 규정 텍스트: {refund_text_count}개")
-            print(f"   - 환불 규정 테이블: {refund_table_count}개")
-            print(f"   - 시간외 업차지: {overtime_count}개")
-            
-            # 갤러리 순서 데이터 보호 확인
-            gallery_result = db.session.execute(
-                text("SELECT COUNT(*) FROM gallery_group WHERE display_order IS NOT NULL")
-            ).scalar()
-            
-            if service_result > 0:
-                print(f"🛡️ {service_result}개의 기존 서비스 옵션 데이터 발견 - 보호 모드 활성화")
-                app.config['DATA_PROTECTION_ACTIVE'] = True
-                app.config['SERVICE_DATA_PROTECTED'] = True
-                
-                # 🚨 중요: 모든 데이터 수정 작업을 차단하는 전역 보호 설정
-                import os
-                os.environ['STYLEGRAPHER_DATA_PROTECTION'] = 'ACTIVE'
-                print("🔒 전역 데이터 보호 플래그 설정됨")
-            else:
-                app.config['SERVICE_DATA_PROTECTED'] = False
-                print("ℹ️ 서비스 옵션 데이터 없음 - 새로운 환경으로 판단")
-            
-            if gallery_result > 0:
-                print(f"🛡️ {gallery_result}개의 기존 갤러리 순서 데이터 발견 - 순서 보호 활성화")
-                app.config['GALLERY_ORDER_PROTECTED'] = True
-            else:
-                app.config['GALLERY_ORDER_PROTECTED'] = False
-            
-            # 전체 보호 모드 설정
-            app.config['DATA_PROTECTION_ACTIVE'] = True  # 항상 보호 모드로 설정
-            
-            print("✅ 종합 데이터 보호 시스템 활성화 완료")
-            print("🛡️ 모든 기존 데이터가 덮어쓰기로부터 보호됩니다")
-            print("=" * 60)
-                
+            print("🔧 MongoDB 컬렉션 초기화 중...")
+            init_collections()
+            print("✅ MongoDB 컬렉션 초기화 완료")
         except Exception as e:
-            print(f"⚠️ 데이터 보호 시스템 초기화 오류: {str(e)}")
-            print(f"📋 오류 상세: {type(e).__name__}")
-            import traceback
-            traceback.print_exc()
-            # 오류 발생 시에도 최대 보호 모드 활성화
-            app.config['DATA_PROTECTION_ACTIVE'] = True
-            app.config['SERVICE_DATA_PROTECTED'] = True
-            app.config['GALLERY_ORDER_PROTECTED'] = True
-            import os
-            os.environ['STYLEGRAPHER_DATA_PROTECTION'] = 'ACTIVE'
-            print("🛡️ 안전을 위해 최대 보호 모드로 설정됨")
+            print(f"⚠️ MongoDB 초기화 오류: {str(e)}")
     
-    # 🧹 앱 시작 시 캐시 완전 제거 (Render 서버 캐시 문제 해결)
-    def clear_python_cache():
-        """앱 시작 시 Python 캐시 제거"""
-        import os
-        import shutil
-        
-        try:
-            print("🧹 앱 시작 시 Python 캐시 제거 중...")
-            
-            # 현재 디렉토리의 __pycache__ 제거
-            cache_dirs = []
-            for root, dirs, files in os.walk('.'):
-                if '__pycache__' in dirs:
-                    cache_path = os.path.join(root, '__pycache__')
-                    cache_dirs.append(cache_path)
-            
-            for cache_dir in cache_dirs:
-                try:
-                    shutil.rmtree(cache_dir)
-                    print(f"✅ 캐시 제거: {cache_dir}")
-                except:
-                    pass
-                    
-            if cache_dirs:
-                print(f"🧹 총 {len(cache_dirs)}개 캐시 디렉토리 제거 완료")
-            else:
-                print("📁 제거할 캐시 없음")
-                
-        except Exception as e:
-            print(f"⚠️ 캐시 제거 중 오류 (무시 가능): {str(e)}")
-    
-    # 캐시 제거 실행
-    clear_python_cache()
-    
-    # 앱 컨텍스트에서 데이터 보호 시스템 초기화
+    # 앱 시작 시 MongoDB 초기화
     with app.app_context():
-        init_comprehensive_data_protection()
+        init_mongodb()
     
-    # 보안 미들웨어 - 모든 요청에 대해 실행
+    # 보안 미들웨어
     @app.before_request
     def security_middleware():
-        # robots.txt 요청은 보안 검사 제외
         if request.path == '/robots.txt':
             return
             
-        # 의심스러운 요청 패턴 검사
         is_suspicious, reason = is_suspicious_request()
         if is_suspicious:
             log_security_event("BLOCKED_REQUEST", reason)
-            abort(404)  # 404로 위장하여 정보 노출 방지
+            abort(404)
     
-    # 모든 응답에 보안 헤더 추가
+    # 보안 헤더 추가
     @app.after_request
     def after_request(response):
         return add_security_headers(response)
@@ -241,14 +134,13 @@ def create_app():
     def robots_txt():
         return send_from_directory(app.static_folder, 'robots.txt')
     
-    # 개선된 404 오류 핸들러
+    # 404 오류 핸들러
     @app.errorhandler(404)
     def page_not_found(error):
-        # 보안 이벤트 로깅
         log_security_event("404_ERROR", f"Path: {request.path}")
         return "Not Found", 404
     
-    # 429 오류 핸들러 (Rate Limiting)
+    # 429 오류 핸들러
     @app.errorhandler(429)
     def rate_limit_exceeded(error):
         log_security_event("RATE_LIMIT", f"IP: {get_client_ip()}")
@@ -257,7 +149,6 @@ def create_app():
     # Jinja2 필터 추가
     @app.template_filter('from_json')
     def from_json_filter(value):
-        """JSON 문자열을 Python 객체로 변환하는 필터"""
         if not value:
             return []
         try:
@@ -265,7 +156,7 @@ def create_app():
         except (json.JSONDecodeError, TypeError):
             return []
     
-    # 전역 컨텍스트 추가 - 언어 설정
+    # 전역 컨텍스트 - 언어 설정
     @app.context_processor
     def inject_language_data():
         from flask_babel import get_locale
@@ -281,31 +172,27 @@ def create_app():
         if lang in SUPPORTED_LANGUAGES:
             session['lang'] = lang
         
-        # AJAX 요청인 경우 JSON 응답 반환 (스크롤 위치 유지를 위해)
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
            'application/json' in request.headers.get('Accept', '') or \
            request.headers.get('Sec-Fetch-Mode') == 'cors':
             return jsonify({'success': True, 'lang': lang})
         
-        # 일반 요청인 경우 이전 페이지로 리다이렉트
         referrer = request.referrer
         if referrer:
             return redirect(referrer)
         return redirect(url_for('main.index'))
     
-    # 전역 컨텍스트 추가 - 사이드 메뉴용 카테고리별 서비스
+    # 전역 컨텍스트 - 사이드 메뉴용 카테고리별 서비스
     @app.context_processor
     def inject_menu_data():
-        from models import Service
-        
         categories_data = {
             'ai_analysis': {
-                'title': 'STG AI 분석',
+                'title': 'AI 분석',
                 'icon': 'bi-cpu',
                 'services': []
             },
             'consulting': {
-                'title': '스타일링 컨설팅',
+                'title': '컨설팅 프로그램',
                 'icon': 'bi-person-check',
                 'services': []
             },
@@ -315,14 +202,14 @@ def create_app():
                 'services': []
             },
             'photo': {
-                'title': '화보 & 프로필',
+                'title': '프리미엄 화보 제작',
                 'icon': 'bi-camera',
                 'services': []
             }
         }
         
         try:
-            services = Service.query.all()
+            services = Service.query_all()
             for service in services:
                 if service.category and service.category in categories_data:
                     categories_data[service.category]['services'].append(service)
@@ -331,11 +218,9 @@ def create_app():
         
         return dict(menu_categories=categories_data)
     
-    # 전역 컨텍스트 추가 - 사이트 색상 설정
+    # 전역 컨텍스트 - 사이트 색상 설정
     @app.context_processor
     def inject_site_colors():
-        from models import SiteSettings
-        
         try:
             settings = SiteSettings.get_current_settings()
             if settings:
@@ -352,7 +237,6 @@ def create_app():
         except Exception as e:
             print(f"Error loading site colors: {str(e)}")
         
-        # 설정이 없는 경우 빈 색상 정보 반환
         return dict(
             site_colors={
                 'main_rgb': None,
@@ -364,35 +248,15 @@ def create_app():
             }
         )
     
-    # Import blueprints from routes package
+    # 블루프린트 등록
     app.register_blueprint(main)
     app.register_blueprint(admin, url_prefix='/admin')
     
     # 번역 헬퍼 함수 등록
     register_template_helpers(app)
     
-    @login_manager.user_loader
-    def load_user(user_id):
-        from sqlalchemy import text
-        try:
-            # 직접 SQL 쿼리를 사용하여 사용자 조회
-            result = db.session.execute(text("SELECT id, uq_user_username, password_hash FROM user WHERE id = :id"), {"id": user_id})
-            user_data = result.fetchone()
-            
-            if user_data:
-                # 사용자 객체 생성
-                user = User()
-                user.id = user_data[0]
-                user.username = user_data[1]
-                user.password_hash = user_data[2]
-                user.is_admin = True  # 항상 관리자로 설정
-                return user
-            return None
-        except Exception as e:
-            print(f"Error loading user: {str(e)}")
-            return None
-    
     return app
+
 
 if __name__ == '__main__':
     app = create_app()

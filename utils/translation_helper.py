@@ -17,6 +17,8 @@ from utils.translation import (
     translate_service_option,
     translate_collage_text,
     translate_gallery_group,
+    translate_terms_of_service,
+    translate_privacy_policy,
     SUPPORTED_LANGUAGES
 )
 
@@ -126,37 +128,58 @@ def get_translated_service(service, lang: str = None) -> Dict[str, Any]:
         return result
     
     # 번역 데이터 조회
-    translations = get_all_translations('service', service.id)
+    translations = get_all_translations('service', service.id) or {}
     
-    if translations:
-        # 단순 텍스트 필드
-        for field in ['name', 'description', 'category']:
-            if field in translations:
-                field_data = translations[field]
-                trans_dict = field_data.get('translations', {})
-                result[field] = trans_dict.get(lang, field_data.get('original', result[field]))
+    # 단순 텍스트 필드 - 원본이 비어있으면 번역도 비어있어야 함
+    for field in ['name', 'description', 'category']:
+        # 원본 필드 값 확인 (현재 모델의 값)
+        original_value = getattr(service, field, None)
         
-        # details (배열)
+        # 원본이 비어있으면 번역도 비어있어야 함 (fallback 방지)
+        if not original_value or not str(original_value).strip():
+            result[field] = original_value  # 빈 값 유지
+            continue
+        
+        # 원본에 값이 있을 때만 번역 조회
+        if field in translations:
+            field_data = translations[field]
+            trans_dict = field_data.get('translations', {})
+            # 해당 언어 번역이 있으면 사용, 없으면 원본 사용
+            result[field] = trans_dict.get(lang, original_value)
+    
+    # details (배열) - 원본이 비어있으면 번역도 비어있어야 함
+    if service.details and service.details.strip():
         if 'details' in translations:
             field_data = translations['details']
             trans_dict = field_data.get('translations', {})
             result['details'] = trans_dict.get(lang, [])
-            if not result['details'] and service.details:
+            if not result['details']:
                 try:
                     result['details'] = json.loads(service.details)
                 except json.JSONDecodeError:
                     pass
-        
-        # packages (배열)
+        else:
+            try:
+                result['details'] = json.loads(service.details)
+            except json.JSONDecodeError:
+                pass
+    
+    # packages (배열) - 원본이 비어있으면 번역도 비어있어야 함
+    if service.packages and service.packages.strip():
         if 'packages' in translations:
             field_data = translations['packages']
             trans_dict = field_data.get('translations', {})
             result['packages'] = trans_dict.get(lang, [])
-            if not result['packages'] and service.packages:
+            if not result['packages']:
                 try:
                     result['packages'] = json.loads(service.packages)
                 except json.JSONDecodeError:
                     pass
+        else:
+            try:
+                result['packages'] = json.loads(service.packages)
+            except json.JSONDecodeError:
+                pass
     
     return result
 
@@ -209,52 +232,78 @@ def get_translated_service_option(option, lang: str = None) -> Dict[str, Any]:
         return result
     
     # 번역 데이터 조회
-    translations = get_all_translations('service_option', option.id)
+    translations = get_all_translations('service_option', option.id) or {}
     
-    if translations:
-        # 단순 텍스트 필드
-        text_fields = [
-            'name', 'description', 'detailed_description',
-            'booking_method', 'payment_info', 'guide_info',
-            'refund_policy', 'refund_policy_text'
-        ]
-        for field in text_fields:
-            if field in translations:
-                field_data = translations[field]
-                trans_dict = field_data.get('translations', {})
-                result[field] = trans_dict.get(lang, field_data.get('original', result[field]))
+    # 단순 텍스트 필드 - 원본이 비어있으면 번역도 비어있어야 함
+    text_fields = [
+        'name', 'description', 'detailed_description',
+        'booking_method', 'payment_info', 'guide_info',
+        'refund_policy', 'refund_policy_text'
+    ]
+    for field in text_fields:
+        # 원본 필드 값 확인 (현재 모델의 값)
+        original_value = getattr(option, field, None)
         
-        # details (배열)
+        # 원본이 비어있으면 번역도 비어있어야 함 (fallback 방지)
+        if not original_value or not str(original_value).strip():
+            result[field] = original_value  # 빈 값 유지
+            continue
+        
+        # 원본에 값이 있을 때만 번역 조회
+        if field in translations:
+            field_data = translations[field]
+            trans_dict = field_data.get('translations', {})
+            # 해당 언어 번역이 있으면 사용, 없으면 원본 사용
+            result[field] = trans_dict.get(lang, original_value)
+    
+    # details (배열) - 원본이 비어있으면 번역도 비어있어야 함
+    if option.details and option.details.strip():
         if 'details' in translations:
             field_data = translations['details']
             trans_dict = field_data.get('translations', {})
             result['details'] = trans_dict.get(lang, [])
-            if not result['details'] and option.details:
+            if not result['details']:
                 try:
                     result['details'] = json.loads(option.details)
                 except json.JSONDecodeError:
                     pass
-        
-        # packages (배열)
+        else:
+            try:
+                result['details'] = json.loads(option.details)
+            except json.JSONDecodeError:
+                pass
+    
+    # packages (배열 또는 다중 테이블 형식) - 원본이 비어있으면 번역도 비어있어야 함
+    if option.packages and option.packages.strip():
         if 'packages' in translations:
             field_data = translations['packages']
             trans_dict = field_data.get('translations', {})
-            result['packages'] = trans_dict.get(lang, [])
-            if not result['packages'] and option.packages:
+            translated_packages = trans_dict.get(lang)
+            if translated_packages:
+                result['packages'] = translated_packages
+            else:
+                # 번역이 없으면 원본 사용
                 try:
                     result['packages'] = json.loads(option.packages)
                 except json.JSONDecodeError:
                     pass
-        
-        # refund_policy_table (파이프 구분 텍스트)
+        else:
+            try:
+                result['packages'] = json.loads(option.packages)
+            except json.JSONDecodeError:
+                pass
+    
+    # refund_policy_table (파이프 구분 텍스트) - 원본이 비어있으면 번역도 비어있어야 함
+    if option.refund_policy_table and option.refund_policy_table.strip():
         if 'refund_policy_table' in translations:
             field_data = translations['refund_policy_table']
             trans_dict = field_data.get('translations', {})
             translated_table = trans_dict.get(lang)
             if translated_table:
                 result['refund_policy_table'] = translated_table
-        
-        # overtime_charge_table (파이프 구분 텍스트)
+    
+    # overtime_charge_table (파이프 구분 텍스트) - 원본이 비어있으면 번역도 비어있어야 함
+    if option.overtime_charge_table and option.overtime_charge_table.strip():
         if 'overtime_charge_table' in translations:
             field_data = translations['overtime_charge_table']
             trans_dict = field_data.get('translations', {})
@@ -407,7 +456,7 @@ def trigger_translation(model_type: str, model_instance):
     데이터 추가/수정 후 이 함수를 호출하여 번역 수행
     
     Args:
-        model_type: 모델 타입 (service, service_option 등)
+        model_type: 모델 타입 (service, service_option, collage_text, gallery_group, terms_of_service, privacy_policy 등)
         model_instance: 모델 인스턴스
     """
     import threading
@@ -422,6 +471,10 @@ def trigger_translation(model_type: str, model_instance):
                 translate_collage_text(model_instance)
             elif model_type == 'gallery_group':
                 translate_gallery_group(model_instance)
+            elif model_type == 'terms_of_service':
+                translate_terms_of_service(model_instance)
+            elif model_type == 'privacy_policy':
+                translate_privacy_policy(model_instance)
             print(f"✅ 비동기 번역 완료: {model_type}_{model_instance.id}")
         except Exception as e:
             print(f"❌ 비동기 번역 오류: {str(e)}")

@@ -1,21 +1,21 @@
+"""
+Admin 라우트 - MongoDB 기반
+"""
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify, make_response
 from flask_login import login_required, login_user, logout_user
-from extensions import db, login_manager
-from models import Service, Gallery, User, ServiceOption, Booking, GalleryGroup, Inquiry, CollageText, SiteSettings, TermsOfService, PrivacyPolicy
+from extensions import login_manager
 from werkzeug.utils import secure_filename
 import os
 from PIL import Image
 import json
-from sqlalchemy import desc, text
 from datetime import datetime
 import pytz
 from werkzeug.security import generate_password_hash, check_password_hash
 import io
 import uuid
-from pymongo import MongoClient
+from pymongo import MongoClient, DESCENDING, ASCENDING
 from dotenv import load_dotenv
 from utils.monitor import security_monitor
-from sqlalchemy import event
 from utils.translation_helper import trigger_translation
 from utils.gridfs_helper import (
     save_image_to_gridfs,
@@ -26,105 +26,18 @@ from utils.gridfs_helper import (
     migrate_legacy_to_gridfs
 )
 
+# MongoDB 모델 임포트
+from utils.mongo_models import (
+    get_mongo_db, init_collections,
+    User, Service, ServiceOption, GalleryGroup, Gallery,
+    Booking, Inquiry, CollageText, SiteSettings,
+    TermsOfService, PrivacyPolicy
+)
+
 # .env 파일 로드
 load_dotenv()
 
 admin = Blueprint('admin', __name__)
-
-# 🛡️ 데이터 보호 헬퍼 함수 - 기존 데이터 덮어쓰기 완전 방지
-def protect_existing_service_option_data(option, form_data):
-    """서비스 옵션의 기존 데이터를 보호하는 함수
-    
-    핵심 원칙:
-    - 새 값이 입력되면 → 업데이트
-    - 빈 값이 전송되고 기존 값이 있으면 → 기존 값 유지 (절대 삭제 안함)
-    - 빈 값이 전송되고 기존 값도 없으면 → 그대로 빈 상태
-    """
-    protected_fields = [
-        'booking_method', 'payment_info', 'guide_info', 
-        'refund_policy_text', 'refund_policy_table', 'overtime_charge_table'
-    ]
-    
-    changes_made = False
-    for field in protected_fields:
-        current_value = getattr(option, field, None)
-        form_value = form_data.get(field)
-        
-        # 새로운 값이 입력된 경우에만 업데이트
-        if form_value and form_value.strip():
-            setattr(option, field, form_value)
-            changes_made = True
-            print(f"✅ 데이터 업데이트: {field} 필드 업데이트됨")
-        # 빈 값이 전송되었지만 기존 데이터가 있는 경우 - 보호
-        elif current_value is not None and str(current_value).strip():
-            print(f"🛡️ 데이터 보호: {field} 필드의 기존 데이터 유지 (빈 폼 제출로 인한 삭제 방지)")
-            # 아무것도 하지 않음 - 기존 값 유지
-        else:
-            print(f"📝 {field} 필드: 기존 값도 없고 새 값도 없음 - 변경 없음")
-    
-    return changes_made
-
-# 🚨 강력한 데이터 변경 감지 및 보호 시스템
-def detect_and_block_unauthorized_changes():
-    """비인가 데이터 변경을 감지하고 차단"""
-    import os
-    if os.environ.get('STYLEGRAPHER_DATA_PROTECTION') == 'ACTIVE':
-        print("🛡️ 데이터 보호 모드 활성화됨 - 모든 변경 사항 모니터링")
-        
-        # 현재 데이터 스냅샷 생성
-        try:
-            from sqlalchemy import text
-            
-            # 보호 대상 데이터 현황 확인
-            result = db.session.execute(text("""
-                SELECT so.id, so.name, s.category,
-                       so.booking_method, so.payment_info, so.guide_info
-                FROM service_option so
-                JOIN service s ON so.service_id = s.id
-                WHERE s.category IN ('consulting', 'oneday', 'photo')
-                AND (so.booking_method IS NOT NULL OR so.payment_info IS NOT NULL)
-                ORDER BY so.id
-            """)).fetchall()
-            
-            print(f"🔍 현재 보호 중인 데이터: {len(result)}개 옵션")
-            
-            # 의심스러운 패턴 감지
-            for row in result:
-                if row[3] and '촬영' in row[3] and row[2] in ['consulting']:
-                    print(f"⚠️ 의심스러운 데이터 발견! ID {row[0]} ({row[1]}): 컨설팅 서비스에 촬영 관련 내용")
-                
-        except Exception as e:
-            print(f"⚠️ 데이터 보호 감지 오류: {str(e)}")
-
-# 🛡️ SQL 레벨 데이터 보호 트리거 (SQLAlchemy 이벤트 리스너)
-from sqlalchemy import event
-from models import ServiceOption
-
-@event.listens_for(ServiceOption, 'before_update')
-def protect_service_option_before_update(mapper, connection, target):
-    """ServiceOption 업데이트 전 보호 검사"""
-    import os
-    if os.environ.get('STYLEGRAPHER_DATA_PROTECTION') == 'ACTIVE':
-        print(f"🛡️ ServiceOption ID {target.id} 업데이트 시도 감지")
-        
-        # 기존 데이터 확인
-        if hasattr(target, 'booking_method') and target.booking_method:
-            if len(target.booking_method) > 100 and '촬영' in target.booking_method:
-                print(f"⚠️ 의심스러운 업데이트 차단! ID {target.id}: 촬영 관련 default data")
-                # 이 부분에서 업데이트를 차단할 수 있지만, 우선 로그만 남김
-        
-        print(f"📝 업데이트 허용: ServiceOption ID {target.id}")
-
-@event.listens_for(ServiceOption, 'after_update')  
-def log_service_option_after_update(mapper, connection, target):
-    """ServiceOption 업데이트 후 로깅"""
-    print(f"✅ ServiceOption ID {target.id} 업데이트 완료")
-    
-    # 업데이트된 내용 로깅
-    if target.booking_method:
-        print(f"   예약방법: {len(target.booking_method)}자")
-    if target.payment_info:
-        print(f"   결제방식: {len(target.payment_info)}자")
 
 # MongoDB 연결 설정
 mongo_uri = os.environ.get('MONGO_URI')
@@ -132,49 +45,39 @@ if not mongo_uri:
     print("경고: MONGO_URI 환경 변수가 설정되지 않았습니다!")
     
 try:
-    print(f"MongoDB에 연결 시도: {mongo_uri}")
-    # 향상된 연결 설정 - 타임아웃 증가 및 retryWrites 활성화
+    print(f"admin.py: MongoDB에 연결 시도: {mongo_uri}")
     mongo_client = MongoClient(
         mongo_uri, 
-        serverSelectionTimeoutMS=30000,  # 30초로 증가
+        serverSelectionTimeoutMS=30000,
         connectTimeoutMS=20000,
         socketTimeoutMS=20000,
         retryWrites=True,
         retryReads=True,
-        w='majority',  # 다수의 노드에 쓰기 확인
-        readPreference='primaryPreferred'  # 프라이머리 선호, 없으면 세컨더리로 전환
+        w='majority',
+        readPreference='primaryPreferred'
     )
-    # 연결 테스트
     mongo_client.server_info()
-    print("MongoDB 연결 성공!")
-    mongo_db = mongo_client['STG-DB']  # .env의 URI에 맞는 데이터베이스 이름으로 변경
-    images_collection = mongo_db['gallery']  # 이미지를 저장할 컬렉션 이름
-    print(f"MongoDB 데이터베이스 '{mongo_db.name}' 및 컬렉션 '{images_collection.name}' 사용 준비 완료")
+    print("admin.py: MongoDB 연결 성공!")
+    mongo_db = mongo_client['STG-DB']
+    images_collection = mongo_db['gallery']
+    print(f"admin.py: MongoDB 데이터베이스 '{mongo_db.name}' 및 컬렉션 '{images_collection.name}' 사용 준비 완료")
 except Exception as e:
-    print(f"MongoDB 연결 오류: {str(e)}")
+    print(f"admin.py: MongoDB 연결 오류: {str(e)}")
     mongo_client = None
     mongo_db = None
     images_collection = None
 
+
 @login_manager.user_loader
 def load_user(id):
+    """Flask-Login 사용자 로더 - MongoDB 기반"""
     try:
-        # 직접 SQL 쿼리를 사용하여 사용자 조회
-        result = db.session.execute(text("SELECT id, uq_user_username, password_hash FROM user WHERE id = :id"), {"id": id})
-        user_data = result.fetchone()
-        
-        if user_data:
-            # 사용자 객체 생성
-            user = User()
-            user.id = user_data[0]
-            user.username = user_data[1]
-            user.password_hash = user_data[2]
-            user.is_admin = True  # 항상 관리자로 설정
-            return user
-        return None
+        user = User.get_by_id(int(id))
+        return user
     except Exception as e:
         print(f"Error loading user: {str(e)}")
         return None
+
 
 @admin.route('/login', methods=['GET', 'POST'])
 def login():
@@ -183,59 +86,12 @@ def login():
         password = request.form['password']
         
         try:
-            # 테이블 구조 확인
-            result = db.session.execute(text("PRAGMA table_info(user)"))
-            columns = [column[1] for column in result.fetchall()]
-            print("User table columns:", columns)
+            user = User.get_by_username(username)
             
-            # 기본 쿼리 - id와 password_hash만 사용
-            query = "SELECT id, password_hash FROM user WHERE uq_user_username = :username"
-            
-            # 사용자 조회
-            result = db.session.execute(text(query), {"username": username})
-            user_data = result.fetchone()
-            
-            if user_data:
-                # 비밀번호 해시 확인
-                stored_hash = user_data[1]
-                
-                # 비밀번호 확인 시도
-                password_verified = False
-                try:
-                    # 기본 방법으로 확인 시도
-                    password_verified = check_password_hash(stored_hash, password)
-                except Exception as hash_error:
-                    print(f"Hash verification error: {str(hash_error)}")
-                    
-                    # 해시 타입이 scrypt인 경우 (이 부분은 로그인 우회를 위한 임시 조치)
-                    if 'scrypt' in stored_hash and password == 'ysg123':
-                        print("Using fallback verification for admin user")
-                        password_verified = True
-                        
-                        # 비밀번호 해시 업데이트 (pbkdf2:sha256 사용)
-                        update_sql = text("""
-                        UPDATE user SET password_hash = :password_hash
-                        WHERE id = :id
-                        """)
-                        update_params = {
-                            "id": user_data[0],
-                            "password_hash": generate_password_hash('ysg123', method='pbkdf2:sha256')
-                        }
-                        db.session.execute(update_sql, update_params)
-                        db.session.commit()
-                        print("Password hash updated to pbkdf2:sha256")
-                
-                if password_verified:
-                    # 사용자 객체 생성
-                    user = User()
-                    user.id = user_data[0]
-                    user.username = username
-                    user.password_hash = user_data[1]
-                    user.is_admin = True  # 항상 관리자로 설정
-                    
-                    login_user(user)
-                    flash('로그인되었습니다.')
-                    return redirect(url_for('admin.dashboard'))
+            if user and user.check_password(password):
+                login_user(user)
+                flash('로그인되었습니다.')
+                return redirect(url_for('admin.dashboard'))
             
             flash('아이디 또는 비밀번호가 올바르지 않습니다.')
         except Exception as e:
@@ -244,172 +100,55 @@ def login():
     
     return render_template('admin/login.html')
 
+
 @admin.route('/logout')
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('main.index'))
 
+
 @admin.route('/dashboard')
 @login_required
 def dashboard():
     try:
-        # 한국 시간대 설정
         kst = pytz.timezone('Asia/Seoul')
         
-        # 각 항목 100개씩 가져오기
-        # Booking 모델 대신 직접 SQL 쿼리 사용
-        result = db.session.execute(text("""
-            SELECT b.id, b.name, b.email, b.message, b.status, b.created_at, s.name as service_name
-            FROM booking b
-            LEFT JOIN service s ON b.service_id = s.id
-            ORDER BY b.created_at DESC
-            LIMIT 100
-        """))
-        recent_bookings = []
-        for row in result:
-            booking_data = {
-                'id': row[0],
-                'name': row[1],
-                'email': row[2],
-                'message': row[3],
-                'status': row[4],
-                'created_at': row[5],
-                'service': DictAsModel({'name': row[6]}) if row[6] else None
-            }
-            
-            # 날짜 형식 변환 (문자열 또는 datetime 객체 모두 처리)
-            if booking_data['created_at']:
-                try:
-                    # 이미 datetime 객체인 경우
-                    if isinstance(booking_data['created_at'], datetime):
-                        booking_data['created_at'] = pytz.utc.localize(booking_data['created_at']).astimezone(kst)
-                    # 문자열인 경우
+        # MongoDB에서 최근 100개 데이터 가져오기
+        recent_bookings = Booking.query_all_ordered(limit=100)
+        recent_inquiries = Inquiry.query_all_ordered(limit=100)
+        recent_galleries = GalleryGroup.query_all_ordered()[:100]
+        
+        # 시간대 변환
+        for booking in recent_bookings:
+            if booking.created_at:
+                if isinstance(booking.created_at, datetime):
+                    if booking.created_at.tzinfo is None:
+                        booking.created_at = pytz.utc.localize(booking.created_at).astimezone(kst)
                     else:
-                        # 다양한 형식 처리
-                        try:
-                            dt = datetime.strptime(booking_data['created_at'], '%Y-%m-%d %H:%M:%S.%f')
-                        except ValueError:
-                            try:
-                                dt = datetime.strptime(booking_data['created_at'], '%Y-%m-%d %H:%M:%S')
-                            except ValueError:
-                                # 다른 형식이 있을 수 있음
-                                dt = datetime.now()  # 기본값
-                        booking_data['created_at'] = pytz.utc.localize(dt).astimezone(kst)
-                except Exception as date_error:
-                    print(f"Date conversion error: {str(date_error)}")
-                    # 오류 발생 시 현재 시간으로 대체
-                    booking_data['created_at'] = datetime.now()
-            
-            # 딕셔너리를 DictAsModel 객체로 변환
-            booking = DictAsModel(booking_data)
-            recent_bookings.append(booking)
+                        booking.created_at = booking.created_at.astimezone(kst)
         
-        # Inquiry 모델 대신 직접 SQL 쿼리 사용
-        result = db.session.execute(text("""
-            SELECT i.id, i.name, i.email, i.phone, i.message, i.status, i.created_at, s.name as service_name
-            FROM inquiry i
-            LEFT JOIN service s ON i.service_id = s.id
-            ORDER BY i.created_at DESC
-            LIMIT 100
-        """))
-        recent_inquiries = []
-        for row in result:
-            inquiry_data = {
-                'id': row[0],
-                'name': row[1],
-                'email': row[2],
-                'phone': row[3],
-                'message': row[4],
-                'status': row[5],
-                'created_at': row[6],
-                'service': DictAsModel({'name': row[7]}) if row[7] else None
-            }
-            
-            # 날짜 형식 변환 (문자열 또는 datetime 객체 모두 처리)
-            if inquiry_data['created_at']:
-                try:
-                    # 이미 datetime 객체인 경우
-                    if isinstance(inquiry_data['created_at'], datetime):
-                        inquiry_data['created_at'] = pytz.utc.localize(inquiry_data['created_at']).astimezone(kst)
-                    # 문자열인 경우
+        for inquiry in recent_inquiries:
+            if inquiry.created_at:
+                if isinstance(inquiry.created_at, datetime):
+                    if inquiry.created_at.tzinfo is None:
+                        inquiry.created_at = pytz.utc.localize(inquiry.created_at).astimezone(kst)
                     else:
-                        # 다양한 형식 처리
-                        try:
-                            dt = datetime.strptime(inquiry_data['created_at'], '%Y-%m-%d %H:%M:%S.%f')
-                        except ValueError:
-                            try:
-                                dt = datetime.strptime(inquiry_data['created_at'], '%Y-%m-%d %H:%M:%S')
-                            except ValueError:
-                                # 다른 형식이 있을 수 있음
-                                dt = datetime.now()  # 기본값
-                        inquiry_data['created_at'] = pytz.utc.localize(dt).astimezone(kst)
-                except Exception as date_error:
-                    print(f"Date conversion error: {str(date_error)}")
-                    # 오류 발생 시 현재 시간으로 대체
-                    inquiry_data['created_at'] = datetime.now()
-            
-            # 딕셔너리를 DictAsModel 객체로 변환
-            inquiry = DictAsModel(inquiry_data)
-            recent_inquiries.append(inquiry)
+                        inquiry.created_at = inquiry.created_at.astimezone(kst)
         
-        # GalleryGroup 모델 대신 직접 SQL 쿼리 사용
-        result = db.session.execute(text("""
-            SELECT id, title, created_at
-            FROM gallery_group
-            ORDER BY created_at DESC
-            LIMIT 100
-        """))
-        recent_galleries = []
-        for row in result:
-            gallery_data = {
-                'id': row[0],
-                'title': row[1],
-                'created_at': row[2]
-            }
-            
-            # 날짜 형식 변환 (문자열 또는 datetime 객체 모두 처리)
-            if gallery_data['created_at']:
-                try:
-                    # 이미 datetime 객체인 경우
-                    if isinstance(gallery_data['created_at'], datetime):
-                        gallery_data['created_at'] = pytz.utc.localize(gallery_data['created_at']).astimezone(kst)
-                    # 문자열인 경우
+        for gallery in recent_galleries:
+            if gallery.created_at:
+                if isinstance(gallery.created_at, datetime):
+                    if gallery.created_at.tzinfo is None:
+                        gallery.created_at = pytz.utc.localize(gallery.created_at).astimezone(kst)
                     else:
-                        # 다양한 형식 처리
-                        try:
-                            dt = datetime.strptime(gallery_data['created_at'], '%Y-%m-%d %H:%M:%S.%f')
-                        except ValueError:
-                            try:
-                                dt = datetime.strptime(gallery_data['created_at'], '%Y-%m-%d %H:%M:%S')
-                            except ValueError:
-                                # 다른 형식이 있을 수 있음
-                                dt = datetime.now()  # 기본값
-                        gallery_data['created_at'] = pytz.utc.localize(dt).astimezone(kst)
-                except Exception as date_error:
-                    print(f"Date conversion error: {str(date_error)}")
-                    # 오류 발생 시 현재 시간으로 대체
-                    gallery_data['created_at'] = datetime.now()
-            
-            # 딕셔너리를 DictAsModel 객체로 변환
-            gallery = DictAsModel(gallery_data)
-            recent_galleries.append(gallery)
+                        gallery.created_at = gallery.created_at.astimezone(kst)
         
-        # 각 항목의 전체 개수 확인
-        result = db.session.execute(text("SELECT COUNT(*) FROM booking"))
-        total_bookings = result.scalar()
+        # 전체 개수
+        total_bookings = Booking.count()
+        total_inquiries = Inquiry.count()
+        total_galleries = GalleryGroup.count()
         
-        result = db.session.execute(text("SELECT COUNT(*) FROM inquiry"))
-        total_inquiries = result.scalar()
-        
-        result = db.session.execute(text("SELECT COUNT(*) FROM gallery_group"))
-        total_galleries = result.scalar()
-
-        # 디버깅을 위한 출력
-        print(f"Bookings: {len(recent_bookings)}")
-        print(f"Inquiries: {len(recent_inquiries)}")
-        print(f"Galleries: {len(recent_galleries)}")
-
         return render_template('admin/dashboard.html',
                              recent_bookings=recent_bookings,
                              recent_inquiries=recent_inquiries,
@@ -420,6 +159,8 @@ def dashboard():
                              
     except Exception as e:
         print(f"Error in dashboard route: {str(e)}")
+        import traceback
+        traceback.print_exc()
         flash('데이터를 불러오는 중 오류가 발생했습니다.', 'error')
         return render_template('admin/dashboard.html',
                              recent_bookings=[],
@@ -429,16 +170,15 @@ def dashboard():
                              total_inquiries=0,
                              total_galleries=0)
 
+
 @admin.route('/services/add', methods=['GET', 'POST'])
 @login_required
 def add_service():
     if request.method == 'POST':
         try:
-            # 상세 정보 처리
             details_text = request.form.get('details', '').strip()
             details = [line.strip() for line in details_text.split('\n') if line.strip()] if details_text else []
             
-            # 패키지 정보 처리
             packages_text = request.form.get('packages', '').strip()
             packages = []
             if packages_text:
@@ -454,7 +194,6 @@ def add_service():
                                 'description': parts[3]
                             })
             
-            # 서비스 생성
             service = Service(
                 name=request.form['name'],
                 description=request.form['description'],
@@ -462,39 +201,34 @@ def add_service():
                 details=json.dumps(details),
                 packages=json.dumps(packages)
             )
-            db.session.add(service)
-            db.session.commit()
+            service.save()
             
-            # 🌐 비동기 번역 트리거
             trigger_translation('service', service)
             
             flash('서비스가 성공적으로 추가되었습니다. 이제 개별 옵션을 추가해보세요.')
             return redirect(url_for('admin.list_options', service_id=service.id))
             
         except Exception as e:
-            db.session.rollback()
             flash(f'서비스 추가 중 오류가 발생했습니다: {str(e)}')
             return redirect(request.url)
     
     return render_template('admin/add_service.html')
+
 
 @admin.route('/category/add', methods=['GET', 'POST'])
 @login_required
 def add_category():
     if request.method == 'POST':
         try:
-            # 간단한 카테고리 추가 - 이름과 설명만
             service = Service(
                 name=request.form['name'],
                 description=request.form['description'],
-                category=None,  # 카테고리는 기본값으로 설정
-                details=json.dumps([]),  # 빈 리스트
-                packages=json.dumps([])  # 빈 리스트
+                category=None,
+                details=json.dumps([]),
+                packages=json.dumps([])
             )
-            db.session.add(service)
-            db.session.flush()  # ID를 얻기 위해 flush
+            service.save()
             
-            # 기본 ServiceOption 생성 (카테고리에 서비스가 표시되도록)
             service_option = ServiceOption(
                 service_id=service.id,
                 name=request.form['name'],
@@ -503,70 +237,46 @@ def add_category():
                 details=json.dumps([]),
                 packages=json.dumps([])
             )
-            db.session.add(service_option)
-            db.session.commit()
+            service_option.save()
+            
+            # 다국어 번역 트리거
+            trigger_translation('service', service)
+            trigger_translation('service_option', service_option)
             
             flash('새 카테고리가 성공적으로 추가되었습니다.')
             return redirect(url_for('admin.list_services'))
             
         except Exception as e:
-            db.session.rollback()
             flash(f'카테고리 추가 중 오류가 발생했습니다: {str(e)}')
             return redirect(request.url)
     
     return render_template('admin/add_category.html')
 
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
 
-def resize_image(image_path, size=(1600, 1200)):
-    with Image.open(image_path) as img:
-        # 원본 이미지의 비율 계산
-        width_ratio = size[0] / img.width
-        height_ratio = size[1] / img.height
-        
-        # 더 작은 비율을 사용하여 aspect ratio 유지
-        ratio = min(width_ratio, height_ratio)
-        new_size = (int(img.width * ratio), int(img.height * ratio))
-        
-        # 이미지 리사이즈
-        resized_img = img.resize(new_size, Image.Resampling.LANCZOS)
-        
-        # 저장
-        resized_img.save(image_path, quality=95, optimize=True)
 
-# 웹 최적화 설정 (GridFS 헬퍼와 동일)
+# 웹 최적화 설정
 WEB_IMAGE_CONFIG = {
-    'max_width': 800,           # 최대 너비 (px)
-    'max_height': 1200,         # 최대 높이 (px)
-    'jpeg_quality': 82,         # JPEG 품질 (80-85가 웹에 최적)
-    'progressive_jpeg': True,   # Progressive JPEG 사용
+    'max_width': 800,
+    'max_height': 1200,
+    'jpeg_quality': 82,
+    'progressive_jpeg': True,
 }
 
 
 def resize_image_memory(img, max_width=None, max_height=None):
-    """
-    메모리 상의 이미지를 웹 최적화 크기로 리사이즈하는 함수
-    
-    Args:
-        img: PIL Image 객체
-        max_width: 최대 너비 (픽셀)
-        max_height: 최대 높이 (픽셀)
-    
-    Returns:
-        리사이즈된 PIL Image 객체
-    """
+    """메모리 상의 이미지를 웹 최적화 크기로 리사이즈"""
     max_width = max_width or WEB_IMAGE_CONFIG['max_width']
     max_height = max_height or WEB_IMAGE_CONFIG['max_height']
     
     original_width, original_height = img.size
     
-    # 이미 작은 이미지는 리사이즈하지 않음
     if original_width <= max_width and original_height <= max_height:
         return img
     
-    # 가로/세로 비율 계산
     width_ratio = max_width / original_width
     height_ratio = max_height / original_height
     ratio = min(width_ratio, height_ratio)
@@ -579,30 +289,14 @@ def resize_image_memory(img, max_width=None, max_height=None):
 
 
 def save_image_to_mongodb(file, group_id=None, order=0):
-    """
-    파일을 GridFS에 저장하는 함수 (웹 최적화 적용)
-    
-    file: 업로드된 파일 객체
-    group_id: 갤러리 그룹 ID (선택적)
-    order: 그룹 내 순서 (선택적)
-    
-    Returns:
-        저장된 이미지의 ID (문자열)
-    
-    웹 최적화:
-        - 최대 크기: 800x1200px
-        - JPEG 품질: 82%
-        - Progressive JPEG 사용
-    """
+    """파일을 GridFS에 저장"""
     try:
-        # GridFS를 사용하여 이미지 저장 (최적화 자동 적용)
         image_id = save_image_to_gridfs(file, group_id=group_id, order=order)
         print(f"GridFS: 이미지 저장 성공 - ID: {image_id}")
         return image_id
     except Exception as e:
         print(f"GridFS 저장 실패, 레거시 방식으로 저장 시도: {str(e)}")
         
-        # GridFS 실패 시 레거시 방식으로 폴백 (동일한 최적화 적용)
         file.seek(0)
         filename = secure_filename(file.filename)
         
@@ -624,7 +318,6 @@ def save_image_to_mongodb(file, group_id=None, order=0):
         )
         img_binary = buffer.getvalue()
         
-        # 압축 결과 로깅
         compressed_size = len(img_binary)
         compression_ratio = (1 - compressed_size / original_size) * 100 if original_size > 0 else 0
         print(f"레거시 저장: 이미지 최적화 - {original_size/1024:.1f}KB → {compressed_size/1024:.1f}KB [{compression_ratio:.1f}% 절약]")
@@ -648,7 +341,7 @@ def save_image_to_mongodb(file, group_id=None, order=0):
         
         return image_id
 
-# 갤러리 이미지 업로드 함수 수정
+
 @admin.route('/gallery/upload', methods=['GET', 'POST'])
 @login_required
 def upload_image():
@@ -663,48 +356,37 @@ def upload_image():
             return redirect(request.url)
         
         try:
-            # 🛡️ 갤러리 순서 보호 - 새 갤러리를 가장 낮은 순서로 배치 (기존 순서 영향 없음)
-            min_order_result = db.session.execute(
-                text("SELECT MIN(display_order) FROM gallery_group")
-            ).scalar()
-            next_order = (min_order_result or 1) - 1
-            if next_order < 0:
-                next_order = 0
+            # 새 갤러리의 순서 결정 (기존 갤러리 영향 없음)
+            all_groups = GalleryGroup.query_all_ordered()
+            min_order = min([g.display_order for g in all_groups]) if all_groups else 1
+            next_order = min_order - 1 if min_order > 0 else 0
             
-            print(f"🛡️ 갤러리 순서 보호: 새 갤러리를 순서 {next_order}로 배치 (기존 갤러리들 위로 올라가지 않음)")
+            print(f"🛡️ 갤러리 순서 보호: 새 갤러리를 순서 {next_order}로 배치")
             
-            # 갤러리 그룹 생성 (기존 갤러리 순서에 영향을 주지 않음)
             gallery_group = GalleryGroup(
                 title=request.form['title'],
-                display_order=next_order
+                display_order=next_order,
+                is_pinned=False
             )
-            db.session.add(gallery_group)
-            db.session.flush()  # ID 생성을 위해 flush
+            gallery_group.save()
             
-            # MongoDB에 이미지 저장
             for i, file in enumerate(files):
                 if file and allowed_file(file.filename):
-                    # MongoDB에 이미지 저장 및 ID 반환
                     image_id = save_image_to_mongodb(file, gallery_group.id, i)
                     
-                    # 갤러리 이미지 레코드 생성 (경로 대신 MongoDB ID 저장)
                     gallery = Gallery(
-                        image_path=image_id,  # MongoDB ID를 저장
+                        image_path=image_id,
                         order=i,
-                        group=gallery_group
+                        group_id=gallery_group.id
                     )
-                    db.session.add(gallery)
+                    gallery.save()
             
-            db.session.commit()
-            
-            # 🌐 갤러리 제목 다국어 번역 트리거
             try:
                 trigger_translation('gallery_group', gallery_group)
                 print(f"🌐 갤러리 그룹 '{gallery_group.title}' 번역 시작됨")
             except Exception as trans_error:
                 print(f"⚠️ 번역 트리거 실패 (무시 가능): {str(trans_error)}")
             
-            # 🧹 갤러리 캐시 클리어 (새 갤러리 추가로 인한 순서 변경)
             try:
                 from routes.main import clear_gallery_cache
                 clear_gallery_cache()
@@ -714,34 +396,33 @@ def upload_image():
             flash('이미지가 업로드되었습니다.')
             return redirect(url_for('admin.list_gallery'))
         except Exception as e:
-            db.session.rollback()
             print(f"Error uploading images: {str(e)}")
+            import traceback
+            traceback.print_exc()
             flash('이미지 업로드 중 오류가 발생했습니다.', 'error')
             return redirect(request.url)
             
     return render_template('admin/upload_image.html')
 
+
 @admin.route('/gallery/delete/<int:group_id>')
 @login_required
 def delete_gallery_group(group_id):
-    group = GalleryGroup.query.get_or_404(group_id)
+    group = GalleryGroup.get_or_404(group_id)
     
-    # GridFS 및 레거시 MongoDB에서 이미지 삭제
+    # 이미지 삭제
     for image in group.images:
         try:
-            # GridFS에서 삭제 시도
             deleted = delete_image_from_gridfs(image.image_path)
             if not deleted and images_collection is not None:
-                # GridFS에 없으면 레거시 컬렉션에서 삭제
                 images_collection.delete_one({'_id': image.image_path})
             print(f"이미지 삭제 완료: {image.image_path}")
+            image.delete()
         except Exception as e:
             print(f"이미지 삭제 중 오류 (무시): {str(e)}")
     
-    db.session.delete(group)
-    db.session.commit()
+    group.delete()
     
-    # 🧹 갤러리 캐시 클리어 (갤러리 삭제로 인한 표출 순서 변경)
     try:
         from routes.main import clear_gallery_cache
         clear_gallery_cache()
@@ -751,15 +432,18 @@ def delete_gallery_group(group_id):
     flash('갤러리가 삭제되었습니다.')
     return redirect(url_for('admin.list_gallery'))
 
+
 @admin.route('/gallery/update-order/<int:group_id>', methods=['POST'])
 @login_required
 def update_gallery_order(group_id):
     try:
-        display_order = int(request.form.get('display_order', 0))
+        raw_value = request.form.get('display_order', '0')
+        display_order = int(raw_value)
         
-        # 입력값 검증
+        print(f"🎯 update_gallery_order 호출: group_id={group_id}, raw_value={raw_value}, display_order={display_order}")
+        
         if display_order < 0 or display_order > 999:
-            if request.is_json or request.headers.get('Content-Type') == 'application/x-www-form-urlencoded':
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return jsonify({
                     'success': False,
                     'message': '표출 순서는 0~999 사이의 값이어야 합니다.'
@@ -767,15 +451,9 @@ def update_gallery_order(group_id):
             flash('표출 순서는 0~999 사이의 값이어야 합니다.', 'error')
             return redirect(url_for('admin.list_gallery'))
         
-        # 갤러리 그룹 존재 확인
-        result = db.session.execute(
-            text("SELECT id, is_pinned, title FROM gallery_group WHERE id = :id"),
-            {"id": group_id}
-        )
-        group_data = result.fetchone()
-        
-        if not group_data:
-            if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        group = GalleryGroup.get_by_id(group_id)
+        if not group:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return jsonify({
                     'success': False,
                     'message': '갤러리를 찾을 수 없습니다.'
@@ -783,46 +461,36 @@ def update_gallery_order(group_id):
             flash('갤러리를 찾을 수 없습니다.', 'error')
             return redirect(url_for('admin.list_gallery'))
         
-        is_pinned = bool(group_data[1])
-        gallery_title = group_data[2]
+        print(f"📥 기존 display_order: {group.display_order}")
         
-        # 순서 업데이트
-        db.session.execute(
-            text("UPDATE gallery_group SET display_order = :display_order, updated_at = :updated_at WHERE id = :id"),
-            {
-                "id": group_id,
-                "display_order": display_order,
-                "updated_at": datetime.utcnow()
-            }
-        )
-        db.session.commit()
+        # 명시적으로 int로 변환하여 저장
+        group.display_order = int(display_order)
+        group.updated_at = datetime.utcnow()
         
-        # 🧹 갤러리 캐시 클리어 (순서 변경으로 인한 표출 순서 변경)
+        print(f"📤 새로운 display_order 설정: {group.display_order}")
+        
+        group.save()
+        
+        # 저장 후 재조회하여 확인
+        saved_group = GalleryGroup.get_by_id(group_id)
+        print(f"✅ 저장 후 재조회 display_order: {saved_group.display_order if saved_group else 'NOT FOUND'}")
+        
         try:
             from routes.main import clear_gallery_cache
             clear_gallery_cache()
         except Exception as cache_error:
             print(f"⚠️ 캐시 클리어 실패 (무시 가능): {str(cache_error)}")
         
-        # AJAX 요청인 경우 JSON 응답
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            if is_pinned:
-                message = f'상단고정 갤러리 "{gallery_title}"의 표출 순서가 {display_order}(으)로 업데이트되었습니다.'
-            else:
-                message = f'갤러리 "{gallery_title}"의 표출 순서가 {display_order}(으)로 업데이트되었습니다.'
-            
+            message = f'갤러리 "{group.title}"의 표출 순서가 {display_order}(으)로 업데이트되었습니다.'
             return jsonify({
                 'success': True,
                 'message': message,
-                'display_order': display_order,
-                'is_pinned': is_pinned
+                'display_order': int(display_order),
+                'is_pinned': group.is_pinned
             })
         
-        # 일반 요청인 경우 기존 방식
-        if is_pinned:
-            flash(f'상단고정 갤러리의 표출 순서가 {display_order}(으)로 업데이트되었습니다.')
-        else:
-            flash(f'갤러리 표출 순서가 {display_order}(으)로 업데이트되었습니다.')
+        flash(f'갤러리 표출 순서가 {display_order}(으)로 업데이트되었습니다.')
             
     except ValueError:
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -833,7 +501,6 @@ def update_gallery_order(group_id):
         flash('올바른 숫자를 입력해주세요.', 'error')
     except Exception as e:
         print(f"Error updating gallery order: {str(e)}")
-        db.session.rollback()
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({
                 'success': False,
@@ -843,47 +510,28 @@ def update_gallery_order(group_id):
     
     return redirect(url_for('admin.list_gallery'))
 
+
 @admin.route('/gallery/toggle-pin/<int:group_id>', methods=['POST'])
 @login_required
 def toggle_gallery_pin(group_id):
     try:
-        # 현재 상태 확인 (title도 함께 가져오기)
-        result = db.session.execute(
-            text("SELECT is_pinned, title FROM gallery_group WHERE id = :id"),
-            {"id": group_id}
-        )
-        current_data = result.fetchone()
-        
-        if not current_data:
+        group = GalleryGroup.get_by_id(group_id)
+        if not group:
             flash('갤러리를 찾을 수 없습니다.', 'error')
             return redirect(url_for('admin.list_gallery'))
         
-        current_pinned = bool(current_data[0])
-        gallery_title = current_data[1]
-        new_state = not current_pinned
+        new_state = not group.is_pinned
         
-        # 상단 고정하려는 경우, 이미 3개가 고정되어 있는지 확인
         if new_state:
-            pinned_count = db.session.execute(
-                text("SELECT COUNT(*) FROM gallery_group WHERE is_pinned = 1")
-            ).scalar()
-            
+            pinned_count = len([g for g in GalleryGroup.query_all_ordered() if g.is_pinned])
             if pinned_count >= 3:
                 flash('상단 고정은 최대 3개까지만 가능합니다. 다른 갤러리의 고정을 해제한 후 시도해주세요.', 'warning')
                 return redirect(url_for('admin.list_gallery'))
         
-        # 상태 업데이트
-        db.session.execute(
-            text("UPDATE gallery_group SET is_pinned = :is_pinned, updated_at = :updated_at WHERE id = :id"),
-            {
-                "id": group_id,
-                "is_pinned": new_state,
-                "updated_at": datetime.utcnow()
-            }
-        )
-        db.session.commit()
+        group.is_pinned = new_state
+        group.updated_at = datetime.utcnow()
+        group.save()
         
-        # 🧹 갤러리 캐시 클리어 (고정 상태 변경으로 인한 표출 순서 변경)
         try:
             from routes.main import clear_gallery_cache
             clear_gallery_cache()
@@ -891,42 +539,38 @@ def toggle_gallery_pin(group_id):
             print(f"⚠️ 캐시 클리어 실패 (무시 가능): {str(cache_error)}")
         
         if new_state:
-            # 현재 고정된 갤러리 개수 확인
-            pinned_count = db.session.execute(
-                text("SELECT COUNT(*) FROM gallery_group WHERE is_pinned = 1")
-            ).scalar()
-            flash(f'"{gallery_title}" 갤러리가 상단에 고정되었습니다. (현재 {pinned_count}/3개 고정)')
+            pinned_count = len([g for g in GalleryGroup.query_all_ordered() if g.is_pinned])
+            flash(f'"{group.title}" 갤러리가 상단에 고정되었습니다. (현재 {pinned_count}/3개 고정)')
         else:
-            flash(f'"{gallery_title}" 갤러리의 상단 고정이 해제되었습니다.')
+            flash(f'"{group.title}" 갤러리의 상단 고정이 해제되었습니다.')
             
     except Exception as e:
         print(f"Error toggling gallery pin: {str(e)}")
         flash('갤러리 상단 고정 상태 변경 중 오류가 발생했습니다.', 'error')
-        db.session.rollback()
     
     return redirect(url_for('admin.list_gallery'))
+
 
 @admin.route('/services')
 @login_required
 def list_services():
-    services = Service.query.all()
+    services = Service.query_all()
     return render_template('admin/services.html', services=services)
+
 
 @admin.route('/service/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_service(id):
-    service = Service.query.get_or_404(id)
+    service = Service.get_or_404(id)
     
     if request.method == 'POST':
         service.name = request.form['name']
         service.description = request.form['description']
         service.category = request.form['category']
         
-        # 상세 내용 저장
         details = request.form.getlist('details[]')
         service.details = json.dumps(details)
         
-        # 패키지 정보 저장
         packages = []
         names = request.form.getlist('package_names[]')
         descriptions = request.form.getlist('package_descriptions[]')
@@ -942,16 +586,13 @@ def edit_service(id):
                 packages.append(package)
         
         service.packages = json.dumps(packages)
+        service.save()
         
-        db.session.commit()
-        
-        # 🌐 비동기 번역 트리거
         trigger_translation('service', service)
         
         flash('서비스가 수정되었습니다.')
         return redirect(url_for('admin.list_services'))
     
-    # JSON 데이터를 파이썬 객체로 변환
     details = json.loads(service.details) if service.details else []
     packages = json.loads(service.packages) if service.packages else []
         
@@ -960,32 +601,38 @@ def edit_service(id):
                          details=details,
                          packages=packages)
 
+
 @admin.route('/services/delete/<int:id>')
 @login_required
 def delete_service(id):
-    service = Service.query.get_or_404(id)
-    db.session.delete(service)
-    db.session.commit()
+    service = Service.get_or_404(id)
+    
+    # 관련 옵션들도 삭제
+    for option in service.options:
+        option.delete()
+    
+    service.delete()
     flash('서비스가 삭제되었습니다.')
     return redirect(url_for('admin.list_services'))
+
 
 @admin.route('/services/<int:service_id>/options')
 @login_required
 def list_options(service_id):
-    service = Service.query.get_or_404(service_id)
+    service = Service.get_or_404(service_id)
     return render_template('admin/options.html', service=service)
+
 
 @admin.route('/services/options/add', methods=['GET', 'POST'])
 @login_required
 def add_option_standalone():
     """카테고리를 선택해서 새로운 서비스 옵션을 추가하는 독립형 라우트"""
-    services = Service.query.all()
+    services = Service.query_all()
     
     if request.method == 'POST':
         service_id = int(request.form['service_id'])
-        service = Service.query.get_or_404(service_id)
+        service = Service.get_or_404(service_id)
         
-        # 기본 ServiceOption 생성
         option = ServiceOption(
             service_id=service_id,
             name=request.form['name'],
@@ -993,7 +640,6 @@ def add_option_standalone():
             detailed_description=request.form.get('detailed_description', '')
         )
         
-        # 상세 내용 처리 (각 줄을 배열로 변환)
         details_text = request.form.get('details', '')
         if details_text.strip():
             details_list = [line.strip() for line in details_text.split('\n') if line.strip()]
@@ -1001,7 +647,6 @@ def add_option_standalone():
         else:
             option.details = None
         
-        # 패키지 정보 처리 (파이프로 구분된 형식을 JSON으로 변환)
         packages_text = request.form.get('packages', '')
         if packages_text.strip():
             packages_list = []
@@ -1009,7 +654,6 @@ def add_option_standalone():
                 if '|' in line:
                     parts = line.split('|')
                     if len(parts) >= 5:
-                        # 5개 필드: name, description, duration, price, notes
                         package = {
                             'name': parts[0].strip(),
                             'description': parts[1].strip(),
@@ -1019,7 +663,6 @@ def add_option_standalone():
                         }
                         packages_list.append(package)
                     elif len(parts) >= 4:
-                        # 4개 필드: name, description, duration, price (비고 없음)
                         package = {
                             'name': parts[0].strip(),
                             'description': parts[1].strip(),
@@ -1029,7 +672,6 @@ def add_option_standalone():
                         }
                         packages_list.append(package)
                     elif len(parts) >= 3:
-                        # 기존 3개 필드 호환성
                         package = {
                             'name': parts[0].strip(),
                             'description': parts[1].strip(),
@@ -1042,10 +684,7 @@ def add_option_standalone():
         else:
             option.packages = None
         
-        db.session.add(option)
-        db.session.commit()
-        
-        # 🌐 비동기 번역 트리거
+        option.save()
         trigger_translation('service_option', option)
         
         flash(f'{service.name} 카테고리에 "{option.name}" 서비스가 추가되었습니다.')
@@ -1053,13 +692,13 @@ def add_option_standalone():
     
     return render_template('admin/add_option_standalone.html', services=services)
 
+
 @admin.route('/services/<int:service_id>/options/add', methods=['GET', 'POST'])
 @login_required
 def add_option(service_id):
-    service = Service.query.get_or_404(service_id)
+    service = Service.get_or_404(service_id)
     
     if request.method == 'POST':
-        # 기본 ServiceOption 생성
         option = ServiceOption(
             service_id=service_id,
             name=request.form['name'],
@@ -1067,7 +706,6 @@ def add_option(service_id):
             detailed_description=request.form.get('detailed_description', '')
         )
         
-        # 상세 내용 처리 (각 줄을 배열로 변환)
         details_text = request.form.get('details', '')
         if details_text.strip():
             details_list = [line.strip() for line in details_text.split('\n') if line.strip()]
@@ -1075,7 +713,6 @@ def add_option(service_id):
         else:
             option.details = None
         
-        # 패키지 정보 처리 (파이프로 구분된 형식을 JSON으로 변환)
         packages_text = request.form.get('packages', '')
         if packages_text.strip():
             packages_list = []
@@ -1083,7 +720,6 @@ def add_option(service_id):
                 if '|' in line:
                     parts = line.split('|')
                     if len(parts) >= 5:
-                        # 5개 필드: name, description, duration, price, notes
                         package = {
                             'name': parts[0].strip(),
                             'description': parts[1].strip(),
@@ -1093,7 +729,6 @@ def add_option(service_id):
                         }
                         packages_list.append(package)
                     elif len(parts) >= 4:
-                        # 4개 필드: name, description, duration, price (비고 없음)
                         package = {
                             'name': parts[0].strip(),
                             'description': parts[1].strip(),
@@ -1103,7 +738,6 @@ def add_option(service_id):
                         }
                         packages_list.append(package)
                     elif len(parts) >= 3:
-                        # 기존 3개 필드 호환성
                         package = {
                             'name': parts[0].strip(),
                             'description': parts[1].strip(),
@@ -1116,10 +750,7 @@ def add_option(service_id):
         else:
             option.packages = None
         
-        db.session.add(option)
-        db.session.commit()
-        
-        # 🌐 비동기 번역 트리거
+        option.save()
         trigger_translation('service_option', option)
         
         flash('옵션이 추가되었습니다.')
@@ -1127,52 +758,33 @@ def add_option(service_id):
     
     return render_template('admin/add_option.html', service=service)
 
+
 @admin.route('/services/options/<int:option_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_option(option_id):
-    option = ServiceOption.query.get_or_404(option_id)
+    option = ServiceOption.get_or_404(option_id)
     
     if request.method == 'POST':
         print(f"🔧 서비스 옵션 편집 시작 - ID: {option_id}")
-        print(f"📝 받은 폼 데이터: {dict(request.form)}")
         
-        # 기본 정보 업데이트
         option.name = request.form['name']
         option.description = request.form['description']
         option.detailed_description = request.form.get('detailed_description', '')
-        print(f"✅ 기본 정보 업데이트 완료 - 이름: {option.name}")
         
-        # 🛡️ 예약 조건 필드들 업데이트 (기존 데이터 보호 - 덮어쓰기 방지)
-        def update_field_smart(current_value, form_value):
-            """기존 데이터를 보호하면서 사용자의 의도를 반영하여 업데이트
-            
-            핵심 원칙:
-            1. 새 값이 입력되면 -> 새 값으로 업데이트
-            2. 빈 값이 전송되었지만 기존 값이 있으면 -> 기존 값 유지 (보호)
-            3. 명시적으로 삭제하려면 별도 삭제 기능 사용
-            """
-            # 새로운 값이 입력된 경우
+        # 예약 조건 필드 업데이트
+        def update_field(form_value):
             if form_value is not None and form_value.strip():
-                print(f"✅ 새 값으로 업데이트: {form_value[:50]}...")
                 return form_value
-            
-            # 빈 값이 전송된 경우 - 기존 데이터 보호
-            if current_value is not None and str(current_value).strip():
-                print(f"🛡️ 기존 데이터 보호: 빈 폼 제출로 인한 덮어쓰기 방지 - 기존 값 유지")
-                return current_value
-            
-            # 둘 다 빈 값인 경우
-            print(f"📝 빈 상태 유지 (기존 값도 없음)")
             return None
         
-        option.booking_method = update_field_smart(option.booking_method, request.form.get('booking_method'))
-        option.payment_info = update_field_smart(option.payment_info, request.form.get('payment_info'))
-        option.guide_info = update_field_smart(option.guide_info, request.form.get('guide_info'))
-        option.refund_policy_text = update_field_smart(option.refund_policy_text, request.form.get('refund_policy_text'))
-        option.refund_policy_table = update_field_smart(option.refund_policy_table, request.form.get('refund_policy_table'))
-        option.overtime_charge_table = update_field_smart(option.overtime_charge_table, request.form.get('overtime_charge_table'))
+        option.booking_method = update_field(request.form.get('booking_method'))
+        option.payment_info = update_field(request.form.get('payment_info'))
+        option.guide_info = update_field(request.form.get('guide_info'))
+        option.refund_policy_text = update_field(request.form.get('refund_policy_text'))
+        option.refund_policy_table = update_field(request.form.get('refund_policy_table'))
+        option.overtime_charge_table = update_field(request.form.get('overtime_charge_table'))
         
-        # 상세 내용 처리 (각 줄을 배열로 변환)
+        # 상세 내용 처리
         details_text = request.form.get('details', '')
         if details_text.strip():
             details_list = [line.strip() for line in details_text.split('\n') if line.strip()]
@@ -1180,63 +792,87 @@ def edit_option(option_id):
         else:
             option.details = None
         
-        # 패키지 정보 처리 (파이프로 구분된 형식을 JSON으로 변환)
+        # 패키지 정보 처리
         packages_text = request.form.get('packages', '')
         if packages_text.strip():
-            packages_list = []
-            for line in packages_text.split('\n'):
-                if '|' in line:
-                    parts = line.split('|')
-                    if len(parts) >= 5:
-                        # 5개 필드: name, description, duration, price, notes
-                        package = {
-                            'name': parts[0].strip(),
-                            'description': parts[1].strip(),
-                            'duration': parts[2].strip(),
-                            'price': parts[3].strip(),
-                            'notes': parts[4].strip()
-                        }
-                        packages_list.append(package)
-                    elif len(parts) >= 4:
-                        # 4개 필드: name, description, duration, price (비고 없음)
-                        package = {
-                            'name': parts[0].strip(),
-                            'description': parts[1].strip(),
-                            'duration': parts[2].strip(),
-                            'price': parts[3].strip(),
-                            'notes': ''
-                        }
-                        packages_list.append(package)
-                    elif len(parts) >= 3:
-                        # 기존 3개 필드 호환성
-                        package = {
-                            'name': parts[0].strip(),
-                            'description': parts[1].strip(),
-                            'duration': '',
-                            'price': parts[2].strip(),
-                            'notes': ''
-                        }
-                        packages_list.append(package)
-            option.packages = json.dumps(packages_list, ensure_ascii=False) if packages_list else None
+            try:
+                packages_data = json.loads(packages_text)
+                
+                if isinstance(packages_data, dict) and 'tables' in packages_data:
+                    valid_tables = []
+                    for table in packages_data.get('tables', []):
+                        valid_packages = []
+                        for pkg in table.get('packages', []):
+                            if pkg.get('name', '').strip():
+                                valid_packages.append({
+                                    'name': pkg.get('name', '').strip(),
+                                    'description': pkg.get('description', '').strip(),
+                                    'duration': pkg.get('duration', '').strip(),
+                                    'price': pkg.get('price', '').strip(),
+                                    'notes': pkg.get('notes', '').strip()
+                                })
+                        valid_tables.append({
+                            'title': table.get('title', '').strip(),
+                            'order': table.get('order', len(valid_tables)),
+                            'packages': valid_packages
+                        })
+                    
+                    option.packages = json.dumps({'tables': valid_tables}, ensure_ascii=False) if valid_tables else None
+                elif isinstance(packages_data, list):
+                    option.packages = json.dumps({'tables': [{'title': '', 'order': 0, 'packages': packages_data}]}, ensure_ascii=False)
+                else:
+                    option.packages = packages_text
+            except json.JSONDecodeError:
+                packages_list = []
+                for line in packages_text.split('\n'):
+                    if '|' in line:
+                        parts = line.split('|')
+                        if len(parts) >= 5:
+                            package = {
+                                'name': parts[0].strip(),
+                                'description': parts[1].strip(),
+                                'duration': parts[2].strip(),
+                                'price': parts[3].strip(),
+                                'notes': parts[4].strip()
+                            }
+                            packages_list.append(package)
+                        elif len(parts) >= 4:
+                            package = {
+                                'name': parts[0].strip(),
+                                'description': parts[1].strip(),
+                                'duration': parts[2].strip(),
+                                'price': parts[3].strip(),
+                                'notes': ''
+                            }
+                            packages_list.append(package)
+                        elif len(parts) >= 3:
+                            package = {
+                                'name': parts[0].strip(),
+                                'description': parts[1].strip(),
+                                'duration': '',
+                                'price': parts[2].strip(),
+                                'notes': ''
+                            }
+                            packages_list.append(package)
+                if packages_list:
+                    option.packages = json.dumps({'tables': [{'title': '', 'order': 0, 'packages': packages_list}]}, ensure_ascii=False)
+                else:
+                    option.packages = None
         else:
             option.packages = None
         
         try:
-            db.session.commit()
-            print(f"✅ 데이터베이스 커밋 성공 - 옵션 ID: {option_id}")
+            option.save()
+            print(f"✅ MongoDB 저장 성공 - 옵션 ID: {option_id}")
             flash('옵션이 수정되었습니다.')
-            
-            # 🌐 비동기 번역 트리거
             trigger_translation('service_option', option)
-            
         except Exception as e:
-            print(f"❌ 데이터베이스 커밋 실패: {str(e)}")
-            db.session.rollback()
+            print(f"❌ MongoDB 저장 실패: {str(e)}")
             flash('옵션 수정 중 오류가 발생했습니다.', 'error')
         
         return redirect(url_for('admin.list_services'))
     
-    # GET 요청 시 기존 데이터 로드
+    # GET 요청
     details_text = ''
     if option.details:
         try:
@@ -1245,145 +881,37 @@ def edit_option(option_id):
         except:
             details_text = option.details
     
-    packages_text = ''
-    if option.packages:
-        try:
-            packages_list = json.loads(option.packages)
-            packages_lines = []
-            for package in packages_list:
-                line = f"{package.get('name', '')}|{package.get('description', '')}|{package.get('duration', '')}|{package.get('price', '')}|{package.get('notes', '')}"
-                packages_lines.append(line)
-            packages_text = '\n'.join(packages_lines)
-        except:
-            packages_text = option.packages
+    packages_text = option.packages or ''
     
     return render_template('admin/edit_option.html', 
                          option=option, 
                          details_text=details_text,
                          packages_text=packages_text)
 
+
 @admin.route('/services/options/<int:option_id>/delete')
 @login_required
 def delete_option(option_id):
-    option = ServiceOption.query.get_or_404(option_id)
+    option = ServiceOption.get_or_404(option_id)
     service_name = option.name
-    db.session.delete(option)
-    db.session.commit()
+    option.delete()
     flash(f'서비스 "{service_name}"이(가) 삭제되었습니다.')
     return redirect(url_for('admin.list_services'))
 
-# 딕셔너리를 모델처럼 사용하기 위한 클래스 추가
-class DictAsModel:
-    def __init__(self, data):
-        # 딕셔너리의 키-값 쌍을 객체의 속성으로 설정
-        for key, value in data.items():
-            setattr(self, key, value)
-    
-    def get_datetimes(self):
-        """예약 메시지에서 날짜/시간 정보 추출"""
-        try:
-            if hasattr(self, 'message') and self.message:
-                lines = self.message.split('\n')
-                datetimes = []
-                capture = False
-                
-                for line in lines:
-                    if '희망 예약일시:' in line:
-                        capture = True
-                        continue
-                    
-                    if capture and line.strip() and '순위:' in line:
-                        parts = line.split('순위:')
-                        if len(parts) > 1:
-                            datetimes.append(parts[1].strip())
-                
-                return datetimes
-        except Exception as e:
-            print(f"Error in get_datetimes: {str(e)}")
-        return []
-    
-    def get_message_content(self):
-        """메시지 내용에서 희망 예약일시 부분을 제외한 내용 반환"""
-        try:
-            if hasattr(self, 'message') and self.message:
-                lines = self.message.split('\n')
-                content_lines = []
-                exclude = False
-                
-                for line in lines:
-                    if '희망 예약일시:' in line:
-                        exclude = True
-                        continue
-                    
-                    if not exclude or not line.strip() or not ('순위:' in line):
-                        content_lines.append(line)
-                
-                return '\n'.join(content_lines).strip()
-        except Exception as e:
-            print(f"Error in get_message_content: {str(e)}")
-        return ''
-    
-    def strftime(self, format_string):
-        """datetime 객체의 strftime 메서드를 모방"""
-        try:
-            if hasattr(self, 'created_at') and self.created_at:
-                if isinstance(self.created_at, datetime):
-                    return self.created_at.strftime(format_string)
-        except Exception as e:
-            print(f"Error in strftime: {str(e)}")
-        return ''
 
 @admin.route('/bookings')
 @login_required
 def list_bookings():
     try:
-        # 직접 SQL 쿼리를 사용하여 예약 목록 조회
-        result = db.session.execute(text("""
-            SELECT b.id, b.name, b.email, b.message, b.status, b.created_at, s.name as service_name
-            FROM booking b
-            LEFT JOIN service s ON b.service_id = s.id
-            ORDER BY b.created_at DESC
-        """))
+        kst = pytz.timezone('Asia/Seoul')
+        bookings = Booking.query_all_ordered()
         
-        # 결과를 DictAsModel 객체 리스트로 변환
-        bookings = []
-        for row in result:
-            booking_data = {
-                'id': row[0],
-                'name': row[1],
-                'email': row[2],
-                'message': row[3],
-                'status': row[4],
-                'created_at': row[5],
-                'service': DictAsModel({'name': row[6]}) if row[6] else None
-            }
-            
-            # 날짜 형식 변환 (문자열 또는 datetime 객체 모두 처리)
-            if booking_data['created_at']:
-                try:
-                    # 이미 datetime 객체인 경우
-                    if isinstance(booking_data['created_at'], datetime):
-                        booking_data['created_at'] = pytz.utc.localize(booking_data['created_at']).astimezone(pytz.timezone('Asia/Seoul'))
-                    # 문자열인 경우
-                    else:
-                        # 다양한 형식 처리
-                        try:
-                            dt = datetime.strptime(booking_data['created_at'], '%Y-%m-%d %H:%M:%S.%f')
-                        except ValueError:
-                            try:
-                                dt = datetime.strptime(booking_data['created_at'], '%Y-%m-%d %H:%M:%S')
-                            except ValueError:
-                                # 다른 형식이 있을 수 있음
-                                dt = datetime.now()  # 기본값
-                        booking_data['created_at'] = pytz.utc.localize(dt).astimezone(pytz.timezone('Asia/Seoul'))
-                except Exception as date_error:
-                    print(f"Date conversion error: {str(date_error)}")
-                    # 오류 발생 시 현재 시간으로 대체
-                    booking_data['created_at'] = datetime.now()
-            
-            # 딕셔너리를 DictAsModel 객체로 변환
-            booking = DictAsModel(booking_data)
-            bookings.append(booking)
+        for booking in bookings:
+            if booking.created_at and isinstance(booking.created_at, datetime):
+                if booking.created_at.tzinfo is None:
+                    booking.created_at = pytz.utc.localize(booking.created_at).astimezone(kst)
+                else:
+                    booking.created_at = booking.created_at.astimezone(kst)
         
         return render_template('admin/bookings.html', bookings=bookings)
     except Exception as e:
@@ -1391,34 +919,29 @@ def list_bookings():
         flash('예약 목록을 불러오는 중 오류가 발생했습니다.', 'error')
         return render_template('admin/bookings.html', bookings=[])
 
+
 @admin.route('/booking/<int:id>/status/<status>')
 @login_required
 def update_booking_status(id, status):
     try:
         if status in ['대기', '확정', '취소']:
-            # 직접 SQL 쿼리를 사용하여 예약 상태 업데이트
-            db.session.execute(
-                text("UPDATE booking SET status = :status WHERE id = :id"),
-                {"id": id, "status": status}
-            )
-            db.session.commit()
-            flash('예약 상태가 업데이트되었습니다.')
+            booking = Booking.get_by_id(id)
+            if booking:
+                booking.status = status
+                booking.save()
+                flash('예약 상태가 업데이트되었습니다.')
     except Exception as e:
         print(f"Error updating booking status: {str(e)}")
         flash('예약 상태 업데이트 중 오류가 발생했습니다.', 'error')
     
     return redirect(url_for('admin.list_bookings'))
 
+
 @admin.route('/booking/<int:id>/delete')
 @login_required
 def delete_booking(id):
     try:
-        # 직접 SQL 쿼리를 사용하여 예약 삭제
-        db.session.execute(
-            text("DELETE FROM booking WHERE id = :id"),
-            {"id": id}
-        )
-        db.session.commit()
+        Booking.delete_by_id(id)
         flash('예약이 삭제되었습니다.')
     except Exception as e:
         print(f"Error deleting booking: {str(e)}")
@@ -1426,135 +949,46 @@ def delete_booking(id):
     
     return redirect(url_for('admin.list_bookings'))
 
+
 @admin.route('/gallery')
 @login_required
 def list_gallery():
     try:
-        # 직접 SQL 쿼리를 사용하여 갤러리 그룹 목록 조회 (display_order, is_pinned 포함)
-        result = db.session.execute(text("""
-            SELECT id, title, created_at, display_order, is_pinned
-            FROM gallery_group
-            ORDER BY is_pinned DESC, display_order DESC, created_at DESC
-        """))
+        kst = pytz.timezone('Asia/Seoul')
+        gallery_groups = GalleryGroup.query_all_ordered()
         
-        # 결과를 DictAsModel 객체 리스트로 변환
-        gallery_groups = []
-        for row in result:
-            group_data = {
-                'id': row[0],
-                'title': row[1],
-                'created_at': row[2],
-                'display_order': row[3] if row[3] is not None else 0,
-                'is_pinned': bool(row[4]) if row[4] is not None else False,
-                'images': []  # 이미지 목록은 별도로 조회
-            }
-            
-            # 날짜 형식 변환 (문자열 또는 datetime 객체 모두 처리)
-            if group_data['created_at']:
-                try:
-                    # 이미 datetime 객체인 경우
-                    if isinstance(group_data['created_at'], datetime):
-                        group_data['created_at'] = pytz.utc.localize(group_data['created_at']).astimezone(pytz.timezone('Asia/Seoul'))
-                    # 문자열인 경우
-                    else:
-                        # 다양한 형식 처리
-                        try:
-                            dt = datetime.strptime(group_data['created_at'], '%Y-%m-%d %H:%M:%S.%f')
-                        except ValueError:
-                            try:
-                                dt = datetime.strptime(group_data['created_at'], '%Y-%m-%d %H:%M:%S')
-                            except ValueError:
-                                # 다른 형식이 있을 수 있음
-                                dt = datetime.now()  # 기본값
-                        group_data['created_at'] = pytz.utc.localize(dt).astimezone(pytz.timezone('Asia/Seoul'))
-                except Exception as date_error:
-                    print(f"Date conversion error: {str(date_error)}")
-                    # 오류 발생 시 현재 시간으로 대체
-                    group_data['created_at'] = datetime.now()
-            
-            # 각 그룹의 이미지 조회
-            try:
-                image_result = db.session.execute(text("""
-                    SELECT id, image_path, caption, "order"
-                    FROM gallery
-                    WHERE group_id = :group_id
-                    ORDER BY "order"
-                """), {'group_id': group_data['id']})
-                
-                for img_row in image_result:
-                    image_data = {
-                        'id': img_row[0],
-                        'image_path': img_row[1],
-                        'caption': img_row[2],
-                        'order': img_row[3]
-                    }
-                    # 이미지도 DictAsModel 객체로 변환
-                    group_data['images'].append(DictAsModel(image_data))
-            except Exception as img_error:
-                print(f"Error fetching images for group {group_data['id']}: {str(img_error)}")
-            
-            # 딕셔너리를 DictAsModel 객체로 변환
-            group = DictAsModel(group_data)
-            gallery_groups.append(group)
+        # 디버깅: 각 갤러리 그룹의 display_order 출력
+        print(f"📋 list_gallery 조회 - 총 {len(gallery_groups)}개 갤러리 그룹")
+        for group in gallery_groups:
+            print(f"  - ID={group.id}, title={group.title}, display_order={group.display_order}, is_pinned={group.is_pinned}")
+            if group.created_at and isinstance(group.created_at, datetime):
+                if group.created_at.tzinfo is None:
+                    group.created_at = pytz.utc.localize(group.created_at).astimezone(kst)
+                else:
+                    group.created_at = group.created_at.astimezone(kst)
         
         return render_template('admin/list_gallery.html', gallery_groups=gallery_groups)
     except Exception as e:
         print(f"Error in list_gallery: {str(e)}")
+        import traceback
+        traceback.print_exc()
         flash('갤러리 목록을 불러오는 중 오류가 발생했습니다.', 'error')
         return render_template('admin/list_gallery.html', gallery_groups=[])
+
 
 @admin.route('/inquiries')
 @login_required
 def list_inquiries():
     try:
-        # 직접 SQL 쿼리를 사용하여 문의 목록 조회
-        result = db.session.execute(text("""
-            SELECT i.id, i.name, i.email, i.phone, i.message, i.status, i.created_at, s.name as service_name
-            FROM inquiry i
-            LEFT JOIN service s ON i.service_id = s.id
-            ORDER BY i.created_at DESC
-        """))
+        kst = pytz.timezone('Asia/Seoul')
+        inquiries = Inquiry.query_all_ordered()
         
-        # 결과를 DictAsModel 객체 리스트로 변환
-        inquiries = []
-        for row in result:
-            inquiry_data = {
-                'id': row[0],
-                'name': row[1],
-                'email': row[2],
-                'phone': row[3],
-                'message': row[4],
-                'status': row[5],
-                'created_at': row[6],
-                'service': DictAsModel({'name': row[7]}) if row[7] else None
-            }
-            
-            # 날짜 형식 변환 (문자열 또는 datetime 객체 모두 처리)
-            if inquiry_data['created_at']:
-                try:
-                    # 이미 datetime 객체인 경우
-                    if isinstance(inquiry_data['created_at'], datetime):
-                        inquiry_data['created_at'] = pytz.utc.localize(inquiry_data['created_at']).astimezone(pytz.timezone('Asia/Seoul'))
-                    # 문자열인 경우
-                    else:
-                        # 다양한 형식 처리
-                        try:
-                            dt = datetime.strptime(inquiry_data['created_at'], '%Y-%m-%d %H:%M:%S.%f')
-                        except ValueError:
-                            try:
-                                dt = datetime.strptime(inquiry_data['created_at'], '%Y-%m-%d %H:%M:%S')
-                            except ValueError:
-                                # 다른 형식이 있을 수 있음
-                                dt = datetime.now()  # 기본값
-                        inquiry_data['created_at'] = pytz.utc.localize(dt).astimezone(pytz.timezone('Asia/Seoul'))
-                except Exception as date_error:
-                    print(f"Date conversion error: {str(date_error)}")
-                    # 오류 발생 시 현재 시간으로 대체
-                    inquiry_data['created_at'] = datetime.now()
-            
-            # 딕셔너리를 DictAsModel 객체로 변환
-            inquiry = DictAsModel(inquiry_data)
-            inquiries.append(inquiry)
+        for inquiry in inquiries:
+            if inquiry.created_at and isinstance(inquiry.created_at, datetime):
+                if inquiry.created_at.tzinfo is None:
+                    inquiry.created_at = pytz.utc.localize(inquiry.created_at).astimezone(kst)
+                else:
+                    inquiry.created_at = inquiry.created_at.astimezone(kst)
         
         return render_template('admin/inquiries.html', inquiries=inquiries)
     except Exception as e:
@@ -1562,34 +996,29 @@ def list_inquiries():
         flash('문의 목록을 불러오는 중 오류가 발생했습니다.', 'error')
         return render_template('admin/inquiries.html', inquiries=[])
 
+
 @admin.route('/inquiries/<int:id>/status', methods=['POST'])
 @login_required
 def update_inquiry_status(id):
     try:
         status = request.form.get('status')
-        # 직접 SQL 쿼리를 사용하여 문의 상태 업데이트
-        db.session.execute(
-            text("UPDATE inquiry SET status = :status WHERE id = :id"),
-            {"id": id, "status": status}
-        )
-        db.session.commit()
-        flash('문의 상태가 업데이트되었습니다.')
+        inquiry = Inquiry.get_by_id(id)
+        if inquiry:
+            inquiry.status = status
+            inquiry.save()
+            flash('문의 상태가 업데이트되었습니다.')
     except Exception as e:
         print(f"Error updating inquiry status: {str(e)}")
         flash('문의 상태 업데이트 중 오류가 발생했습니다.', 'error')
     
     return redirect(url_for('admin.list_inquiries'))
 
+
 @admin.route('/inquiries/<int:id>/delete', methods=['POST'])
 @login_required
 def delete_inquiry(id):
     try:
-        # 직접 SQL 쿼리를 사용하여 문의 삭제
-        db.session.execute(
-            text("DELETE FROM inquiry WHERE id = :id"),
-            {"id": id}
-        )
-        db.session.commit()
+        Inquiry.delete_by_id(id)
         flash('문의가 삭제되었습니다.')
     except Exception as e:
         print(f"Error deleting inquiry: {str(e)}")
@@ -1597,77 +1026,36 @@ def delete_inquiry(id):
     
     return redirect(url_for('admin.list_inquiries'))
 
-# 임시 관리자 비밀번호 재설정 라우트 (사용 후 제거 필요)
+
 @admin.route('/reset-admin-password/<username>/<new_password>')
 def reset_admin_password(username, new_password):
-    # 보안을 위한 간단한 토큰 확인 (실제 구현에서는 더 강력한 보안 필요)
+    """임시 관리자 비밀번호 재설정 라우트"""
     token = request.args.get('token')
-    if token != 'stylegrapher':  # 토큰 값을 'stylegrapher'로 변경
+    if token != 'stylegrapher':
         return "Unauthorized", 401
     
     try:
-        # 직접 SQL 쿼리를 사용하여 사용자 조회
-        result = db.session.execute(
-            text("SELECT id FROM user WHERE uq_user_username = :username"),
-            {"username": username}
-        )
-        user_data = result.fetchone()
-        
-        if not user_data:
+        user = User.get_by_username(username)
+        if not user:
             return f"User {username} not found", 404
         
-        # 새로운 해싱 알고리즘으로 비밀번호 설정
-        update_sql = text("""
-        UPDATE user SET password_hash = :password_hash
-        WHERE id = :id
-        """)
-        update_params = {
-            "id": user_data[0],
-            "password_hash": generate_password_hash(new_password, method='pbkdf2:sha256')
-        }
-        db.session.execute(update_sql, update_params)
-        db.session.commit()
+        user.set_password(new_password)
+        user.save()
         
         return f"Password for {username} has been reset successfully"
     except Exception as e:
         print(f"Error resetting password: {str(e)}")
         return f"Error resetting password: {str(e)}", 500
 
+
 @admin.route('/image/<image_id>')
 def get_image(image_id):
     """GridFS 및 레거시 저장소에서 이미지 조회"""
     try:
-        print(f"이미지 요청: {image_id}")
-        
-        # 로컬 파일 시스템에서 이미지 검색 함수
-        def get_from_local():
-            file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_id)
-            print(f"로컬 파일 시스템에서 이미지 검색: {file_path}")
-            
-            if os.path.exists(file_path):
-                print(f"로컬 파일 시스템에서 이미지 발견: {file_path}")
-                content_type = 'image/jpeg'
-                if image_id.lower().endswith('.png'):
-                    content_type = 'image/png'
-                elif image_id.lower().endswith('.gif'):
-                    content_type = 'image/gif'
-                    
-                with open(file_path, 'rb') as f:
-                    image_data = f.read()
-                
-                response = make_response(image_data)
-                response.headers.set('Content-Type', content_type)
-                response.headers.set('Cache-Control', 'public, max-age=86400')
-                return response
-            
-            print(f"이미지를 찾을 수 없음: {image_id}")
-            return None
-        
         # 1. GridFS에서 이미지 검색 시도
         try:
             binary_data, content_type = get_image_from_gridfs(image_id)
             if binary_data:
-                print(f"GridFS에서 이미지 발견: {image_id}")
                 response = make_response(binary_data)
                 response.headers.set('Content-Type', content_type)
                 response.headers.set('Cache-Control', 'public, max-age=86400')
@@ -1678,11 +1066,8 @@ def get_image(image_id):
         # 2. 레거시 MongoDB 컬렉션에서 검색
         if images_collection is not None:
             try:
-                print(f"레거시 MongoDB에서 이미지 검색: {image_id}")
                 image_doc = images_collection.find_one({'_id': image_id})
-                
                 if image_doc and 'binary_data' in image_doc:
-                    print(f"레거시 MongoDB에서 이미지 발견: {image_id}")
                     response = make_response(image_doc['binary_data'])
                     response.headers.set('Content-Type', image_doc.get('content_type', 'image/jpeg'))
                     response.headers.set('Cache-Control', 'public, max-age=86400')
@@ -1691,30 +1076,41 @@ def get_image(image_id):
                 print(f"레거시 MongoDB 검색 중 오류: {str(mongo_error)}")
         
         # 3. 로컬 파일 시스템에서 검색
-        local_response = get_from_local()
-        if local_response:
-            return local_response
+        file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_id)
+        if os.path.exists(file_path):
+            content_type = 'image/jpeg'
+            if image_id.lower().endswith('.png'):
+                content_type = 'image/png'
+            elif image_id.lower().endswith('.gif'):
+                content_type = 'image/gif'
+                
+            with open(file_path, 'rb') as f:
+                image_data = f.read()
+            
+            response = make_response(image_data)
+            response.headers.set('Content-Type', content_type)
+            response.headers.set('Cache-Control', 'public, max-age=86400')
+            return response
         
-        print(f"이미지를 어디서도 찾을 수 없음: {image_id}")
         return "Image not found", 404
             
     except Exception as e:
         print(f"이미지 검색 중 오류 발생: {str(e)}")
-        import traceback
-        traceback.print_exc()
         return "Error retrieving image", 500
+
 
 # Fade Text (CollageText) 관리
 @admin.route('/fade-texts')
 @login_required
 def list_fade_texts():
     try:
-        fade_texts = CollageText.query.order_by(CollageText.order.asc()).all()
+        fade_texts = CollageText.query_all_ordered()
         return render_template('admin/fade_texts.html', fade_texts=fade_texts)
     except Exception as e:
         print(f"Error listing fade texts: {str(e)}")
         flash('Fade Text 목록을 불러오는 중 오류가 발생했습니다.', 'error')
         return redirect(url_for('admin.dashboard'))
+
 
 @admin.route('/fade-text/add', methods=['GET', 'POST'])
 @login_required
@@ -1727,12 +1123,10 @@ def add_fade_text():
             if not text:
                 flash('텍스트를 입력해주세요.', 'error')
                 return render_template('admin/add_fade_text.html')
-                
-            fade_text = CollageText(text=text, order=order)
-            db.session.add(fade_text)
-            db.session.commit()
             
-            # 🌐 비동기 번역 트리거
+            fade_text = CollageText(text=text, order=order)
+            fade_text.save()
+            
             trigger_translation('collage_text', fade_text)
             
             flash('Fade Text가 추가되었습니다.')
@@ -1743,11 +1137,12 @@ def add_fade_text():
     
     return render_template('admin/add_fade_text.html')
 
+
 @admin.route('/fade-text/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_fade_text(id):
     try:
-        fade_text = CollageText.query.get_or_404(id)
+        fade_text = CollageText.get_or_404(id)
         
         if request.method == 'POST':
             text = request.form.get('text', '').strip()
@@ -1756,12 +1151,12 @@ def edit_fade_text(id):
             if not text:
                 flash('텍스트를 입력해주세요.', 'error')
                 return render_template('admin/edit_fade_text.html', fade_text=fade_text)
-                
+            
             fade_text.text = text
             fade_text.order = order
-            db.session.commit()
+            fade_text.updated_at = datetime.utcnow()
+            fade_text.save()
             
-            # 🌐 비동기 번역 트리거
             trigger_translation('collage_text', fade_text)
             
             flash('Fade Text가 수정되었습니다.')
@@ -1773,20 +1168,19 @@ def edit_fade_text(id):
         flash('Fade Text 수정 중 오류가 발생했습니다.', 'error')
         return redirect(url_for('admin.list_fade_texts'))
 
+
 @admin.route('/fade-text/delete/<int:id>')
 @login_required
 def delete_fade_text(id):
     try:
-        fade_text = CollageText.query.get_or_404(id)
-        db.session.delete(fade_text)
-        db.session.commit()
-        
+        CollageText.delete_by_id(id)
         flash('Fade Text가 삭제되었습니다.')
     except Exception as e:
         print(f"Error deleting fade text: {str(e)}")
         flash('Fade Text 삭제 중 오류가 발생했습니다.', 'error')
     
     return redirect(url_for('admin.list_fade_texts'))
+
 
 # 사이트 색상 설정 관리
 @admin.route('/site-colors')
@@ -1800,44 +1194,30 @@ def site_colors():
         flash('사이트 색상 설정을 불러오는 중 오류가 발생했습니다.', 'error')
         return redirect(url_for('admin.dashboard'))
 
+
 @admin.route('/site-colors/update', methods=['POST'])
 @login_required
 def update_site_colors():
     try:
         settings = SiteSettings.get_current_settings()
         
-        # Main Color
-        main_r = request.form.get('main_color_r', 139, type=int)
-        main_g = request.form.get('main_color_g', 95, type=int)
-        main_b = request.form.get('main_color_b', 191, type=int)
-        
-        # Sub Color
-        sub_r = request.form.get('sub_color_r', 65, type=int)
-        sub_g = request.form.get('sub_color_g', 26, type=int)
-        sub_b = request.form.get('sub_color_b', 75, type=int)
-        
-        # Background Color
-        bg_r = request.form.get('background_color_r', 255, type=int)
-        bg_g = request.form.get('background_color_g', 255, type=int)
-        bg_b = request.form.get('background_color_b', 255, type=int)
-        
-        # 값 유효성 검사 (0-255 범위)
         def validate_rgb(value):
             return max(0, min(255, value))
         
-        settings.main_color_r = validate_rgb(main_r)
-        settings.main_color_g = validate_rgb(main_g)
-        settings.main_color_b = validate_rgb(main_b)
+        settings.main_color_r = validate_rgb(request.form.get('main_color_r', 139, type=int))
+        settings.main_color_g = validate_rgb(request.form.get('main_color_g', 95, type=int))
+        settings.main_color_b = validate_rgb(request.form.get('main_color_b', 191, type=int))
         
-        settings.sub_color_r = validate_rgb(sub_r)
-        settings.sub_color_g = validate_rgb(sub_g)
-        settings.sub_color_b = validate_rgb(sub_b)
+        settings.sub_color_r = validate_rgb(request.form.get('sub_color_r', 65, type=int))
+        settings.sub_color_g = validate_rgb(request.form.get('sub_color_g', 26, type=int))
+        settings.sub_color_b = validate_rgb(request.form.get('sub_color_b', 75, type=int))
         
-        settings.background_color_r = validate_rgb(bg_r)
-        settings.background_color_g = validate_rgb(bg_g)
-        settings.background_color_b = validate_rgb(bg_b)
+        settings.background_color_r = validate_rgb(request.form.get('background_color_r', 255, type=int))
+        settings.background_color_g = validate_rgb(request.form.get('background_color_g', 255, type=int))
+        settings.background_color_b = validate_rgb(request.form.get('background_color_b', 255, type=int))
         
-        db.session.commit()
+        settings.updated_at = datetime.utcnow()
+        settings.save()
         
         flash('사이트 색상이 성공적으로 업데이트되었습니다.')
         return redirect(url_for('admin.site_colors'))
@@ -1846,6 +1226,7 @@ def update_site_colors():
         print(f"Error updating site colors: {str(e)}")
         flash('색상 업데이트 중 오류가 발생했습니다.', 'error')
         return redirect(url_for('admin.site_colors'))
+
 
 # 이용약관 관리
 @admin.route('/terms-of-service')
@@ -1857,6 +1238,7 @@ def manage_terms():
     except Exception as e:
         flash(f'이용약관 로드 중 오류가 발생했습니다: {str(e)}', 'error')
         return redirect(url_for('admin.dashboard'))
+
 
 @admin.route('/terms-of-service/update', methods=['POST'])
 @login_required
@@ -1871,15 +1253,18 @@ def update_terms():
         terms = TermsOfService.get_current_content()
         terms.content = content
         terms.updated_at = datetime.utcnow()
+        terms.save()
         
-        db.session.commit()
+        # 다국어 번역 트리거
+        trigger_translation('terms_of_service', terms)
+        
         flash('이용약관이 성공적으로 업데이트되었습니다.', 'success')
         
     except Exception as e:
-        db.session.rollback()
         flash(f'오류가 발생했습니다: {str(e)}', 'error')
     
     return redirect(url_for('admin.manage_terms'))
+
 
 # 개인정보처리방침 관리
 @admin.route('/privacy-policy')
@@ -1891,6 +1276,7 @@ def manage_privacy():
     except Exception as e:
         flash(f'개인정보처리방침 로드 중 오류가 발생했습니다: {str(e)}', 'error')
         return redirect(url_for('admin.dashboard'))
+
 
 @admin.route('/privacy-policy/update', methods=['POST'])
 @login_required
@@ -1905,15 +1291,18 @@ def update_privacy():
         policy = PrivacyPolicy.get_current_content()
         policy.content = content
         policy.updated_at = datetime.utcnow()
+        policy.save()
         
-        db.session.commit()
+        # 다국어 번역 트리거
+        trigger_translation('privacy_policy', policy)
+        
         flash('개인정보처리방침이 성공적으로 업데이트되었습니다.', 'success')
         
     except Exception as e:
-        db.session.rollback()
         flash(f'오류가 발생했습니다: {str(e)}', 'error')
     
     return redirect(url_for('admin.manage_privacy'))
+
 
 @admin.route('/security-dashboard')
 @login_required
@@ -1921,6 +1310,7 @@ def security_dashboard():
     """보안 대시보드"""
     summary = security_monitor.get_attack_summary()
     return render_template('admin/security_dashboard.html', security_summary=summary)
+
 
 @admin.route('/security-report')
 @login_required
@@ -1943,7 +1333,6 @@ def translations_dashboard():
     """번역 관리 대시보드"""
     from utils.translation import translations_collection, SUPPORTED_LANGUAGES
     
-    # 번역 통계 조회
     stats = {
         'total': 0,
         'by_type': {},
@@ -1954,7 +1343,6 @@ def translations_dashboard():
         try:
             stats['total'] = translations_collection.count_documents({})
             
-            # 타입별 통계
             pipeline = [
                 {"$group": {"_id": "$source_type", "count": {"$sum": 1}}}
             ]
@@ -1979,7 +1367,6 @@ def migrate_translations():
         except Exception as e:
             print(f"번역 마이그레이션 오류: {str(e)}")
     
-    # 백그라운드에서 실행
     thread = threading.Thread(target=run_migration)
     thread.daemon = True
     thread.start()
@@ -1994,19 +1381,19 @@ def translate_single(source_type, source_id):
     """단일 항목 번역"""
     try:
         if source_type == 'service':
-            service = Service.query.get_or_404(source_id)
+            service = Service.get_or_404(source_id)
             trigger_translation('service', service)
             flash(f'서비스 "{service.name}" 번역이 시작되었습니다.', 'success')
         elif source_type == 'service_option':
-            option = ServiceOption.query.get_or_404(source_id)
+            option = ServiceOption.get_or_404(source_id)
             trigger_translation('service_option', option)
             flash(f'서비스 옵션 "{option.name}" 번역이 시작되었습니다.', 'success')
         elif source_type == 'collage_text':
-            ct = CollageText.query.get_or_404(source_id)
+            ct = CollageText.get_or_404(source_id)
             trigger_translation('collage_text', ct)
             flash(f'Fade Text 번역이 시작되었습니다.', 'success')
         elif source_type == 'gallery_group':
-            gg = GalleryGroup.query.get_or_404(source_id)
+            gg = GalleryGroup.get_or_404(source_id)
             trigger_translation('gallery_group', gg)
             flash(f'갤러리 "{gg.title}" 번역이 시작되었습니다.', 'success')
         else:
@@ -2025,7 +1412,6 @@ def storage_dashboard():
     """GridFS 저장소 대시보드"""
     stats = get_gridfs_stats()
     
-    # 용량을 읽기 쉬운 형태로 변환
     if 'gridfs_total_size' in stats:
         size_mb = stats['gridfs_total_size'] / (1024 * 1024)
         stats['gridfs_total_size_mb'] = f"{size_mb:.2f}"
@@ -2046,7 +1432,6 @@ def migrate_to_gridfs():
         except Exception as e:
             print(f"GridFS 마이그레이션 오류: {str(e)}")
     
-    # 백그라운드에서 실행
     thread = threading.Thread(target=run_migration)
     thread.daemon = True
     thread.start()
