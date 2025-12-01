@@ -108,14 +108,14 @@
 <!-- Contact Section -->
 <section class="services-contact-section">
     <div class="container">
-        <div class="contact-prism-card">
-            <div class="contact-content">
-                <p class="contact-text">{{ _('궁금하신 점이나 예약신청은 카카오톡 채널을 이용해주시기 바랍니다.') }}</p>
-                <button type="button" class="btn-neon contact-btn" onclick="showKakaoModal()">
+        <div class="stg_kakao_format">
+            <div class="stg_kakao_content">
+                <p class="stg_body_text stg_kakao_text mb-4">{{ _('궁금하신 점이나 예약신청은 카카오톡 채널을 이용해주시기 바랍니다.') }}</p>
+                <button type="button" class="stg_kakao_btn" onclick="showKakaoModal()">
                     <i class="bi bi-chat-dots-fill me-2"></i>{{ _('문의/예약신청') }}
                 </button>
             </div>
-            <div class="contact-glow"></div>
+            <div class="stg_kakao_glow"></div>
         </div>
     </div>
 </section>
@@ -126,11 +126,11 @@
    ============================================ */
 .services-hero-section {
     position: relative;
-    min-height: 50vh;
+    min-height: 30vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 6rem 0 4rem;
+    padding: 3rem 0 2rem;
     overflow: hidden;
 }
 
@@ -460,12 +460,13 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    text-align: left;
+    text-align: center;
 }
 
 .service-option-content.stg_card_content {
     flex-grow: 1;
     min-height: auto;
+    text-align: center;
 }
 
 /* service-option-name은 stg_card_title 스타일을 상속받음 */
@@ -491,6 +492,7 @@
     white-space: pre-line;
     font-weight: var(--stg-body-font-weight);
     padding: 0;
+    text-align: center;
 }
 
 /* Dark Mode - Service Option Description */
@@ -510,7 +512,7 @@ body:not(.light-mode) .category-prism-description {
 
 .service-option-arrow {
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     padding-top: 0.5rem;
 }
 
@@ -562,93 +564,13 @@ body:not(.light-mode) .category-prism-description {
     padding: 4rem 0 5rem;
 }
 
-.contact-prism-card {
-    position: relative;
-    padding: 3rem;
-    background: rgba(181, 126, 220, 0.2);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border-radius: 30px;
-    border: 1px solid rgba(181, 126, 220, 0.3);
-    text-align: center;
-    overflow: hidden;
-}
-
-.contact-content {
-    position: relative;
-    z-index: 1;
-}
-
-.contact-text {
-    font-family: 'Cormorant Garamond', serif;
-    color: var(--main-color);
-    font-size: 1.3rem;
-    font-weight: 400;
-    letter-spacing: 0.02em;
-    margin-bottom: 1.5rem;
-}
-
-.btn-neon.contact-btn {
-    background: linear-gradient(135deg, #FEE500, #FFD700);
-    color: #3C1E1E;
-    border: none;
-    padding: 1rem 3rem;
-    border-radius: 35px;
-    font-weight: 600;
-    font-size: 1.1rem;
-    box-shadow: 0 0 30px rgba(254, 229, 0, 0.4);
-    transition: all 0.4s ease;
-    animation: kakaoGlow 2s ease-in-out infinite;
-}
-
-@keyframes kakaoGlow {
-    0%, 100% {
-        box-shadow: 0 0 30px rgba(254, 229, 0, 0.4);
-    }
-    50% {
-        box-shadow: 0 0 50px rgba(254, 229, 0, 0.6), 0 0 80px rgba(254, 229, 0, 0.3);
-    }
-}
-
-.btn-neon.contact-btn:hover {
-    transform: translateY(-5px) scale(1.05);
-    box-shadow: 0 0 50px rgba(254, 229, 0, 0.6), 0 15px 40px rgba(0, 0, 0, 0.3);
-}
-
-.contact-glow {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 400px;
-    height: 200px;
-    background: radial-gradient(ellipse, rgba(181, 126, 220, 0.1) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-/* Light mode 문의 섹션 스타일 */
-body.light-mode .contact-text {
-    color: var(--main-color) !important;
-}
-
-body.light-mode .btn-neon.contact-btn {
-    background: linear-gradient(135deg, #FEE500, #FFD700) !important;
-    color: #3C1E1E !important;
-    box-shadow: 0 0 30px rgba(254, 229, 0, 0.4) !important;
-}
-
-body.light-mode .btn-neon.contact-btn:hover {
-    background: linear-gradient(135deg, #FFD700, #FFC107) !important;
-    box-shadow: 0 0 50px rgba(254, 229, 0, 0.6), 0 15px 40px rgba(0, 0, 0, 0.3) !important;
-}
-
 /* ============================================
    Responsive Design
    ============================================ */
 @media (max-width: 992px) {
     .services-hero-section {
-        min-height: 40vh;
-        padding: 5rem 0 3rem;
+        min-height: 25vh;
+        padding: 2.5rem 0 1.5rem;
     }
     
     /* services-hero-title, category-prism-title 반응형은 stg_page_title로 통합됨 - style.css 참조 */
@@ -665,8 +587,8 @@ body.light-mode .btn-neon.contact-btn:hover {
 
 @media (max-width: 768px) {
     .services-hero-section {
-        min-height: 35vh;
-        padding: 4rem 0 2rem;
+        min-height: 20vh;
+        padding: 2rem 0 1rem;
     }
     
     /* services-hero-title 반응형은 stg_page_title로 통합됨 - style.css 참조 */
@@ -722,20 +644,6 @@ body.light-mode .btn-neon.contact-btn:hover {
     .service-category-block {
         margin-bottom: 3rem;
         padding-bottom: 3rem;
-    }
-    
-    .contact-prism-card {
-        padding: 2rem 1.5rem;
-        border-radius: 20px;
-    }
-    
-    .contact-text {
-        font-size: 1.1rem;
-    }
-    
-    .btn-neon.contact-btn {
-        padding: 0.9rem 2rem;
-        font-size: 1rem;
     }
     
     /* Disable hover animations on touch */

@@ -27,7 +27,7 @@
                 <!-- 상세 내용 - 원본이 비어있으면 표시하지 않음 -->
                 {% if service_option.details and service_option.details.strip() and details %}
                 <div class="mb-5">
-                    <div class="info-card glass-card">
+                    <div class="stg_card_format service-info-card">
                         <h2 class="section-title"><i class="bi bi-list-check me-2"></i>{{ _('상세 내용') }}</h2>
                         <ul class="feature-list">
                             {% for detail in details %}
@@ -44,7 +44,7 @@
                 <!-- 패키지 및 가격 정보 (다중 테이블 지원) - 원본이 비어있으면 표시하지 않음 -->
                 {% if service_option.packages and service_option.packages.strip() and packages %}
                 <div class="mb-5">
-                    <div class="info-card glass-card">
+                    <div class="stg_card_format service-info-card">
                         <h2 class="section-title"><i class="bi bi-tag me-2"></i>{{ _('패키지 및 가격') }}</h2>
                         
                         {% if packages.tables is defined %}
@@ -56,7 +56,7 @@
                                     <h3 class="package-table-title">{{ table.title }}</h3>
                                     {% endif %}
                                     <div class="package-table-container">
-                                        <table class="table package-table">
+                                        <table class="stg_table">
                                             <thead>
                                                 <tr>
                                                     <th>{{ _('패키지명') }}</th>
@@ -69,11 +69,11 @@
                                             <tbody>
                                                 {% for package in table.packages %}
                                                 <tr>
-                                                    <td class="package-name">{{ package.name }}</td>
-                                                    <td class="package-desc">{{ package.description }}</td>
-                                                    <td class="package-duration">{{ package.duration }}</td>
-                                                    <td class="package-price">{{ package.price }}</td>
-                                                    <td class="package-notes">{{ package.notes if package.notes else '' }}</td>
+                                                    <td class="stg_table_name">{{ package.name }}</td>
+                                                    <td class="stg_table_desc">{{ package.description }}</td>
+                                                    <td class="stg_table_duration">{{ package.duration }}</td>
+                                                    <td class="stg_table_price">{% if current_lang == 'ko' %}{{ package.price|replace(' KRW', '원')|replace('KRW', '원') }}{% else %}{{ package.price }}{% endif %}</td>
+                                                    <td class="stg_table_notes">{{ package.notes if package.notes else '' }}</td>
                                                 </tr>
                                                 {% endfor %}
                                             </tbody>
@@ -85,7 +85,7 @@
                         {% else %}
                             {# 기존 단일 배열 형식 (하위 호환성) #}
                             <div class="package-table-container">
-                                <table class="table package-table">
+                                <table class="stg_table">
                                     <thead>
                                         <tr>
                                             <th>{{ _('패키지명') }}</th>
@@ -98,11 +98,11 @@
                                     <tbody>
                                         {% for package in packages %}
                                         <tr>
-                                            <td class="package-name">{{ package.name }}</td>
-                                            <td class="package-desc">{{ package.description }}</td>
-                                            <td class="package-duration">{{ package.duration }}</td>
-                                            <td class="package-price">{{ package.price }}</td>
-                                            <td class="package-notes">{{ package.notes if package.notes else '' }}</td>
+                                            <td class="stg_table_name">{{ package.name }}</td>
+                                            <td class="stg_table_desc">{{ package.description }}</td>
+                                            <td class="stg_table_duration">{{ package.duration }}</td>
+                                            <td class="stg_table_price">{% if current_lang == 'ko' %}{{ package.price|replace(' KRW', '원')|replace('KRW', '원') }}{% else %}{{ package.price }}{% endif %}</td>
+                                            <td class="stg_table_notes">{{ package.notes if package.notes else '' }}</td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
@@ -117,16 +117,74 @@
                 {% if service_option.booking_method and service_option.booking_method.strip() %}
                 {% set booking_method_text = translated.booking_method if translated and translated.booking_method else service_option.booking_method %}
                 <div class="mb-4">
-                    <div class="info-card glass-card">
+                    <div class="stg_card_format service-info-card">
                         <h2 class="section-title"><i class="bi bi-calendar-check me-2"></i>{{ _('예약 방법') }}</h2>
                         <div class="booking-content">
-                            <ul class="booking-list">
-                                {% for line in booking_method_text.split('\n') %}
+                            {% set booking_lines = booking_method_text.split('\n') %}
+                            {% set ns = namespace(in_example=false, in_account=false, has_normal=false) %}
+                            
+                            {% for line in booking_lines %}
                                 {% if line.strip() %}
-                                <li>{{ line.strip() }}</li>
+                                    {% set trimmed = line.strip()|replace('\u200b', '')|replace('\u200c', '')|replace('\u200d', '')|replace('\ufeff', '') %}
+                                    {% set is_example = trimmed.startswith('예)') or trimmed.startswith('예 )') %}
+                                    {% set is_account = trimmed.startswith('입금 계좌') or trimmed.startswith('입금계좌') %}
+                                    {% set is_card_note = '*카드 결제' in trimmed or '*카드결제' in trimmed %}
+                                    
+                                    {# 예시 라인 처리 #}
+                                    {% if is_example %}
+                                        {% if ns.has_normal and not ns.in_example %}
+                                            </ul>
+                                            {% set ns.has_normal = false %}
+                                        {% endif %}
+                                        {% if not ns.in_example %}
+                                            <div class="example-info">
+                                            {% set ns.in_example = true %}
+                                        {% endif %}
+                                        <p class="example-line">{{ trimmed }}</p>
+                                    
+                                    {# 입금계좌 라인 처리 #}
+                                    {% elif is_account or is_card_note %}
+                                        {% if ns.has_normal %}
+                                            </ul>
+                                            {% set ns.has_normal = false %}
+                                        {% endif %}
+                                        {% if ns.in_example %}
+                                            </div>
+                                            {% set ns.in_example = false %}
+                                        {% endif %}
+                                        {% if not ns.in_account %}
+                                            <div class="account-info">
+                                            {% set ns.in_account = true %}
+                                        {% endif %}
+                                        {% if is_card_note %}
+                                            <span class="note-text">{{ trimmed }}</span>
+                                        {% else %}
+                                            <strong>{{ trimmed }}</strong><br>
+                                        {% endif %}
+                                    
+                                    {# 일반 라인 처리 #}
+                                    {% else %}
+                                        {% if ns.in_example %}
+                                            </div>
+                                            {% set ns.in_example = false %}
+                                        {% endif %}
+                                        {% if ns.in_account %}
+                                            </div>
+                                            {% set ns.in_account = false %}
+                                        {% endif %}
+                                        {% if not ns.has_normal %}
+                                            <ul class="booking-list">
+                                            {% set ns.has_normal = true %}
+                                        {% endif %}
+                                        <li>{{ trimmed }}</li>
+                                    {% endif %}
                                 {% endif %}
-                                {% endfor %}
-                            </ul>
+                            {% endfor %}
+                            
+                            {# 마지막 열린 태그 닫기 #}
+                            {% if ns.has_normal %}</ul>{% endif %}
+                            {% if ns.in_example %}</div>{% endif %}
+                            {% if ns.in_account %}</div>{% endif %}
                             
                             <div class="text-center mt-4">
                                 <button type="button" class="kakao-btn-dark" onclick="showKakaoModal()">
@@ -142,7 +200,7 @@
                 {% if service_option.payment_info and service_option.payment_info.strip() %}
                 {% set payment_info_text = translated.payment_info if translated and translated.payment_info else service_option.payment_info %}
                 <div class="mb-4">
-                    <div class="info-card glass-card">
+                    <div class="stg_card_format service-info-card">
                         <h2 class="section-title"><i class="bi bi-credit-card me-2"></i>{{ _('제작비 결제 방식') }}</h2>
                         <div class="booking-content">
                             <ul class="booking-list">
@@ -165,7 +223,7 @@
                 {% if service_option.guide_info and service_option.guide_info.strip() %}
                 {% set guide_info_text = translated.guide_info if translated and translated.guide_info else service_option.guide_info %}
                 <div class="mb-4">
-                    <div class="info-card glass-card">
+                    <div class="stg_card_format service-info-card">
                         <h2 class="section-title"><i class="bi bi-info-circle me-2"></i>{{ _('안내 사항') }}</h2>
                         <div class="booking-content">
                             {% for line in guide_info_text.split('\n') %}
@@ -185,7 +243,7 @@
                 {% set refund_policy_text_val = translated.refund_policy_text if translated and translated.refund_policy_text else service_option.refund_policy_text %}
                 {% set refund_policy_table_val = translated.refund_policy_table if translated and translated.refund_policy_table else service_option.refund_policy_table %}
                 <div class="mb-4">
-                    <div class="info-card glass-card">
+                    <div class="stg_card_format service-info-card">
                         <h2 class="section-title"><i class="bi bi-arrow-repeat me-2"></i>{{ _('예약 변경 및 환불 규정') }}</h2>
                         <div class="booking-content">
                             {% if refund_policy_text_val and refund_policy_text_val.strip() %}
@@ -203,7 +261,7 @@
                                 {% set refund_rules = refund_policy_table_val.split('\n') %}
                                 {% if refund_rules %}
                                 <h4 class="refund-subtitle">{{ _('환불 기준표') }}</h4>
-                                <table class="table refund-table">
+                                <table class="stg_table">
                                     <thead>
                                         <tr>
                                             <th>{{ _('기준일') }}</th>
@@ -216,9 +274,9 @@
                                         {% if rule.strip() and '|' in rule %}
                                         {% set parts = rule.split('|') %}
                                         <tr>
-                                            <td>{{ parts[0].strip() }}</td>
+                                            <td class="stg_table_name">{{ parts[0].strip() }}</td>
                                             <td>{{ parts[1].strip() }}</td>
-                                            <td>{{ parts[2].strip() if parts|length > 2 else '' }}</td>
+                                            <td class="stg_table_notes">{{ parts[2].strip() if parts|length > 2 else '' }}</td>
                                         </tr>
                                         {% endif %}
                                         {% endfor %}
@@ -236,13 +294,13 @@
                 {% if service_option.overtime_charge_table and service_option.overtime_charge_table.strip() %}
                 {% set overtime_table_val = translated.overtime_charge_table if translated and translated.overtime_charge_table else service_option.overtime_charge_table %}
                 <div class="mb-4">
-                    <div class="info-card glass-card">
+                    <div class="stg_card_format service-info-card">
                         <h2 class="section-title"><i class="bi bi-clock-history me-2"></i>{{ _('시간외 업차지') }}</h2>
                         <div class="booking-content">
                             <div class="overtime-charge-table-container">
                                 {% set overtime_charge_rules = overtime_table_val.split('\n') %}
                                 {% if overtime_charge_rules %}
-                                <table class="table overtime-charge-table">
+                                <table class="stg_table">
                                     <thead>
                                         <tr>
                                             <th>{{ _('시간대/조건') }}</th>
@@ -255,9 +313,9 @@
                                         {% if rule.strip() and '|' in rule %}
                                         {% set parts = rule.split('|') %}
                                         <tr>
-                                            <td>{{ parts[0].strip() }}</td>
-                                            <td>{{ parts[1].strip() }}</td>
-                                            <td>{{ parts[2].strip() if parts|length > 2 else '' }}</td>
+                                            <td class="stg_table_name">{{ parts[0].strip() }}</td>
+                                            <td class="stg_table_price">{% if current_lang == 'ko' %}{{ parts[1].strip()|replace(' KRW', '원')|replace('KRW', '원') }}{% else %}{{ parts[1].strip() }}{% endif %}</td>
+                                            <td class="stg_table_notes">{{ parts[2].strip() if parts|length > 2 else '' }}</td>
                                         </tr>
                                         {% endif %}
                                         {% endfor %}
@@ -271,11 +329,14 @@
                 {% endif %}
                 
                 <!-- Contact Section -->
-                <div class="contact-section text-center mt-5">
-                    <p class="contact-text mb-4">{{ _('궁금하신 점이나 예약신청은 카카오톡 채널을 이용해주시기 바랍니다.') }}</p>
-                    <button type="button" class="kakao-btn-dark" onclick="showKakaoModal()">
-                        <span class="kakao-logo">💬</span> {{ _('문의/예약신청') }}
-                    </button>
+                <div class="stg_kakao_format mt-5">
+                    <div class="stg_kakao_content">
+                        <p class="stg_body_text stg_kakao_text mb-4">{{ _('궁금하신 점이나 예약신청은 카카오톡 채널을 이용해주시기 바랍니다.') }}</p>
+                        <button type="button" class="stg_kakao_btn" onclick="showKakaoModal()">
+                            <i class="bi bi-chat-dots-fill me-2"></i>{{ _('문의/예약신청') }}
+                        </button>
+                    </div>
+                    <div class="stg_kakao_glow"></div>
                 </div>
             </div>
         </div>
@@ -334,22 +395,20 @@
     white-space: pre-line;
 }
 
-/* Info Cards */
-.info-card {
-    background: rgba(18, 0, 36, 0.6);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(181, 126, 220, 0.2);
-    border-radius: 20px;
-    padding: 2rem;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    transition: all 0.4s ease;
+/* Service Info Card - stg_card_format 확장 (좌측 정렬 컨텐츠용) */
+.service-info-card {
+    text-align: left !important;
+    padding: 2rem !important;
+    display: block !important;
 }
 
-.info-card:hover {
-    border-color: rgba(181, 126, 220, 0.4);
-    box-shadow: 0 0 40px rgba(181, 126, 220, 0.15), 0 15px 50px rgba(0, 0, 0, 0.4);
+.service-info-card:hover {
     transform: translateY(-3px);
+}
+
+/* Light Mode 스타일 */
+body.light-mode .service-info-card {
+    text-align: left !important;
 }
 
 .section-title {
@@ -398,7 +457,7 @@
     filter: drop-shadow(0 0 5px rgba(181, 126, 220, 0.5));
 }
 
-/* Package Table */
+/* Package Table Section */
 .package-table-section {
     border-top: 1px solid rgba(181, 126, 220, 0.15);
     padding-top: 1.5rem;
@@ -429,63 +488,6 @@
 
 .package-table-container {
     overflow-x: auto;
-}
-
-.package-table {
-    margin-bottom: 0;
-    border-collapse: separate;
-    border-spacing: 0;
-    width: 100%;
-}
-
-.package-table th {
-    background: rgba(100, 60, 150, 0.9) !important;
-    color: #FFFFFF !important;
-    font-weight: 600;
-    border: 1px solid rgba(181, 126, 220, 0.2);
-    padding: 1rem;
-    font-size: 0.9rem;
-}
-
-.package-table td {
-    border: 1px solid rgba(181, 126, 220, 0.1);
-    padding: 1rem;
-    vertical-align: top;
-    color: rgba(255, 255, 255, 0.8) !important;
-    font-size: 0.9rem;
-    background: rgba(18, 0, 36, 0.6) !important;
-}
-
-.package-table tbody tr:hover {
-    background: rgba(181, 126, 220, 0.08);
-}
-
-.package-name {
-    color: var(--neon-lavender);
-    font-weight: 500;
-}
-
-.package-desc {
-    color: rgba(255, 255, 255, 0.7);
-    line-height: 1.5;
-}
-
-.package-duration {
-    color: rgba(255, 255, 255, 0.8);
-    text-align: center;
-    white-space: nowrap;
-}
-
-.package-price {
-    color: var(--neon-lavender);
-    white-space: nowrap;
-    text-align: right;
-    font-weight: 500;
-}
-
-.package-notes {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 0.85rem;
 }
 
 /* Booking Content */
@@ -528,11 +530,16 @@
     font-style: italic;
 }
 
+/* Light Mode - Note Text */
+body.light-mode .note-text {
+    color: rgba(90, 70, 110, 0.7);
+}
+
 .account-info {
     background: rgba(181, 126, 220, 0.1);
     border-left: 3px solid var(--neon-lavender);
     padding: 1rem 1.5rem;
-    margin-top: 1.5rem;
+    margin-top: 0.75rem;
     border-radius: 0 12px 12px 0;
     box-shadow: 0 0 20px rgba(181, 126, 220, 0.1);
 }
@@ -541,7 +548,49 @@
     color: var(--neon-lavender);
 }
 
-/* Refund Table */
+/* Example Info Box (예) 부분) */
+.example-info {
+    background: rgba(181, 126, 220, 0.08);
+    border-left: 3px solid rgba(181, 126, 220, 0.6);
+    padding: 1rem 1.5rem;
+    margin-top: 0.75rem;
+    border-radius: 0 12px 12px 0;
+    box-shadow: 0 0 15px rgba(181, 126, 220, 0.08);
+}
+
+.example-line {
+    color: rgba(255, 255, 255, 0.75);
+    margin-bottom: 0.5rem;
+    line-height: 1.7;
+}
+
+.example-line:last-child {
+    margin-bottom: 0;
+}
+
+/* Light Mode - Example Info */
+body.light-mode .example-info {
+    background: rgba(139, 92, 246, 0.08);
+    border-left-color: rgba(139, 92, 246, 0.6);
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.08);
+}
+
+body.light-mode .example-line {
+    color: var(--stg-body-color-light);
+}
+
+/* Light Mode - Account Info */
+body.light-mode .account-info {
+    background: rgba(139, 92, 246, 0.1);
+    border-left-color: rgba(139, 92, 246, 0.7);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);
+}
+
+body.light-mode .account-info strong {
+    color: #6B4D8A;
+}
+
+/* Refund & Overtime Table Containers */
 .refund-table-container,
 .overtime-charge-table-container {
     margin-top: 1.5rem;
@@ -553,89 +602,6 @@
     color: var(--neon-lavender);
     font-weight: 400;
     margin: 1.5rem 0 1rem 0;
-}
-
-.refund-table,
-.overtime-charge-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    margin-bottom: 1rem;
-    background: rgba(18, 0, 36, 0.4);
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.refund-table th,
-.overtime-charge-table th {
-    background: rgba(100, 60, 150, 0.9) !important;
-    color: #FFFFFF !important;
-    font-weight: 600;
-    padding: 1rem;
-    text-align: center;
-    border-bottom: 1px solid rgba(181, 126, 220, 0.2);
-}
-
-.refund-table td,
-.overtime-charge-table td {
-    padding: 0.9rem 1rem;
-    text-align: center;
-    vertical-align: middle;
-    color: rgba(255, 255, 255, 0.8) !important;
-    border-bottom: 1px solid rgba(181, 126, 220, 0.1);
-    background: rgba(18, 0, 36, 0.6) !important;
-}
-
-.refund-table tr:last-child td,
-.overtime-charge-table tr:last-child td {
-    border-bottom: none;
-}
-
-.refund-table tbody tr:hover,
-.overtime-charge-table tbody tr:hover {
-    background: rgba(181, 126, 220, 0.08);
-}
-
-/* Contact Section */
-.contact-section {
-    background: rgba(18, 0, 36, 0.5);
-    backdrop-filter: blur(15px);
-    padding: 3rem;
-    border-radius: 24px;
-    border: 1px solid rgba(181, 126, 220, 0.2);
-}
-
-.contact-text {
-    font-family: 'Cormorant Garamond', serif;
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 1.2rem;
-    font-weight: 400;
-}
-
-/* Kakao Button Dark Theme */
-.kakao-btn-dark {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    background: linear-gradient(135deg, #FEE500, #FFD700);
-    color: #3C1E1E;
-    padding: 0.9rem 2.5rem;
-    border-radius: 30px;
-    border: none;
-    font-weight: 600;
-    transition: all 0.4s ease;
-    font-size: 1rem;
-    cursor: pointer;
-    box-shadow: 0 0 25px rgba(254, 229, 0, 0.35);
-}
-
-.kakao-btn-dark:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 0 40px rgba(254, 229, 0, 0.5), 0 10px 30px rgba(0, 0, 0, 0.3);
-}
-
-.kakao-logo {
-    font-size: 1.3rem;
 }
 
 /* Responsive */
@@ -652,25 +618,12 @@
         font-size: 3rem;
     }
     
-    .info-card {
-        padding: 1.5rem;
+    .service-info-card {
+        padding: 1.5rem !important;
     }
     
     .section-title {
         font-size: 1.4rem;
-    }
-    
-    .contact-section {
-        padding: 2rem 1.5rem;
-    }
-    
-    .package-table {
-        font-size: 0.85rem;
-    }
-    
-    .package-table th,
-    .package-table td {
-        padding: 0.75rem 0.5rem;
     }
 }
 </style>

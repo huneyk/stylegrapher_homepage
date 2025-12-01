@@ -204,7 +204,7 @@ body:not(.light-mode) .stg-card-title {
 /* Standalone .stg_card_title (underscore version) - 래퍼 없이도 작동 */
 .stg_card_title {
     font-family: 'Noto Sans KR', sans-serif !important;
-    font-size: 1.25rem !important;
+    font-size: 25px !important;
     font-weight: 600 !important;
     color: #5B3A8C !important;
     background: rgba(139, 92, 246, 0.08);
@@ -226,7 +226,7 @@ body:not(.light-mode) .stg_card_title {
 /* Standalone stg_card_title 반응형 */
 @media (max-width: 768px) {
     .stg_card_title {
-        font-size: 1.1rem !important;
+        font-size: 22px !important;
         padding: 0.55rem 1.3rem;
     }
 }
@@ -235,7 +235,7 @@ body:not(.light-mode) .stg_card_title {
 .service-option-name.stg_card_title,
 .service-option-name.stg-card-title {
     font-family: 'Noto Sans KR', sans-serif !important;
-    font-size: 1.25rem !important;
+    font-size: 25px !important;
     font-weight: 600 !important;
     color: #5B3A8C !important;
     background: rgba(139, 92, 246, 0.08);
@@ -257,7 +257,7 @@ body:not(.light-mode) .service-option-name.stg-card-title {
 @media (max-width: 768px) {
     .service-option-name.stg_card_title,
     .service-option-name.stg-card-title {
-        font-size: 1.1rem !important;
+        font-size: 22px !important;
         padding: 0.55rem 1.3rem;
     }
 }
@@ -367,7 +367,7 @@ body.light-mode .stg_card_format .stg_card_icon i {
 /* Card Title - stg-card-title을 상속하여 사용 */
 .stg_card_format .stg_card_title {
     font-family: 'Noto Sans KR', sans-serif !important;
-    font-size: 1.25rem !important;
+    font-size: 25px !important;
     font-weight: 600 !important;
     background: rgba(139, 92, 246, 0.08);
     padding: 0.7rem 1.8rem;
@@ -551,7 +551,7 @@ body:not(.light-mode) .stg_card_format .stg_card_option_btn:hover .stg_card_opti
     }
     
     .stg_card_format .stg_card_title {
-        font-size: 1.1rem !important;
+        font-size: 22px !important;
         padding: 0.55rem 1.3rem;
     }
     
@@ -1934,6 +1934,56 @@ body.light-mode .stg_page_title {
     box-shadow: 0 5px 25px rgba(254, 229, 0, 0.5);
 }
 
+/* KakaoTalk Button - Dark Theme */
+.kakao-btn-dark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: #FEE500;
+    color: #191919;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(254, 229, 0, 0.3);
+}
+
+.kakao-btn-dark:hover {
+    background: #FFE812;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(254, 229, 0, 0.5);
+}
+
+.kakao-btn-dark:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(254, 229, 0, 0.4);
+}
+
+.kakao-btn-dark .kakao-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: #191919;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #FEE500;
+}
+
+/* Light Mode */
+body.light-mode .kakao-btn-dark {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+body.light-mode .kakao-btn-dark:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
 /* ============================================
    Loading Spinner
    ============================================ */
@@ -2152,6 +2202,138 @@ body.light-mode .stg_page_title {
 .refund-table tr:hover,
 .overtime-charge-table tr:hover {
     background: rgba(200, 170, 255, 0.1);
+}
+
+/* ============================================
+   STG Table - 사이트 전체 표(Table) 기준 스타일
+   stg_body_text 기반, font-size 15px, no bold
+   ============================================ */
+
+/* STG Table CSS Variables */
+:root {
+    --stg-table-font-family: var(--stg-body-font-family);
+    --stg-table-font-size: 15px;
+    --stg-table-line-height: 1.7;
+    --stg-table-font-weight: 400;
+    /* Light Purple Header (더 옅은 보라색) */
+    --stg-table-header-bg-dark: rgba(139, 92, 246, 0.6);
+    --stg-table-header-bg-light: rgba(139, 92, 246, 0.55);
+    --stg-table-header-color: #FFFFFF;
+    /* Cell Border - Header와 같은 색상 */
+    --stg-table-border-color-dark: rgba(139, 92, 246, 0.6);
+    --stg-table-border-color-light: rgba(139, 92, 246, 0.55);
+    --stg-table-cell-bg-dark: rgba(18, 0, 36, 0.6);
+    --stg-table-cell-bg-light: rgba(255, 255, 255, 0.8);
+    --stg-table-text-color-dark: rgba(255, 255, 255, 0.85);
+    --stg-table-text-color-light: #333333;
+}
+
+/* STG Table 기본 클래스 */
+.stg_table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+    border: 2px solid var(--stg-table-border-color-dark);
+}
+
+/* STG Table Header */
+.stg_table thead th {
+    background: var(--stg-table-header-bg-dark) !important;
+    color: var(--stg-table-header-color) !important;
+    font-family: var(--stg-table-font-family);
+    font-size: var(--stg-table-font-size);
+    font-weight: var(--stg-table-font-weight);
+    line-height: 1.4;
+    padding: 0.6rem 0.8rem;
+    text-align: center;
+    border: 1px solid var(--stg-table-border-color-dark);
+}
+
+/* STG Table Body Cells */
+.stg_table tbody td {
+    background: var(--stg-table-cell-bg-dark) !important;
+    color: var(--stg-table-text-color-dark) !important;
+    font-family: var(--stg-table-font-family);
+    font-size: var(--stg-table-font-size);
+    font-weight: var(--stg-table-font-weight);
+    line-height: 1.4;
+    padding: 0.5rem 0.8rem;
+    vertical-align: middle;
+    border: 1px solid var(--stg-table-border-color-dark);
+}
+
+/* STG Table Row Hover */
+.stg_table tbody tr:hover td {
+    background: rgba(139, 92, 246, 0.12) !important;
+}
+
+/* STG Table - 특정 Column 스타일 */
+.stg_table .stg_table_name {
+    text-align: left;
+}
+
+.stg_table .stg_table_desc {
+    text-align: left;
+}
+
+.stg_table .stg_table_duration {
+    text-align: center;
+    white-space: nowrap;
+}
+
+.stg_table .stg_table_price {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.stg_table .stg_table_notes {
+    text-align: center;
+}
+
+/* STG Table 반응형 */
+@media (max-width: 768px) {
+    .stg_table thead th {
+        font-size: 13px;
+        padding: 0.45rem 0.5rem;
+    }
+    .stg_table tbody td {
+        font-size: 10.5px;
+        padding: 0.45rem 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .stg_table thead th {
+        font-size: 12px;
+        padding: 0.4rem 0.4rem;
+    }
+    .stg_table tbody td {
+        font-size: 9.5px;
+        padding: 0.4rem 0.4rem;
+    }
+}
+
+/* Light Mode STG Table */
+body.light-mode .stg_table {
+    border: 2px solid var(--stg-table-border-color-light);
+}
+
+body.light-mode .stg_table thead th {
+    background: var(--stg-table-header-bg-light) !important;
+    color: var(--stg-table-header-color) !important;
+    border: 1px solid var(--stg-table-border-color-light);
+}
+
+body.light-mode .stg_table tbody td {
+    background: var(--stg-table-cell-bg-light) !important;
+    color: var(--stg-table-text-color-light) !important;
+    border: 1px solid var(--stg-table-border-color-light);
+}
+
+body.light-mode .stg_table tbody tr:hover td {
+    background: rgba(139, 92, 246, 0.08) !important;
 }
 
 /* ============================================
@@ -2618,4 +2800,137 @@ input::-ms-input-placeholder,
 textarea::-ms-input-placeholder {
     color: rgba(180, 180, 190, 0.7) !important;
     font-style: italic !important;
+}
+
+/* ============================================
+   STG Kakao Format - 카카오톡 예약/문의 카드
+   모든 페이지에서 사용되는 카카오 문의 섹션 스타일
+   ============================================ */
+
+/* STG Kakao Format 기본 클래스 */
+.stg_kakao_format {
+    position: relative;
+    padding: 3rem;
+    background: rgba(181, 126, 220, 0.2);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: 30px;
+    border: 1px solid rgba(181, 126, 220, 0.3);
+    text-align: center;
+    overflow: hidden;
+    transition: all 0.4s ease;
+}
+
+/* Kakao Format 상단 그라데이션 라인 */
+.stg_kakao_format::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--neon-lavender), var(--electric-violet), transparent);
+    box-shadow: 0 0 20px rgba(200, 170, 255, 0.6);
+}
+
+/* Kakao Format Content 래퍼 */
+.stg_kakao_format .stg_kakao_content {
+    position: relative;
+    z-index: 1;
+}
+
+/* Kakao Format 안내 텍스트 - stg_body_text 상속 */
+.stg_kakao_format .stg_kakao_text {
+    font-family: var(--stg-body-font-family) !important;
+    font-size: var(--stg-body-font-size) !important;
+    line-height: var(--stg-body-line-height) !important;
+    font-weight: var(--stg-body-font-weight) !important;
+    letter-spacing: 0.02em;
+    margin-bottom: 1.5rem;
+}
+
+/* Dark Mode Kakao Text */
+body:not(.light-mode) .stg_kakao_format .stg_kakao_text {
+    color: var(--stg-body-color-dark);
+}
+
+/* Light Mode Kakao Text */
+body.light-mode .stg_kakao_format .stg_kakao_text {
+    color: var(--stg-body-color-light);
+}
+
+/* Kakao Format 버튼 */
+.stg_kakao_format .stg_kakao_btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #FEE500, #FFD700) !important;
+    color: #3C1E1E !important;
+    border: none;
+    padding: 1rem 3rem;
+    border-radius: 35px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    box-shadow: 0 0 30px rgba(254, 229, 0, 0.4) !important;
+    transition: all 0.4s ease;
+    cursor: pointer;
+    animation: stgKakaoGlow 2s ease-in-out infinite;
+}
+
+@keyframes stgKakaoGlow {
+    0%, 100% {
+        box-shadow: 0 0 30px rgba(254, 229, 0, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 50px rgba(254, 229, 0, 0.6), 0 0 80px rgba(254, 229, 0, 0.3);
+    }
+}
+
+.stg_kakao_format .stg_kakao_btn:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 0 50px rgba(254, 229, 0, 0.6), 0 15px 40px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Kakao Format Glow 효과 */
+.stg_kakao_format .stg_kakao_glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    height: 200px;
+    background: radial-gradient(ellipse, rgba(181, 126, 220, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* STG Kakao Format 반응형 */
+@media (max-width: 768px) {
+    .stg_kakao_format {
+        padding: 2rem 1.5rem;
+        border-radius: 20px;
+    }
+    
+    .stg_kakao_format .stg_kakao_text {
+        font-size: 1.1rem;
+    }
+    
+    .stg_kakao_format .stg_kakao_btn {
+        padding: 0.9rem 2rem;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .stg_kakao_format {
+        padding: 1.5rem 1rem;
+    }
+    
+    .stg_kakao_format .stg_kakao_text {
+        font-size: 1rem;
+    }
+    
+    .stg_kakao_format .stg_kakao_btn {
+        padding: 0.8rem 1.5rem;
+        font-size: 0.95rem;
+    }
 }

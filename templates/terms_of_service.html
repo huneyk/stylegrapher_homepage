@@ -4,18 +4,18 @@
 
 {% block content %}
 <div class="container py-5">
-    <div class="card">
-        <div class="card-body p-5">
+    <div class="stg_card_format">
+        <div class="stg_card_content p-4 p-md-5">
             <h1 class="text-center mb-5 stg_page_title">{{ _('이용약관') }}</h1>
             
-            <div class="terms-content">
+            <div class="terms-content stg_body_text">
                 {{ terms.content | safe }}
                 
                 <div class="terms-footer mt-5 pt-4 border-top">
                     <p class="text-center text-muted">
                         <small>
                             <i class="fas fa-clock me-1"></i>
-                            {{ _('최종 업데이트') }}: {{ terms.updated_at.strftime('%Y-%m-%d') if terms.updated_at else _('최초 생성') }}
+                            {{ _('최종 업데이트') }}: {% if terms.updated_at %}{% if terms.updated_at is string %}{{ terms.updated_at[:10] }}{% else %}{{ terms.updated_at.strftime('%Y-%m-%d') }}{% endif %}{% else %}{{ _('최초 생성') }}{% endif %}
                         </small>
                     </p>
                 </div>
@@ -26,6 +26,7 @@
 
 <style>
 /* page-title 스타일은 stg_page_title로 통합됨 - style.css 참조 */
+/* card 스타일은 stg_card_format으로 통합됨 - style.css 참조 */
 
 .section-title {
     font-family: 'Nanum Gothic', sans-serif;
@@ -35,11 +36,7 @@
     margin-bottom: 1rem;
 }
 
-.terms-content {
-    font-size: 1rem;
-    line-height: 1.6;
-    color: #495057;
-}
+/* terms-content는 stg_body_text 클래스를 상속받음 - style.css 참조 */
 
 .terms-content p {
     margin-bottom: 0.8rem;
@@ -60,10 +57,43 @@
     line-break: strict;
 }
 
-.card {
-    border: 1px solid rgba(var(--main-color-rgb), 0.3);
-    border-radius: 15px;
-    box-shadow: 0 4px 20px rgba(var(--main-color-rgb), 0.2);
+/* 이용약관 페이지용 stg_card_format 조정 - 본문 왼쪽 정렬 */
+.container .stg_card_format,
+body .container .stg_card_format,
+body.light-mode .container .stg_card_format {
+    text-align: left !important;
+}
+
+.container .stg_card_format .stg_card_content,
+body .container .stg_card_format .stg_card_content,
+body.light-mode .container .stg_card_format .stg_card_content {
+    min-height: auto;
+    text-align: left !important;
+}
+
+.terms-content,
+.terms-content *,
+body .terms-content,
+body .terms-content *,
+body.light-mode .terms-content,
+body.light-mode .terms-content *,
+body.light-mode .container .stg_card_format .terms-content,
+body.light-mode .container .stg_card_format .terms-content *,
+.terms-content p[style],
+.terms-content span[style],
+.terms-content div[style],
+.terms-content li[style] {
+    text-align: left !important;
+}
+
+/* center 태그 및 align 속성 처리 */
+.terms-content center,
+.terms-content [align="center"],
+.terms-content [align="middle"],
+.terms-content [style*="center"],
+.terms-content [style*="text-align"] {
+    text-align: left !important;
+    display: block;
 }
 
 @media (max-width: 768px) {
@@ -73,9 +103,34 @@
         font-size: 1.1rem;
     }
     
-    .terms-content {
-        font-size: 0.9rem;
-    }
+    /* terms-content 반응형은 stg_body_text로 통합됨 - style.css 참조 */
 }
 </style>
+
+<script>
+// 본문 텍스트 왼쪽 정렬 (인라인 스타일 및 align 속성 강제 제거)
+document.addEventListener('DOMContentLoaded', function() {
+    const termsContent = document.querySelector('.terms-content');
+    if (termsContent) {
+        // 컨테이너 자체도 왼쪽 정렬
+        termsContent.style.setProperty('text-align', 'left', 'important');
+        
+        const allElements = termsContent.querySelectorAll('*');
+        allElements.forEach(function(el) {
+            // 인라인 스타일 강제 설정 (important)
+            el.style.setProperty('text-align', 'left', 'important');
+            // align 속성 제거
+            if (el.hasAttribute('align')) {
+                el.removeAttribute('align');
+            }
+        });
+    }
+    
+    // stg_card_format과 stg_card_content도 왼쪽 정렬
+    const cardFormat = document.querySelector('.stg_card_format');
+    const cardContent = document.querySelector('.stg_card_content');
+    if (cardFormat) cardFormat.style.setProperty('text-align', 'left', 'important');
+    if (cardContent) cardContent.style.setProperty('text-align', 'left', 'important');
+});
+</script>
 {% endblock %} 
