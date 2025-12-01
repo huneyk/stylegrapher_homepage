@@ -362,6 +362,12 @@ def gallery_detail(group_id):
         return redirect(url_for('main.gallery'))
 
 
+@main.route('/booking-choice')
+def booking_choice():
+    """예약 방법 선택 페이지"""
+    return render_template('booking_choice.html')
+
+
 @main.route('/contact', methods=['GET', 'POST'])
 def contact():
     selected_service_id = request.args.get('service_id', None)
@@ -394,6 +400,49 @@ def contact():
             status='대기'
         )
         booking.save()
+        
+        # 이메일 발송
+        try:
+            # 서비스 이름 가져오기
+            service_name = "미지정"
+            if service_id:
+                service = Service.get_by_id(int(service_id))
+                if service:
+                    service_name = service.name
+            
+            subject = f"[스타일그래퍼 예약] {service_name} 예약 신청"
+            
+            email_body = f"""
+스타일그래퍼 홈페이지에서 새로운 예약 신청이 접수되었습니다.
+
+■ 예약자 정보
+• 이름: {name}
+• 연락처: {contact}
+• 이메일: {email}
+
+■ 예약 서비스
+• {service_name}
+
+■ 메시지
+{message}
+
+■ {datetime_message}
+---
+이 메일은 스타일그래퍼 홈페이지에서 자동으로 발송되었습니다.
+            """
+            
+            msg = Message(
+                subject=subject,
+                sender=current_app.config['MAIL_DEFAULT_SENDER'],
+                recipients=['stylegrapher.ysg@gmail.com'],
+                body=email_body,
+                reply_to=email
+            )
+            
+            mail.send(msg)
+            
+        except Exception as e:
+            print(f"예약 이메일 발송 오류: {str(e)}")
         
         flash('예약 신청이 잘 전달됐습니다. 스타일그래퍼 담당자가 곧 연락 드리겠습니다. 감사합니다.')
         return redirect(url_for('main.contact'))

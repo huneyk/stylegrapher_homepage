@@ -1,0 +1,461 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('예약 방법 선택') }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <!-- 페이지 타이틀 -->
+            <div class="text-center mb-5">
+                <h1 class="booking-choice-title stg_page_title mb-3">{{ _('예약 방법 선택') }}</h1>
+                <p class="booking-choice-subtitle stg_body_text">{{ _('원하시는 예약 방법을 선택해주세요') }}</p>
+            </div>
+            
+            <!-- 선택 카드 영역 -->
+            <div class="row g-4 justify-content-center">
+                <!-- 이메일 예약 카드 -->
+                <div class="col-md-6">
+                    <div class="booking-option-card" onclick="location.href='{{ url_for('main.contact') }}'">
+                        <div class="booking-option-icon">
+                            <i class="bi bi-envelope-at"></i>
+                        </div>
+                        <h3 class="booking-option-title">{{ _('이메일로 예약하기') }}</h3>
+                        <p class="booking-option-description">
+                            {{ _('예약 폼을 통해 상세 정보를 입력하고 예약을 신청합니다.') }}
+                        </p>
+                        <div class="booking-option-features">
+                            <span class="feature-item"><i class="bi bi-check-circle"></i> {{ _('상세 정보 입력') }}</span>
+                            <span class="feature-item"><i class="bi bi-check-circle"></i> {{ _('희망 일시 선택') }}</span>
+                            <span class="feature-item"><i class="bi bi-check-circle"></i> {{ _('문의 내용 작성') }}</span>
+                        </div>
+                        <div class="booking-option-btn">
+                            <span>{{ _('예약 폼으로 이동') }}</span>
+                            <i class="bi bi-arrow-right"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 카카오톡 예약 카드 -->
+                <div class="col-md-6">
+                    <div class="booking-option-card kakao-card" onclick="goToKakaoChannel()">
+                        <div class="booking-option-icon kakao-icon">
+                            <i class="bi bi-chat-dots-fill"></i>
+                        </div>
+                        <h3 class="booking-option-title kakao-title">{{ _('카카오톡으로 예약하기') }}</h3>
+                        <p class="booking-option-description">
+                            {{ _('카카오톡 채널을 통해 실시간으로 상담하고 예약합니다.') }}
+                        </p>
+                        <div class="booking-option-features">
+                            <span class="feature-item kakao-feature"><i class="bi bi-check-circle"></i> {{ _('실시간 상담') }}</span>
+                            <span class="feature-item kakao-feature"><i class="bi bi-check-circle"></i> {{ _('빠른 응답') }}</span>
+                            <span class="feature-item kakao-feature"><i class="bi bi-check-circle"></i> {{ _('편리한 소통') }}</span>
+                        </div>
+                        <div class="booking-option-btn kakao-btn">
+                            <span>{{ _('카카오톡 채널 열기') }}</span>
+                            <i class="bi bi-arrow-right"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 안내 문구 -->
+            <div class="booking-notice mt-5 text-center">
+                <p class="notice-text">
+                    <i class="bi bi-info-circle me-2"></i>
+                    {{ _('영업시간: 화-토 9:00-18:00 | 일/월요일 휴무') }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* 페이지 타이틀 스타일 */
+.booking-choice-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.8rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 0 30px rgba(181, 126, 220, 0.5);
+}
+
+.booking-choice-subtitle {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* 선택 카드 스타일 */
+.booking-option-card {
+    background: rgba(18, 0, 36, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1.5px solid rgba(181, 126, 220, 0.3);
+    border-radius: 24px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.booking-option-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, rgba(181, 126, 220, 0.8), transparent);
+    opacity: 0.6;
+}
+
+.booking-option-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(181, 126, 220, 0.6);
+    box-shadow: 0 15px 40px rgba(181, 126, 220, 0.25),
+                0 0 60px rgba(181, 126, 220, 0.15);
+}
+
+.booking-option-card:hover::before {
+    opacity: 1;
+}
+
+/* 카카오톡 카드 특별 스타일 */
+.booking-option-card.kakao-card {
+    border-color: rgba(254, 229, 0, 0.3);
+}
+
+.booking-option-card.kakao-card::before {
+    background: linear-gradient(90deg, transparent, rgba(254, 229, 0, 0.8), transparent);
+}
+
+.booking-option-card.kakao-card:hover {
+    border-color: rgba(254, 229, 0, 0.6);
+    box-shadow: 0 15px 40px rgba(254, 229, 0, 0.2),
+                0 0 60px rgba(254, 229, 0, 0.1);
+}
+
+/* 아이콘 스타일 */
+.booking-option-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.5rem;
+    background: linear-gradient(135deg, rgba(181, 126, 220, 0.2), rgba(138, 43, 226, 0.2));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.4s ease;
+}
+
+.booking-option-icon i {
+    font-size: 2.5rem;
+    color: rgba(181, 126, 220, 0.9);
+    filter: drop-shadow(0 0 10px rgba(181, 126, 220, 0.5));
+}
+
+.booking-option-card:hover .booking-option-icon {
+    transform: scale(1.1);
+    background: linear-gradient(135deg, rgba(181, 126, 220, 0.3), rgba(138, 43, 226, 0.3));
+}
+
+.booking-option-icon.kakao-icon {
+    background: linear-gradient(135deg, rgba(254, 229, 0, 0.2), rgba(255, 215, 0, 0.2));
+}
+
+.booking-option-icon.kakao-icon i {
+    color: #FEE500;
+    filter: drop-shadow(0 0 10px rgba(254, 229, 0, 0.5));
+}
+
+.booking-option-card.kakao-card:hover .booking-option-icon {
+    background: linear-gradient(135deg, rgba(254, 229, 0, 0.3), rgba(255, 215, 0, 0.3));
+}
+
+/* 타이틀 스타일 */
+.booking-option-title {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95);
+    margin-bottom: 1rem;
+    text-shadow: 0 0 20px rgba(181, 126, 220, 0.3);
+}
+
+.booking-option-title.kakao-title {
+    text-shadow: 0 0 20px rgba(254, 229, 0, 0.3);
+}
+
+/* 설명 스타일 */
+.booking-option-description {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+}
+
+/* 기능 목록 스타일 */
+.booking-option-features {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 2rem;
+    flex-grow: 1;
+}
+
+.feature-item {
+    font-size: 0.95rem;
+    color: rgba(181, 126, 220, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.feature-item i {
+    font-size: 0.9rem;
+}
+
+.feature-item.kakao-feature {
+    color: rgba(254, 229, 0, 0.9);
+}
+
+/* 버튼 스타일 */
+.booking-option-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.9rem 2rem;
+    border: 2px solid rgba(181, 126, 220, 0.5);
+    border-radius: 50px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    color: rgba(181, 126, 220, 0.9);
+    background: transparent;
+    transition: all 0.3s ease;
+}
+
+.booking-option-btn i {
+    transition: transform 0.3s ease;
+}
+
+.booking-option-card:hover .booking-option-btn {
+    background: rgba(181, 126, 220, 0.15);
+    border-color: rgba(181, 126, 220, 0.8);
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.booking-option-card:hover .booking-option-btn i {
+    transform: translateX(5px);
+}
+
+.booking-option-btn.kakao-btn {
+    border-color: rgba(254, 229, 0, 0.5);
+    color: rgba(254, 229, 0, 0.9);
+}
+
+.booking-option-card.kakao-card:hover .booking-option-btn {
+    background: rgba(254, 229, 0, 0.15);
+    border-color: rgba(254, 229, 0, 0.8);
+    color: #FEE500;
+}
+
+/* 안내 문구 스타일 */
+.booking-notice {
+    padding: 1.5rem;
+    background: rgba(181, 126, 220, 0.08);
+    border-radius: 15px;
+    border: 1px solid rgba(181, 126, 220, 0.2);
+}
+
+.notice-text {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+}
+
+.notice-text i {
+    color: rgba(181, 126, 220, 0.8);
+}
+
+/* Light Mode 스타일 */
+body.light-mode .booking-choice-title {
+    color: rgba(139, 95, 191, 0.9);
+    text-shadow: none;
+}
+
+body.light-mode .booking-choice-subtitle {
+    color: #6c757d;
+}
+
+body.light-mode .booking-option-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(139, 92, 246, 0.2);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+body.light-mode .booking-option-card::before {
+    background: linear-gradient(90deg, transparent, #8B5CF6, #A78BFA, transparent);
+    opacity: 0.7;
+}
+
+body.light-mode .booking-option-card:hover {
+    border-color: rgba(139, 92, 246, 0.4);
+    box-shadow: 0 15px 40px rgba(139, 92, 246, 0.15);
+}
+
+body.light-mode .booking-option-card.kakao-card {
+    border-color: rgba(254, 229, 0, 0.4);
+}
+
+body.light-mode .booking-option-card.kakao-card::before {
+    background: linear-gradient(90deg, transparent, #FEE500, #FFD700, transparent);
+}
+
+body.light-mode .booking-option-card.kakao-card:hover {
+    border-color: rgba(254, 229, 0, 0.6);
+    box-shadow: 0 15px 40px rgba(254, 229, 0, 0.2);
+}
+
+body.light-mode .booking-option-icon {
+    background: rgba(139, 92, 246, 0.1);
+}
+
+body.light-mode .booking-option-icon i {
+    color: rgba(139, 95, 191, 0.8);
+    filter: none;
+}
+
+body.light-mode .booking-option-icon.kakao-icon {
+    background: rgba(254, 229, 0, 0.2);
+}
+
+body.light-mode .booking-option-icon.kakao-icon i {
+    color: #FFC107;
+    filter: none;
+}
+
+body.light-mode .booking-option-title {
+    color: #5B3A8C;
+    text-shadow: none;
+}
+
+body.light-mode .booking-option-title.kakao-title {
+    color: #3C1E1E;
+}
+
+body.light-mode .booking-option-description {
+    color: #6c757d;
+}
+
+body.light-mode .feature-item {
+    color: rgba(139, 95, 191, 0.8);
+}
+
+body.light-mode .feature-item.kakao-feature {
+    color: #D4A800;
+}
+
+body.light-mode .booking-option-btn {
+    border-color: rgba(139, 95, 191, 0.4);
+    color: rgba(139, 95, 191, 0.8);
+}
+
+body.light-mode .booking-option-card:hover .booking-option-btn {
+    background: rgba(139, 95, 191, 0.1);
+    border-color: rgba(139, 95, 191, 0.6);
+    color: #5B3A8C;
+}
+
+body.light-mode .booking-option-btn.kakao-btn {
+    border-color: rgba(254, 229, 0, 0.6);
+    color: #D4A800;
+}
+
+body.light-mode .booking-option-card.kakao-card:hover .booking-option-btn {
+    background: rgba(254, 229, 0, 0.15);
+    border-color: #FFC107;
+    color: #3C1E1E;
+}
+
+body.light-mode .booking-notice {
+    background: rgba(139, 92, 246, 0.05);
+    border-color: rgba(139, 92, 246, 0.15);
+}
+
+body.light-mode .notice-text {
+    color: #6c757d;
+}
+
+body.light-mode .notice-text i {
+    color: rgba(139, 95, 191, 0.6);
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .booking-choice-title {
+        font-size: 2.2rem;
+    }
+    
+    .booking-option-card {
+        padding: 2rem 1.5rem;
+    }
+    
+    .booking-option-icon {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .booking-option-icon i {
+        font-size: 2rem;
+    }
+    
+    .booking-option-title {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .booking-choice-title {
+        font-size: 1.8rem;
+    }
+    
+    .booking-choice-subtitle {
+        font-size: 1rem;
+    }
+    
+    .booking-option-card {
+        padding: 1.8rem 1.2rem;
+    }
+    
+    .booking-option-title {
+        font-size: 1.2rem;
+    }
+    
+    .booking-option-description {
+        font-size: 0.95rem;
+    }
+    
+    .booking-option-btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.9rem;
+    }
+}
+</style>
+
+<script>
+function goToKakaoChannel() {
+    window.open('https://pf.kakao.com/_xgDcFK', '_blank');
+}
+</script>
+{% endblock %}
+

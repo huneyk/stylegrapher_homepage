@@ -270,55 +270,55 @@ msgstr "Stylegrapher es una marca registrada."
 
 #: templates/ask.html:3 templates/ask.html:11 templates/ask.html:70
 msgid "문의하기"
-msgstr ""
+msgstr "Contacto"
 
 #: templates/ask.html:15 templates/booking.html:25
 msgid "이름"
-msgstr ""
+msgstr "Nombre"
 
 #: templates/ask.html:21 templates/booking.html:29
 msgid "휴대폰 번호"
-msgstr ""
+msgstr "Número de Teléfono"
 
 #: templates/ask.html:26 templates/booking.html:34
 msgid "숫자 11자리를 입력해주세요 ('-' 제외)"
-msgstr ""
+msgstr "Ingrese 11 dígitos sin '-'"
 
 #: templates/ask.html:31 templates/booking.html:37
 msgid "이메일 주소"
-msgstr ""
+msgstr "Correo Electrónico"
 
 #: templates/ask.html:38 templates/booking.html:42
 msgid "문의 대상 서비스"
-msgstr ""
+msgstr "Servicio de Consulta"
 
 #: templates/ask.html:40
 msgid "서비스를 선택해주세요"
-msgstr ""
+msgstr "Por favor seleccione un servicio"
 
 #: templates/ask.html:62 templates/booking.html:54
 msgid "메시지"
-msgstr ""
+msgstr "Mensaje"
 
 #: templates/ask.html:87
 msgid "문의 접수 완료"
-msgstr ""
+msgstr "Consulta Recibida"
 
 #: templates/ask.html:92
 msgid "문의 사항이 잘 접수됐습니다."
-msgstr ""
+msgstr "Su consulta ha sido recibida."
 
 #: templates/ask.html:93
 msgid "곧 회신 드리겠습니다. 감사합니다!"
-msgstr ""
+msgstr "Le responderemos pronto. ¡Gracias!"
 
 #: templates/ask.html:97
 msgid "이메일 발송에 일시적인 문제가 발생했지만, 문의사항은 정상적으로 접수되었습니다."
-msgstr ""
+msgstr "Hubo un problema temporal al enviar el correo, pero su consulta fue recibida correctamente."
 
 #: templates/ask.html:103
 msgid "확인"
-msgstr ""
+msgstr "Confirmar"
 
 #: templates/base.html:7
 msgid ""
@@ -491,19 +491,19 @@ msgstr ""
 
 #: templates/booking.html:3
 msgid "예약"
-msgstr ""
+msgstr "Reservación"
 
 #: templates/booking.html:11
 msgid "예약하기"
-msgstr ""
+msgstr "Hacer Reservación"
 
 #: templates/booking.html:44
 msgid "선택해주세요"
-msgstr ""
+msgstr "Por favor seleccione"
 
 #: templates/booking.html:133
 msgid "삭제"
-msgstr ""
+msgstr "Eliminar"
 
 # Commercial Portfolio Page
 #: templates/commercial_portfolio.html:5
@@ -756,4 +756,50 @@ msgstr "Un servicio orientado a resultados que registra tu potencial infinito co
 # Services Page - Default Description
 msgid "상세 페이지에서 자세한 내용을 확인하세요."
 msgstr "Por favor, consulte la página de detalles para más información."
+
+# Booking Choice Page
+msgid "예약 방법 선택"
+msgstr "Seleccionar Método de Reservación"
+
+msgid "원하시는 예약 방법을 선택해주세요"
+msgstr "Por favor seleccione su método de reservación preferido"
+
+msgid "이메일로 예약하기"
+msgstr "Reservar por Email"
+
+msgid "예약 폼을 통해 상세 정보를 입력하고 예약을 신청합니다."
+msgstr "Ingrese la información detallada a través del formulario de reservación."
+
+msgid "상세 정보 입력"
+msgstr "Ingresar Detalles"
+
+msgid "희망 일시 선택"
+msgstr "Seleccionar Fecha/Hora"
+
+msgid "문의 내용 작성"
+msgstr "Escribir Mensaje"
+
+msgid "예약 폼으로 이동"
+msgstr "Ir al Formulario de Reservación"
+
+msgid "카카오톡으로 예약하기"
+msgstr "Reservar por KakaoTalk"
+
+msgid "카카오톡 채널을 통해 실시간으로 상담하고 예약합니다."
+msgstr "Consulte y reserve en tiempo real a través de nuestro canal de KakaoTalk."
+
+msgid "실시간 상담"
+msgstr "Consulta en Tiempo Real"
+
+msgid "빠른 응답"
+msgstr "Respuesta Rápida"
+
+msgid "편리한 소통"
+msgstr "Comunicación Fácil"
+
+msgid "카카오톡 채널 열기"
+msgstr "Abrir Canal de KakaoTalk"
+
+msgid "영업시간: 화-토 9:00-18:00 | 일/월요일 휴무"
+msgstr "Horario: Mar-Sáb 9:00-18:00 | Cerrado Dom/Lun"
 

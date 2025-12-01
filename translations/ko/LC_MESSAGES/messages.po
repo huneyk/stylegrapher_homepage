@@ -671,3 +671,49 @@ msgstr ""
 msgid "상세 페이지에서 자세한 내용을 확인하세요."
 msgstr ""
 
+# Booking Choice Page
+msgid "예약 방법 선택"
+msgstr ""
+
+msgid "원하시는 예약 방법을 선택해주세요"
+msgstr ""
+
+msgid "이메일로 예약하기"
+msgstr ""
+
+msgid "예약 폼을 통해 상세 정보를 입력하고 예약을 신청합니다."
+msgstr ""
+
+msgid "상세 정보 입력"
+msgstr ""
+
+msgid "희망 일시 선택"
+msgstr ""
+
+msgid "문의 내용 작성"
+msgstr ""
+
+msgid "예약 폼으로 이동"
+msgstr ""
+
+msgid "카카오톡으로 예약하기"
+msgstr ""
+
+msgid "카카오톡 채널을 통해 실시간으로 상담하고 예약합니다."
+msgstr ""
+
+msgid "실시간 상담"
+msgstr ""
+
+msgid "빠른 응답"
+msgstr ""
+
+msgid "편리한 소통"
+msgstr ""
+
+msgid "카카오톡 채널 열기"
+msgstr ""
+
+msgid "영업시간: 화-토 9:00-18:00 | 일/월요일 휴무"
+msgstr ""
+

@@ -224,55 +224,55 @@ msgstr "Stylegrapher是注册商标。"
 
 #: templates/ask.html:3 templates/ask.html:11 templates/ask.html:70
 msgid "문의하기"
-msgstr ""
+msgstr "咨询"
 
 #: templates/ask.html:15 templates/booking.html:25
 msgid "이름"
-msgstr ""
+msgstr "姓名"
 
 #: templates/ask.html:21 templates/booking.html:29
 msgid "휴대폰 번호"
-msgstr ""
+msgstr "手机号码"
 
 #: templates/ask.html:26 templates/booking.html:34
 msgid "숫자 11자리를 입력해주세요 ('-' 제외)"
-msgstr ""
+msgstr "请输入11位数字（不含'-'）"
 
 #: templates/ask.html:31 templates/booking.html:37
 msgid "이메일 주소"
-msgstr ""
+msgstr "电子邮箱"
 
 #: templates/ask.html:38 templates/booking.html:42
 msgid "문의 대상 서비스"
-msgstr ""
+msgstr "咨询服务"
 
 #: templates/ask.html:40
 msgid "서비스를 선택해주세요"
-msgstr ""
+msgstr "请选择服务"
 
 #: templates/ask.html:62 templates/booking.html:54
 msgid "메시지"
-msgstr ""
+msgstr "留言"
 
 #: templates/ask.html:87
 msgid "문의 접수 완료"
-msgstr ""
+msgstr "咨询已受理"
 
 #: templates/ask.html:92
 msgid "문의 사항이 잘 접수됐습니다."
-msgstr ""
+msgstr "您的咨询已成功受理。"
 
 #: templates/ask.html:93
 msgid "곧 회신 드리겠습니다. 감사합니다!"
-msgstr ""
+msgstr "我们将尽快回复。谢谢！"
 
 #: templates/ask.html:97
 msgid "이메일 발송에 일시적인 문제가 발생했지만, 문의사항은 정상적으로 접수되었습니다."
-msgstr ""
+msgstr "邮件发送出现临时问题，但您的咨询已正常受理。"
 
 #: templates/ask.html:103
 msgid "확인"
-msgstr ""
+msgstr "确认"
 
 #: templates/base.html:7
 msgid ""
@@ -437,19 +437,19 @@ msgstr "未经事先许可，禁止任何形式的复制、转载、分发或商
 
 #: templates/booking.html:3
 msgid "예약"
-msgstr ""
+msgstr "预约"
 
 #: templates/booking.html:11
 msgid "예약하기"
-msgstr ""
+msgstr "预约"
 
 #: templates/booking.html:44
 msgid "선택해주세요"
-msgstr ""
+msgstr "请选择"
 
 #: templates/booking.html:133
 msgid "삭제"
-msgstr ""
+msgstr "删除"
 
 # Commercial Portfolio Page
 #: templates/commercial_portfolio.html:5
@@ -687,4 +687,50 @@ msgstr "与顶尖专家一起记录您无限可能的成果服务。"
 # Services Page - Default Description
 msgid "상세 페이지에서 자세한 내용을 확인하세요."
 msgstr "请在详情页面查看详细内容。"
+
+# Booking Choice Page
+msgid "예약 방법 선택"
+msgstr "选择预约方式"
+
+msgid "원하시는 예약 방법을 선택해주세요"
+msgstr "请选择您希望的预约方式"
+
+msgid "이메일로 예약하기"
+msgstr "通过邮件预约"
+
+msgid "예약 폼을 통해 상세 정보를 입력하고 예약을 신청합니다."
+msgstr "通过预约表格输入详细信息并申请预约。"
+
+msgid "상세 정보 입력"
+msgstr "输入详细信息"
+
+msgid "희망 일시 선택"
+msgstr "选择希望时间"
+
+msgid "문의 내용 작성"
+msgstr "填写咨询内容"
+
+msgid "예약 폼으로 이동"
+msgstr "前往预约表格"
+
+msgid "카카오톡으로 예약하기"
+msgstr "通过KakaoTalk预约"
+
+msgid "카카오톡 채널을 통해 실시간으로 상담하고 예약합니다."
+msgstr "通过KakaoTalk频道进行实时咨询和预约。"
+
+msgid "실시간 상담"
+msgstr "实时咨询"
+
+msgid "빠른 응답"
+msgstr "快速响应"
+
+msgid "편리한 소통"
+msgstr "便捷沟通"
+
+msgid "카카오톡 채널 열기"
+msgstr "打开KakaoTalk频道"
+
+msgid "영업시간: 화-토 9:00-18:00 | 일/월요일 휴무"
+msgstr "营业时间：周二至周六 9:00-18:00 | 周日/周一休息"
 

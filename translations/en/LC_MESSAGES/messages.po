@@ -749,3 +749,49 @@ msgstr "A result-oriented service that records your infinite potential with top 
 msgid "상세 페이지에서 자세한 내용을 확인하세요."
 msgstr "Please check the detail page for more information."
 
+# Booking Choice Page
+msgid "예약 방법 선택"
+msgstr "Choose Reservation Method"
+
+msgid "원하시는 예약 방법을 선택해주세요"
+msgstr "Please select your preferred reservation method"
+
+msgid "이메일로 예약하기"
+msgstr "Book via Email"
+
+msgid "예약 폼을 통해 상세 정보를 입력하고 예약을 신청합니다."
+msgstr "Enter detailed information through the reservation form to make a booking."
+
+msgid "상세 정보 입력"
+msgstr "Enter Details"
+
+msgid "희망 일시 선택"
+msgstr "Select Preferred Date/Time"
+
+msgid "문의 내용 작성"
+msgstr "Write Your Message"
+
+msgid "예약 폼으로 이동"
+msgstr "Go to Reservation Form"
+
+msgid "카카오톡으로 예약하기"
+msgstr "Book via KakaoTalk"
+
+msgid "카카오톡 채널을 통해 실시간으로 상담하고 예약합니다."
+msgstr "Consult and book in real-time through our KakaoTalk channel."
+
+msgid "실시간 상담"
+msgstr "Real-time Consultation"
+
+msgid "빠른 응답"
+msgstr "Quick Response"
+
+msgid "편리한 소통"
+msgstr "Easy Communication"
+
+msgid "카카오톡 채널 열기"
+msgstr "Open KakaoTalk Channel"
+
+msgid "영업시간: 화-토 9:00-18:00 | 일/월요일 휴무"
+msgstr "Hours: Tue-Sat 9:00-18:00 | Closed Sun/Mon"
+
