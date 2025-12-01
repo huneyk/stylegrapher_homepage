@@ -187,8 +187,9 @@
                             {% if ns.in_account %}</div>{% endif %}
                             
                             <div class="text-center mt-4">
-                                <button type="button" class="kakao-btn-dark" onclick="showKakaoModal()">
-                                    <span class="kakao-logo">💬</span> {{ _('카카오톡채널로 문의/예약신청 하기') }}
+                                <button type="button" class="stg_button" onclick="showKakaoModal()">
+                                    <span class="stg_button_text">{{ _('문의/예약 신청') }}</span>
+                                    <i class="bi bi-arrow-right stg_button_arrow"></i>
                                 </button>
                             </div>
                         </div>
@@ -257,10 +258,10 @@
                             {% endif %}
                             
                             {% if refund_policy_table_val and refund_policy_table_val.strip() %}
-                            <div class="refund-table-container">
                                 {% set refund_rules = refund_policy_table_val.split('\n') %}
                                 {% if refund_rules %}
                                 <h4 class="refund-subtitle">{{ _('환불 기준표') }}</h4>
+                            <div class="refund-table-container">
                                 <table class="stg_table">
                                     <thead>
                                         <tr>
@@ -282,8 +283,8 @@
                                         {% endfor %}
                                     </tbody>
                                 </table>
-                                {% endif %}
                             </div>
+                                {% endif %}
                             {% endif %}
                         </div>
                     </div>
@@ -331,10 +332,11 @@
                 <!-- Contact Section -->
                 <div class="stg_kakao_format mt-5">
                     <div class="stg_kakao_content">
-                        <p class="stg_body_text stg_kakao_text mb-4">{{ _('궁금하신 점이나 예약신청은 카카오톡 채널을 이용해주시기 바랍니다.') }}</p>
-                        <button type="button" class="stg_kakao_btn" onclick="showKakaoModal()">
-                            <i class="bi bi-chat-dots-fill me-2"></i>{{ _('문의/예약신청') }}
-                        </button>
+                        <p class="stg_body_text stg_kakao_text mb-4">{{ _('궁금하신 점이나 예약신청은 아래 버튼을 클릭해주세요') }}</p>
+                        <a href="https://www.stylegrapher.com/booking-choice" class="stg_button">
+                            <span class="stg_button_text">{{ _('문의/예약 신청') }}</span>
+                            <i class="bi bi-arrow-right stg_button_arrow"></i>
+                        </a>
                     </div>
                     <div class="stg_kakao_glow"></div>
                 </div>

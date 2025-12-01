@@ -604,9 +604,15 @@ msgstr "A style journey with Stylegrapher"
 msgid "궁금하신 점이나 예약신청은 카카오톡 채널을 이용해주시기 바랍니다."
 msgstr "Please use our KakaoTalk channel for inquiries or reservations."
 
+msgid "궁금하신 점이나 예약신청은 아래 버튼을 클릭해주세요"
+msgstr "For inquiries or reservations, please click the button below."
+
 #: templates/index.html:634 templates/service_detail.html:90
 #: templates/service_option_detail.html:230
 msgid "문의/예약신청"
+msgstr "Inquiry/Reservation"
+
+msgid "문의/예약 신청"
 msgstr "Inquiry/Reservation"
 
 #: templates/privacy_policy.html:18 templates/terms_of_service.html:18
@@ -750,17 +756,17 @@ msgid "상세 페이지에서 자세한 내용을 확인하세요."
 msgstr "Please check the detail page for more information."
 
 # Booking Choice Page
-msgid "예약 방법 선택"
-msgstr "Choose Reservation Method"
+msgid "문의/예약 신청 방법"
+msgstr "Contact/Reservation Request"
 
-msgid "원하시는 예약 방법을 선택해주세요"
-msgstr "Please select your preferred reservation method"
+msgid "원하시는 문의 방법을 선택해주세요"
+msgstr "Please select your preferred contact method"
 
-msgid "이메일로 예약하기"
-msgstr "Book via Email"
+msgid "이메일로 문의/신청하기"
+msgstr "Contact/Request via Email"
 
-msgid "예약 폼을 통해 상세 정보를 입력하고 예약을 신청합니다."
-msgstr "Enter detailed information through the reservation form to make a booking."
+msgid "예약 폼을 통해 상세정보를 입력하고 문의/신청합니다."
+msgstr "Enter detailed information through the form to make an inquiry/request."
 
 msgid "상세 정보 입력"
 msgstr "Enter Details"
@@ -774,11 +780,11 @@ msgstr "Write Your Message"
 msgid "예약 폼으로 이동"
 msgstr "Go to Reservation Form"
 
-msgid "카카오톡으로 예약하기"
-msgstr "Book via KakaoTalk"
+msgid "카카오톡으로 문의/신청하기"
+msgstr "Contact/Request via KakaoTalk"
 
-msgid "카카오톡 채널을 통해 실시간으로 상담하고 예약합니다."
-msgstr "Consult and book in real-time through our KakaoTalk channel."
+msgid "카카오톡 채널을 통해 실시간으로 상담하고 문의/예약을 신청합니다."
+msgstr "Consult in real-time and make inquiry/reservation through our KakaoTalk channel."
 
 msgid "실시간 상담"
 msgstr "Real-time Consultation"

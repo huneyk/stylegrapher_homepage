@@ -546,9 +546,15 @@ msgstr "与Stylegrapher共同的风格之旅"
 msgid "궁금하신 점이나 예약신청은 카카오톡 채널을 이용해주시기 바랍니다."
 msgstr "如有疑问或需要预约，请使用KakaoTalk频道。"
 
+msgid "궁금하신 점이나 예약신청은 아래 버튼을 클릭해주세요"
+msgstr "如有疑问或需要预约，请点击下方按钮。"
+
 #: templates/index.html:634 templates/service_detail.html:90
 #: templates/service_option_detail.html:230
 msgid "문의/예약신청"
+msgstr "咨询/预约"
+
+msgid "문의/예약 신청"
 msgstr "咨询/预约"
 
 #: templates/privacy_policy.html:18 templates/terms_of_service.html:18
@@ -689,17 +695,17 @@ msgid "상세 페이지에서 자세한 내용을 확인하세요."
 msgstr "请在详情页面查看详细内容。"
 
 # Booking Choice Page
-msgid "예약 방법 선택"
-msgstr "选择预约方式"
+msgid "문의/예약 신청 방법"
+msgstr "咨询/预约申请方式"
 
-msgid "원하시는 예약 방법을 선택해주세요"
-msgstr "请选择您希望的预约方式"
+msgid "원하시는 문의 방법을 선택해주세요"
+msgstr "请选择您希望的咨询方式"
 
-msgid "이메일로 예약하기"
-msgstr "通过邮件预约"
+msgid "이메일로 문의/신청하기"
+msgstr "通过邮件咨询/申请"
 
-msgid "예약 폼을 통해 상세 정보를 입력하고 예약을 신청합니다."
-msgstr "通过预约表格输入详细信息并申请预约。"
+msgid "예약 폼을 통해 상세정보를 입력하고 문의/신청합니다."
+msgstr "通过表格输入详细信息并进行咨询/申请。"
 
 msgid "상세 정보 입력"
 msgstr "输入详细信息"
@@ -713,11 +719,11 @@ msgstr "填写咨询内容"
 msgid "예약 폼으로 이동"
 msgstr "前往预约表格"
 
-msgid "카카오톡으로 예약하기"
-msgstr "通过KakaoTalk预约"
+msgid "카카오톡으로 문의/신청하기"
+msgstr "通过KakaoTalk咨询/申请"
 
-msgid "카카오톡 채널을 통해 실시간으로 상담하고 예약합니다."
-msgstr "通过KakaoTalk频道进行实时咨询和预约。"
+msgid "카카오톡 채널을 통해 실시간으로 상담하고 문의/예약을 신청합니다."
+msgstr "通过KakaoTalk频道实时咨询并申请咨询/预约。"
 
 msgid "실시간 상담"
 msgstr "实时咨询"

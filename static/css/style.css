@@ -691,22 +691,22 @@ body.light-mode .stg_card_format .stg_card_description--short {
     --stg-button-border-radius: 12px;
     --stg-button-transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     
-    /* Dark Mode Colors */
-    --stg-button-bg-dark: rgba(200, 170, 255, 0.12);
-    --stg-button-color-dark: rgb(var(--main-color-rgb));
-    --stg-button-border-dark: rgba(200, 170, 255, 0.4);
-    --stg-button-text-shadow-dark: 0 0 10px rgba(200, 170, 255, 0.4);
-    --stg-button-hover-bg-dark: linear-gradient(135deg, var(--neon-lavender), var(--electric-violet));
-    --stg-button-hover-color-dark: var(--text-primary);
-    --stg-button-hover-shadow-dark: 0 0 20px rgba(200, 170, 255, 0.5), 0 0 40px rgba(180, 140, 255, 0.3);
+    /* Dark Mode Colors (반전됨) */
+    --stg-button-bg-dark: linear-gradient(135deg, var(--neon-lavender), var(--electric-violet));
+    --stg-button-color-dark: var(--text-primary);
+    --stg-button-border-dark: transparent;
+    --stg-button-text-shadow-dark: none;
+    --stg-button-hover-bg-dark: rgba(200, 170, 255, 0.12);
+    --stg-button-hover-color-dark: rgb(var(--main-color-rgb));
+    --stg-button-hover-shadow-dark: 0 0 10px rgba(200, 170, 255, 0.4);
     
-    /* Light Mode Colors */
-    --stg-button-bg-light: rgba(255, 255, 255, 0.9);
-    --stg-button-color-light: #555555;
-    --stg-button-border-light: rgba(139, 92, 246, 0.35);
-    --stg-button-hover-bg-light: #5B3A8C;
-    --stg-button-hover-color-light: #ffffff;
-    --stg-button-hover-shadow-light: 0 4px 15px rgba(91, 58, 140, 0.25);
+    /* Light Mode Colors (반전됨) */
+    --stg-button-bg-light: #5B3A8C;
+    --stg-button-color-light: #ffffff;
+    --stg-button-border-light: #5B3A8C;
+    --stg-button-hover-bg-light: rgba(255, 255, 255, 0.9);
+    --stg-button-hover-color-light: #555555;
+    --stg-button-hover-shadow-light: 0 4px 15px rgba(91, 58, 140, 0.15);
 }
 
 /* STG Button 기본 클래스 (Dark Mode 기본) */
@@ -729,34 +729,36 @@ body.light-mode .stg_card_format .stg_card_description--short {
     line-height: 1.2;
 }
 
-/* Dark Mode STG Button */
+/* Dark Mode STG Button (반전됨) */
 body:not(.light-mode) .stg_button {
     background: var(--stg-button-bg-dark);
     color: var(--stg-button-color-dark) !important;
     border: 1px solid var(--stg-button-border-dark);
     text-shadow: var(--stg-button-text-shadow-dark);
+    box-shadow: 0 0 20px rgba(200, 170, 255, 0.5), 0 0 40px rgba(180, 140, 255, 0.3);
 }
 
 body:not(.light-mode) .stg_button:hover {
     background: var(--stg-button-hover-bg-dark);
-    border-color: transparent;
+    border-color: rgba(200, 170, 255, 0.4);
     color: var(--stg-button-hover-color-dark) !important;
     box-shadow: var(--stg-button-hover-shadow-dark);
     transform: translateY(-2px);
-    text-shadow: none;
+    text-shadow: 0 0 10px rgba(200, 170, 255, 0.4);
 }
 
-/* Light Mode STG Button */
+/* Light Mode STG Button (반전됨) */
 body.light-mode .stg_button {
     background: var(--stg-button-bg-light);
     color: var(--stg-button-color-light) !important;
     border: 1px solid var(--stg-button-border-light);
     text-shadow: none;
+    box-shadow: 0 4px 15px rgba(91, 58, 140, 0.25);
 }
 
 body.light-mode .stg_button:hover {
     background: var(--stg-button-hover-bg-light);
-    border-color: var(--stg-button-hover-bg-light);
+    border-color: rgba(139, 92, 246, 0.35);
     color: var(--stg-button-hover-color-light) !important;
     box-shadow: var(--stg-button-hover-shadow-light);
     transform: translateY(-2px);
@@ -2229,12 +2231,23 @@ body.light-mode .kakao-btn-dark:hover {
 }
 
 /* STG Table 기본 클래스 */
+/* STG Table Wrapper - 가로 스크롤 지원 */
+.stg_table_wrapper,
+.package-table-container,
+.overtime-charge-table-container,
+.refund-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1rem;
+}
+
 .stg_table {
     width: 100%;
+    min-width: 480px;
     border-collapse: collapse;
     border-radius: 12px;
     overflow: hidden;
-    margin-bottom: 1rem;
+    margin-bottom: 0;
     border: 2px solid var(--stg-table-border-color-dark);
 }
 
@@ -2292,26 +2305,46 @@ body.light-mode .kakao-btn-dark:hover {
     text-align: center;
 }
 
-/* STG Table 반응형 */
+/* STG Table 반응형 - 가로 스크롤 유지 */
 @media (max-width: 768px) {
+    .stg_table_wrapper,
+    .package-table-container,
+    .overtime-charge-table-container,
+    .refund-table-container {
+        margin-left: -0.5rem;
+        margin-right: -0.5rem;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    .stg_table {
+        min-width: 480px;
+    }
+    
     .stg_table thead th {
         font-size: 13px;
-        padding: 0.45rem 0.5rem;
+        padding: 0.5rem 0.6rem;
+        white-space: nowrap;
     }
     .stg_table tbody td {
-        font-size: 10.5px;
-        padding: 0.45rem 0.5rem;
+        font-size: 12px;
+        padding: 0.5rem 0.6rem;
     }
 }
 
 @media (max-width: 576px) {
+    .stg_table {
+        min-width: 450px;
+    }
+    
     .stg_table thead th {
         font-size: 12px;
-        padding: 0.4rem 0.4rem;
+        padding: 0.45rem 0.5rem;
+        white-space: nowrap;
     }
     .stg_table tbody td {
-        font-size: 9.5px;
-        padding: 0.4rem 0.4rem;
+        font-size: 11px;
+        padding: 0.45rem 0.5rem;
     }
 }
 

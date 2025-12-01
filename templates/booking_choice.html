@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _('예약 방법 선택') }}{% endblock %}
+{% block title %}{{ _('문의/예약 신청 방법') }}{% endblock %}
 
 {% block content %}
 <div class="container py-5">
@@ -8,8 +8,8 @@
         <div class="col-md-10 col-lg-8">
             <!-- 페이지 타이틀 -->
             <div class="text-center mb-5">
-                <h1 class="booking-choice-title stg_page_title mb-3">{{ _('예약 방법 선택') }}</h1>
-                <p class="booking-choice-subtitle stg_body_text">{{ _('원하시는 예약 방법을 선택해주세요') }}</p>
+                <h1 class="booking-choice-title stg_page_title mb-3">{{ _('문의/예약 신청 방법') }}</h1>
+                <p class="booking-choice-subtitle stg_body_text">{{ _('원하시는 문의 방법을 선택해주세요') }}</p>
             </div>
             
             <!-- 선택 카드 영역 -->
@@ -20,9 +20,9 @@
                         <div class="booking-option-icon">
                             <i class="bi bi-envelope-at"></i>
                         </div>
-                        <h3 class="booking-option-title">{{ _('이메일로 예약하기') }}</h3>
+                        <h3 class="booking-option-title">{{ _('이메일로 문의/신청하기') }}</h3>
                         <p class="booking-option-description">
-                            {{ _('예약 폼을 통해 상세 정보를 입력하고 예약을 신청합니다.') }}
+                            {{ _('예약 폼을 통해 상세정보를 입력하고 문의/신청합니다.') }}
                         </p>
                         <div class="booking-option-features">
                             <span class="feature-item"><i class="bi bi-check-circle"></i> {{ _('상세 정보 입력') }}</span>
@@ -42,9 +42,9 @@
                         <div class="booking-option-icon kakao-icon">
                             <i class="bi bi-chat-dots-fill"></i>
                         </div>
-                        <h3 class="booking-option-title kakao-title">{{ _('카카오톡으로 예약하기') }}</h3>
+                        <h3 class="booking-option-title kakao-title">{{ _('카카오톡으로 문의/신청하기') }}</h3>
                         <p class="booking-option-description">
-                            {{ _('카카오톡 채널을 통해 실시간으로 상담하고 예약합니다.') }}
+                            {{ _('카카오톡 채널을 통해 실시간으로 상담하고 문의/예약을 신청합니다.') }}
                         </p>
                         <div class="booking-option-features">
                             <span class="feature-item kakao-feature"><i class="bi bi-check-circle"></i> {{ _('실시간 상담') }}</span>

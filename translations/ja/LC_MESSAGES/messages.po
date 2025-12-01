@@ -545,9 +545,15 @@ msgstr "スタイルグラファーと共にするスタイルの旅"
 msgid "궁금하신 점이나 예약신청은 카카오톡 채널을 이용해주시기 바랍니다."
 msgstr "ご質問やご予約はカカオトークチャンネルをご利用ください。"
 
+msgid "궁금하신 점이나 예약신청은 아래 버튼을 클릭해주세요"
+msgstr "ご質問やご予約は下のボタンをクリックしてください。"
+
 #: templates/index.html:634 templates/service_detail.html:90
 #: templates/service_option_detail.html:230
 msgid "문의/예약신청"
+msgstr "お問い合わせ/予約申請"
+
+msgid "문의/예약 신청"
 msgstr "お問い合わせ/予約申請"
 
 #: templates/privacy_policy.html:18 templates/terms_of_service.html:18
@@ -686,17 +692,17 @@ msgid "상세 페이지에서 자세한 내용을 확인하세요."
 msgstr "詳細ページで詳しい内容をご確認ください。"
 
 # Booking Choice Page
-msgid "예약 방법 선택"
-msgstr "予約方法を選択"
+msgid "문의/예약 신청 방법"
+msgstr "お問い合わせ/予約申請方法"
 
-msgid "원하시는 예약 방법을 선택해주세요"
-msgstr "ご希望の予約方法をお選びください"
+msgid "원하시는 문의 방법을 선택해주세요"
+msgstr "ご希望のお問い合わせ方法をお選びください"
 
-msgid "이메일로 예약하기"
-msgstr "メールで予約する"
+msgid "이메일로 문의/신청하기"
+msgstr "メールでお問い合わせ/申請する"
 
-msgid "예약 폼을 통해 상세 정보를 입력하고 예약을 신청합니다."
-msgstr "予約フォームで詳細情報を入力し、予約を申請します。"
+msgid "예약 폼을 통해 상세정보를 입력하고 문의/신청합니다."
+msgstr "フォームで詳細情報を入力し、お問い合わせ/申請します。"
 
 msgid "상세 정보 입력"
 msgstr "詳細情報入力"
@@ -710,11 +716,11 @@ msgstr "お問い合わせ内容作成"
 msgid "예약 폼으로 이동"
 msgstr "予約フォームへ移動"
 
-msgid "카카오톡으로 예약하기"
-msgstr "カカオトークで予約する"
+msgid "카카오톡으로 문의/신청하기"
+msgstr "カカオトークでお問い合わせ/申請する"
 
-msgid "카카오톡 채널을 통해 실시간으로 상담하고 예약합니다."
-msgstr "カカオトークチャンネルでリアルタイムで相談・予約できます。"
+msgid "카카오톡 채널을 통해 실시간으로 상담하고 문의/예약을 신청합니다."
+msgstr "カカオトークチャンネルでリアルタイムで相談し、お問い合わせ/予約を申請できます。"
 
 msgid "실시간 상담"
 msgstr "リアルタイム相談"
