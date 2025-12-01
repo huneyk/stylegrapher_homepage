@@ -11,7 +11,7 @@
             <div class="card-body p-4 p-md-5">
                 <!-- Header -->
                 <div class="services-header text-center mb-5">
-                    <h1 class="services-page-title">Services</h1>
+                    <h1 class="stg_page_title">Services</h1>
                     <p class="services-page-subtitle">{{ _('당신의 무한한 가능성을 탐험하는 여정') }}</p>
                     <div class="title-divider"></div>
                 </div>
@@ -54,15 +54,7 @@
     padding-bottom: 2rem;
 }
 
-.services-page-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 4rem;
-    color: var(--neon-lavender);
-    text-shadow: 0 0 50px rgba(181, 126, 220, 0.5);
-    font-weight: 300;
-    letter-spacing: 0.15em;
-    margin-bottom: 0.5rem;
-}
+/* services-page-title 스타일은 stg_page_title로 통합됨 - style.css 참조 */
 
 .services-page-subtitle {
     font-family: 'Noto Sans KR', sans-serif;
@@ -118,10 +110,7 @@ body.light-mode .services-main-card::before {
     box-shadow: none !important;
 }
 
-body.light-mode .services-page-title {
-    color: #663399 !important;
-    text-shadow: none !important;
-}
+/* services-page-title Light mode는 stg_page_title로 통합됨 - base.html 참조 */
 
 body.light-mode .services-page-subtitle {
     color: #555555 !important;
@@ -220,9 +209,7 @@ body.light-mode .option-card:hover .option-arrow i {
         border-radius: 20px;
     }
     
-    .services-page-title {
-        font-size: 2.8rem;
-    }
+    /* services-page-title 반응형은 stg_page_title로 통합됨 - style.css 참조 */
     
     .services-page-subtitle {
         font-size: 1rem;

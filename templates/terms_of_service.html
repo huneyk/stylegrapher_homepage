@@ -6,7 +6,7 @@
 <div class="container py-5">
     <div class="card">
         <div class="card-body p-5">
-            <h1 class="text-center mb-5 page-title">{{ _('이용약관') }}</h1>
+            <h1 class="text-center mb-5 stg_page_title">{{ _('이용약관') }}</h1>
             
             <div class="terms-content">
                 {{ terms.content | safe }}
@@ -25,12 +25,7 @@
 </div>
 
 <style>
-.page-title {
-    font-family: 'Nanum Gothic', sans-serif;
-    font-size: 2.5rem;
-    color: var(--main-color-alpha);
-    font-weight: 600;
-}
+/* page-title 스타일은 stg_page_title로 통합됨 - style.css 참조 */
 
 .section-title {
     font-family: 'Nanum Gothic', sans-serif;
@@ -72,9 +67,7 @@
 }
 
 @media (max-width: 768px) {
-    .page-title {
-        font-size: 2rem;
-    }
+    /* page-title 반응형은 stg_page_title로 통합됨 - style.css 참조 */
     
     .section-title {
         font-size: 1.1rem;

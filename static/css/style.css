@@ -102,6 +102,807 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
 }
 
 /* ============================================
+   STG Body Text - 사이트 전체 본문 텍스트 기준
+   이 스타일이 모든 본문 텍스트의 기준입니다.
+   ============================================ */
+:root {
+    --stg-body-font-family: 'Noto Sans KR', sans-serif;
+    --stg-body-font-size: 1.15rem;
+    --stg-body-line-height: 1.8;
+    --stg-body-font-weight: 400;
+    --stg-body-color-dark: rgba(255, 255, 255, 0.9);
+    --stg-body-color-light: #666666;
+    
+    /* STG Card Title - 사이트 전체 카드 제목 기준 */
+    --stg-card-title-font-family: 'Noto Sans KR', sans-serif;
+    --stg-card-title-font-size: 1.25rem;
+    --stg-card-title-font-weight: 600;
+    --stg-card-title-color-light: #5B3A8C;
+    --stg-card-title-color-dark: rgb(var(--main-color-rgb));
+    --stg-card-title-bg-light: rgba(139, 92, 246, 0.08);
+    --stg-card-title-bg-dark: rgba(200, 170, 255, 0.12);
+    --stg-card-title-border-light: rgba(139, 92, 246, 0.2);
+    --stg-card-title-border-dark: rgba(200, 170, 255, 0.2);
+    --stg-card-title-padding: 0.7rem 1.8rem;
+    --stg-card-title-border-radius: 12px;
+}
+
+/* STG Body Text 기본 클래스 */
+.stg-body-text {
+    font-family: var(--stg-body-font-family) !important;
+    font-size: var(--stg-body-font-size) !important;
+    line-height: var(--stg-body-line-height) !important;
+    font-weight: var(--stg-body-font-weight) !important;
+}
+
+/* 모든 본문 텍스트 요소에 STG Body Text 스타일 적용 */
+p, li, 
+.body-text, 
+.card-text, 
+.message-text, 
+.philosophy-text, 
+.icons-text, 
+.era-text, 
+.experience-text, 
+.mission-text,
+.booking-content, 
+.additional-card-text,
+.kakao-modal-message, 
+.hero-description .lead, 
+.service-card-description,
+.category-prism-description,
+.service-option-description {
+    font-family: var(--stg-body-font-family);
+    font-size: var(--stg-body-font-size);
+    line-height: var(--stg-body-line-height);
+    font-weight: var(--stg-body-font-weight);
+}
+
+/* Footer text stays smaller */
+.footer-info {
+    font-family: var(--stg-body-font-family);
+    font-size: 14px;
+    line-height: 0.8;
+    font-weight: var(--stg-body-font-weight);
+}
+
+/* ============================================
+   STG Card Title - 사이트 전체 카드 제목 기준
+   이 스타일이 모든 카드 제목의 기준입니다.
+   ============================================ */
+
+/* STG Card Title 기본 클래스 (Light Mode 기본) */
+.stg-card-title {
+    font-family: 'Noto Sans KR', sans-serif !important;
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    color: #5B3A8C !important;
+    background: rgba(139, 92, 246, 0.08);
+    padding: 0.7rem 1.8rem;
+    border-radius: 12px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    display: inline-block;
+    margin-bottom: 1rem;
+}
+
+/* STG Card Title Dark Mode */
+body:not(.light-mode) .stg-card-title {
+    color: rgb(var(--main-color-rgb)) !important;
+    background: rgba(200, 170, 255, 0.12);
+    border-color: rgba(200, 170, 255, 0.2);
+    text-shadow: 0 0 20px rgba(200, 170, 255, 0.5);
+}
+
+/* 반응형 - 모바일 */
+@media (max-width: 768px) {
+    .stg-card-title {
+        font-size: 1.1rem !important;
+        padding: 0.55rem 1.3rem;
+    }
+}
+
+/* Standalone .stg_card_title (underscore version) - 래퍼 없이도 작동 */
+.stg_card_title {
+    font-family: 'Noto Sans KR', sans-serif !important;
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    color: #5B3A8C !important;
+    background: rgba(139, 92, 246, 0.08);
+    padding: 0.7rem 1.8rem;
+    border-radius: 12px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    display: inline-block;
+    margin-bottom: 1rem;
+}
+
+/* Dark Mode - Standalone stg_card_title */
+body:not(.light-mode) .stg_card_title {
+    color: rgb(var(--main-color-rgb)) !important;
+    background: rgba(200, 170, 255, 0.12);
+    border-color: rgba(200, 170, 255, 0.2);
+    text-shadow: 0 0 20px rgba(200, 170, 255, 0.5);
+}
+
+/* Standalone stg_card_title 반응형 */
+@media (max-width: 768px) {
+    .stg_card_title {
+        font-size: 1.1rem !important;
+        padding: 0.55rem 1.3rem;
+    }
+}
+
+/* service-option-name이 stg_card_title 스타일을 상속받도록 명시 */
+.service-option-name.stg_card_title,
+.service-option-name.stg-card-title {
+    font-family: 'Noto Sans KR', sans-serif !important;
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    color: #5B3A8C !important;
+    background: rgba(139, 92, 246, 0.08);
+    padding: 0.7rem 1.8rem;
+    border-radius: 12px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    display: inline-block;
+    margin-bottom: 1rem;
+}
+
+body:not(.light-mode) .service-option-name.stg_card_title,
+body:not(.light-mode) .service-option-name.stg-card-title {
+    color: rgb(var(--main-color-rgb)) !important;
+    background: rgba(200, 170, 255, 0.12);
+    border-color: rgba(200, 170, 255, 0.2);
+    text-shadow: 0 0 20px rgba(200, 170, 255, 0.5);
+}
+
+@media (max-width: 768px) {
+    .service-option-name.stg_card_title,
+    .service-option-name.stg-card-title {
+        font-size: 1.1rem !important;
+        padding: 0.55rem 1.3rem;
+    }
+}
+
+/* ============================================
+   STG Card Format - 사이트 전체 카드 포맷 기준
+   이 스타일이 모든 카드 컨테이너의 기준입니다.
+   (배경, 테두리, 그림자, 레이아웃 포함)
+   ============================================ */
+
+/* STG Card Format 기본 클래스 - 카드 컨테이너 스타일 포함 */
+.stg_card_format {
+    /* 카드 컨테이너 스타일 */
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+    
+    /* 레이아웃 스타일 */
+    text-align: center;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 카드 상단 그라데이션 라인 */
+.stg_card_format::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--neon-lavender), var(--electric-violet), var(--neon-lavender));
+    box-shadow: 0 0 20px rgba(200, 170, 255, 0.6);
+}
+
+/* 호버 효과 */
+.stg_card_format:hover {
+    transform: translateY(-8px);
+    border-color: rgba(200, 170, 255, 0.5);
+    box-shadow: var(--hover-glow);
+}
+
+/* Light Mode 카드 컨테이너 스타일 */
+body.light-mode .stg_card_format {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(200, 170, 255, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+body.light-mode .stg_card_format::before {
+    background: linear-gradient(90deg, transparent, #8B5CF6, #A78BFA, transparent);
+    opacity: 0.7;
+}
+
+body.light-mode .stg_card_format:hover {
+    border-color: rgba(139, 92, 246, 0.4);
+    box-shadow: 0 15px 40px rgba(139, 92, 246, 0.15);
+}
+
+/* 패딩 변형 (기본, md 이상) */
+.stg_card_format.stg_card_format--padded {
+    padding: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .stg_card_format.stg_card_format--padded {
+        padding: 2.5rem;
+    }
+}
+
+/* Card Content - 내부 컨텐츠 래퍼 */
+.stg_card_format .stg_card_content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 260px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Service Icon - 아이콘 스타일 */
+.stg_card_format .stg_card_icon {
+    margin-bottom: 1rem;
+    font-size: 3rem;
+    transition: all 0.4s ease;
+}
+
+/* Dark Mode Icon */
+body:not(.light-mode) .stg_card_format .stg_card_icon i {
+    color: #E0C8FF !important;
+    filter: drop-shadow(0 0 25px rgba(200, 170, 255, 0.7));
+}
+
+/* Light Mode Icon */
+body.light-mode .stg_card_format .stg_card_icon i {
+    color: rgba(139, 95, 191, 0.8) !important;
+    filter: none !important;
+}
+
+/* Card Title - stg-card-title을 상속하여 사용 */
+.stg_card_format .stg_card_title {
+    font-family: 'Noto Sans KR', sans-serif !important;
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    background: rgba(139, 92, 246, 0.08);
+    padding: 0.7rem 1.8rem;
+    border-radius: 12px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    display: inline-block;
+    margin-bottom: 1rem;
+}
+
+/* Dark Mode Title */
+body:not(.light-mode) .stg_card_format .stg_card_title {
+    color: rgb(var(--main-color-rgb)) !important;
+    background: rgba(200, 170, 255, 0.12);
+    border-color: rgba(200, 170, 255, 0.2);
+    text-shadow: 0 0 20px rgba(200, 170, 255, 0.5);
+}
+
+/* Light Mode Title */
+body.light-mode .stg_card_format .stg_card_title {
+    color: #5B3A8C !important;
+    background: rgba(139, 92, 246, 0.08);
+    border-color: rgba(139, 92, 246, 0.2);
+    text-shadow: none !important;
+}
+
+/* Card Description - stg-body-text 스타일 적용 */
+.stg_card_format .stg_card_description {
+    font-family: var(--stg-body-font-family) !important;
+    font-size: var(--stg-body-font-size) !important;
+    line-height: var(--stg-body-line-height) !important;
+    font-weight: var(--stg-body-font-weight) !important;
+    margin-bottom: 1.5rem;
+    padding: 0 1rem;
+    white-space: pre-line;
+}
+
+/* Dark Mode Description */
+body:not(.light-mode) .stg_card_format .stg_card_description {
+    color: var(--stg-body-color-dark);
+}
+
+/* Light Mode Description */
+body.light-mode .stg_card_format .stg_card_description {
+    color: var(--stg-body-color-light);
+}
+
+/* Options Buttons Grid */
+.stg_card_format .stg_card_options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    padding: 0.5rem;
+}
+
+/* Option Button Wrapper */
+.stg_card_format .stg_card_option_wrapper {
+    display: flex;
+}
+
+/* Option Button */
+.stg_card_format .stg_card_option_btn {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border-radius: 10px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1rem;
+    font-weight: 400;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    position: relative;
+    overflow: hidden;
+    line-height: 1;
+}
+
+/* Light Mode Option Button */
+body.light-mode .stg_card_format .stg_card_option_btn {
+    background: rgba(255, 255, 255, 0.9);
+    color: #555555 !important;
+    border: 1px solid rgba(139, 92, 246, 0.35);
+}
+
+body.light-mode .stg_card_format .stg_card_option_btn:hover {
+    background: #5B3A8C;
+    border-color: #5B3A8C;
+    color: #ffffff !important;
+    box-shadow: 0 4px 15px rgba(91, 58, 140, 0.25);
+    transform: translateY(-2px);
+}
+
+/* Dark Mode Option Button */
+body:not(.light-mode) .stg_card_format .stg_card_option_btn {
+    background: rgba(200, 170, 255, 0.1);
+    color: #FDFCFF !important;
+    border: 1px solid rgba(200, 170, 255, 0.3);
+}
+
+body:not(.light-mode) .stg_card_format .stg_card_option_btn:hover {
+    background: linear-gradient(135deg, #F8F4FF, #E8DCFF);
+    color: #1a0030 !important;
+    box-shadow: 0 0 25px rgba(200, 170, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+/* Option Button Text */
+.stg_card_format .stg_card_option_text {
+    transition: transform 0.3s ease;
+}
+
+body.light-mode .stg_card_format .stg_card_option_text {
+    color: #555555 !important;
+}
+
+body.light-mode .stg_card_format .stg_card_option_btn:hover .stg_card_option_text {
+    color: #ffffff !important;
+    transform: translateX(-5px);
+}
+
+body:not(.light-mode) .stg_card_format .stg_card_option_text {
+    color: #FDFCFF !important;
+}
+
+body:not(.light-mode) .stg_card_format .stg_card_option_btn:hover .stg_card_option_text {
+    color: #1a0030 !important;
+    transform: translateX(-5px);
+}
+
+/* Option Arrow */
+.stg_card_format .stg_card_option_arrow {
+    font-size: 1.1rem;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s ease;
+}
+
+.stg_card_format .stg_card_option_btn:hover .stg_card_option_arrow {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Option Button Shine Effect */
+.stg_card_format .stg_card_option_btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.15), transparent);
+    transition: left 0.4s ease;
+}
+
+.stg_card_format .stg_card_option_btn:hover::before {
+    left: 100%;
+}
+
+/* STG Card Format 반응형 */
+@media (max-width: 992px) {
+    .stg_card_format .stg_card_content {
+        min-height: 240px;
+    }
+    
+    .stg_card_format .stg_card_options {
+        gap: 0.6rem;
+    }
+    
+    .stg_card_format .stg_card_option_btn {
+        font-size: 0.82rem;
+        padding: 0.65rem 0.7rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .stg_card_format {
+        padding: 1.25rem;
+    }
+    
+    .stg_card_format .stg_card_title {
+        font-size: 1.1rem !important;
+        padding: 0.55rem 1.3rem;
+    }
+    
+    .stg_card_format .stg_card_description {
+        font-size: 1rem !important;
+        line-height: 1.8 !important;
+        padding: 0;
+    }
+    
+    .stg_card_format .stg_card_options {
+        padding: 0;
+        gap: 0.5rem;
+    }
+    
+    .stg_card_format .stg_card_option_btn {
+        font-size: 0.78rem;
+        padding: 0.6rem 0.5rem;
+    }
+    
+    .stg_card_format .stg_card_content {
+        min-height: 220px;
+    }
+    
+    .stg_card_format .stg_card_icon {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .stg_card_format {
+        padding: 1.5rem 1.2rem;
+    }
+    
+    .stg_card_format .stg_card_options {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .stg_card_format .stg_card_content {
+        min-height: auto;
+    }
+    
+    .stg_card_format .stg_card_option_btn {
+        font-size: 0.85rem;
+        padding: 0.7rem 1rem;
+    }
+}
+
+/* STG Card Format - Additional Card 변형 */
+.stg_card_format.stg_card_format--additional {
+    justify-content: center;
+    min-height: 300px;
+}
+
+/* Additional 카드 호버 시 더 강한 효과 */
+.stg_card_format--additional:hover {
+    transform: translateY(-15px);
+}
+
+body:not(.light-mode) .stg_card_format--additional:hover {
+    border-color: rgba(181, 126, 220, 0.5);
+    box-shadow: 0 0 50px rgba(181, 126, 220, 0.3), 0 25px 70px rgba(0, 0, 0, 0.5);
+}
+
+.stg_card_format--additional .stg_card_icon {
+    margin-bottom: 1.5rem;
+    font-size: 3.5rem;
+}
+
+.stg_card_format--additional:hover .stg_card_icon {
+    transform: scale(1.15) rotate(5deg);
+}
+
+body:not(.light-mode) .stg_card_format--additional:hover .stg_card_icon i {
+    color: #F0E0FF !important;
+    filter: drop-shadow(0 0 40px rgba(200, 170, 255, 1));
+}
+
+/* Additional 카드 shine 효과 */
+.stg_card_format--additional::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(181, 126, 220, 0.1), transparent);
+    transition: left 0.6s ease;
+    z-index: 0;
+}
+
+.stg_card_format--additional:hover::after {
+    left: 100%;
+}
+
+/* Description Short 변형 (옵션 버튼 없는 카드용) */
+.stg_card_format .stg_card_description--short {
+    margin-bottom: 0;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+body:not(.light-mode) .stg_card_format .stg_card_description--short {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+body.light-mode .stg_card_format .stg_card_description--short {
+    color: #6c757d;
+}
+
+@media (max-width: 768px) {
+    .stg_card_format.stg_card_format--additional {
+        min-height: 250px;
+        border-radius: 20px;
+    }
+    
+    .stg_card_format--additional .stg_card_icon {
+        font-size: 2.8rem;
+    }
+    
+    .stg_card_format--additional:hover {
+        transform: translateY(-10px);
+    }
+}
+
+/* ============================================
+   STG Button - 사이트 전체 버튼 기준
+   이 스타일이 모든 버튼의 기준입니다.
+   ============================================ */
+
+/* STG Button CSS Variables */
+:root {
+    --stg-button-font-family: 'Noto Sans KR', sans-serif;
+    --stg-button-font-size: 0.9rem;
+    --stg-button-font-weight: 400;
+    --stg-button-padding: 0.7rem 1rem;
+    --stg-button-border-radius: 12px;
+    --stg-button-transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Dark Mode Colors */
+    --stg-button-bg-dark: rgba(200, 170, 255, 0.12);
+    --stg-button-color-dark: rgb(var(--main-color-rgb));
+    --stg-button-border-dark: rgba(200, 170, 255, 0.4);
+    --stg-button-text-shadow-dark: 0 0 10px rgba(200, 170, 255, 0.4);
+    --stg-button-hover-bg-dark: linear-gradient(135deg, var(--neon-lavender), var(--electric-violet));
+    --stg-button-hover-color-dark: var(--text-primary);
+    --stg-button-hover-shadow-dark: 0 0 20px rgba(200, 170, 255, 0.5), 0 0 40px rgba(180, 140, 255, 0.3);
+    
+    /* Light Mode Colors */
+    --stg-button-bg-light: rgba(255, 255, 255, 0.9);
+    --stg-button-color-light: #555555;
+    --stg-button-border-light: rgba(139, 92, 246, 0.35);
+    --stg-button-hover-bg-light: #5B3A8C;
+    --stg-button-hover-color-light: #ffffff;
+    --stg-button-hover-shadow-light: 0 4px 15px rgba(91, 58, 140, 0.25);
+}
+
+/* STG Button 기본 클래스 (Dark Mode 기본) */
+.stg_button {
+    font-family: var(--stg-button-font-family) !important;
+    font-size: var(--stg-button-font-size) !important;
+    font-weight: var(--stg-button-font-weight) !important;
+    padding: var(--stg-button-padding);
+    border-radius: var(--stg-button-border-radius);
+    transition: var(--stg-button-transition);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    text-align: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    line-height: 1.2;
+}
+
+/* Dark Mode STG Button */
+body:not(.light-mode) .stg_button {
+    background: var(--stg-button-bg-dark);
+    color: var(--stg-button-color-dark) !important;
+    border: 1px solid var(--stg-button-border-dark);
+    text-shadow: var(--stg-button-text-shadow-dark);
+}
+
+body:not(.light-mode) .stg_button:hover {
+    background: var(--stg-button-hover-bg-dark);
+    border-color: transparent;
+    color: var(--stg-button-hover-color-dark) !important;
+    box-shadow: var(--stg-button-hover-shadow-dark);
+    transform: translateY(-2px);
+    text-shadow: none;
+}
+
+/* Light Mode STG Button */
+body.light-mode .stg_button {
+    background: var(--stg-button-bg-light);
+    color: var(--stg-button-color-light) !important;
+    border: 1px solid var(--stg-button-border-light);
+    text-shadow: none;
+}
+
+body.light-mode .stg_button:hover {
+    background: var(--stg-button-hover-bg-light);
+    border-color: var(--stg-button-hover-bg-light);
+    color: var(--stg-button-hover-color-light) !important;
+    box-shadow: var(--stg-button-hover-shadow-light);
+    transform: translateY(-2px);
+}
+
+/* STG Button Text */
+.stg_button .stg_button_text {
+    transition: transform 0.3s ease;
+}
+
+body.light-mode .stg_button .stg_button_text {
+    color: var(--stg-button-color-light) !important;
+}
+
+body.light-mode .stg_button:hover .stg_button_text {
+    color: var(--stg-button-hover-color-light) !important;
+    transform: translateX(-5px);
+}
+
+body:not(.light-mode) .stg_button .stg_button_text {
+    color: var(--stg-button-color-dark) !important;
+}
+
+body:not(.light-mode) .stg_button:hover .stg_button_text {
+    color: var(--stg-button-hover-color-dark) !important;
+    transform: translateX(-5px);
+}
+
+/* STG Button Arrow Icon */
+.stg_button .stg_button_arrow {
+    font-size: 1.1rem;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s ease;
+}
+
+.stg_button:hover .stg_button_arrow {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* STG Button Shine Effect */
+.stg_button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.15), transparent);
+    transition: left 0.4s ease;
+}
+
+.stg_button:hover::before {
+    left: 100%;
+}
+
+/* STG Button 반응형 */
+@media (max-width: 992px) {
+    .stg_button {
+        font-size: 0.85rem !important;
+        padding: 0.65rem 0.9rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .stg_button {
+        font-size: 0.8rem !important;
+        padding: 0.6rem 0.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .stg_button {
+        font-size: 0.85rem !important;
+        padding: 0.7rem 1rem;
+    }
+}
+
+/* STG Button Sizes */
+.stg_button--sm {
+    font-size: 0.8rem !important;
+    padding: 0.5rem 0.8rem;
+}
+
+.stg_button--lg {
+    font-size: 1rem !important;
+    padding: 0.9rem 1.5rem;
+}
+
+/* STG Button Block (Full Width) */
+.stg_button--block {
+    display: flex;
+    width: 100%;
+}
+
+/* option-button이 stg_button 스타일을 상속받도록 적용 */
+.option-button {
+    font-family: var(--stg-button-font-family) !important;
+    font-size: var(--stg-button-font-size) !important;
+    font-weight: var(--stg-button-font-weight) !important;
+    padding: var(--stg-button-padding);
+    border-radius: var(--stg-button-border-radius);
+    transition: var(--stg-button-transition);
+    text-decoration: none;
+    display: block;
+    text-align: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Dark Mode option-button */
+body:not(.light-mode) .option-button {
+    background: var(--stg-button-bg-dark);
+    color: var(--stg-button-color-dark) !important;
+    border: 1px solid var(--stg-button-border-dark);
+    text-shadow: var(--stg-button-text-shadow-dark);
+}
+
+body:not(.light-mode) .option-button:hover {
+    background: var(--stg-button-hover-bg-dark);
+    border-color: transparent;
+    color: var(--stg-button-hover-color-dark) !important;
+    box-shadow: var(--stg-button-hover-shadow-dark);
+    transform: translateY(-2px);
+    text-shadow: none;
+}
+
+/* Light Mode option-button */
+body.light-mode .option-button {
+    background: var(--stg-button-bg-light);
+    color: var(--stg-button-color-light) !important;
+    border: 1px solid var(--stg-button-border-light);
+    text-shadow: none;
+}
+
+body.light-mode .option-button:hover {
+    background: var(--stg-button-hover-bg-light);
+    border-color: var(--stg-button-hover-bg-light);
+    color: var(--stg-button-hover-color-light) !important;
+    box-shadow: var(--stg-button-hover-shadow-light);
+    transform: translateY(-2px);
+}
+
+/* ============================================
    Glassmorphism Components
    ============================================ */
 .glass-card {
@@ -614,8 +1415,6 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
 
 .card-text {
     color: var(--text-secondary);
-    font-size: 0.95rem;
-    line-height: 1.7;
 }
 
 /* ============================================
@@ -632,6 +1431,58 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
     font-family: 'Cormorant Garamond', serif;
     color: #FDFCFF !important;
     text-shadow: 0 0 30px rgba(200, 170, 255, 0.6), 0 0 60px rgba(180, 140, 255, 0.4);
+}
+
+/* ============================================
+   STG Page Title - 사이트 전체 페이지 타이틀 기준
+   이 스타일이 모든 페이지 타이틀의 기준입니다.
+   ============================================ */
+
+/* STG Page Title CSS Variables */
+:root {
+    --stg-page-title-font-family: 'Noto Sans KR', sans-serif;
+    --stg-page-title-font-size: 2.8rem;
+    --stg-page-title-font-weight: 400;
+    --stg-page-title-letter-spacing: 0.1em;
+    --stg-page-title-color-dark: var(--neon-lavender);
+    --stg-page-title-color-light: rgba(139, 95, 191, 0.8);
+    --stg-page-title-text-shadow-dark: 0 0 50px rgba(181, 126, 220, 0.5);
+}
+
+/* STG Page Title 기본 클래스 (Dark Mode 기본) */
+.stg_page_title {
+    font-family: var(--stg-page-title-font-family) !important;
+    font-size: var(--stg-page-title-font-size) !important;
+    font-weight: var(--stg-page-title-font-weight) !important;
+    letter-spacing: var(--stg-page-title-letter-spacing);
+    color: var(--stg-page-title-color-dark) !important;
+    text-shadow: var(--stg-page-title-text-shadow-dark);
+    margin-bottom: 0.5rem;
+}
+
+/* Light Mode STG Page Title */
+body.light-mode .stg_page_title {
+    color: var(--stg-page-title-color-light) !important;
+    text-shadow: none !important;
+}
+
+/* STG Page Title 반응형 */
+@media (max-width: 992px) {
+    .stg_page_title {
+        font-size: 2.5rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .stg_page_title {
+        font-size: 2.2rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .stg_page_title {
+        font-size: 2rem !important;
+    }
 }
 
 /* ============================================
@@ -714,18 +1565,18 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
 .footer {
     background: linear-gradient(180deg, rgba(10, 0, 26, 0.8) 0%, var(--rich-black) 100%);
     border-top: 1px solid rgba(200, 170, 255, 0.25);
-    padding: 3rem 0 2rem;
+    padding: 2rem 0 1.5rem;
     margin-top: auto;
 }
 
 .social-links {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .social-link {
     color: rgba(255, 255, 255, 0.95);
-    font-size: 1.6rem;
-    margin: 0 1rem;
+    font-size: 1.3rem;
+    margin: 0 0.8rem;
     text-decoration: none;
     transition: var(--transition-smooth);
     display: inline-block;
@@ -740,14 +1591,13 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
 
 .footer-info {
     color: rgba(255, 255, 255, 0.95);
-    font-size: 0.9rem;
-    line-height: 1.9;
 }
 
 .footer-info p {
-    margin: 0.4rem 0;
+    margin: 0.3rem 0;
     word-break: keep-all;
     text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    font-size: 14px !important;
 }
 
 .contact-link, .footer-link {
@@ -817,9 +1667,7 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
 
 .kakao-modal-message {
     color: var(--text-secondary);
-    line-height: 1.8;
     margin-bottom: 2rem;
-    font-size: 1rem;
 }
 
 .kakao-modal-buttons {
@@ -1002,45 +1850,16 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
     box-shadow: var(--hover-glow);
 }
 
+/* service-card-title은 stg-card-title 스타일을 상속받음 */
 .service-card-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.6rem;
-    color: var(--main-color);
-    font-weight: 500;
-    background: rgba(200, 170, 255, 0.15);
-    padding: 0.8rem 1.5rem;
-    border-radius: 12px;
-    display: inline-block;
-    text-shadow: 0 0 20px rgba(200, 170, 255, 0.5);
+    /* stg-card-title 클래스가 기본 스타일을 제공 */
 }
 
 .service-card-description {
     color: var(--text-secondary);
-    font-size: 1rem;
-    line-height: 1.7;
 }
 
-.option-button {
-    background: rgba(200, 170, 255, 0.12);
-    color: var(--main-color);
-    border: 1px solid rgba(200, 170, 255, 0.4);
-    padding: 0.7rem 1rem;
-    border-radius: 12px;
-    font-size: 0.9rem;
-    transition: var(--transition-smooth);
-    text-decoration: none;
-    display: block;
-    text-align: center;
-    text-shadow: 0 0 10px rgba(200, 170, 255, 0.4);
-}
-
-.option-button:hover {
-    background: linear-gradient(135deg, var(--neon-lavender), var(--electric-violet));
-    border-color: transparent;
-    color: var(--text-primary);
-    box-shadow: var(--neon-glow);
-    transform: translateY(-2px);
-}
+/* option-button 스타일은 STG Button 섹션에서 정의됨 */
 
 /* ============================================
    Additional Cards Section
@@ -1078,19 +1897,15 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
     filter: drop-shadow(0 0 40px rgba(200, 170, 255, 1));
 }
 
+/* additional-card-title은 stg-card-title 스타일을 상속받음 */
 .additional-card-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-weight: 500;
-    font-size: 1.6rem;
-    color: #FFFFFF;
-    margin-bottom: 1rem;
+    /* stg-card-title 클래스가 기본 스타일을 제공 */
+    /* 추가 카드 특화 스타일만 오버라이드 */
     text-shadow: 0 0 30px rgba(200, 170, 255, 0.7), 0 0 60px rgba(181, 126, 220, 0.4);
 }
 
 .additional-card-text {
     color: rgba(255, 255, 255, 0.9);
-    font-size: 1rem;
-    line-height: 1.6;
 }
 
 /* ============================================
@@ -1186,15 +2001,12 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
 }
 
 .hero-description .lead {
-    font-size: 1.15rem;
     color: var(--text-muted);
     margin-bottom: 0.5rem;
 }
 
 .message-text {
-    font-size: 1.1rem;
     color: var(--text-secondary);
-    line-height: 1.9;
 }
 
 .message-highlight {
@@ -1240,8 +2052,6 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
 .era-text,
 .experience-text,
 .mission-text {
-    font-size: 1.1rem;
-    line-height: 1.9;
     color: var(--text-secondary);
     margin-bottom: 1.5rem;
 }
@@ -1277,7 +2087,6 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
    Booking Conditions Styles
    ============================================ */
 .booking-content {
-    line-height: 1.9;
     color: var(--text-secondary);
 }
 
@@ -1476,9 +2285,7 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
         padding: 1.5rem;
     }
     
-    .service-card-title {
-        font-size: 1.3rem;
-    }
+    /* service-card-title 반응형은 stg-card-title에서 처리 */
 }
 
 /* ============================================

@@ -12,7 +12,7 @@
             <div class="header-icon mb-4">
                 <i class="bi bi-briefcase-fill"></i>
             </div>
-            <h1 class="page-title">{{ _('커머셜 포트폴리오') }}</h1>
+            <h1 class="stg_page_title">{{ _('커머셜 포트폴리오') }}</h1>
             <p class="page-subtitle">{{ _('스타일그래퍼의 상업적 프로젝트와 협업 사례') }}</p>
             <div class="title-divider"></div>
         </div>
@@ -63,14 +63,7 @@
     }
 }
 
-.page-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 3.5rem;
-    color: var(--neon-lavender);
-    text-shadow: 0 0 50px rgba(181, 126, 220, 0.5);
-    font-weight: 400;
-    letter-spacing: 0.1em;
-}
+/* page-title 스타일은 stg_page_title로 통합됨 - style.css 참조 */
 
 .page-subtitle {
     color: rgba(255, 255, 255, 0.6);
@@ -158,9 +151,7 @@
 }
 
 @media (max-width: 768px) {
-    .page-title {
-        font-size: 2.5rem;
-    }
+    /* page-title 반응형은 stg_page_title로 통합됨 - style.css 참조 */
     
     .header-icon {
         font-size: 3rem;

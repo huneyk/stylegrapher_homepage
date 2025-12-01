@@ -7,10 +7,10 @@
 {% block content %}
 <section class="gallery-page py-5">
     <div class="container">
-        <div class="gallery-main-card">
+        <div class="gallery-main-card stg_card_format">
             <!-- Header -->
             <div class="gallery-header text-center mb-5">
-                <h1 class="gallery-page-title">Gallery</h1>
+                <h1 class="stg_page_title">Gallery</h1>
                 <p class="gallery-page-subtitle">{{ _('당신만의 특별한 순간을 담다') }}</p>
                 <div class="title-divider"></div>
             </div>
@@ -48,39 +48,12 @@
     padding-top: 3rem;
 }
 
-.gallery-main-card {
-    background: rgba(18, 0, 36, 0.6);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(181, 126, 220, 0.2);
-    border-radius: 32px;
+/* gallery-main-card는 stg_card_format을 상속받아 일관된 스타일 적용 */
+.gallery-main-card.stg_card_format {
     padding: 3rem 2rem;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-}
-
-/* Light Mode - Gallery Main Card */
-body.light-mode .gallery-main-card {
-    background: #e8e8e8 !important;
-    border: 1px solid rgba(139, 95, 191, 0.2) !important;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08) !important;
-}
-
-body.light-mode .gallery-main-card::before {
-    background: linear-gradient(90deg, transparent, rgba(139, 95, 191, 0.6), rgba(170, 130, 210, 0.6), transparent) !important;
-    box-shadow: none !important;
-}
-
-.gallery-main-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--neon-lavender), var(--electric-violet), transparent);
-    box-shadow: 0 0 30px rgba(181, 126, 220, 0.6);
+    border-radius: 32px;
+    text-align: left;
+    display: block;
 }
 
 .gallery-header {
@@ -88,15 +61,7 @@ body.light-mode .gallery-main-card::before {
     z-index: 1;
 }
 
-.gallery-page-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 4rem;
-    color: var(--neon-lavender);
-    text-shadow: 0 0 50px rgba(181, 126, 220, 0.6);
-    font-weight: 300;
-    letter-spacing: 0.15em;
-    margin-bottom: 0.5rem;
-}
+/* gallery-page-title 스타일은 stg_page_title로 통합됨 - style.css 참조 */
 
 .gallery-page-subtitle {
     font-family: 'Noto Sans KR', sans-serif;
@@ -258,20 +223,12 @@ body.light-mode .gallery-main-card::before {
 }
 
 /* Responsive */
-@media (max-width: 992px) {
-    .gallery-page-title {
-        font-size: 3rem;
-    }
-}
+/* gallery-page-title 반응형은 stg_page_title로 통합됨 - style.css 참조 */
 
 @media (max-width: 768px) {
-    .gallery-main-card {
+    .gallery-main-card.stg_card_format {
         padding: 2rem 1.5rem;
         border-radius: 24px;
-    }
-    
-    .gallery-page-title {
-        font-size: 2.5rem;
     }
     
     .gallery-page-subtitle {
@@ -285,12 +242,6 @@ body.light-mode .gallery-main-card::before {
     .gallery-load-more-btn {
         padding: 0.9rem 2rem;
         font-size: 0.95rem;
-    }
-}
-
-@media (max-width: 576px) {
-    .gallery-page-title {
-        font-size: 2rem;
     }
 }
 </style>

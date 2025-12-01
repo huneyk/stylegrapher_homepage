@@ -203,34 +203,223 @@
         }
         
         body.light-mode .card-text {
-            font-size: 1.15rem !important;
+            font-family: 'Noto Sans KR', sans-serif !important;
+            font-size: 0.95rem !important;
+            line-height: 1.7 !important;
             font-weight: 400 !important;
             color: #6c757d !important;
-            line-height: 1.5 !important;
         }
         
-        body.light-mode .service-card-title {
-            font-size: 1.6rem !important;
-            font-weight: 700 !important;
-            color: rgb(var(--main-color-rgb)) !important;
+        /* Light Mode - Global Body Text Style (STG Body Text 기준 적용) */
+        body.light-mode p,
+        body.light-mode li {
+            font-family: var(--stg-body-font-family) !important;
+            font-size: var(--stg-body-font-size) !important;
+            line-height: var(--stg-body-line-height) !important;
+            font-weight: var(--stg-body-font-weight) !important;
+        }
+        
+        /* Light Mode - STG Card Title 기준 스타일 (hyphen & underscore 모두 지원) */
+        body.light-mode .stg-card-title,
+        body.light-mode .stg_card_title {
+            font-family: 'Noto Sans KR', sans-serif !important;
+            font-size: 1.25rem !important;
+            font-weight: 600 !important;
+            color: #5B3A8C !important;
+            background: rgba(139, 92, 246, 0.08);
+            padding: 0.7rem 1.8rem;
+            border-radius: 12px;
+            border: 1px solid rgba(139, 92, 246, 0.2);
             text-shadow: none !important;
+        }
+        
+        /* Light Mode - STG Card Format 기본 컨테이너 및 레이아웃 스타일 */
+        body.light-mode .stg_card_format {
+            /* 카드 컨테이너 스타일 */
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(200, 170, 255, 0.3) !important;
+            border-radius: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            
+            /* 레이아웃 스타일 */
+            text-align: center;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* 카드 상단 그라데이션 라인 */
+        body.light-mode .stg_card_format::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #8B5CF6, #A78BFA, transparent);
+            opacity: 0.7;
+        }
+        
+        /* 호버 효과 */
+        body.light-mode .stg_card_format:hover {
+            transform: translateY(-8px);
+            border-color: rgba(139, 92, 246, 0.4) !important;
+            box-shadow: 0 15px 40px rgba(139, 92, 246, 0.15) !important;
+        }
+        
+        body.light-mode .stg_card_format .stg_card_content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 260px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Light Mode - STG Card Format Title 스타일 */
+        body.light-mode .stg_card_format .stg_card_title {
+            font-family: 'Noto Sans KR', sans-serif !important;
+            font-size: 1.25rem !important;
+            font-weight: 600 !important;
+            color: #5B3A8C !important;
+            background: rgba(139, 92, 246, 0.08);
+            padding: 0.7rem 1.8rem;
+            border-radius: 12px;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            text-shadow: none !important;
+        }
+        
+        body.light-mode .stg_card_format .stg_card_description {
+            font-family: var(--stg-body-font-family) !important;
+            font-size: var(--stg-body-font-size) !important;
+            line-height: var(--stg-body-line-height) !important;
+            font-weight: var(--stg-body-font-weight) !important;
+            color: var(--stg-body-color-light) !important;
+            margin-bottom: 1.5rem;
+            padding: 0 1rem;
+            white-space: pre-line;
+        }
+        
+        body.light-mode .stg_card_format .stg_card_description--short {
+            color: #6c757d !important;
+            margin-bottom: 0;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        
+        body.light-mode .stg_card_format .stg_card_icon {
+            margin-bottom: 1rem;
+            font-size: 3rem;
+        }
+        
+        body.light-mode .stg_card_format .stg_card_icon i {
+            color: rgba(139, 95, 191, 0.8) !important;
+            filter: none !important;
+        }
+        
+        body.light-mode .stg_card_format--additional:hover .stg_card_icon i {
+            color: rgba(139, 95, 191, 0.9) !important;
+        }
+        
+        /* Light Mode - STG Card Format Options 스타일 */
+        body.light-mode .stg_card_format .stg_card_options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            padding: 0.5rem;
+        }
+        
+        body.light-mode .stg_card_format .stg_card_option_wrapper {
+            display: flex;
+        }
+        
+        body.light-mode .stg_card_format .stg_card_option_btn {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border-radius: 10px;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 1rem;
+            font-weight: 400;
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #555555 !important;
+            border: 1px solid rgba(139, 92, 246, 0.35) !important;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        body.light-mode .stg_card_format .stg_card_option_btn:hover {
+            background: #5B3A8C !important;
+            border-color: #5B3A8C !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 15px rgba(91, 58, 140, 0.25);
+            transform: translateY(-2px);
+        }
+        
+        body.light-mode .stg_card_format .stg_card_option_text {
+            color: #555555 !important;
+            transition: transform 0.3s ease;
+        }
+        
+        body.light-mode .stg_card_format .stg_card_option_btn:hover .stg_card_option_text {
+            color: #ffffff !important;
+            transform: translateX(-5px);
+        }
+        
+        body.light-mode .stg_card_format .stg_card_option_arrow {
+            font-size: 1.1rem;
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 0.3s ease;
+        }
+        
+        body.light-mode .stg_card_format .stg_card_option_btn:hover .stg_card_option_arrow {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        /* Light Mode - Services Page stg_card_format 조정 */
+        body.light-mode .prism-service-inner.stg_card_format {
+            text-align: left;
+        }
+        
+        body.light-mode .prism-service-inner.stg_card_format .stg_card_content {
+            min-height: auto;
+        }
+        
+        body.light-mode .prism-service-inner.stg_card_format .stg_card_description {
+            padding: 0;
+            margin-bottom: 1rem;
+        }
+        
+        /* service-card-title, additional-card-title, service-option-name은 stg-card-title을 상속 */
+        body.light-mode .service-card-title,
+        body.light-mode .additional-card-title,
+        body.light-mode .service-option-name {
+            /* stg-card-title 기본 스타일 적용됨 */
         }
         
         body.light-mode .service-card-description {
-            font-size: 1.15rem !important;
-            font-weight: 400 !important;
-            color: #6c757d !important;
-        }
-        
-        body.light-mode .additional-card-title {
-            font-size: 1.6rem !important;
-            font-weight: 700 !important;
-            color: rgba(139, 95, 191, 0.8) !important;
-            text-shadow: none !important;
+            font-family: var(--stg-body-font-family) !important;
+            font-size: var(--stg-body-font-size) !important;
+            line-height: var(--stg-body-line-height) !important;
+            font-weight: var(--stg-body-font-weight) !important;
+            color: var(--stg-body-color-light) !important;
         }
         
         body.light-mode .additional-card-text {
-            font-size: 1.15rem !important;
+            font-family: 'Noto Sans KR', sans-serif !important;
+            font-size: 0.95rem !important;
+            line-height: 1.7 !important;
             font-weight: 400 !important;
             color: #6c757d !important;
         }
@@ -261,6 +450,16 @@
         body.light-mode .page-title {
             font-size: 2.5rem !important;
             font-weight: 700 !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+            text-shadow: none !important;
+        }
+        
+        /* Light Mode - STG Page Title 기준 스타일 */
+        body.light-mode .stg_page_title {
+            font-family: 'Noto Sans KR', sans-serif !important;
+            font-size: 2.8rem !important;
+            font-weight: 400 !important;
+            letter-spacing: 0.1em;
             color: rgba(139, 95, 191, 0.8) !important;
             text-shadow: none !important;
         }
@@ -483,16 +682,7 @@
             color: white !important;
         }
         
-        body.light-mode .option-button {
-            background: rgba(var(--main-color-rgb), 0.08) !important;
-            color: rgba(139, 95, 191, 0.8) !important;
-            border-color: rgba(var(--main-color-rgb), 0.3) !important;
-        }
-        
-        body.light-mode .option-button:hover {
-            background: linear-gradient(135deg, rgb(var(--main-color-rgb)), rgb(var(--sub-color-rgb))) !important;
-            color: white !important;
-        }
+        /* option-button 스타일은 style.css의 STG Button 섹션에서 정의됨 */
         
         /* Light Mode - Floating Menu */
         body.light-mode .floating-menu-right {
@@ -548,18 +738,19 @@
         }
         
         body.light-mode .footer-info {
-            font-size: 0.85rem !important;
+            font-size: 14px !important;
             color: rgba(255, 255, 255, 0.9) !important;
-            line-height: 1.4 !important;
+            line-height: 0.8 !important;
         }
         
         body.light-mode .footer-info p {
             text-shadow: none !important;
             color: rgba(255, 255, 255, 0.9) !important;
+            font-size: 14px !important;
         }
         
         body.light-mode .social-link {
-            font-size: 1.5rem !important;
+            font-size: 1.2rem !important;
             color: #fff !important;
             text-shadow: none !important;
         }
@@ -789,7 +980,10 @@
         }
         
         body.light-mode .message-text {
-            font-size: 1.1rem !important;
+            font-family: 'Noto Sans KR', sans-serif !important;
+            font-size: 0.95rem !important;
+            line-height: 1.7 !important;
+            font-weight: 400 !important;
             color: #333333 !important;
         }
         
@@ -804,9 +998,11 @@
         body.light-mode .era-text,
         body.light-mode .experience-text,
         body.light-mode .mission-text {
-            font-size: 1.1rem !important;
+            font-family: 'Noto Sans KR', sans-serif !important;
+            font-size: 0.95rem !important;
+            line-height: 1.7 !important;
+            font-weight: 400 !important;
             color: #333333 !important;
-            line-height: 2 !important;
         }
         
         body.light-mode .text-neon {
@@ -928,7 +1124,49 @@
             }
             
             body.light-mode .footer-info {
-                font-size: 0.8rem !important;
+                font-size: 12px !important;
+            }
+            
+            /* Light Mode - STG Card Format 768px 반응형 */
+            body.light-mode .stg_card_format {
+                padding: 1.25rem;
+            }
+            
+            body.light-mode .stg_card_format .stg_card_title {
+                font-size: 1.1rem !important;
+                padding: 0.55rem 1.3rem;
+            }
+            
+            body.light-mode .stg_card_format .stg_card_description {
+                font-size: 1rem !important;
+                line-height: 1.8 !important;
+                padding: 0;
+            }
+            
+            body.light-mode .stg_card_format .stg_card_options {
+                padding: 0;
+                gap: 0.5rem;
+            }
+            
+            body.light-mode .stg_card_format .stg_card_option_btn {
+                font-size: 0.78rem;
+                padding: 0.6rem 0.5rem;
+            }
+            
+            body.light-mode .stg_card_format .stg_card_content {
+                min-height: 220px;
+            }
+            
+            body.light-mode .stg_card_format .stg_card_icon {
+                font-size: 2.5rem;
+            }
+            
+            body.light-mode .prism-service-inner.stg_card_format {
+                padding: 1.5rem;
+            }
+            
+            body.light-mode .prism-service-inner.stg_card_format .stg_card_content {
+                min-height: auto;
             }
             
             body.light-mode .services-page-title,
@@ -946,6 +1184,10 @@
             
             body.light-mode .page-title {
                 font-size: 2rem !important;
+            }
+            
+            body.light-mode .stg_page_title {
+                font-size: 2.2rem !important;
             }
             
             body.light-mode .service-icon i,
@@ -968,12 +1210,56 @@
                 font-size: 1.8rem !important;
             }
             
-            body.light-mode .service-card-title {
-                font-size: 1.3rem !important;
+            body.light-mode .stg_page_title {
+                font-size: 2rem !important;
             }
             
-            body.light-mode .additional-card-title {
-                font-size: 1.3rem !important;
+            /* Light Mode - STG Card Title 반응형 (hyphen & underscore 모두 지원) */
+            body.light-mode .stg-card-title,
+            body.light-mode .stg_card_title {
+                font-size: 1.1rem !important;
+                padding: 0.55rem 1.3rem;
+            }
+            
+            /* Light Mode - STG Card Format 반응형 */
+            body.light-mode .stg_card_format .stg_card_title {
+                font-size: 1.1rem !important;
+                padding: 0.55rem 1.3rem;
+            }
+            
+            /* Light Mode - service-option-name 반응형 */
+            body.light-mode .service-option-name.stg_card_title,
+            body.light-mode .service-option-name.stg-card-title {
+                font-size: 1.1rem !important;
+                padding: 0.55rem 1.3rem;
+            }
+            
+            body.light-mode .stg_card_format .stg_card_description {
+                font-size: 1rem !important;
+                line-height: var(--stg-body-line-height) !important;
+                padding: 0;
+            }
+            
+            body.light-mode .stg_card_format {
+                padding: 1.5rem 1.2rem;
+            }
+            
+            body.light-mode .stg_card_format .stg_card_options {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+            
+            body.light-mode .stg_card_format .stg_card_content {
+                min-height: auto;
+            }
+            
+            body.light-mode .stg_card_format .stg_card_option_btn {
+                font-size: 0.85rem !important;
+                padding: 0.7rem 1rem;
+            }
+            
+            body.light-mode .stg_card_format .stg_card_icon {
+                font-size: 2.5rem;
             }
             
             body.light-mode .card-title {
@@ -984,6 +1270,7 @@
             body.light-mode .service-card-description,
             body.light-mode .additional-card-text {
                 font-size: 1rem !important;
+                line-height: var(--stg-body-line-height) !important;
             }
             
             body.light-mode .option-name {
@@ -994,6 +1281,52 @@
             body.light-mode .option-price {
                 font-size: 0.95rem !important;
             }
+        }
+        
+        /* Light Mode - Services Page Font Overrides */
+        /* services-hero-title, category-prism-title는 stg_page_title로 통합됨 - style.css 참조 */
+        
+        body.light-mode .hero-slogan-text {
+            font-family: 'Noto Sans KR', sans-serif !important;
+            font-size: 1.2rem !important;
+        }
+        
+        body.light-mode .signature-text {
+            font-family: 'Cormorant Garamond', serif !important;
+            font-size: 1rem !important;
+        }
+        
+        body.light-mode .category-prism-description {
+            font-family: var(--stg-body-font-family) !important;
+            font-size: var(--stg-body-font-size) !important;
+            line-height: var(--stg-body-line-height) !important;
+            color: var(--stg-body-color-light) !important;
+        }
+        
+        /* service-option-name은 stg_card_title 스타일을 상속받음 */
+        body.light-mode .service-option-name.stg_card_title,
+        body.light-mode .service-option-name.stg-card-title {
+            font-family: 'Noto Sans KR', sans-serif !important;
+            font-size: 1.25rem !important;
+            font-weight: 600 !important;
+            color: #5B3A8C !important;
+            background: rgba(139, 92, 246, 0.08);
+            padding: 0.7rem 1.8rem;
+            border-radius: 12px;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            text-shadow: none !important;
+        }
+        
+        body.light-mode .service-option-description {
+            font-family: var(--stg-body-font-family) !important;
+            font-size: var(--stg-body-font-size) !important;
+            line-height: var(--stg-body-line-height) !important;
+            color: var(--stg-body-color-light) !important;
+        }
+        
+        body.light-mode .contact-text {
+            font-family: 'Cormorant Garamond', serif !important;
+            font-size: 1.3rem !important;
         }
         {% endif %}
     </style>

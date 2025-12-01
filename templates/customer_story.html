@@ -12,7 +12,7 @@
             <div class="header-icon mb-4">
                 <i class="bi bi-chat-heart-fill"></i>
             </div>
-            <h1 class="page-title">{{ _('고객 스토리') }}</h1>
+            <h1 class="stg_page_title">{{ _('고객 스토리') }}</h1>
             <p class="page-subtitle">{{ _('스타일그래퍼와 함께한 고객들의 생생한 후기') }}</p>
             <div class="title-divider"></div>
         </div>
@@ -63,19 +63,17 @@
     }
 }
 
-.page-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 3.5rem;
-    color: var(--neon-lavender);
-    text-shadow: 0 0 50px rgba(181, 126, 220, 0.5);
-    font-weight: 400;
-    letter-spacing: 0.1em;
-}
+/* page-title 스타일은 stg_page_title로 통합됨 - style.css 참조 */
 
 .page-subtitle {
     color: rgba(255, 255, 255, 0.6);
     font-size: 1.1rem;
     margin-bottom: 1.5rem;
+}
+
+/* Light Mode - page-subtitle */
+body.light-mode .page-subtitle {
+    color: rgba(74, 44, 90, 0.7) !important;
 }
 
 .title-divider {
@@ -138,12 +136,23 @@
     letter-spacing: 0.1em;
 }
 
+/* Light Mode - coming-soon-title */
+body.light-mode .coming-soon-title {
+    color: #4A2C5A !important;
+    text-shadow: none !important;
+}
+
 .coming-soon-text {
     color: rgba(255, 255, 255, 0.6);
     font-size: 1.1rem;
     line-height: 1.9;
     max-width: 500px;
     margin: 0 auto;
+}
+
+/* Light Mode - coming-soon-text */
+body.light-mode .coming-soon-text {
+    color: rgba(74, 44, 90, 0.7) !important;
 }
 
 .coming-soon-glow {
@@ -158,9 +167,7 @@
 }
 
 @media (max-width: 768px) {
-    .page-title {
-        font-size: 2.5rem;
-    }
+    /* page-title 반응형은 stg_page_title로 통합됨 - style.css 참조 */
     
     .header-icon {
         font-size: 3rem;

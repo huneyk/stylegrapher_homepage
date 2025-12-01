@@ -71,7 +71,7 @@ def t(source_type: str, source_id: int, field_name: str, fallback: str = None) -
         source_type: 데이터 타입 (service, service_option 등)
         source_id: 원본 데이터 ID
         field_name: 필드명
-        fallback: 번역이 없을 때 사용할 기본값
+        fallback: 번역이 없을 때 사용할 기본값 (MongoDB 원본 데이터)
     
     Returns:
         번역된 텍스트
@@ -80,6 +80,13 @@ def t(source_type: str, source_id: int, field_name: str, fallback: str = None) -
         {{ t('service_option', 1, 'name', option.name) }}
     """
     lang = get_current_language()
+    
+    # 한국어인 경우 MongoDB 원본 데이터(fallback) 반환
+    # translations 컬렉션의 original 값이 아닌 실제 MongoDB 데이터 사용
+    if lang == 'ko':
+        return fallback if fallback is not None else ''
+    
+    # 다른 언어인 경우 번역 테이블 조회
     translated = get_translation(source_type, source_id, field_name, lang)
     
     if translated:

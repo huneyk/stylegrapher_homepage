@@ -24,7 +24,7 @@
     <!-- Hero Content -->
     <div class="services-hero-content">
         <div class="services-hero-title-wrapper">
-            <h1 class="services-hero-title">Services</h1>
+            <h1 class="services-hero-title stg_page_title">Services</h1>
             <div class="services-hero-subtitle">
                 <span class="hero-slogan-text">{{ _('당신의 무한한 가능성을 탐험하는 여정') }}</span>
             </div>
@@ -56,7 +56,7 @@
                         <i class="bi bi-camera-fill"></i>
                         {% endif %}
                     </div>
-                    <h2 class="category-prism-title">{{ _(category.title) }}</h2>
+                    <h2 class="category-prism-title stg_page_title">{{ _(category.title) }}</h2>
                     <div class="category-divider-line"></div>
                     <p class="category-prism-description">
                         {% if category_key == 'ai_analysis' %}
@@ -79,14 +79,14 @@
                         <a href="{{ url_for('main.service_option_detail', id=option.id) }}" class="prism-service-card-link">
                             <div class="prism-service-card">
                                 <div class="prism-glass-edge"></div>
-                                <div class="prism-service-inner">
-                                    <div class="service-option-content">
-                                        <h4 class="service-option-name">{{ trans_option.get('name', option.name) }}</h4>
+                                <div class="prism-service-inner stg_card_format">
+                                    <div class="stg_card_content service-option-content">
+                                        <h4 class="stg_card_title service-option-name">{{ trans_option.get('name', option.name) }}</h4>
                                         {% set desc = trans_option.get('description', option.description) %}
                                         {% if desc and desc.strip() %}
-                                        <p class="service-option-description">{{ desc }}</p>
+                                        <p class="stg_card_description service-option-description">{{ desc }}</p>
                                         {% else %}
-                                        <p class="service-option-description">{{ _('상세 페이지에서 자세한 내용을 확인하세요.') }}</p>
+                                        <p class="stg_card_description service-option-description">{{ _('상세 페이지에서 자세한 내용을 확인하세요.') }}</p>
                                         {% endif %}
                                     </div>
                                     <div class="service-option-arrow">
@@ -276,21 +276,8 @@
     animation: fadeInUp 1s ease;
 }
 
+/* services-hero-title 스타일은 stg_page_title로 통합됨 - style.css 참조 */
 .services-hero-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(3rem, 8vw, 5rem);
-    font-weight: 300;
-    letter-spacing: 0.2em;
-    color: transparent;
-    background: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.95) 0%,
-        rgba(220, 200, 255, 0.9) 50%,
-        rgba(200, 170, 255, 0.85) 100%
-    );
-    -webkit-background-clip: text;
-    background-clip: text;
-    text-shadow: 0 0 80px rgba(200, 170, 255, 0.6);
     margin-bottom: 1rem;
 }
 
@@ -351,6 +338,7 @@
 .services-content-section {
     padding: 4rem 0;
     position: relative;
+    background: #FDFCFF;
 }
 
 /* Category Block */
@@ -379,12 +367,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(18, 0, 36, 0.6);
-    border: 1px solid rgba(200, 170, 255, 0.3);
+    background: rgba(74, 44, 90, 0.15);
+    border: 1px solid rgba(74, 44, 90, 0.3);
     border-radius: 50%;
     font-size: 2rem;
-    color: #FDFCFF;
-    filter: drop-shadow(0 0 20px rgba(200, 170, 255, 0.5));
+    color: #4A2C5A;
+    filter: drop-shadow(0 0 20px rgba(74, 44, 90, 0.2));
     transition: all 0.4s ease;
 }
 
@@ -394,31 +382,27 @@
     border-color: rgba(200, 170, 255, 0.5);
 }
 
+/* category-prism-title 스타일은 stg_page_title로 통합됨 - style.css 참조 */
 .category-prism-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 2.5rem;
-    font-weight: 400;
-    color: #FDFCFF !important;
-    letter-spacing: 0.1em;
-    text-shadow: 0 0 40px rgba(200, 170, 255, 0.5);
     margin-bottom: 1rem;
 }
 
 .category-divider-line {
     width: 80px;
     height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(200, 170, 255, 0.6), transparent);
+    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.6), transparent);
     margin: 0 auto 1.5rem;
-    box-shadow: 0 0 15px rgba(200, 170, 255, 0.4);
+    box-shadow: none;
 }
 
 .category-prism-description {
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 1rem;
-    color: rgba(255, 255, 255, 0.75);
+    font-family: var(--stg-body-font-family);
+    font-size: var(--stg-body-font-size);
+    color: var(--stg-body-color-light) !important;
     max-width: 600px;
     margin: 0 auto;
-    line-height: 1.8;
+    line-height: var(--stg-body-line-height);
+    font-weight: var(--stg-body-font-weight);
 }
 
 /* Prism Services Grid */
@@ -448,70 +432,80 @@
     position: absolute;
     inset: 0;
     border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: linear-gradient(135deg,
-        rgba(255, 255, 255, 0.08) 0%,
-        rgba(255, 255, 255, 0.02) 50%,
-        rgba(200, 170, 255, 0.05) 100%);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     z-index: 1;
     pointer-events: none;
     transition: all 0.4s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 }
 
 .prism-service-card:hover .prism-glass-edge {
-    border-color: rgba(200, 170, 255, 0.5);
-    box-shadow: 
-        0 0 30px rgba(200, 170, 255, 0.25),
-        inset 0 0 30px rgba(200, 170, 255, 0.05);
+    border-color: rgba(139, 92, 246, 0.4);
+    box-shadow: 0 15px 40px rgba(139, 92, 246, 0.15);
 }
 
-/* Prism Inner Container */
+/* Prism Inner Container - stg_card_format 통합 */
 .prism-service-inner {
     position: relative;
-    padding: 2rem;
     z-index: 2;
     height: 100%;
+}
+
+/* stg_card_format이 prism-service-inner에 적용될 때 스타일 조정 */
+.prism-service-inner.stg_card_format {
+    padding: 2rem;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    text-align: left;
 }
 
-.service-option-content {
+.service-option-content.stg_card_content {
     flex-grow: 1;
+    min-height: auto;
 }
 
+/* service-option-name은 stg_card_title 스타일을 상속받음 */
 .service-option-name {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.4rem;
-    font-weight: 500;
-    color: #FDFCFF;
-    margin-bottom: 1rem;
-    text-shadow: 0 0 20px rgba(200, 170, 255, 0.4);
+    /* stg_card_title 클래스가 기본 스타일을 제공 */
     transition: all 0.3s ease;
-    /* 테두리 스타일 추가 */
-    display: inline-block;
-    padding: 0.6rem 1.2rem;
-    background: rgba(200, 170, 255, 0.1);
-    border: 1px solid rgba(200, 170, 255, 0.3);
-    border-radius: 12px;
 }
 
 .prism-service-card:hover .service-option-name {
-    text-shadow: 0 0 30px rgba(200, 170, 255, 0.7);
-    border-color: rgba(200, 170, 255, 0.5);
-    background: rgba(200, 170, 255, 0.15);
-    box-shadow: 0 0 15px rgba(200, 170, 255, 0.2);
+    text-shadow: none;
+    border-color: rgba(139, 92, 246, 0.5);
+    background: rgba(139, 92, 246, 0.15);
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
 }
 
-.service-option-description {
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 0.95rem;
-    color: rgba(255, 255, 255, 0.75);
-    line-height: 1.7;
+/* service-option-description은 stg_card_description 스타일을 상속받음 */
+.service-option-description.stg_card_description {
+    font-family: var(--stg-body-font-family);
+    font-size: var(--stg-body-font-size);
+    color: var(--stg-body-color-light);
+    line-height: var(--stg-body-line-height);
     margin-bottom: 1rem;
     white-space: pre-line;
+    font-weight: var(--stg-body-font-weight);
+    padding: 0;
+}
+
+/* Dark Mode - Service Option Description */
+body:not(.light-mode) .service-option-description.stg_card_description {
+    color: var(--stg-body-color-dark);
+}
+
+/* Light Mode - Service Option Description */
+body.light-mode .service-option-description.stg_card_description {
+    color: var(--stg-body-color-light) !important;
+}
+
+/* Dark Mode - Category Prism Description */
+body:not(.light-mode) .category-prism-description {
+    color: var(--stg-body-color-dark);
 }
 
 .service-option-arrow {
@@ -521,7 +515,7 @@
 }
 
 .service-option-arrow i {
-    color: rgba(200, 170, 255, 0.6);
+    color: #8B5CF6;
     font-size: 1.3rem;
     transition: all 0.3s ease;
     opacity: 0.6;
@@ -529,9 +523,9 @@
 
 .prism-service-card:hover .service-option-arrow i {
     opacity: 1;
-    color: #FDFCFF;
+    color: #5B3A8C;
     transform: translateX(8px);
-    filter: drop-shadow(0 0 10px rgba(200, 170, 255, 0.7));
+    filter: none;
 }
 
 /* Aura Glow Effect */
@@ -571,11 +565,11 @@
 .contact-prism-card {
     position: relative;
     padding: 3rem;
-    background: rgba(18, 0, 36, 0.5);
+    background: rgba(181, 126, 220, 0.2);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     border-radius: 30px;
-    border: 1px solid rgba(200, 170, 255, 0.2);
+    border: 1px solid rgba(181, 126, 220, 0.3);
     text-align: center;
     overflow: hidden;
 }
@@ -587,7 +581,7 @@
 
 .contact-text {
     font-family: 'Cormorant Garamond', serif;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--main-color);
     font-size: 1.3rem;
     font-weight: 400;
     letter-spacing: 0.02em;
@@ -628,8 +622,24 @@
     transform: translate(-50%, -50%);
     width: 400px;
     height: 200px;
-    background: radial-gradient(ellipse, rgba(200, 170, 255, 0.1) 0%, transparent 70%);
+    background: radial-gradient(ellipse, rgba(181, 126, 220, 0.1) 0%, transparent 70%);
     pointer-events: none;
+}
+
+/* Light mode 문의 섹션 스타일 */
+body.light-mode .contact-text {
+    color: var(--main-color) !important;
+}
+
+body.light-mode .btn-neon.contact-btn {
+    background: linear-gradient(135deg, #FEE500, #FFD700) !important;
+    color: #3C1E1E !important;
+    box-shadow: 0 0 30px rgba(254, 229, 0, 0.4) !important;
+}
+
+body.light-mode .btn-neon.contact-btn:hover {
+    background: linear-gradient(135deg, #FFD700, #FFC107) !important;
+    box-shadow: 0 0 50px rgba(254, 229, 0, 0.6), 0 15px 40px rgba(0, 0, 0, 0.3) !important;
 }
 
 /* ============================================
@@ -641,13 +651,7 @@
         padding: 5rem 0 3rem;
     }
     
-    .services-hero-title {
-        font-size: clamp(2.5rem, 7vw, 4rem);
-    }
-    
-    .category-prism-title {
-        font-size: 2rem;
-    }
+    /* services-hero-title, category-prism-title 반응형은 stg_page_title로 통합됨 - style.css 참조 */
     
     .prism-services-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -665,10 +669,7 @@
         padding: 4rem 0 2rem;
     }
     
-    .services-hero-title {
-        font-size: clamp(2rem, 10vw, 3rem);
-        letter-spacing: 0.12em;
-    }
+    /* services-hero-title 반응형은 stg_page_title로 통합됨 - style.css 참조 */
     
     .hero-slogan-text {
         font-size: 1rem;
@@ -693,9 +694,7 @@
         font-size: 1.6rem;
     }
     
-    .category-prism-title {
-        font-size: 1.8rem;
-    }
+    /* category-prism-title 반응형은 stg_page_title로 통합됨 - style.css 참조 */
     
     .category-prism-description {
         font-size: 0.95rem;
@@ -710,16 +709,13 @@
         min-height: 180px;
     }
     
-    .prism-service-inner {
+    .prism-service-inner.stg_card_format {
         padding: 1.5rem;
     }
     
-    .service-option-name {
-        font-size: 1.25rem;
-        padding: 0.5rem 1rem;
-    }
+    /* service-option-name 반응형은 stg_card_title에서 처리 */
     
-    .service-option-description {
+    .service-option-description.stg_card_description {
         font-size: 0.9rem;
     }
     
@@ -749,19 +745,7 @@
 }
 
 @media (max-width: 480px) {
-    .services-hero-title {
-        font-size: 2rem;
-        letter-spacing: 0.1em;
-    }
-    
-    .category-prism-title {
-        font-size: 1.5rem;
-    }
-    
-    .service-option-name {
-        font-size: 1.15rem;
-        padding: 0.5rem 0.9rem;
-    }
+    /* services-hero-title, category-prism-title 반응형은 stg_page_title로 통합됨 - style.css 참조 */
 }
 </style>
 

@@ -8,46 +8,44 @@
     <div class="row g-4 justify-content-center">
         {% for service in services %}
         <div class="col-lg-6">
-            <div class="service-simple-card h-100">
-                <div class="card-glow-effect"></div>
-                <div class="card-body text-center p-4 p-md-5 d-flex flex-column">
-                    <div class="card-content flex-grow-1">
-                        <div class="service-icon mb-3">
-                            {% if loop.index == 1 %}
-                            <i class="bi bi-cpu-fill"></i>
-                            {% elif loop.index == 2 %}
-                            <i class="bi bi-palette-fill"></i>
-                            {% elif loop.index == 3 %}
-                            <i class="bi bi-magic"></i>
-                            {% else %}
-                            <i class="bi bi-camera-fill"></i>
-                            {% endif %}
-                        </div>
-                        <h3 class="service-card-title mb-3">{{ t('service', service.id, 'name', service.name) }}</h3>
-                        <p class="service-card-description mb-4">
-                            {% if service.options and service.options[0].description and service.options[0].description.strip() %}
-                                {{ t('service_option', service.options[0].id, 'description', service.options[0].description) }}
-                            {% elif service.description and service.description.strip() %}
-                                {{ t('service', service.id, 'description', service.description) }}
-                            {% else %}
-                                {{ _('상세 페이지에서 자세한 내용을 확인하세요.') }}
-                            {% endif %}
-                        </p>
-                        
-                        <!-- 서비스 옵션 버튼들 -->
-                        {% if service.options %}
-                        <div class="service-options-buttons">
-                            {% for option in service.options %}
-                            <div class="option-button-wrapper">
-                                <a href="{{ url_for('main.service_option_detail', id=option.id) }}" class="option-button">
-                                    <span class="option-text">{{ t('service_option', option.id, 'name', option.name) }}</span>
-                                    <i class="bi bi-arrow-right-short option-arrow"></i>
-                                </a>
-                            </div>
-                            {% endfor %}
-                        </div>
+            <!-- stg_card_format이 카드 컨테이너 역할 (배경, 테두리, 그림자 포함) -->
+            <div class="stg_card_format stg_card_format--padded h-100">
+                <div class="stg_card_content">
+                    <div class="stg_card_icon service-icon">
+                        {% if loop.index == 1 %}
+                        <i class="bi bi-cpu-fill"></i>
+                        {% elif loop.index == 2 %}
+                        <i class="bi bi-palette-fill"></i>
+                        {% elif loop.index == 3 %}
+                        <i class="bi bi-magic"></i>
+                        {% else %}
+                        <i class="bi bi-camera-fill"></i>
                         {% endif %}
                     </div>
+                    <h3 class="stg_card_title">{{ t('service', service.id, 'name', service.name) }}</h3>
+                    <p class="stg_card_description">
+                        {% if service.options and service.options[0].description and service.options[0].description.strip() %}
+                            {{ t('service_option', service.options[0].id, 'description', service.options[0].description) }}
+                        {% elif service.description and service.description.strip() %}
+                            {{ t('service', service.id, 'description', service.description) }}
+                        {% else %}
+                            {{ _('상세 페이지에서 자세한 내용을 확인하세요.') }}
+                        {% endif %}
+                    </p>
+                    
+                    <!-- 서비스 옵션 버튼들 -->
+                    {% if service.options %}
+                    <div class="stg_card_options">
+                        {% for option in service.options %}
+                        <div class="stg_card_option_wrapper">
+                            <a href="{{ url_for('main.service_option_detail', id=option.id) }}" class="stg_card_option_btn">
+                                <span class="stg_card_option_text">{{ t('service_option', option.id, 'name', option.name) }}</span>
+                                <i class="bi bi-arrow-right-short stg_card_option_arrow"></i>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -75,155 +73,30 @@
     margin-top: 0.3rem;
 }
 
-.service-simple-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(200, 170, 255, 0.3);
-    border-radius: 20px;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-}
-
-.service-simple-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, #8B5CF6, #A78BFA, transparent);
-    opacity: 0.7;
-}
-
-.card-glow-effect {
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle at center, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
-    opacity: 0;
-    transition: opacity 0.5s ease;
-    pointer-events: none;
-}
-
-.service-simple-card:hover {
-    transform: translateY(-8px);
-    border-color: rgba(139, 92, 246, 0.4);
-    box-shadow: 0 15px 40px rgba(139, 92, 246, 0.15);
-}
-
-.service-simple-card:hover .card-glow-effect {
-    opacity: 1;
-}
+/* stg_card_format이 이제 카드 컨테이너 스타일을 포함하므로
+   service-simple-card 스타일은 더 이상 필요하지 않습니다.
+   stg_card_format 스타일은 style.css와 base.html에서 정의됩니다. */
 
 .service-icon {
     display: none;
 }
 
+/* service-card-title은 stg-card-title 스타일을 상속받음 */
 .service-card-title {
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 1.25rem;
-    color: #5B3A8C !important;
-    font-weight: 600;
-    background: rgba(139, 92, 246, 0.08);
-    padding: 0.7rem 1.8rem;
-    border-radius: 12px;
-    display: inline-block;
-    border: 1px solid rgba(139, 92, 246, 0.2);
+    /* stg-card-title 클래스가 기본 스타일을 제공 */
 }
 
 .service-card-description {
-    font-family: 'Noto Sans KR', sans-serif;
-    color: #666666;
-    font-size: 0.95rem;
-    line-height: 1.7;
+    font-family: var(--stg-body-font-family) !important;
+    color: var(--stg-body-color-light);
+    font-size: var(--stg-body-font-size) !important;
+    line-height: var(--stg-body-line-height) !important;
     padding: 0 1rem;
     white-space: pre-line;
-    font-weight: 400;
+    font-weight: var(--stg-body-font-weight) !important;
 }
 
-.service-options-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
-    padding: 0.5rem;
-}
-
-.option-button-wrapper {
-    display: flex;
-}
-
-.option-button {
-    width: 100%;
-    background: rgba(255, 255, 255, 0.9);
-    color: #555555 !important;
-    border: 1px solid rgba(139, 92, 246, 0.35);
-    padding: 0.8rem 1rem;
-    border-radius: 10px;
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 1rem;
-    font-weight: 400;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    text-align: center;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0;
-    position: relative;
-    overflow: hidden;
-    line-height: 1;
-}
-
-.option-button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.15), transparent);
-    transition: left 0.4s ease;
-}
-
-.option-button:hover::before {
-    left: 100%;
-}
-
-.option-arrow {
-    font-size: 1.1rem;
-    opacity: 0;
-    transform: translateX(-10px);
-    transition: all 0.3s ease;
-}
-
-.option-button:hover {
-    background: #5B3A8C;
-    border-color: #5B3A8C;
-    color: #ffffff;
-    box-shadow: 0 4px 15px rgba(91, 58, 140, 0.25);
-    transform: translateY(-2px);
-}
-
-.option-button:hover .option-arrow {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-.option-button:hover .option-text {
-    transform: translateX(-5px);
-    color: #ffffff !important;
-}
-
-.option-text {
-    transition: transform 0.3s ease;
-    color: #555555 !important;
-}
+/* option-button 스타일은 style.css의 STG Button 섹션에서 정의됨 */
 
 .card-content {
     min-height: 260px;
@@ -237,15 +110,6 @@
 @media (max-width: 992px) {
     .services-section-title {
         font-size: 1.9rem;
-    }
-    
-    .service-options-buttons {
-        gap: 0.6rem;
-    }
-    
-    .option-button {
-        font-size: 0.82rem;
-        padding: 0.65rem 0.7rem;
     }
     
     .card-content {
@@ -262,24 +126,12 @@
         font-size: 1.6rem;
     }
     
-    .service-card-title {
-        font-size: 1.1rem;
-        padding: 0.55rem 1.3rem;
-    }
+    /* service-card-title 반응형은 stg-card-title에서 처리 */
     
     .service-card-description {
-        font-size: 0.9rem;
+        font-size: 1rem !important;
+        line-height: 1.8 !important;
         padding: 0;
-    }
-    
-    .service-options-buttons {
-        padding: 0;
-        gap: 0.5rem;
-    }
-    
-    .option-button {
-        font-size: 0.78rem;
-        padding: 0.6rem 0.5rem;
     }
     
     .card-content {
@@ -292,18 +144,8 @@
         padding: 1.5rem 1.2rem;
     }
     
-    .service-options-buttons {
-        grid-template-columns: 1fr;
-        gap: 0.5rem;
-    }
-    
     .card-content {
         min-height: auto;
-    }
-    
-    .option-button {
-        font-size: 0.85rem;
-        padding: 0.7rem 1rem;
     }
 }
 
@@ -335,28 +177,17 @@ body:not(.light-mode) .service-simple-card:hover {
     box-shadow: 0 0 60px rgba(200, 170, 255, 0.35), 0 30px 80px rgba(0, 0, 0, 0.5);
 }
 
-body:not(.light-mode) .service-card-title {
-    color: rgb(var(--main-color-rgb)) !important;
-    background: rgba(200, 170, 255, 0.12);
-    border-color: rgba(200, 170, 255, 0.2);
-    text-shadow: 0 0 20px rgba(200, 170, 255, 0.5);
-}
+/* service-card-title 다크모드는 stg-card-title에서 처리 */
 
 body:not(.light-mode) .service-card-description {
-    color: rgba(255, 255, 255, 0.9);
+    font-family: var(--stg-body-font-family) !important;
+    font-size: var(--stg-body-font-size) !important;
+    line-height: var(--stg-body-line-height) !important;
+    font-weight: var(--stg-body-font-weight) !important;
+    color: var(--stg-body-color-dark);
 }
 
-body:not(.light-mode) .option-button {
-    background: rgba(200, 170, 255, 0.1);
-    color: #FDFCFF;
-    border-color: rgba(200, 170, 255, 0.3);
-}
-
-body:not(.light-mode) .option-button:hover {
-    background: linear-gradient(135deg, #F8F4FF, #E8DCFF);
-    color: #1a0030;
-    box-shadow: 0 0 25px rgba(200, 170, 255, 0.5);
-}
+/* option-button 다크모드는 style.css의 STG Button 섹션에서 처리 */
 
 body:not(.light-mode) .card-glow-effect {
     background: radial-gradient(circle at center, rgba(200, 170, 255, 0.15) 0%, transparent 50%);
