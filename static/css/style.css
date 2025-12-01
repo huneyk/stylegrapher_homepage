@@ -2544,6 +2544,127 @@ body.light-mode {
     transform: translateY(-3px);
 }
 
+/* Security Dashboard Stat Cards - Bootstrap Background Color Override */
+div.card.bg-info,
+.card.bg-info {
+    background: linear-gradient(135deg, #17a2b8, #138496) !important;
+    border-color: rgba(23, 162, 184, 0.5) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+div.card.bg-warning,
+.card.bg-warning {
+    background: linear-gradient(135deg, #ffc107, #e0a800) !important;
+    border-color: rgba(255, 193, 7, 0.5) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+div.card.bg-danger,
+.card.bg-danger {
+    background: linear-gradient(135deg, #dc3545, #c82333) !important;
+    border-color: rgba(220, 53, 69, 0.5) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+div.card.bg-success,
+.card.bg-success {
+    background: linear-gradient(135deg, #28a745, #1e7e34) !important;
+    border-color: rgba(40, 167, 69, 0.5) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* Ensure text-white works on these cards */
+div.card.bg-info.text-white h3,
+div.card.bg-info.text-white p,
+.card.bg-info.text-white h3,
+.card.bg-info.text-white p,
+div.card.bg-warning.text-white h3,
+div.card.bg-warning.text-white p,
+.card.bg-warning.text-white h3,
+.card.bg-warning.text-white p,
+div.card.bg-danger.text-white h3,
+div.card.bg-danger.text-white p,
+.card.bg-danger.text-white h3,
+.card.bg-danger.text-white p,
+div.card.bg-success.text-white h3,
+div.card.bg-success.text-white p,
+.card.bg-success.text-white h3,
+.card.bg-success.text-white p {
+    color: #FFFFFF !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Warning card text should be dark for better readability */
+div.card.bg-warning.text-white h3,
+div.card.bg-warning.text-white p,
+.card.bg-warning.text-white h3,
+.card.bg-warning.text-white p {
+    color: #1a1a1a !important;
+    text-shadow: none;
+}
+
+/* Light Mode - Security Dashboard Stat Cards */
+body.light-mode div.card.bg-info,
+body.light-mode .card.bg-info {
+    background: linear-gradient(135deg, #17a2b8, #138496) !important;
+    border-color: rgba(23, 162, 184, 0.5) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.light-mode div.card.bg-warning,
+body.light-mode .card.bg-warning {
+    background: linear-gradient(135deg, #ffc107, #e0a800) !important;
+    border-color: rgba(255, 193, 7, 0.5) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.light-mode div.card.bg-danger,
+body.light-mode .card.bg-danger {
+    background: linear-gradient(135deg, #dc3545, #c82333) !important;
+    border-color: rgba(220, 53, 69, 0.5) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.light-mode div.card.bg-success,
+body.light-mode .card.bg-success {
+    background: linear-gradient(135deg, #28a745, #1e7e34) !important;
+    border-color: rgba(40, 167, 69, 0.5) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* Light Mode - text visibility */
+body.light-mode div.card.bg-info.text-white h3,
+body.light-mode div.card.bg-info.text-white p,
+body.light-mode .card.bg-info.text-white h3,
+body.light-mode .card.bg-info.text-white p,
+body.light-mode div.card.bg-danger.text-white h3,
+body.light-mode div.card.bg-danger.text-white p,
+body.light-mode .card.bg-danger.text-white h3,
+body.light-mode .card.bg-danger.text-white p,
+body.light-mode div.card.bg-success.text-white h3,
+body.light-mode div.card.bg-success.text-white p,
+body.light-mode .card.bg-success.text-white h3,
+body.light-mode .card.bg-success.text-white p {
+    color: #FFFFFF !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+body.light-mode div.card.bg-warning.text-white h3,
+body.light-mode div.card.bg-warning.text-white p,
+body.light-mode .card.bg-warning.text-white h3,
+body.light-mode .card.bg-warning.text-white p {
+    color: #1a1a1a !important;
+    text-shadow: none;
+}
+
 .d-grid .btn {
     padding: 0.6rem 1rem;
 }

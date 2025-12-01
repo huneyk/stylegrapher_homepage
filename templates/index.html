@@ -203,70 +203,64 @@
 }
 
 .slogan-1 {
-    animation: sloganRevealLight 16s ease-in-out infinite;
+    animation: sloganRevealSequence 16s ease-in-out infinite;
 }
 
 .slogan-2 {
-    animation: sloganRevealDark 16s ease-in-out infinite;
+    animation: sloganRevealSequence 16s ease-in-out infinite;
     animation-delay: 4s;
 }
 
-/* Light color version (white-lavender gradient) */
-@keyframes sloganRevealLight {
+/* Sequential animation: Lavender → White for both slogans */
+@keyframes sloganRevealSequence {
+    /* First appearance - Lavender purple */
     0% {
         opacity: 0;
         transform: translateY(30px) scale(0.95);
         filter: blur(10px);
-        color: transparent;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(220, 200, 255, 0.9) 50%, rgba(200, 170, 255, 0.85) 100%);
-        -webkit-background-clip: text;
-        background-clip: text;
-        text-shadow: 0 0 80px rgba(200, 170, 255, 0.6), 0 0 120px rgba(180, 140, 255, 0.4);
+        color: rgb(147, 121, 188);
+        text-shadow: 0 0 60px rgba(147, 121, 188, 0.8), 0 0 100px rgba(147, 121, 188, 0.5);
     }
-    5% {
+    3% {
         opacity: 1;
         transform: translateY(0) scale(1);
         filter: blur(0);
-        color: transparent;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(220, 200, 255, 0.9) 50%, rgba(200, 170, 255, 0.85) 100%);
-        -webkit-background-clip: text;
-        background-clip: text;
-        text-shadow: 0 0 80px rgba(200, 170, 255, 0.6), 0 0 120px rgba(180, 140, 255, 0.4);
+        color: rgb(147, 121, 188);
+        text-shadow: 0 0 60px rgba(147, 121, 188, 0.8), 0 0 100px rgba(147, 121, 188, 0.5);
     }
-    20% {
+    22% {
         opacity: 1;
         transform: translateY(0) scale(1);
         filter: blur(0);
+        color: rgb(147, 121, 188);
+        text-shadow: 0 0 60px rgba(147, 121, 188, 0.8), 0 0 100px rgba(147, 121, 188, 0.5);
     }
     25% {
         opacity: 0;
         transform: translateY(-30px) scale(0.95);
         filter: blur(10px);
     }
+    /* Second appearance - White */
     50% {
         opacity: 0;
         transform: translateY(30px) scale(0.95);
         filter: blur(10px);
-        color: #8B5CF6;
-        background: none;
-        -webkit-background-clip: unset;
-        background-clip: unset;
-        text-shadow: 0 0 60px rgba(139, 92, 246, 0.8), 0 0 100px rgba(109, 40, 217, 0.6);
+        color: rgb(255, 255, 255);
+        text-shadow: 0 0 60px rgba(255, 255, 255, 0.8), 0 0 100px rgba(255, 255, 255, 0.5);
     }
-    55% {
+    53% {
         opacity: 1;
         transform: translateY(0) scale(1);
         filter: blur(0);
-        color: #8B5CF6;
-        background: none;
-        -webkit-background-clip: unset;
-        background-clip: unset;
-        text-shadow: 0 0 60px rgba(139, 92, 246, 0.8), 0 0 100px rgba(109, 40, 217, 0.6);
+        color: rgb(255, 255, 255);
+        text-shadow: 0 0 60px rgba(255, 255, 255, 0.8), 0 0 100px rgba(255, 255, 255, 0.5);
     }
-    70% {
+    72% {
         opacity: 1;
         transform: translateY(0) scale(1);
         filter: blur(0);
+        color: rgb(255, 255, 255);
+        text-shadow: 0 0 60px rgba(255, 255, 255, 0.8), 0 0 100px rgba(255, 255, 255, 0.5);
     }
     75% {
         opacity: 0;
@@ -275,77 +269,6 @@
     }
     100% {
         opacity: 0;
-        transform: translateY(-30px) scale(0.95);
-        filter: blur(10px);
-    }
-}
-
-/* Dark purple version */
-@keyframes sloganRevealDark {
-    0% {
-        opacity: 0;
-        transform: translateY(30px) scale(0.95);
-        filter: blur(10px);
-        color: #8B5CF6;
-        background: none;
-        -webkit-background-clip: unset;
-        background-clip: unset;
-        text-shadow: 0 0 60px rgba(139, 92, 246, 0.8), 0 0 100px rgba(109, 40, 217, 0.6);
-    }
-    5% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-        filter: blur(0);
-        color: #8B5CF6;
-        background: none;
-        -webkit-background-clip: unset;
-        background-clip: unset;
-        text-shadow: 0 0 60px rgba(139, 92, 246, 0.8), 0 0 100px rgba(109, 40, 217, 0.6);
-    }
-    20% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-        filter: blur(0);
-    }
-    25% {
-        opacity: 0;
-        transform: translateY(-30px) scale(0.95);
-        filter: blur(10px);
-    }
-    50% {
-        opacity: 0;
-        transform: translateY(30px) scale(0.95);
-        filter: blur(10px);
-        color: transparent;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(220, 200, 255, 0.9) 50%, rgba(200, 170, 255, 0.85) 100%);
-        -webkit-background-clip: text;
-        background-clip: text;
-        text-shadow: 0 0 80px rgba(200, 170, 255, 0.6), 0 0 120px rgba(180, 140, 255, 0.4);
-    }
-    55% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-        filter: blur(0);
-        color: transparent;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(220, 200, 255, 0.9) 50%, rgba(200, 170, 255, 0.85) 100%);
-        -webkit-background-clip: text;
-        background-clip: text;
-        text-shadow: 0 0 80px rgba(200, 170, 255, 0.6), 0 0 120px rgba(180, 140, 255, 0.4);
-    }
-    70% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-        filter: blur(0);
-    }
-    75% {
-        opacity: 0;
-        transform: translateY(-30px) scale(0.95);
-        filter: blur(10px);
-    }
-    100% {
-        opacity: 0;
-        transform: translateY(-30px) scale(0.95);
-        filter: blur(10px);
     }
 }
 
@@ -392,11 +315,11 @@
 /* Mobile responsiveness for slogans */
 @media (max-width: 768px) {
     .hero-slogan {
-        font-size: clamp(1.8rem, 6vw, 2.8rem);
-        letter-spacing: 0.1em;
+        font-size: clamp(2.2rem, 8vw, 3.5rem);
+        letter-spacing: 0.12em;
         text-shadow: 
-            0 0 30px rgba(200, 170, 255, 0.5),
-            0 0 60px rgba(180, 140, 255, 0.3);
+            0 0 30px rgba(147, 121, 188, 0.5),
+            0 0 60px rgba(147, 121, 188, 0.3);
     }
     
     .slogan-wrapper {
@@ -406,76 +329,15 @@
 
 @media (max-width: 480px) {
     .hero-slogan {
-        font-size: clamp(1.5rem, 5.5vw, 2.2rem);
-        letter-spacing: 0.08em;
+        font-size: clamp(1.8rem, 7vw, 2.8rem);
+        letter-spacing: 0.1em;
     }
 }
 
-/* Light Mode Slogan Styles */
+/* Light Mode Slogan Styles - controlled by JavaScript */
 body.light-mode .hero-slogan {
-    color: rgba(139, 95, 191, 0.9) !important;
-    background: none !important;
-    -webkit-background-clip: unset !important;
-    background-clip: unset !important;
-    text-shadow: 0 2px 10px rgba(139, 95, 191, 0.3) !important;
     opacity: 0;
-}
-
-body.light-mode .slogan-1 {
-    animation: sloganRevealLightMode 16s ease-in-out infinite !important;
-}
-
-body.light-mode .slogan-2 {
-    animation: sloganRevealLightMode 16s ease-in-out infinite !important;
-    animation-delay: 4s !important;
-}
-
-@keyframes sloganRevealLightMode {
-    0% {
-        opacity: 0;
-        transform: translateY(20px) scale(0.98);
-        filter: blur(6px);
-    }
-    5% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-        filter: blur(0);
-    }
-    20% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-        filter: blur(0);
-    }
-    25% {
-        opacity: 0;
-        transform: translateY(-20px) scale(0.98);
-        filter: blur(6px);
-    }
-    50% {
-        opacity: 0;
-        transform: translateY(20px) scale(0.98);
-        filter: blur(6px);
-    }
-    55% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-        filter: blur(0);
-    }
-    70% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-        filter: blur(0);
-    }
-    75% {
-        opacity: 0;
-        transform: translateY(-20px) scale(0.98);
-        filter: blur(6px);
-    }
-    100% {
-        opacity: 0;
-        transform: translateY(-20px) scale(0.98);
-        filter: blur(6px);
-    }
+    animation: none !important;
 }
 
 /* Crystal Fragments */
@@ -1334,5 +1196,79 @@ body.light-mode .btn-neon.contact-btn:hover {
     }
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if light mode
+    const isLightMode = document.body.classList.contains('light-mode');
+    
+    if (isLightMode) {
+        const slogan1 = document.querySelector('.slogan-1');
+        const slogan2 = document.querySelector('.slogan-2');
+        
+        if (slogan1 && slogan2) {
+            // Colors
+            const lavender = 'rgb(147, 121, 188)';
+            const white = 'rgb(255, 255, 255)';
+            const lavenderShadow = '0 2px 20px rgba(147, 121, 188, 0.6), 0 0 40px rgba(147, 121, 188, 0.4)';
+            const whiteShadow = '0 2px 20px rgba(147, 121, 188, 0.8), 0 0 40px rgba(147, 121, 188, 0.5)';
+            
+            // Animation state: 0=lavender, 1=white
+            let colorState = 0;
+            
+            function animateSlogan(element, delay) {
+                setTimeout(() => {
+                    // Determine color based on state
+                    const color = colorState === 0 ? lavender : white;
+                    const shadow = colorState === 0 ? lavenderShadow : whiteShadow;
+                    
+                    // Fade in
+                    element.style.cssText = `
+                        opacity: 1 !important;
+                        color: ${color} !important;
+                        text-shadow: ${shadow} !important;
+                        transform: translateY(0) scale(1) !important;
+                        filter: blur(0) !important;
+                        transition: all 0.5s ease-out !important;
+                    `;
+                    
+                    // Fade out after display time
+                    setTimeout(() => {
+                        element.style.cssText = `
+                            opacity: 0 !important;
+                            color: ${color} !important;
+                            text-shadow: ${shadow} !important;
+                            transform: translateY(-20px) scale(0.98) !important;
+                            filter: blur(6px) !important;
+                            transition: all 0.5s ease-in !important;
+                        `;
+                    }, 3000);
+                }, delay);
+            }
+            
+            function runSequence() {
+                // Slogan 1 appears
+                animateSlogan(slogan1, 0);
+                
+                // Slogan 2 appears (4 seconds after slogan 1)
+                animateSlogan(slogan2, 4000);
+                
+                // After slogan 2 disappears, toggle color state
+                setTimeout(() => {
+                    colorState = colorState === 0 ? 1 : 0;
+                    runSequence();
+                }, 8000);
+            }
+            
+            // Initialize both slogans as hidden
+            slogan1.style.cssText = 'opacity: 0 !important;';
+            slogan2.style.cssText = 'opacity: 0 !important;';
+            
+            // Start the sequence
+            runSequence();
+        }
+    }
+});
+</script>
 
 {% endblock %}
