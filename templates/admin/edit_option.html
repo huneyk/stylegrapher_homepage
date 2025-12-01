@@ -508,6 +508,345 @@ h2.card-title {
     color: rgba(255, 255, 255, 0.6);
     font-style: italic;
 }
+
+/* ============================================
+   Light Mode - Admin Edit Option Page
+   ============================================ */
+
+body.light-mode .form-text {
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+body.light-mode .card-title {
+    color: #5B3A8C !important;
+    text-shadow: none !important;
+}
+
+body.light-mode .text-muted {
+    color: #6c757d !important;
+}
+
+body.light-mode hr {
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+body.light-mode h5 {
+    color: #5B3A8C;
+    font-weight: 600;
+    text-shadow: none;
+}
+
+body.light-mode h2.card-title {
+    color: #5B3A8C !important;
+    text-shadow: none !important;
+}
+
+body.light-mode .form-label {
+    color: #5B3A8C;
+    font-weight: 500;
+}
+
+/* Light Mode - 패키지 테이블 컨테이너 */
+body.light-mode .package-table-wrapper {
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    background: rgba(255, 255, 255, 0.95);
+    position: relative;
+}
+
+body.light-mode .package-table-wrapper:hover {
+    border-color: rgba(139, 92, 246, 0.5);
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.15);
+}
+
+body.light-mode .package-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+body.light-mode .package-table-number {
+    background: rgba(139, 92, 246, 0.15);
+    color: #5B3A8C;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+body.light-mode .package-table-title-input {
+    flex: 1;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    font-weight: 500;
+    background: #ffffff;
+    color: #333333;
+    transition: all 0.2s ease;
+}
+
+body.light-mode .package-table-title-input:focus {
+    border-color: rgba(139, 92, 246, 0.6);
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(139, 92, 246, 0.15);
+}
+
+body.light-mode .package-table-title-input::placeholder {
+    color: #999999;
+    font-style: italic;
+}
+
+body.light-mode .delete-table-btn {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.4);
+    border-radius: 8px;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+body.light-mode .delete-table-btn:hover {
+    background: rgba(220, 53, 69, 0.2);
+    border-color: rgba(220, 53, 69, 0.6);
+    color: #c82333;
+}
+
+body.light-mode .packages-table-container {
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+body.light-mode .packages-table {
+    margin-bottom: 0;
+}
+
+body.light-mode .packages-table th {
+    background: rgba(139, 92, 246, 0.55) !important;
+    color: #FFFFFF !important;
+    font-weight: 600;
+    border-color: rgba(139, 92, 246, 0.2) !important;
+    font-size: 0.9rem;
+}
+
+body.light-mode .packages-table td {
+    border-color: rgba(139, 92, 246, 0.15) !important;
+    vertical-align: middle;
+    padding: 0.5rem;
+    background: #ffffff !important;
+}
+
+body.light-mode .packages-table input {
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 6px;
+    padding: 0.4rem 0.6rem;
+    width: 100%;
+    background: #ffffff;
+    color: #333333;
+    transition: border-color 0.2s ease;
+    font-size: 0.9rem;
+}
+
+body.light-mode .packages-table input:focus {
+    border-color: rgba(139, 92, 246, 0.6);
+    outline: none;
+    box-shadow: 0 0 0 0.15rem rgba(139, 92, 246, 0.15);
+}
+
+body.light-mode .packages-table input::placeholder {
+    color: #999999;
+}
+
+body.light-mode .package-table-actions {
+    margin-top: 0.75rem;
+    display: flex;
+    gap: 0.5rem;
+}
+
+body.light-mode .delete-package-btn {
+    border: none;
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border-radius: 6px;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+body.light-mode .delete-package-btn:hover {
+    background: rgba(220, 53, 69, 0.2);
+    color: #c82333;
+}
+
+body.light-mode .empty-packages-row {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+}
+
+body.light-mode .no-tables-message {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: #f8f9fa;
+    border: 2px dashed rgba(139, 92, 246, 0.4);
+    border-radius: 12px;
+    color: #6c757d;
+}
+
+body.light-mode .no-tables-message i {
+    font-size: 3rem;
+    color: #8B5CF6;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+body.light-mode .no-tables-message p {
+    margin: 0;
+    font-size: 1rem;
+    color: #6c757d;
+}
+
+body.light-mode .refund-table-container {
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    border-radius: 12px;
+    padding: 1rem;
+    background: #ffffff;
+}
+
+body.light-mode .refund-table {
+    margin-bottom: 1rem;
+}
+
+body.light-mode .refund-table th {
+    background: rgba(139, 92, 246, 0.55) !important;
+    color: #FFFFFF !important;
+    font-weight: 600;
+    border-color: rgba(139, 92, 246, 0.2) !important;
+}
+
+body.light-mode .refund-table td {
+    border-color: rgba(139, 92, 246, 0.15) !important;
+    vertical-align: middle;
+    background: #ffffff !important;
+}
+
+body.light-mode .refund-table input {
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 6px;
+    padding: 0.5rem;
+    width: 100%;
+    background: #ffffff;
+    color: #333333;
+    transition: border-color 0.2s ease;
+}
+
+body.light-mode .refund-table input:focus {
+    border-color: rgba(139, 92, 246, 0.6);
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(139, 92, 246, 0.15);
+}
+
+body.light-mode .refund-table input::placeholder {
+    color: #999999;
+}
+
+body.light-mode .delete-refund-btn {
+    border: none;
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border-radius: 6px;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+body.light-mode .delete-refund-btn:hover {
+    background: rgba(220, 53, 69, 0.2);
+    color: #c82333;
+}
+
+body.light-mode .empty-refund-row {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+}
+
+body.light-mode .overtime-charge-table-container {
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    border-radius: 12px;
+    padding: 1rem;
+    background: #ffffff;
+}
+
+body.light-mode .overtime-charge-table {
+    margin-bottom: 1rem;
+}
+
+body.light-mode .overtime-charge-table th {
+    background: rgba(139, 92, 246, 0.55) !important;
+    color: #FFFFFF !important;
+    font-weight: 600;
+    border-color: rgba(139, 92, 246, 0.2) !important;
+}
+
+body.light-mode .overtime-charge-table td {
+    border-color: rgba(139, 92, 246, 0.15) !important;
+    vertical-align: middle;
+    background: #ffffff !important;
+}
+
+body.light-mode .overtime-charge-table input {
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 6px;
+    padding: 0.5rem;
+    width: 100%;
+    background: #ffffff;
+    color: #333333;
+    transition: border-color 0.2s ease;
+}
+
+body.light-mode .overtime-charge-table input:focus {
+    border-color: rgba(139, 92, 246, 0.6);
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(139, 92, 246, 0.15);
+}
+
+body.light-mode .overtime-charge-table input::placeholder {
+    color: #999999;
+}
+
+body.light-mode .delete-overtime-charge-btn {
+    border: none;
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border-radius: 6px;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+body.light-mode .delete-overtime-charge-btn:hover {
+    background: rgba(220, 53, 69, 0.2);
+    color: #c82333;
+}
+
+body.light-mode .empty-overtime-charge-row {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+}
 </style>
 
 <script>

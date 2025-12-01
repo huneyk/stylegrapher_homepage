@@ -342,5 +342,82 @@ h2 {
 h6.text-muted {
     color: #E0C8FF !important;
 }
+
+/* ============================================
+   Light Mode - Admin Dashboard
+   ============================================ */
+
+body.light-mode .list-group-item {
+    border-color: rgba(139, 92, 246, 0.2);
+    transition: all 0.2s ease;
+    background: #ffffff;
+}
+
+body.light-mode .list-group-item:hover {
+    background-color: rgba(139, 92, 246, 0.08);
+}
+
+body.light-mode .list-group-item h6 {
+    color: #5B3A8C;
+    font-weight: 500;
+}
+
+body.light-mode .list-group-item small {
+    font-size: 0.8rem !important;
+    color: #6c757d !important;
+}
+
+body.light-mode .btn-outline-primary {
+    border-color: rgba(139, 92, 246, 0.6);
+    color: #5B3A8C;
+    transition: all 0.3s ease;
+}
+
+body.light-mode .btn-outline-primary:hover {
+    background-color: rgba(139, 92, 246, 0.15);
+    border-color: #8B5CF6;
+    color: #5B3A8C;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2);
+}
+
+body.light-mode .btn-outline-primary:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+body.light-mode .text-muted {
+    color: #6c757d !important;
+}
+
+body.light-mode .card {
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.95);
+}
+
+body.light-mode .card:hover {
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.15);
+}
+
+body.light-mode .card-title {
+    color: #5B3A8C !important;
+    font-weight: 500;
+    text-shadow: none !important;
+}
+
+body.light-mode .card-text {
+    color: #333333;
+}
+
+body.light-mode h2 {
+    color: #5B3A8C !important;
+    text-shadow: none !important;
+}
+
+body.light-mode h6.text-muted {
+    color: #5B3A8C !important;
+}
 </style>
 {% endblock %} 
