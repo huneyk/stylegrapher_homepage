@@ -1,7 +1,7 @@
 """
 Main 라우트 - MongoDB 기반
 """
-from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app, send_file, make_response
+from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app, send_file, make_response, session
 from flask_mail import Message
 import json
 import os
@@ -79,11 +79,13 @@ _cache_timestamps = {}
 
 
 def cache_with_timeout(timeout_minutes=30):
-    """메모리 캐시 데코레이터"""
+    """메모리 캐시 데코레이터 (언어별 캐싱 지원)"""
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            cache_key = f"{func.__name__}:{hash(str(args) + str(sorted(kwargs.items())))}"
+            # 언어 설정을 캐시 키에 포함하여 다국어 지원
+            current_lang = session.get('lang', 'ko')
+            cache_key = f"{func.__name__}:{current_lang}:{hash(str(args) + str(sorted(kwargs.items())))}"
             
             if cache_key in _cache_timestamps:
                 if datetime.now() - _cache_timestamps[cache_key] < timedelta(minutes=timeout_minutes):
