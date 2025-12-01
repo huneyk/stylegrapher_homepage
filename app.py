@@ -8,11 +8,9 @@ from routes.main import main
 from routes.admin import admin
 from extensions import db, login_manager, migrate, mail, babel
 from config import Config
-from pymongo import MongoClient
 from dotenv import load_dotenv
 from utils.security import add_security_headers, is_suspicious_request, get_client_ip, log_security_event
 from utils.translation_helper import register_template_helpers
-from utils.gridfs_helper import get_mongo_connection, get_gridfs_stats
 from utils.mongo_models import get_mongo_db, init_collections, Service, SiteSettings
 
 # 지원하는 언어 목록
@@ -27,36 +25,7 @@ SUPPORTED_LANGUAGES = {
 # .env 파일 로드
 load_dotenv()
 
-# MongoDB 연결 설정 (GridFS 포함)
-mongo_uri = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/')
-try:
-    mongo_client = MongoClient(
-        mongo_uri, 
-        serverSelectionTimeoutMS=30000,
-        connectTimeoutMS=20000,
-        socketTimeoutMS=20000,
-        retryWrites=True,
-        retryReads=True,
-        w='majority',
-        readPreference='primaryPreferred'
-    )
-    mongo_client.server_info()
-    print("app.py: MongoDB 연결 성공!")
-    mongo_db = mongo_client['STG-DB'] if 'mongodb.net' in mongo_uri else mongo_client['stylegrapher_db']
-    images_collection = mongo_db['gallery']
-    print(f"app.py: MongoDB 데이터베이스 '{mongo_db.name}' 사용 준비 완료")
-    
-    # GridFS 초기화 확인
-    gridfs_instance, _, _ = get_mongo_connection()
-    if gridfs_instance:
-        print("app.py: GridFS 연결 성공!")
-        stats = get_gridfs_stats()
-        print(f"app.py: GridFS 통계 - 파일 수: {stats.get('gridfs_files_count', 0)}")
-except Exception as e:
-    print(f"app.py: MongoDB 연결 오류: {str(e)}")
-    mongo_client = None
-    mongo_db = None
-    images_collection = None
+# MongoDB 연결은 create_app() 내에서 lazy하게 초기화됨 (fork-safe)
 
 
 def create_app():

@@ -14,15 +14,25 @@ from werkzeug.utils import secure_filename
 # .env 파일 로드
 load_dotenv()
 
-# 전역 변수
+# 전역 변수 (fork-safe)
 _gridfs_instance = None
 _mongo_db = None
 _images_collection = None  # 기존 호환성을 위한 컬렉션
+_connection_pid = None  # 연결이 생성된 프로세스 ID 추적
 
 
 def get_mongo_connection():
-    """MongoDB 연결 및 GridFS 인스턴스 반환"""
-    global _gridfs_instance, _mongo_db, _images_collection
+    """MongoDB 연결 및 GridFS 인스턴스 반환 (fork-safe)"""
+    global _gridfs_instance, _mongo_db, _images_collection, _connection_pid
+    
+    current_pid = os.getpid()
+    
+    # fork 이후 새 프로세스에서 호출된 경우 연결 재생성
+    if _connection_pid is not None and _connection_pid != current_pid:
+        print(f"GridFS: Fork 감지 (기존 PID: {_connection_pid}, 현재 PID: {current_pid}), 연결 재생성")
+        _gridfs_instance = None
+        _mongo_db = None
+        _images_collection = None
     
     if _gridfs_instance is not None:
         return _gridfs_instance, _mongo_db, _images_collection
@@ -33,7 +43,7 @@ def get_mongo_connection():
         return None, None, None
     
     try:
-        print(f"GridFS: MongoDB에 연결 시도...")
+        print(f"GridFS: MongoDB에 연결 시도... (PID: {current_pid})")
         mongo_client = MongoClient(
             mongo_uri,
             serverSelectionTimeoutMS=30000,
@@ -59,7 +69,10 @@ def get_mongo_connection():
         # 기존 호환성을 위한 컬렉션 (마이그레이션용)
         _images_collection = _mongo_db['gallery']
         
-        print(f"GridFS: 데이터베이스 '{db_name}'에서 GridFS 'gallery_images' 사용 준비 완료")
+        # 연결 생성 시 PID 저장
+        _connection_pid = current_pid
+        
+        print(f"GridFS: 데이터베이스 '{db_name}'에서 GridFS 'gallery_images' 사용 준비 완료 (PID: {current_pid})")
         return _gridfs_instance, _mongo_db, _images_collection
         
     except Exception as e:

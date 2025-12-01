@@ -8,7 +8,7 @@ import os
 import io
 from PIL import Image
 from datetime import datetime, timedelta
-from pymongo import MongoClient, DESCENDING, ASCENDING
+# pymongo 상수는 utils/mongo_models.py에서 사용
 from dotenv import load_dotenv
 import functools
 
@@ -29,36 +29,8 @@ from utils.translation_helper import (
 from utils.gridfs_helper import get_image_from_gridfs, get_mongo_connection
 from extensions import mail
 
-# MongoDB 설정 불러오기
+# MongoDB 설정 불러오기 (fork-safe: 연결은 lazy하게 생성됨)
 load_dotenv()
-mongo_uri = os.environ.get('MONGO_URI')
-if mongo_uri:
-    try:
-        print(f"main.py: MongoDB에 연결 시도")
-        mongo_client = MongoClient(
-            mongo_uri, 
-            serverSelectionTimeoutMS=30000,
-            connectTimeoutMS=20000,
-            socketTimeoutMS=20000,
-            retryWrites=True,
-            retryReads=True,
-            w='majority',
-            readPreference='primaryPreferred'
-        )
-        mongo_client.server_info()
-        print("main.py: MongoDB 연결 성공!")
-        mongo_db = mongo_client['STG-DB']
-        images_collection = mongo_db['gallery']
-    except Exception as e:
-        print(f"main.py: MongoDB 연결 오류: {str(e)}")
-        mongo_client = None
-        mongo_db = None
-        images_collection = None
-else:
-    print("main.py: MONGO_URI 환경 변수가 설정되지 않았습니다!")
-    mongo_client = None
-    mongo_db = None
-    images_collection = None
 
 
 # 이미지 리사이징 함수
@@ -280,16 +252,17 @@ def serve_image(image_path):
             print(f"GridFS 조회 중 오류: {str(gridfs_error)}")
         
         # 2. 레거시 MongoDB 컬렉션에서 조회
-        if images_collection is not None:
-            try:
-                image_doc = images_collection.find_one({'_id': image_path})
-                if image_doc and 'binary_data' in image_doc:
-                    response = make_response(image_doc['binary_data'])
-                    response.headers['Content-Type'] = image_doc.get('content_type', 'image/jpeg')
-                    response.headers['Cache-Control'] = 'public, max-age=86400'
-                    return response
-            except Exception as mongo_error:
-                print(f"레거시 MongoDB 조회 중 오류: {str(mongo_error)}")
+        try:
+            db = get_mongo_db()
+            images_collection = db['gallery']
+            image_doc = images_collection.find_one({'_id': image_path})
+            if image_doc and 'binary_data' in image_doc:
+                response = make_response(image_doc['binary_data'])
+                response.headers['Content-Type'] = image_doc.get('content_type', 'image/jpeg')
+                response.headers['Cache-Control'] = 'public, max-age=86400'
+                return response
+        except Exception as mongo_error:
+            print(f"레거시 MongoDB 조회 중 오류: {str(mongo_error)}")
         
         # 3. 파일 시스템에서 서빙
         file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_path)

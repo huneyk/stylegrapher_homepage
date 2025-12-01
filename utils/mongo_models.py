@@ -12,13 +12,22 @@ import json
 
 load_dotenv()
 
-# MongoDB 연결 설정
+# MongoDB 연결 설정 (fork-safe)
 _mongo_client = None
 _mongo_db = None
+_connection_pid = None  # 연결이 생성된 프로세스 ID 추적
 
 def get_mongo_db():
-    """MongoDB 데이터베이스 연결 반환"""
-    global _mongo_client, _mongo_db
+    """MongoDB 데이터베이스 연결 반환 (fork-safe)"""
+    global _mongo_client, _mongo_db, _connection_pid
+    
+    current_pid = os.getpid()
+    
+    # fork 이후 새 프로세스에서 호출된 경우 연결 재생성
+    if _connection_pid is not None and _connection_pid != current_pid:
+        print(f"MongoDB 모델 헬퍼: Fork 감지 (기존 PID: {_connection_pid}, 현재 PID: {current_pid}), 연결 재생성")
+        _mongo_client = None
+        _mongo_db = None
     
     if _mongo_db is not None:
         return _mongo_db
@@ -41,7 +50,8 @@ def get_mongo_db():
         # 연결 테스트
         _mongo_client.server_info()
         _mongo_db = _mongo_client['STG-DB']
-        print(f"MongoDB 모델 헬퍼: 데이터베이스 '{_mongo_db.name}' 연결 성공")
+        _connection_pid = current_pid  # 연결 생성 시 PID 저장
+        print(f"MongoDB 모델 헬퍼: 데이터베이스 '{_mongo_db.name}' 연결 성공 (PID: {current_pid})")
         return _mongo_db
     except Exception as e:
         print(f"MongoDB 연결 오류: {str(e)}")

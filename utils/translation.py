@@ -46,16 +46,30 @@ LANGUAGE_NAMES = {
     'es': 'Spanish'
 }
 
-# MongoDB 연결
+# MongoDB 연결 (fork-safe)
 mongo_uri = os.environ.get('MONGO_URI')
 mongo_client = None
 mongo_db = None
 translations_collection = None
+_translation_connection_pid = None  # 연결이 생성된 프로세스 ID 추적
 
 
 def init_mongodb():
-    """MongoDB 연결 초기화"""
-    global mongo_client, mongo_db, translations_collection
+    """MongoDB 연결 초기화 (fork-safe)"""
+    global mongo_client, mongo_db, translations_collection, _translation_connection_pid
+    
+    current_pid = os.getpid()
+    
+    # fork 이후 새 프로세스에서 호출된 경우 연결 재생성
+    if _translation_connection_pid is not None and _translation_connection_pid != current_pid:
+        print(f"번역 시스템: Fork 감지 (기존 PID: {_translation_connection_pid}, 현재 PID: {current_pid}), 연결 재생성")
+        mongo_client = None
+        mongo_db = None
+        translations_collection = None
+    
+    # 이미 연결되어 있으면 재사용
+    if translations_collection is not None:
+        return True
     
     if not mongo_uri:
         print("⚠️ MONGO_URI 환경 변수가 설정되지 않았습니다!")
@@ -76,19 +90,22 @@ def init_mongodb():
         mongo_db = mongo_client['STG-DB']
         translations_collection = mongo_db['translations']
         
+        # 연결 생성 시 PID 저장
+        _translation_connection_pid = current_pid
+        
         # 인덱스 생성
         translations_collection.create_index([("source_type", 1), ("source_id", 1)], unique=True)
         translations_collection.create_index("updated_at")
         
-        print("✅ 번역 시스템 MongoDB 연결 성공!")
+        print(f"✅ 번역 시스템 MongoDB 연결 성공! (PID: {current_pid})")
         return True
     except Exception as e:
         print(f"❌ 번역 시스템 MongoDB 연결 실패: {str(e)}")
         return False
 
 
-# 초기 연결
-init_mongodb()
+# 초기 연결 제거 - fork-safe를 위해 lazy 초기화로 변경
+# init_mongodb() 는 필요할 때 자동으로 호출됨
 
 
 def translate_text_gpt(text: str, target_lang: str, source_lang: str = 'ko') -> Optional[str]:

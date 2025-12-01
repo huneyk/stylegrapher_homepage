@@ -13,7 +13,7 @@ import pytz
 from werkzeug.security import generate_password_hash, check_password_hash
 import io
 import uuid
-from pymongo import MongoClient, DESCENDING, ASCENDING
+# pymongo 상수는 utils/mongo_models.py에서 사용
 from dotenv import load_dotenv
 from utils.monitor import security_monitor
 from utils.translation_helper import trigger_translation
@@ -34,38 +34,10 @@ from utils.mongo_models import (
     TermsOfService, PrivacyPolicy
 )
 
-# .env 파일 로드
+# .env 파일 로드 (fork-safe: MongoDB 연결은 lazy하게 생성됨)
 load_dotenv()
 
 admin = Blueprint('admin', __name__)
-
-# MongoDB 연결 설정
-mongo_uri = os.environ.get('MONGO_URI')
-if not mongo_uri:
-    print("경고: MONGO_URI 환경 변수가 설정되지 않았습니다!")
-    
-try:
-    print(f"admin.py: MongoDB에 연결 시도: {mongo_uri}")
-    mongo_client = MongoClient(
-        mongo_uri, 
-        serverSelectionTimeoutMS=30000,
-        connectTimeoutMS=20000,
-        socketTimeoutMS=20000,
-        retryWrites=True,
-        retryReads=True,
-        w='majority',
-        readPreference='primaryPreferred'
-    )
-    mongo_client.server_info()
-    print("admin.py: MongoDB 연결 성공!")
-    mongo_db = mongo_client['STG-DB']
-    images_collection = mongo_db['gallery']
-    print(f"admin.py: MongoDB 데이터베이스 '{mongo_db.name}' 및 컬렉션 '{images_collection.name}' 사용 준비 완료")
-except Exception as e:
-    print(f"admin.py: MongoDB 연결 오류: {str(e)}")
-    mongo_client = None
-    mongo_db = None
-    images_collection = None
 
 
 @login_manager.user_loader
@@ -335,9 +307,13 @@ def save_image_to_mongodb(file, group_id=None, order=0):
             image_doc['group_id'] = group_id
             image_doc['order'] = order
         
-        if images_collection is not None:
+        try:
+            db = get_mongo_db()
+            images_collection = db['gallery']
             images_collection.insert_one(image_doc)
             print(f"레거시 방식으로 이미지 저장 성공 - ID: {image_id}")
+        except Exception as e:
+            print(f"레거시 MongoDB 저장 오류 (무시): {str(e)}")
         
         return image_id
 
@@ -414,8 +390,13 @@ def delete_gallery_group(group_id):
     for image in group.images:
         try:
             deleted = delete_image_from_gridfs(image.image_path)
-            if not deleted and images_collection is not None:
-                images_collection.delete_one({'_id': image.image_path})
+            if not deleted:
+                try:
+                    db = get_mongo_db()
+                    images_collection = db['gallery']
+                    images_collection.delete_one({'_id': image.image_path})
+                except Exception as db_error:
+                    print(f"레거시 MongoDB 삭제 오류 (무시): {str(db_error)}")
             print(f"이미지 삭제 완료: {image.image_path}")
             image.delete()
         except Exception as e:
@@ -1064,16 +1045,17 @@ def get_image(image_id):
             print(f"GridFS 조회 중 오류: {str(gridfs_error)}")
         
         # 2. 레거시 MongoDB 컬렉션에서 검색
-        if images_collection is not None:
-            try:
-                image_doc = images_collection.find_one({'_id': image_id})
-                if image_doc and 'binary_data' in image_doc:
-                    response = make_response(image_doc['binary_data'])
-                    response.headers.set('Content-Type', image_doc.get('content_type', 'image/jpeg'))
-                    response.headers.set('Cache-Control', 'public, max-age=86400')
-                    return response
-            except Exception as mongo_error:
-                print(f"레거시 MongoDB 검색 중 오류: {str(mongo_error)}")
+        try:
+            db = get_mongo_db()
+            images_collection = db['gallery']
+            image_doc = images_collection.find_one({'_id': image_id})
+            if image_doc and 'binary_data' in image_doc:
+                response = make_response(image_doc['binary_data'])
+                response.headers.set('Content-Type', image_doc.get('content_type', 'image/jpeg'))
+                response.headers.set('Cache-Control', 'public, max-age=86400')
+                return response
+        except Exception as mongo_error:
+            print(f"레거시 MongoDB 검색 중 오류: {str(mongo_error)}")
         
         # 3. 로컬 파일 시스템에서 검색
         file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_id)
