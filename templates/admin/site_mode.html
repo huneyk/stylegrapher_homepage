@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+
+{% block title %}사이트 모드 관리 - 관리자{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-moon-stars me-2"></i>사이트 모드 관리</h2>
+        <div>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary me-2">
+                <i class="bi bi-speedometer2 me-1"></i>대시보드
+            </a>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Mode Selection -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-toggles me-2"></i>디스플레이 모드 선택</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.update_site_mode') }}">
+                        <div class="row g-4">
+                            <!-- Light Mode Option -->
+                            <div class="col-md-6">
+                                <div class="mode-option {% if settings.site_mode == 'light' %}active{% endif %}" 
+                                     onclick="selectMode('light')" id="light-mode-card">
+                                    <div class="mode-preview light-preview">
+                                        <div class="preview-navbar"></div>
+                                        <div class="preview-content">
+                                            <div class="preview-card"></div>
+                                            <div class="preview-card"></div>
+                                        </div>
+                                    </div>
+                                    <div class="mode-info">
+                                        <div class="d-flex align-items-center">
+                                            <input type="radio" name="site_mode" value="light" id="mode-light"
+                                                   {% if settings.site_mode == 'light' %}checked{% endif %}
+                                                   class="form-check-input me-3">
+                                            <div>
+                                                <h5 class="mb-1"><i class="bi bi-sun me-2"></i>라이트 모드</h5>
+                                                <small class="text-muted">밝은 배경 + 사이트 색상 관리의 색상 적용</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dark Mode Option -->
+                            <div class="col-md-6">
+                                <div class="mode-option {% if settings.site_mode == 'dark' %}active{% endif %}" 
+                                     onclick="selectMode('dark')" id="dark-mode-card">
+                                    <div class="mode-preview dark-preview">
+                                        <div class="preview-navbar"></div>
+                                        <div class="preview-content">
+                                            <div class="preview-card"></div>
+                                            <div class="preview-card"></div>
+                                        </div>
+                                    </div>
+                                    <div class="mode-info">
+                                        <div class="d-flex align-items-center">
+                                            <input type="radio" name="site_mode" value="dark" id="mode-dark"
+                                                   {% if settings.site_mode == 'dark' %}checked{% endif %}
+                                                   class="form-check-input me-3">
+                                            <div>
+                                                <h5 class="mb-1"><i class="bi bi-moon-fill me-2"></i>다크 모드</h5>
+                                                <small class="text-muted">짙은 보라색 바탕의 현재 테마</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Current Mode Display -->
+                        <div class="current-mode-display mt-4 p-3 rounded">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <span class="text-muted">현재 적용된 모드:</span>
+                                    <strong class="ms-2">
+                                        {% if settings.site_mode == 'light' %}
+                                            <i class="bi bi-sun text-warning me-1"></i>라이트 모드
+                                        {% else %}
+                                            <i class="bi bi-moon-fill text-info me-1"></i>다크 모드
+                                        {% endif %}
+                                    </strong>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-lg me-1"></i>모드 변경 적용
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mode Description -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6><i class="bi bi-info-circle me-2"></i>모드 설명</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6 class="text-warning"><i class="bi bi-sun me-2"></i>라이트 모드</h6>
+                        <ul class="small text-muted mb-0 ps-3">
+                            <li>밝은 화면 배경</li>
+                            <li><strong>'사이트 색상 관리'</strong>에서 설정한 메인/서브/배경 색상 적용</li>
+                            <li>주간 사용에 적합한 디자인</li>
+                        </ul>
+                    </div>
+                    <div class="mb-4">
+                        <h6 class="text-info"><i class="bi bi-moon-fill me-2"></i>다크 모드</h6>
+                        <ul class="small text-muted mb-0 ps-3">
+                            <li>짙은 보라색 바탕</li>
+                            <li>네온 바이올렛 글로우 효과</li>
+                            <li>프리미엄 스타일링 이미지에 적합</li>
+                        </ul>
+                    </div>
+                    <hr>
+                    <div class="text-center">
+                        <a href="{{ url_for('admin.site_colors') }}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-palette me-1"></i>색상 관리로 이동
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Color Preview (Light Mode) -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6><i class="bi bi-palette me-2"></i>라이트 모드 색상 미리보기</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="color-swatch me-2" style="background-color: rgb({{ settings.main_color_r }}, {{ settings.main_color_g }}, {{ settings.main_color_b }});"></div>
+                        <small>메인 컬러: rgb({{ settings.main_color_r }}, {{ settings.main_color_g }}, {{ settings.main_color_b }})</small>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="color-swatch me-2" style="background-color: rgb({{ settings.sub_color_r }}, {{ settings.sub_color_g }}, {{ settings.sub_color_b }});"></div>
+                        <small>서브 컬러: rgb({{ settings.sub_color_r }}, {{ settings.sub_color_g }}, {{ settings.sub_color_b }})</small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="color-swatch me-2" style="background-color: rgb({{ settings.background_color_r }}, {{ settings.background_color_g }}, {{ settings.background_color_b }}); border: 1px solid rgba(0,0,0,0.2);"></div>
+                        <small>배경 컬러: rgb({{ settings.background_color_r }}, {{ settings.background_color_g }}, {{ settings.background_color_b }})</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.mode-option {
+    border: 2px solid rgba(200, 170, 255, 0.3);
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(18, 0, 36, 0.4);
+}
+
+.mode-option:hover {
+    border-color: rgba(200, 170, 255, 0.6);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(200, 170, 255, 0.2);
+}
+
+.mode-option.active {
+    border-color: #B57EDC;
+    box-shadow: 0 0 20px rgba(181, 126, 220, 0.4);
+}
+
+.mode-preview {
+    height: 120px;
+    padding: 15px;
+    position: relative;
+}
+
+.light-preview {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.light-preview .preview-navbar {
+    height: 20px;
+    background: rgba(181, 126, 220, 0.8);
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.light-preview .preview-card {
+    height: 30px;
+    background: white;
+    border: 1px solid rgba(181, 126, 220, 0.3);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.dark-preview {
+    background: linear-gradient(135deg, #120024 0%, #0A001A 100%);
+}
+
+.dark-preview .preview-navbar {
+    height: 20px;
+    background: rgba(200, 170, 255, 0.3);
+    border-radius: 4px;
+    margin-bottom: 10px;
+    box-shadow: 0 0 10px rgba(200, 170, 255, 0.3);
+}
+
+.dark-preview .preview-card {
+    height: 30px;
+    background: rgba(18, 0, 36, 0.8);
+    border: 1px solid rgba(200, 170, 255, 0.3);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    box-shadow: 0 0 10px rgba(200, 170, 255, 0.2);
+}
+
+.mode-info {
+    padding: 15px;
+    background: rgba(18, 0, 36, 0.6);
+}
+
+.mode-info h5 {
+    color: #E8D4FF;
+    font-size: 1rem;
+}
+
+.form-check-input {
+    width: 1.5em;
+    height: 1.5em;
+    cursor: pointer;
+}
+
+.form-check-input:checked {
+    background-color: #B57EDC;
+    border-color: #B57EDC;
+}
+
+.current-mode-display {
+    background: rgba(200, 170, 255, 0.1);
+    border: 1px solid rgba(200, 170, 255, 0.3);
+}
+
+.color-swatch {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+</style>
+
+<script>
+function selectMode(mode) {
+    // 라디오 버튼 선택
+    document.getElementById('mode-' + mode).checked = true;
+    
+    // 카드 활성화 상태 업데이트
+    document.querySelectorAll('.mode-option').forEach(card => {
+        card.classList.remove('active');
+    });
+    document.getElementById(mode + '-mode-card').classList.add('active');
+}
+</script>
+{% endblock %}

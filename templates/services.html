@@ -67,7 +67,7 @@
 .services-page-subtitle {
     font-family: 'Noto Sans KR', sans-serif;
     font-size: 1.1rem;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--main-color);
     font-weight: 300;
     letter-spacing: 0.05em;
 }
@@ -78,6 +78,141 @@
     background: linear-gradient(90deg, transparent, var(--neon-lavender), transparent);
     margin: 1.5rem auto 0;
     box-shadow: 0 0 25px rgba(181, 126, 220, 0.6);
+}
+
+/* ============================================
+   Light Mode Overrides for Services Page
+   ============================================ */
+body.light-mode .services-page {
+    background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 20%, #f5f0fa 80%, #f8f9fa 100%) !important;
+    position: relative;
+}
+
+body.light-mode .services-page::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, 
+        rgba(255, 255, 255, 0.9) 0%,
+        rgba(245, 240, 250, 0.95) 50%,
+        rgba(255, 255, 255, 0.9) 100%);
+    z-index: 0;
+}
+
+body.light-mode .services-page > .container {
+    position: relative;
+    z-index: 1;
+}
+
+body.light-mode .services-main-card {
+    background: rgba(255, 255, 255, 0.98) !important;
+    border: 1px solid rgba(139, 95, 191, 0.15) !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06) !important;
+}
+
+body.light-mode .services-main-card::before {
+    background: linear-gradient(90deg, transparent, rgba(139, 95, 191, 0.6), rgba(170, 130, 210, 0.6), transparent) !important;
+    box-shadow: none !important;
+}
+
+body.light-mode .services-page-title {
+    color: rgba(139, 95, 191, 0.9) !important;
+    text-shadow: none !important;
+}
+
+body.light-mode .services-page-subtitle {
+    color: #6c757d !important;
+}
+
+body.light-mode .title-divider {
+    background: linear-gradient(90deg, transparent, rgba(139, 95, 191, 0.6), transparent) !important;
+    box-shadow: none !important;
+}
+
+/* Comprehensive Light Mode Overrides for Services Page */
+body.light-mode .service-category {
+    border-bottom-color: rgba(139, 95, 191, 0.15) !important;
+}
+
+body.light-mode .category-header {
+    background: transparent !important;
+}
+
+body.light-mode .category-icon,
+body.light-mode .category-icon i {
+    color: rgba(139, 95, 191, 0.85) !important;
+    filter: none !important;
+}
+
+body.light-mode .category-title {
+    color: rgba(139, 95, 191, 0.95) !important;
+    text-shadow: none !important;
+}
+
+body.light-mode .category-divider {
+    background: linear-gradient(90deg, transparent, rgba(139, 95, 191, 0.5), transparent) !important;
+    box-shadow: none !important;
+}
+
+body.light-mode .service-group {
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-color: rgba(139, 95, 191, 0.2) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+body.light-mode .service-group:hover {
+    border-color: rgba(139, 95, 191, 0.4) !important;
+    box-shadow: 0 8px 30px rgba(139, 95, 191, 0.12) !important;
+}
+
+body.light-mode .service-header {
+    background: transparent !important;
+}
+
+body.light-mode .service-title {
+    color: rgba(139, 95, 191, 0.95) !important;
+    text-shadow: none !important;
+}
+
+body.light-mode .service-description {
+    color: #555555 !important;
+}
+
+body.light-mode .option-card {
+    background: #ffffff !important;
+    border-color: rgba(139, 95, 191, 0.2) !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.light-mode .option-card:hover {
+    border-color: rgba(139, 95, 191, 0.5) !important;
+    box-shadow: 0 8px 25px rgba(139, 95, 191, 0.15) !important;
+}
+
+body.light-mode .option-card .card-body {
+    background: transparent !important;
+}
+
+body.light-mode .option-name {
+    color: rgba(139, 95, 191, 0.95) !important;
+}
+
+body.light-mode .option-description {
+    color: #555555 !important;
+}
+
+body.light-mode .option-arrow i {
+    color: rgba(139, 95, 191, 0.7) !important;
+}
+
+body.light-mode .option-card:hover .option-arrow i {
+    color: rgba(139, 95, 191, 1) !important;
+    filter: none !important;
 }
 
 @media (max-width: 768px) {

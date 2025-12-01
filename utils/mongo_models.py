@@ -537,6 +537,9 @@ class SiteSettings(MongoModel):
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        # 사이트 모드: 'light' 또는 'dark' (기본값: 'dark')
+        self.site_mode = kwargs.get('site_mode', 'dark')
+        # Light Mode 색상 설정 (admin의 '사이트 색상 관리' 값)
         # 기본값: Neon Lavender #B57EDC
         self.main_color_r = kwargs.get('main_color_r', 181)
         self.main_color_g = kwargs.get('main_color_g', 126)
@@ -545,10 +548,10 @@ class SiteSettings(MongoModel):
         self.sub_color_r = kwargs.get('sub_color_r', 138)
         self.sub_color_g = kwargs.get('sub_color_g', 43)
         self.sub_color_b = kwargs.get('sub_color_b', 226)
-        # 기본값: Deep Violet #120024
-        self.background_color_r = kwargs.get('background_color_r', 18)
-        self.background_color_g = kwargs.get('background_color_g', 0)
-        self.background_color_b = kwargs.get('background_color_b', 36)
+        # 기본값: White #FFFFFF (라이트 모드용 배경)
+        self.background_color_r = kwargs.get('background_color_r', 255)
+        self.background_color_g = kwargs.get('background_color_g', 255)
+        self.background_color_b = kwargs.get('background_color_b', 255)
         self.created_at = kwargs.get('created_at', datetime.utcnow())
         self.updated_at = kwargs.get('updated_at', datetime.utcnow())
     

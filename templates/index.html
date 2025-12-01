@@ -69,7 +69,8 @@
     <div class="fade-text">
         {% if fade_texts %}
             {% for fade_text in fade_texts %}
-                <h2 class="fade-title{% if not loop.first %} delayed{% endif %}">{{ _(fade_text.text) }}</h2>
+                {# fade_texts는 이미 번역된 데이터입니다 (main.py에서 get_translated_collage_text 사용) #}
+                <h2 class="fade-title{% if not loop.first %} delayed{% endif %}">{{ fade_text.text }}</h2>
             {% endfor %}
         {% else %}
             <h2 class="fade-title">{{ _('당신의 무한한 가능성을') }}</h2>
@@ -85,11 +86,11 @@
    ============================================ */
 .hero-section {
     position: relative;
-    min-height: 100vh;
+    min-height: auto;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 4rem 0;
+    padding: 2rem 0;
     overflow: hidden;
 }
 
@@ -191,9 +192,9 @@
 }
 
 .hero-slogan {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Nanum Myeongjo', 'Cormorant Garamond', Georgia, serif;
     font-size: clamp(2rem, 5vw, 4rem);
-    font-weight: 300;
+    font-weight: 400;
     letter-spacing: 0.35em;
     text-transform: uppercase;
     opacity: 0;
@@ -635,7 +636,7 @@
     align-items: center;
     justify-content: center;
     gap: 30px;
-    margin-top: 60px;
+    margin-top: 30px;
     opacity: 0.7;
 }
 
@@ -671,7 +672,7 @@
 @media (max-width: 992px) {
     .hero-section {
         min-height: auto;
-        padding: 3rem 0;
+        padding: 2rem 0;
     }
     
     .prismatic-grid {
@@ -714,7 +715,7 @@
     }
     
     .brand-signature {
-        margin-top: 40px;
+        margin-top: 20px;
     }
     
     .signature-line {
@@ -737,16 +738,21 @@
     }
 }
 
-/* Fade Text Section */
+/* Fade Text Section - Hidden in light mode since title is in services section */
 .fade-text-section {
     position: relative;
-    padding: 5rem 0;
+    padding: 1.5rem 0;
     text-align: center;
     overflow: hidden;
-    min-height: 200px;
+    min-height: 100px;
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+/* Light mode: hide fade text section */
+body.light-mode .fade-text-section {
+    display: none;
 }
 
 .fade-text {
@@ -758,7 +764,7 @@
     font-family: 'Cormorant Garamond', serif;
     font-weight: 400;
     font-size: 2.8rem;
-    color: #B88BE8;
+    color: var(--main-color);
     margin: 0.5rem 0;
     opacity: 0;
     animation: fadeInGlow 6s ease;
@@ -813,7 +819,7 @@
     }
     
     .fade-text-section {
-        padding: 3rem 0;
+        padding: 1rem 0;
     }
     
     .fade-title {
@@ -998,15 +1004,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .gallery-preview-card {
     background: rgba(18, 0, 36, 0.5);
-    border: 1px solid rgba(181, 126, 220, 0.15);
+    border: 2px solid rgba(139, 92, 246, 0.5);
     border-radius: 20px;
     overflow: hidden;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        0 10px 40px rgba(120, 50, 180, 0.55),
+        0 20px 60px rgba(90, 30, 150, 0.5),
+        0 0 80px rgba(139, 92, 246, 0.4);
 }
 
 .gallery-preview-card:hover {
-    border-color: var(--neon-lavender);
-    box-shadow: 0 0 40px rgba(181, 126, 220, 0.3), 0 15px 50px rgba(0, 0, 0, 0.4);
+    border-color: transparent;
+    box-shadow: none;
     transform: translateY(-10px);
 }
 
@@ -1237,10 +1247,10 @@ document.addEventListener('DOMContentLoaded', function() {
 .contact-section {
     position: relative;
     padding: 3rem;
-    background: rgba(18, 0, 36, 0.5);
+    background: rgba(181, 126, 220, 0.2);
     backdrop-filter: blur(15px);
     border-radius: 30px;
-    border: 1px solid rgba(181, 126, 220, 0.2);
+    border: 1px solid rgba(181, 126, 220, 0.3);
 }
 
 .contact-content {
@@ -1250,21 +1260,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .contact-text {
     font-family: 'Cormorant Garamond', serif;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--main-color);
     font-size: 1.3rem;
     font-weight: 400;
     letter-spacing: 0.02em;
 }
 
 .btn-neon.contact-btn {
-    background: linear-gradient(135deg, #FEE500, #FFD700);
-    color: #3C1E1E;
+    background: linear-gradient(135deg, #FEE500, #FFD700) !important;
+    color: #3C1E1E !important;
     border: none;
     padding: 1rem 3rem;
     border-radius: 35px;
     font-weight: 600;
     font-size: 1.1rem;
-    box-shadow: 0 0 30px rgba(254, 229, 0, 0.4);
+    box-shadow: 0 0 30px rgba(254, 229, 0, 0.4) !important;
     transition: all 0.4s ease;
     animation: kakaoGlow 2s ease-in-out infinite;
 }
@@ -1280,7 +1290,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .btn-neon.contact-btn:hover {
     transform: translateY(-5px) scale(1.05);
-    box-shadow: 0 0 50px rgba(254, 229, 0, 0.6), 0 15px 40px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 50px rgba(254, 229, 0, 0.6), 0 15px 40px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Light mode 문의 섹션 스타일 */
+body.light-mode .contact-text {
+    color: var(--main-color) !important;
+}
+
+body.light-mode .btn-neon.contact-btn {
+    background: linear-gradient(135deg, #FEE500, #FFD700) !important;
+    color: #3C1E1E !important;
+    box-shadow: 0 0 30px rgba(254, 229, 0, 0.4) !important;
+}
+
+body.light-mode .btn-neon.contact-btn:hover {
+    background: linear-gradient(135deg, #FFD700, #FFC107) !important;
+    box-shadow: 0 0 50px rgba(254, 229, 0, 0.6), 0 15px 40px rgba(0, 0, 0, 0.3) !important;
 }
 
 .contact-glow {

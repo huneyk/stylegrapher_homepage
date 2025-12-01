@@ -159,7 +159,7 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
 }
 
 .navbar-brand img {
-    height: 270px;
+    height: 140px;
     width: auto;
     transition: var(--transition-smooth);
     filter: invert(1) brightness(1.1);
@@ -1005,7 +1005,7 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
 .service-card-title {
     font-family: 'Cormorant Garamond', serif;
     font-size: 1.6rem;
-    color: #FDFCFF;
+    color: var(--main-color);
     font-weight: 500;
     background: rgba(200, 170, 255, 0.15);
     padding: 0.8rem 1.5rem;
@@ -1022,7 +1022,7 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
 
 .option-button {
     background: rgba(200, 170, 255, 0.12);
-    color: #FDFCFF;
+    color: var(--main-color);
     border: 1px solid rgba(200, 170, 255, 0.4);
     padding: 0.7rem 1rem;
     border-radius: 12px;
@@ -1350,7 +1350,7 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
    ============================================ */
 @media (max-width: 992px) {
     .navbar-brand img {
-        height: 225px;
+        height: 117px;
     }
     
     .hero-title {
@@ -1376,7 +1376,7 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
     }
     
     .navbar-brand img {
-        height: 180px;
+        height: 94px;
     }
     
     .side-menu {
@@ -1533,6 +1533,15 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
 
 .htmx-request.gallery-more-btn {
     display: none;
+}
+
+/* ============================================
+   Light Mode Base Support
+   (Full override styles are in base.html template)
+   ============================================ */
+body.light-mode {
+    --deep-violet: #f8f9fa;
+    --rich-black: #ffffff;
 }
 
 /* ============================================

@@ -6,10 +6,10 @@
 <div class="container my-5">
     <!-- Header Section -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="fas fa-palette me-2"></i>사이트 색상 관리</h2>
+        <h2><i class="bi bi-palette me-2"></i>사이트 색상 관리</h2>
         <div>
             <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary me-2">
-                <i class="fas fa-tachometer-alt me-1"></i>대시보드
+                <i class="bi bi-speedometer2 me-1"></i>대시보드
             </a>
         </div>
     </div>
@@ -30,7 +30,7 @@
         <div class="col-lg-8">
             <div class="card">
                 <div class="card-header">
-                    <h5><i class="fas fa-sliders-h me-2"></i>색상 설정</h5>
+                    <h5><i class="bi bi-sliders me-2"></i>색상 설정</h5>
                 </div>
                 <div class="card-body">
                     <form method="POST" action="{{ url_for('admin.update_site_colors') }}">
@@ -127,7 +127,7 @@
                         <!-- Action Buttons -->
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-1"></i>변경사항 저장
+                                <i class="bi bi-check-lg me-1"></i>변경사항 저장
                             </button>
                         </div>
                     </form>
@@ -139,7 +139,7 @@
         <div class="col-lg-4">
             <div class="card">
                 <div class="card-header">
-                    <h6><i class="fas fa-info-circle me-2"></i>색상 사용 가이드</h6>
+                    <h6><i class="bi bi-info-circle me-2"></i>색상 사용 가이드</h6>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
@@ -171,6 +171,13 @@
                                 <code class="small">rgb({{ settings.background_color_r }}, {{ settings.background_color_g }}, {{ settings.background_color_b }})</code>
                             </div>
                         </div>
+                    </div>
+                    <hr>
+                    <div class="text-center">
+                        <small class="text-muted d-block mb-2">색상은 라이트 모드에서 적용됩니다</small>
+                        <a href="{{ url_for('admin.site_mode') }}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-moon-stars me-1"></i>모드 관리로 이동
+                        </a>
                     </div>
                 </div>
             </div>

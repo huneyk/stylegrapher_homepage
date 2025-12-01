@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _(service.name) }}{% endblock %}
+{% block title %}{{ translated.name or service.name }}{% endblock %}
 
 {% block content %}
 <div class="container py-5">
@@ -8,8 +8,8 @@
         <div class="col-lg-10 mx-auto">
             <!-- 서비스 카테고리별 아이콘 설정 -->
             <div class="service-header text-center mb-5">
-                <h1 class="service-title mb-3">{{ _(service.name) }}</h1>
-                <p class="service-subtitle">{{ _(service.description) }}</p>
+                <h1 class="service-title mb-3">{{ translated.name or service.name }}</h1>
+                <p class="service-subtitle">{{ translated.description or service.description }}</p>
             </div>
             
             <!-- 서비스 상세 정보 -->
@@ -81,10 +81,10 @@
                     <div class="col-md-6 col-lg-4">
                         <div class="option-card h-100">
                             <div class="option-header">
-                                <h3 class="option-name">{{ _(option.name) }}</h3>
+                                <h3 class="option-name">{{ t('service_option', option.id, 'name', option.name) }}</h3>
                             </div>
                             <div class="option-body">
-                                <p class="option-description">{{ _(option.description) }}</p>
+                                <p class="option-description">{{ t('service_option', option.id, 'description', option.description) }}</p>
                                 <div class="option-details">
                                     <div class="price-info">
                                         <span class="price-label">{{ _('가격') }}</span>

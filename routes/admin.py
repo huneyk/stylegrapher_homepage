@@ -1228,6 +1228,43 @@ def update_site_colors():
         return redirect(url_for('admin.site_colors'))
 
 
+# 사이트 모드 설정 관리
+@admin.route('/site-mode')
+@login_required
+def site_mode():
+    try:
+        settings = SiteSettings.get_current_settings()
+        return render_template('admin/site_mode.html', settings=settings)
+    except Exception as e:
+        print(f"Error loading site mode: {str(e)}")
+        flash('사이트 모드 설정을 불러오는 중 오류가 발생했습니다.', 'error')
+        return redirect(url_for('admin.dashboard'))
+
+
+@admin.route('/site-mode/update', methods=['POST'])
+@login_required
+def update_site_mode():
+    try:
+        settings = SiteSettings.get_current_settings()
+        
+        mode = request.form.get('site_mode', 'dark')
+        if mode not in ['light', 'dark']:
+            mode = 'dark'
+        
+        settings.site_mode = mode
+        settings.updated_at = datetime.utcnow()
+        settings.save()
+        
+        mode_name = '라이트 모드' if mode == 'light' else '다크 모드'
+        flash(f'사이트 모드가 "{mode_name}"로 변경되었습니다.')
+        return redirect(url_for('admin.site_mode'))
+        
+    except Exception as e:
+        print(f"Error updating site mode: {str(e)}")
+        flash('사이트 모드 업데이트 중 오류가 발생했습니다.', 'error')
+        return redirect(url_for('admin.site_mode'))
+
+
 # 이용약관 관리
 @admin.route('/terms-of-service')
 @login_required

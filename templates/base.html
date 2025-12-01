@@ -10,10 +10,10 @@
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
     
-    <!-- Google Fonts - Cormorant Garamond (Serif) & Noto Sans KR (Sans-serif) -->
+    <!-- Google Fonts - Cormorant Garamond (Serif), Noto Sans KR & Nanum Gothic (Sans-serif) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
     
     <!-- Bootstrap CSS & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -25,7 +25,7 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
     
-    <!-- Dynamic Site Colors -->
+    <!-- Dynamic Site Colors & Mode -->
     <style>
         :root {
             --main-color-rgb: {{ site_colors.main_rgb }};
@@ -41,11 +41,958 @@
             --neon-lavender: rgb(var(--main-color-rgb));
             --electric-violet: rgb(var(--sub-color-rgb));
         }
+        
+        {% if site_mode == 'light' %}
+        /* ============================================
+           Light Mode Overrides
+           Font: Nanum Gothic (나눔고딕)
+           ============================================ */
+        
+        /* Light Mode - Base Typography */
+        body.light-mode {
+            font-family: 'Nanum Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
+            background: linear-gradient(135deg, #f8f9fa 0%, rgb(var(--background-color-rgb)) 50%, #f8f9fa 100%) !important;
+            color: #000000 !important;
+            font-size: 16px !important;
+            font-weight: 400 !important;
+            line-height: 1.6 !important;
+        }
+        
+        body.light-mode * {
+            font-family: 'Nanum Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        body.light-mode::before {
+            background-image: 
+                radial-gradient(ellipse at 20% 30%, rgba(var(--main-color-rgb), 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(var(--sub-color-rgb), 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(var(--main-color-rgb), 0.04) 0%, transparent 70%) !important;
+        }
+        
+        /* Light Mode - CSS Variables for Colors */
+        body.light-mode {
+            --text-primary: #000000;
+            --text-secondary: #6c757d;
+            --text-muted: #8e8e8e;
+            --primary-purple: #663399;
+            --light-purple: #9966cc;
+            --dark-purple: #4B0082;
+            --white: #ffffff;
+            --black: #000000;
+        }
+        
+        /* Light Mode - Glass Effect */
+        body.light-mode {
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --glass-border: rgba(var(--main-color-rgb), 0.25);
+            --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --hover-glow: 0 0 30px rgba(var(--main-color-rgb), 0.3), 0 0 60px rgba(var(--sub-color-rgb), 0.2);
+            --neon-glow: 0 0 20px rgba(var(--main-color-rgb), 0.3), 0 0 40px rgba(var(--sub-color-rgb), 0.15);
+        }
+        
+        /* Light Mode - Navbar */
+        body.light-mode .navbar {
+            background: transparent !important;
+        }
+        
+        body.light-mode .navbar.scrolled {
+            background: rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+        }
+        
+        body.light-mode .navbar-brand img {
+            filter: none !important;
+            mix-blend-mode: normal !important;
+        }
+        
+        body.light-mode .logo a {
+            font-size: 1.5rem !important;
+            font-weight: 700 !important;
+            color: var(--white) !important;
+        }
+        
+        /* Light Mode - Hamburger Menu */
+        body.light-mode .hamburger-menu span,
+        body.light-mode .floating-hamburger span {
+            background: linear-gradient(90deg, rgb(var(--main-color-rgb)), rgb(var(--sub-color-rgb))) !important;
+        }
+        
+        /* Light Mode - Side Menu */
+        body.light-mode .side-menu {
+            background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%) !important;
+            border-right-color: rgba(var(--main-color-rgb), 0.2) !important;
+        }
+        
+        body.light-mode .side-menu::before {
+            background: linear-gradient(90deg, rgb(var(--main-color-rgb)), rgb(var(--sub-color-rgb)), rgb(var(--main-color-rgb))) !important;
+        }
+        
+        body.light-mode .close-menu {
+            color: rgb(var(--main-color-rgb)) !important;
+            font-size: 2rem !important;
+        }
+        
+        body.light-mode .main-menu-link {
+            font-size: 1.1rem !important;
+            font-weight: 600 !important;
+            color: #333 !important;
+        }
+        
+        body.light-mode .category-header {
+            font-size: 1.1rem !important;
+            font-weight: 600 !important;
+            color: #333 !important;
+        }
+        
+        body.light-mode .main-menu-link:hover,
+        body.light-mode .category-header:hover {
+            background: rgba(var(--main-color-rgb), 0.1) !important;
+            color: rgb(var(--main-color-rgb)) !important;
+        }
+        
+        body.light-mode .sub-menu {
+            background: rgba(var(--main-color-rgb), 0.05) !important;
+        }
+        
+        body.light-mode .sub-menu-link {
+            font-size: 0.95rem !important;
+            font-weight: 400 !important;
+            color: #6c757d !important;
+        }
+        
+        body.light-mode .sub-menu-link:hover {
+            background: rgba(var(--main-color-rgb), 0.1) !important;
+            color: rgb(var(--main-color-rgb)) !important;
+        }
+        
+        body.light-mode .category-toggle {
+            font-size: 0.8rem !important;
+            color: #333 !important;
+        }
+        
+        /* Light Mode - Menu Overlay */
+        body.light-mode .menu-overlay {
+            background: rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        /* Light Mode - Cards */
+        body.light-mode .card,
+        body.light-mode .glass-card,
+        body.light-mode .service-simple-card,
+        body.light-mode .additional-card,
+        body.light-mode .gallery-item,
+        body.light-mode .gallery-preview-card {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border-color: rgba(var(--main-color-rgb), 0.2) !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+        }
+        
+        body.light-mode .card:hover,
+        body.light-mode .glass-card:hover,
+        body.light-mode .service-simple-card:hover,
+        body.light-mode .additional-card:hover {
+            box-shadow: 0 8px 30px rgba(var(--main-color-rgb), 0.2) !important;
+            border-color: rgba(var(--main-color-rgb), 0.4) !important;
+        }
+        
+        body.light-mode .card-title {
+            font-size: 1.8rem !important;
+            font-weight: 700 !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+            text-shadow: none !important;
+        }
+        
+        body.light-mode .card-text {
+            font-size: 1.15rem !important;
+            font-weight: 400 !important;
+            color: #6c757d !important;
+            line-height: 1.5 !important;
+        }
+        
+        body.light-mode .service-card-title {
+            font-size: 1.6rem !important;
+            font-weight: 700 !important;
+            color: rgb(var(--main-color-rgb)) !important;
+            text-shadow: none !important;
+        }
+        
+        body.light-mode .service-card-description {
+            font-size: 1.15rem !important;
+            font-weight: 400 !important;
+            color: #6c757d !important;
+        }
+        
+        body.light-mode .additional-card-title {
+            font-size: 1.8rem !important;
+            font-weight: 700 !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+            text-shadow: none !important;
+        }
+        
+        body.light-mode .additional-card-text {
+            font-size: 1.15rem !important;
+            font-weight: 400 !important;
+            color: #6c757d !important;
+        }
+        
+        /* Light Mode - Section Titles */
+        body.light-mode .services-section-title {
+            font-size: 2.2rem !important;
+            font-weight: 700 !important;
+            color: var(--main-color) !important;
+            text-shadow: none !important;
+        }
+        
+        body.light-mode .story-section-title {
+            font-size: 2.5rem !important;
+            font-weight: 400 !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+            text-shadow: none !important;
+        }
+        
+        body.light-mode .service-title,
+        body.light-mode .section-title {
+            font-size: 1.5rem !important;
+            font-weight: 600 !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+            text-shadow: none !important;
+        }
+        
+        body.light-mode .page-title {
+            font-size: 2.5rem !important;
+            font-weight: 700 !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+            text-shadow: none !important;
+        }
+        
+        body.light-mode .hero-title {
+            font-size: 3.5rem !important;
+            font-weight: 700 !important;
+            color: rgba(139, 95, 191, 0.9) !important;
+            text-shadow: none !important;
+        }
+        
+        body.light-mode .hero-subtitle {
+            font-size: 1.5rem !important;
+            font-weight: 500 !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+        }
+        
+        body.light-mode .hero-tagline {
+            font-size: 1.2rem !important;
+            font-weight: 400 !important;
+            color: #6c757d !important;
+        }
+        
+        body.light-mode .gallery-main-title,
+        body.light-mode .gallery-page-title {
+            font-size: 2.5rem !important;
+            font-weight: 400 !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+            text-shadow: none !important;
+        }
+        
+        body.light-mode .gallery-subtitle {
+            font-size: 1rem !important;
+            font-weight: 400 !important;
+            color: rgba(var(--sub-color-rgb), 0.8) !important;
+        }
+        
+        body.light-mode .category-title {
+            font-size: 1.8rem !important;
+            font-weight: 600 !important;
+            color: rgba(139, 95, 191, 0.9) !important;
+            text-shadow: none !important;
+        }
+        
+        body.light-mode .category-section-title {
+            font-size: 2.2rem !important;
+            font-weight: 600 !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+        }
+        
+        body.light-mode .category-description {
+            font-size: 1rem !important;
+            font-weight: 400 !important;
+            color: #495057 !important;
+        }
+        
+        body.light-mode .services-main-title,
+        body.light-mode .services-page-title {
+            font-size: 3rem !important;
+            font-weight: 700 !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+            text-shadow: none !important;
+        }
+        
+        body.light-mode .services-subtitle {
+            font-size: 1.2rem !important;
+            font-weight: 300 !important;
+            color: #6c757d !important;
+        }
+        
+        /* Light Mode - Options */
+        body.light-mode .option-title {
+            font-size: 1.5rem !important;
+            font-weight: 600 !important;
+            color: rgba(139, 95, 191, 0.9) !important;
+        }
+        
+        body.light-mode .option-description {
+            font-size: 1.15rem !important;
+            font-weight: 400 !important;
+            color: #495057 !important;
+        }
+        
+        body.light-mode .option-price {
+            font-size: 1.05rem !important;
+            font-weight: 400 !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+        }
+        
+        body.light-mode .option-name {
+            font-size: 1.3rem !important;
+            font-weight: 600 !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+        }
+        
+        body.light-mode .option-desc {
+            font-size: 1.05rem !important;
+            color: #6c757d !important;
+        }
+        
+        body.light-mode .option-duration {
+            font-size: 0.95rem !important;
+            font-weight: 500 !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+        }
+        
+        /* Light Mode - Service Detail */
+        body.light-mode .service-icon i,
+        body.light-mode .service-detail-icon i {
+            font-size: 4rem !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+        }
+        
+        body.light-mode .service-title {
+            font-size: 2.5rem !important;
+            font-weight: 600 !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+        }
+        
+        body.light-mode .service-description {
+            font-size: 1.2rem !important;
+            color: #6c757d !important;
+        }
+        
+        body.light-mode .info-label {
+            font-size: 1.05rem !important;
+            font-weight: 600 !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+        }
+        
+        body.light-mode .info-text {
+            font-size: 1.1rem !important;
+            color: #6c757d !important;
+        }
+        
+        body.light-mode .price-label {
+            font-size: 1rem !important;
+            color: rgba(139, 95, 191, 0.7) !important;
+        }
+        
+        body.light-mode .price-value {
+            font-size: 1.05rem !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+        }
+        
+        /* Light Mode - Booking Section */
+        body.light-mode .booking-section-title {
+            font-size: 1.5rem !important;
+            font-weight: 600 !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+        }
+        
+        body.light-mode .booking-item-title {
+            font-size: 1.15rem !important;
+            font-weight: 600 !important;
+            color: #3C1E1E !important;
+        }
+        
+        body.light-mode .booking-item-content {
+            font-size: 1.1rem !important;
+            font-weight: 500 !important;
+            color: #6c757d !important;
+        }
+        
+        body.light-mode .booking-content {
+            font-size: 1.1rem !important;
+            color: #333 !important;
+            line-height: 1.8 !important;
+        }
+        
+        /* Light Mode - Package */
+        body.light-mode .package-name {
+            font-size: 1.25rem !important;
+            font-weight: 700 !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+        }
+        
+        body.light-mode .package-price {
+            font-size: 1.15rem !important;
+            font-weight: 600 !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+        }
+        
+        /* Light Mode - Buttons */
+        body.light-mode .btn {
+            font-size: 0.9rem !important;
+            border-color: rgba(139, 95, 191, 0.8) !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+        }
+        
+        body.light-mode .btn-sm {
+            font-size: 0.8rem !important;
+        }
+        
+        body.light-mode .btn-lg {
+            font-size: 1rem !important;
+        }
+        
+        body.light-mode .btn:hover,
+        body.light-mode .btn-primary:hover,
+        body.light-mode .btn-outline-primary:hover {
+            background: linear-gradient(135deg, rgb(var(--main-color-rgb)), rgb(var(--sub-color-rgb))) !important;
+            color: white !important;
+        }
+        
+        body.light-mode .btn-neon {
+            background: linear-gradient(135deg, rgb(var(--main-color-rgb)), rgb(var(--sub-color-rgb))) !important;
+            color: white !important;
+        }
+        
+        body.light-mode .btn-danger {
+            color: white !important;
+        }
+        
+        body.light-mode .contact-button {
+            color: white !important;
+        }
+        
+        body.light-mode .option-button {
+            background: rgba(var(--main-color-rgb), 0.08) !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+            border-color: rgba(var(--main-color-rgb), 0.3) !important;
+        }
+        
+        body.light-mode .option-button:hover {
+            background: linear-gradient(135deg, rgb(var(--main-color-rgb)), rgb(var(--sub-color-rgb))) !important;
+            color: white !important;
+        }
+        
+        /* Light Mode - Floating Menu */
+        body.light-mode .floating-menu-right {
+            opacity: 0;
+        }
+        
+        body.light-mode .floating-menu-right.visible {
+            opacity: 0.95;
+        }
+        
+        body.light-mode .floating-item {
+            background: rgba(255, 255, 255, 0.65) !important;
+            border-color: rgba(var(--main-color-rgb), 0.2) !important;
+            color: #333 !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+        }
+        
+        body.light-mode .floating-text {
+            font-size: 0.9rem !important;
+            font-weight: 500 !important;
+            color: #333 !important;
+        }
+        
+        body.light-mode .floating-icon {
+            font-size: 1.1rem !important;
+            background: linear-gradient(135deg, rgba(var(--main-color-rgb), 0.5), rgba(var(--sub-color-rgb), 0.5)) !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(var(--main-color-rgb), 0.15) !important;
+        }
+        
+        body.light-mode .floating-item:hover {
+            background: rgba(255, 255, 255, 0.85) !important;
+            border-color: rgb(var(--main-color-rgb)) !important;
+            color: rgb(var(--main-color-rgb)) !important;
+            box-shadow: 0 6px 20px rgba(var(--main-color-rgb), 0.2) !important;
+        }
+        
+        body.light-mode .floating-item:hover .floating-text {
+            color: rgb(var(--main-color-rgb)) !important;
+        }
+        
+        body.light-mode .floating-item:hover .floating-icon {
+            background: linear-gradient(135deg, rgba(var(--main-color-rgb), 0.7), rgba(var(--sub-color-rgb), 0.7)) !important;
+            box-shadow: 0 4px 12px rgba(var(--main-color-rgb), 0.25) !important;
+        }
+        
+        /* Light Mode - Footer */
+        body.light-mode .footer {
+            background: rgba(139, 95, 191, 0.8) !important;
+            border-top-color: rgba(var(--main-color-rgb), 0.2) !important;
+        }
+        
+        body.light-mode .footer-info {
+            font-size: 0.85rem !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+            line-height: 1.4 !important;
+        }
+        
+        body.light-mode .footer-info p {
+            text-shadow: none !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+        
+        body.light-mode .social-link {
+            font-size: 1.5rem !important;
+            color: #fff !important;
+            text-shadow: none !important;
+        }
+        
+        body.light-mode .social-link:hover {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+        
+        body.light-mode .contact-link,
+        body.light-mode .footer-link {
+            color: #fff !important;
+            text-shadow: none !important;
+        }
+        
+        body.light-mode .contact-link:hover,
+        body.light-mode .footer-link:hover {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+        
+        body.light-mode .text-neon {
+            color: rgba(255, 255, 255, 0.9) !important;
+            text-shadow: none !important;
+        }
+        
+        /* Light Mode - Forms */
+        body.light-mode .form-control,
+        body.light-mode .form-select {
+            font-size: 1rem !important;
+            background: rgba(255, 255, 255, 0.95) !important;
+            border-color: rgba(var(--main-color-rgb), 0.3) !important;
+            color: #000000 !important;
+        }
+        
+        body.light-mode .form-control::placeholder {
+            color: #9966cc !important;
+        }
+        
+        body.light-mode .form-control:focus,
+        body.light-mode .form-select:focus {
+            border-color: rgb(var(--main-color-rgb)) !important;
+            box-shadow: 0 0 15px rgba(var(--main-color-rgb), 0.2) !important;
+        }
+        
+        body.light-mode .form-label {
+            font-weight: 600 !important;
+            color: rgb(var(--main-color-rgb)) !important;
+        }
+        
+        /* Light Mode - Tables */
+        body.light-mode .table thead th,
+        body.light-mode .table-light,
+        body.light-mode .packages-table thead th {
+            font-weight: 600 !important;
+            background: rgba(var(--main-color-rgb), 0.9) !important;
+            color: white !important;
+        }
+        
+        body.light-mode .table thead {
+            background: rgba(var(--sub-color-rgb), 0.15) !important;
+        }
+        
+        body.light-mode .table td,
+        body.light-mode .table th,
+        body.light-mode .packages-table td {
+            color: rgba(139, 95, 191, 0.8) !important;
+            background: rgba(255, 255, 255, 0.95) !important;
+            border-color: rgba(var(--main-color-rgb), 0.15) !important;
+        }
+        
+        body.light-mode .table tbody tr:hover {
+            background: rgba(var(--sub-color-rgb), 0.05) !important;
+        }
+        
+        body.light-mode .refund-table th,
+        body.light-mode .overtime-charge-table th {
+            font-weight: 600 !important;
+            color: #663399 !important;
+        }
+        
+        body.light-mode .refund-table td,
+        body.light-mode .overtime-charge-table td {
+            color: #333 !important;
+        }
+        
+        /* Light Mode - Alerts */
+        body.light-mode .alert {
+            background: rgba(255, 255, 255, 0.95) !important;
+            color: #333 !important;
+        }
+        
+        /* Light Mode - Kakao Modal */
+        body.light-mode .kakao-modal {
+            background: rgba(0, 0, 0, 0.4) !important;
+        }
+        
+        body.light-mode .kakao-modal-content {
+            background: white !important;
+            border-color: rgba(var(--main-color-rgb), 0.2) !important;
+        }
+        
+        body.light-mode .kakao-modal-title {
+            font-size: 1.3rem !important;
+            font-weight: 600 !important;
+            color: #3C1E1E !important;
+        }
+        
+        body.light-mode .kakao-modal-message {
+            font-size: 1rem !important;
+            color: #333 !important;
+        }
+        
+        body.light-mode .kakao-continue-btn {
+            font-size: 1rem !important;
+            font-weight: 600 !important;
+            background: #FEE500 !important;
+            color: #3C1E1E !important;
+        }
+        
+        body.light-mode .kakao-continue-btn:hover {
+            background: #FFD700 !important;
+        }
+        
+        body.light-mode .kakao-cancel-btn {
+            font-size: 1rem !important;
+            font-weight: 500 !important;
+            color: #6c757d !important;
+            background: #f8f9fa !important;
+        }
+        
+        body.light-mode .kakao-cancel-btn:hover {
+            color: #495057 !important;
+        }
+        
+        /* Light Mode - Language Selector */
+        body.light-mode .language-btn {
+            background: rgba(var(--main-color-rgb), 0.15) !important;
+            border-color: rgba(var(--main-color-rgb), 0.4) !important;
+            color: rgb(var(--main-color-rgb)) !important;
+        }
+        
+        body.light-mode .language-btn i {
+            color: rgb(var(--main-color-rgb)) !important;
+        }
+        
+        body.light-mode .language-dropdown {
+            background: rgba(255, 255, 255, 0.98) !important;
+            border-color: rgba(var(--main-color-rgb), 0.2) !important;
+        }
+        
+        body.light-mode .language-option {
+            color: #333 !important;
+        }
+        
+        body.light-mode .language-option:hover,
+        body.light-mode .language-option.active {
+            background: rgba(var(--main-color-rgb), 0.1) !important;
+            color: rgb(var(--main-color-rgb)) !important;
+        }
+        
+        /* Light Mode - Gallery Preview Title */
+        body.light-mode .gallery-preview-title {
+            font-size: 1rem !important;
+            font-weight: 500 !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+            text-shadow: none !important;
+        }
+        
+        /* Light Mode - Gallery Detail */
+        body.light-mode .gallery-detail-title {
+            font-size: 2rem !important;
+            font-weight: 500 !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+        }
+        
+        body.light-mode .gallery-description {
+            font-size: 0.95rem !important;
+            color: #6c757d !important;
+        }
+        
+        /* Light Mode - Additional Card Icon */
+        body.light-mode .additional-card-icon i {
+            font-size: 3rem !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+            filter: none !important;
+        }
+        
+        /* Light Mode - Background Particles */
+        body.light-mode .bg-particles::before {
+            background: radial-gradient(circle, rgba(var(--main-color-rgb), 0.1) 0%, transparent 70%) !important;
+        }
+        
+        body.light-mode .bg-particles::after {
+            background: radial-gradient(circle, rgba(var(--sub-color-rgb), 0.08) 0%, transparent 70%) !important;
+        }
+        
+        /* Light Mode - Fade Title (Hero Section) */
+        body.light-mode .fade-title,
+        body.light-mode .fade-text-title {
+            font-size: 1.5rem !important;
+            font-weight: 500 !important;
+            color: var(--main-color) !important;
+            text-shadow: none !important;
+        }
+        
+        /* Light Mode - About Page */
+        body.light-mode .section-description {
+            font-size: 1.1rem !important;
+            color: #6c757d !important;
+        }
+        
+        body.light-mode .team-section-title {
+            font-size: 2rem !important;
+            font-weight: 700 !important;
+            color: rgba(139, 95, 191, 0.9) !important;
+        }
+        
+        body.light-mode .team-name {
+            font-size: 0.9rem !important;
+            color: #495057 !important;
+        }
+        
+        /* Light Mode - About Page Content Text */
+        body.light-mode .hero-description .lead {
+            font-size: 1.15rem !important;
+            color: #333333 !important;
+            font-weight: 400 !important;
+        }
+        
+        body.light-mode .message-text {
+            font-size: 1.1rem !important;
+            color: #333333 !important;
+        }
+        
+        body.light-mode .message-highlight {
+            font-size: 1.4rem !important;
+            color: rgba(139, 95, 191, 0.9) !important;
+            text-shadow: none !important;
+        }
+        
+        body.light-mode .philosophy-text,
+        body.light-mode .icons-text,
+        body.light-mode .era-text,
+        body.light-mode .experience-text,
+        body.light-mode .mission-text {
+            font-size: 1.1rem !important;
+            color: #333333 !important;
+            line-height: 2 !important;
+        }
+        
+        body.light-mode .text-neon {
+            color: rgba(139, 95, 191, 0.9) !important;
+            text-shadow: none !important;
+        }
+        
+        body.light-mode .content-icon i {
+            color: rgba(139, 95, 191, 0.8) !important;
+            filter: none !important;
+        }
+        
+        body.light-mode .closing-section {
+            background: linear-gradient(135deg, rgba(139, 95, 191, 0.8), rgba(170, 130, 210, 0.9)) !important;
+        }
+        
+        body.light-mode .closing-title {
+            color: #ffffff !important;
+        }
+        
+        body.light-mode .closing-note {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+        
+        body.light-mode .title-divider {
+            background: linear-gradient(90deg, transparent, rgba(139, 95, 191, 0.8), transparent) !important;
+            box-shadow: none !important;
+        }
+        
+        /* Light Mode - Policy Pages */
+        body.light-mode .policy-title {
+            font-size: 2.5rem !important;
+            font-weight: 600 !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+        }
+        
+        body.light-mode .section-heading {
+            font-size: 1.3rem !important;
+            font-weight: 600 !important;
+            color: rgba(139, 95, 191, 0.8) !important;
+        }
+        
+        body.light-mode .content {
+            font-size: 1rem !important;
+            color: #333 !important;
+        }
+        
+        /* Light Mode - Booking Conditions */
+        body.light-mode .guide-paragraph {
+            line-height: 1.7 !important;
+            color: #333 !important;
+        }
+        
+        body.light-mode .booking-list li::before {
+            font-weight: 700 !important;
+            color: #663399 !important;
+        }
+        
+        body.light-mode .note-text {
+            font-size: 0.9rem !important;
+            color: #666 !important;
+        }
+        
+        body.light-mode .example-text {
+            font-size: 0.9rem !important;
+            font-style: italic !important;
+            color: #666 !important;
+        }
+        
+        body.light-mode .refund-subtitle {
+            font-size: 1.1rem !important;
+            font-weight: 600 !important;
+            color: #663399 !important;
+        }
+        
+        /* Light Mode - Empty State */
+        body.light-mode .empty-state-icon i {
+            font-size: 5rem !important;
+            color: rgba(139, 95, 191, 0.6) !important;
+        }
+        
+        /* Light Mode - Text Muted Override */
+        body.light-mode .text-muted {
+            color: #6c757d !important;
+        }
+        
+        /* Light Mode - Disabled Text */
+        body.light-mode .disabled,
+        body.light-mode [disabled] {
+            font-size: 0.9rem !important;
+            color: #8e8e8e !important;
+        }
+        
+        /* Light Mode - Mobile Responsive */
+        @media (max-width: 768px) {
+            body.light-mode .btn {
+                font-size: 0.85rem !important;
+            }
+            
+            body.light-mode .btn-lg {
+                font-size: 0.9rem !important;
+            }
+            
+            body.light-mode .floating-text {
+                font-size: 0.7rem !important;
+            }
+            
+            body.light-mode .floating-icon {
+                font-size: 0.8rem !important;
+            }
+            
+            body.light-mode .side-menu-nav a,
+            body.light-mode .main-menu-link {
+                font-size: 1rem !important;
+            }
+            
+            body.light-mode .social-link {
+                font-size: 1.2rem !important;
+            }
+            
+            body.light-mode .footer-info {
+                font-size: 0.8rem !important;
+            }
+            
+            body.light-mode .services-page-title,
+            body.light-mode .services-main-title {
+                font-size: 2.2rem !important;
+            }
+            
+            body.light-mode .hero-title {
+                font-size: 2.5rem !important;
+            }
+            
+            body.light-mode .section-title {
+                font-size: 1.8rem !important;
+            }
+            
+            body.light-mode .page-title {
+                font-size: 2rem !important;
+            }
+            
+            body.light-mode .service-icon i,
+            body.light-mode .service-detail-icon i {
+                font-size: 3rem !important;
+            }
+            
+            body.light-mode .additional-card-icon i {
+                font-size: 2rem !important;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            body.light-mode .hero-title {
+                font-size: 2rem !important;
+            }
+            
+            body.light-mode .services-page-title,
+            body.light-mode .services-main-title {
+                font-size: 1.8rem !important;
+            }
+            
+            body.light-mode .service-card-title {
+                font-size: 1.3rem !important;
+            }
+            
+            body.light-mode .card-title {
+                font-size: 1.5rem !important;
+            }
+            
+            body.light-mode .card-text,
+            body.light-mode .service-card-description,
+            body.light-mode .additional-card-text {
+                font-size: 1rem !important;
+            }
+            
+            body.light-mode .option-name {
+                font-size: 1.1rem !important;
+            }
+            
+            body.light-mode .option-desc,
+            body.light-mode .option-price {
+                font-size: 0.95rem !important;
+            }
+        }
+        {% endif %}
     </style>
     
     {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body class="{% if site_mode == 'light' %}light-mode{% endif %}">
     <!-- Animated Background Particles -->
     <div class="bg-particles" id="bgParticles"></div>
     
@@ -594,9 +1541,9 @@
     }
     
     .language-btn {
-        background: rgba(181, 126, 220, 0.4);
-        border: 1.5px solid rgba(181, 126, 220, 0.7);
-        color: #ffffff;
+        background: rgba(181, 126, 220, 0.2);
+        border: 1.5px solid rgba(181, 126, 220, 0.4);
+        color: rgba(255, 255, 255, 0.85);
         padding: 0.5rem 0.8rem;
         border-radius: 20px;
         font-size: 0.85rem;
@@ -605,20 +1552,20 @@
         align-items: center;
         gap: 0.4rem;
         transition: all 0.3s ease;
-        box-shadow: 0 0 10px rgba(181, 126, 220, 0.3);
-        text-shadow: 0 0 8px rgba(181, 126, 220, 0.5);
+        box-shadow: 0 0 8px rgba(181, 126, 220, 0.15);
+        text-shadow: none;
     }
     
     .language-btn:hover {
-        background: rgba(181, 126, 220, 0.55);
-        border-color: rgba(181, 126, 220, 0.9);
-        box-shadow: 0 0 20px rgba(181, 126, 220, 0.5);
+        background: rgba(181, 126, 220, 0.35);
+        border-color: rgba(181, 126, 220, 0.6);
+        box-shadow: 0 0 15px rgba(181, 126, 220, 0.3);
         color: #ffffff;
     }
     
     .language-btn i {
         font-size: 1rem;
-        color: #ffffff;
+        color: rgba(255, 255, 255, 0.85);
     }
     
     .current-lang {
@@ -679,7 +1626,7 @@
         .language-btn {
             padding: 0.5rem;
             font-size: 0.75rem;
-            box-shadow: 0 0 8px rgba(181, 126, 220, 0.3);
+            box-shadow: 0 0 6px rgba(181, 126, 220, 0.15);
             width: 36px;
             height: 36px;
             border-radius: 50%;
