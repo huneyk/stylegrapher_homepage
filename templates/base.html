@@ -1832,136 +1832,65 @@
                     </a>
                 </li>
                 
-                <!-- 2. AI 분석 -->
+                <!-- 동적 서비스 카테고리 메뉴 (DB 연동) -->
+                {% for cat_key in menu_categories_order %}
+                {% set category = menu_categories[cat_key] %}
+                {% if category.services %}
                 <li class="category-menu">
-                    <button class="category-header" onclick="toggleCategory('stg-ai')">
+                    <button class="category-header" onclick="toggleCategory('{{ category.key }}')">
                         <div>
-                            <i class="bi bi-cpu me-2"></i>
-                            <span>{{ _('AI 분석') }}</span>
+                            <i class="bi {{ category.icon }} me-2"></i>
+                            <span>{{ _(category.title) }}</span>
                         </div>
-                        <i class="bi bi-chevron-down category-toggle" id="toggle-stg-ai"></i>
+                        <i class="bi bi-chevron-down category-toggle" id="toggle-{{ category.key }}"></i>
                     </button>
-                    <ul class="sub-menu" id="submenu-stg-ai">
+                    <ul class="sub-menu" id="submenu-{{ category.key }}">
+                        {% for service in category.services %}
+                        {% for option in service.options %}
                         <li class="sub-menu-item">
-                            <a href="{{ url_for('main.service_option_detail', id=1) }}" class="sub-menu-link">
-                                {{ _('AI 얼굴 분석') }}
+                            <a href="{{ url_for('main.service_option_detail', id=option.id) }}" class="sub-menu-link">
+                                {{ _(option.name) }}
                             </a>
                         </li>
-                        <li class="sub-menu-item">
-                            <a href="{{ url_for('main.service_option_detail', id=2) }}" class="sub-menu-link">
-                                {{ _('AI 체형 분석') }}
-                            </a>
-                        </li>
+                        {% endfor %}
+                        {% endfor %}
                     </ul>
                 </li>
+                {% endif %}
+                {% endfor %}
                 
-                <!-- 3. 컨설팅 프로그램 -->
-                <li class="category-menu">
-                    <button class="category-header" onclick="toggleCategory('styling-consulting')">
-                        <div>
-                            <i class="bi bi-palette me-2"></i>
-                            <span>{{ _('컨설팅 프로그램') }}</span>
-                        </div>
-                        <i class="bi bi-chevron-down category-toggle" id="toggle-styling-consulting"></i>
-                    </button>
-                    <ul class="sub-menu" id="submenu-styling-consulting">
-                        <li class="sub-menu-item">
-                            <a href="{{ url_for('main.service_option_detail', id=3) }}" class="sub-menu-link">
-                                {{ _('퍼스널 컬러 진단') }}
-                            </a>
-                        </li>
-                        <li class="sub-menu-item">
-                            <a href="{{ url_for('main.service_option_detail', id=4) }}" class="sub-menu-link">
-                                {{ _('메이크업 레슨') }}
-                            </a>
-                        </li>
-                        <li class="sub-menu-item">
-                            <a href="{{ url_for('main.service_option_detail', id=5) }}" class="sub-menu-link">
-                                {{ _('헤어 스타일링 레슨') }}
-                            </a>
-                        </li>
-                        <li class="sub-menu-item">
-                            <a href="{{ url_for('main.service_option_detail', id=6) }}" class="sub-menu-link">
-                                {{ _('패션 스타일링 레슨') }}
-                            </a>
-                        </li>
-                    </ul>
+                <!-- 갤러리 -->
+                <li class="main-menu-item">
+                    <a href="{{ url_for('main.gallery') }}" class="main-menu-link">
+                        <i class="bi bi-images me-2"></i>{{ _('갤러리') }}
+                    </a>
                 </li>
                 
-                <!-- 4. 원데이 스타일링 -->
-                <li class="category-menu">
-                    <button class="category-header" onclick="toggleCategory('oneday-styling')">
-                        <div>
-                            <i class="bi bi-magic me-2"></i>
-                            <span>{{ _('원데이 스타일링') }}</span>
-                        </div>
-                        <i class="bi bi-chevron-down category-toggle" id="toggle-oneday-styling"></i>
-                    </button>
-                    <ul class="sub-menu" id="submenu-oneday-styling">
-                        <li class="sub-menu-item">
-                            <a href="{{ url_for('main.service_option_detail', id=7) }}" class="sub-menu-link">
-                                {{ _('메이크업') }}
-                            </a>
-                        </li>
-                        <li class="sub-menu-item">
-                            <a href="{{ url_for('main.service_option_detail', id=8) }}" class="sub-menu-link">
-                                {{ _('헤어 드라이') }}
-                            </a>
-                        </li>
-                        <li class="sub-menu-item">
-                            <a href="{{ url_for('main.service_option_detail', id=9) }}" class="sub-menu-link">
-                                {{ _('패션 스타일링') }}
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-                
-                <!-- 5. 프리미엄 화보 제작 -->
-                <li class="category-menu">
-                    <button class="category-header" onclick="toggleCategory('photo-profile')">
-                        <div>
-                            <i class="bi bi-camera me-2"></i>
-                            <span>{{ _('프리미엄 화보 제작') }}</span>
-                        </div>
-                        <i class="bi bi-chevron-down category-toggle" id="toggle-photo-profile"></i>
-                    </button>
-                    <ul class="sub-menu" id="submenu-photo-profile">
-                        <li class="sub-menu-item">
-                            <a href="{{ url_for('main.service_option_detail', id=10) }}" class="sub-menu-link">
-                                {{ _('개인화보') }}
-                            </a>
-                        </li>
-                        <li class="sub-menu-item">
-                            <a href="{{ url_for('main.service_option_detail', id=11) }}" class="sub-menu-link">
-                                {{ _('프로필 촬영') }}
-                            </a>
-                        </li>
-                        <li class="sub-menu-item">
-                            <a href="{{ url_for('main.gallery') }}" class="sub-menu-link">
-                                {{ _('갤러리') }}
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-                
-                <!-- 6. 고객 스토리 -->
+                <!-- 고객 스토리 -->
                 <li class="main-menu-item">
                     <a href="{{ url_for('main.customer_story') }}" class="main-menu-link">
                         <i class="bi bi-chat-heart me-2"></i>{{ _('고객 스토리') }}
                     </a>
                 </li>
                 
-                <!-- 7. 커머셜 포트폴리오 -->
+                <!-- 커머셜 포트폴리오 -->
                 <li class="main-menu-item">
                     <a href="{{ url_for('main.commercial_portfolio') }}" class="main-menu-link">
                         <i class="bi bi-briefcase me-2"></i>{{ _('커머셜 포트폴리오') }}
                     </a>
                 </li>
                 
-                <!-- 8. 스타일그래퍼 소개 -->
+                <!-- 스타일그래퍼 소개 -->
                 <li class="main-menu-item">
                     <a href="{{ url_for('main.about') }}" class="main-menu-link">
                         <i class="bi bi-person-circle me-2"></i>{{ _('스타일그래퍼 소개') }}
+                    </a>
+                </li>
+                
+                <!-- 문의/예약 신청 -->
+                <li class="main-menu-item">
+                    <a href="{{ url_for('main.booking_choice') }}" class="main-menu-link">
+                        <i class="bi bi-calendar-check me-2"></i>{{ _('문의/예약 신청') }}
                     </a>
                 </li>
             </ul>

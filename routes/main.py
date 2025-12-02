@@ -119,6 +119,7 @@ def get_all_services():
 
 
 @main.route('/')
+@cache_with_timeout(10)  # 10분 캐싱으로 MongoDB 조회 최소화
 def index():
     # 갤러리 그룹을 상단 고정, 표출 순서, 생성일 순으로 가져오기
     all_galleries = GalleryGroup.query_all_ordered()

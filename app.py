@@ -270,25 +270,31 @@ def create_app():
     # 전역 컨텍스트 - 사이드 메뉴용 카테고리별 서비스
     @app.context_processor
     def inject_menu_data():
-        categories_data = {
+        # 카테고리 순서와 설정 (표시 순서대로 정렬)
+        categories_order = ['ai_analysis', 'consulting', 'oneday', 'photo']
+        categories_config = {
             'ai_analysis': {
                 'title': 'AI 분석',
                 'icon': 'bi-cpu',
+                'key': 'stg-ai',
                 'services': []
             },
             'consulting': {
                 'title': '컨설팅 프로그램',
-                'icon': 'bi-person-check',
+                'icon': 'bi-palette',
+                'key': 'styling-consulting',
                 'services': []
             },
             'oneday': {
                 'title': '원데이 스타일링',
-                'icon': 'bi-star',
+                'icon': 'bi-magic',
+                'key': 'oneday-styling',
                 'services': []
             },
             'photo': {
                 'title': '프리미엄 화보 제작',
                 'icon': 'bi-camera',
+                'key': 'photo-profile',
                 'services': []
             }
         }
@@ -296,12 +302,15 @@ def create_app():
         try:
             services = Service.query_all()
             for service in services:
-                if service.category and service.category in categories_data:
-                    categories_data[service.category]['services'].append(service)
+                if service.category and service.category in categories_config:
+                    categories_config[service.category]['services'].append(service)
         except Exception as e:
             print(f"Error loading menu data: {str(e)}")
         
-        return dict(menu_categories=categories_data)
+        return dict(
+            menu_categories=categories_config,
+            menu_categories_order=categories_order
+        )
     
     # 전역 컨텍스트 - 사이트 색상 및 모드 설정
     @app.context_processor

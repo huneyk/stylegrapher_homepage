@@ -346,6 +346,37 @@ msgstr "AI Face Analysis"
 msgid "AI 체형 분석"
 msgstr "AI Body Analysis"
 
+# 컨설팅 프로그램 서브메뉴
+msgid "퍼스널 컬러 컨설팅"
+msgstr "Personal Color Consulting"
+
+msgid "메이크업 컨설팅"
+msgstr "Makeup Consulting"
+
+msgid "헤어 컨설팅"
+msgstr "Hair Consulting"
+
+msgid "패션 스타일링 컨설팅"
+msgstr "Fashion Styling Consulting"
+
+# 원데이 스타일링 서브메뉴
+msgid "메이크업 스타일링"
+msgstr "Makeup Styling"
+
+msgid "헤어 스타일링"
+msgstr "Hair Styling"
+
+msgid "패션 스타일링"
+msgstr "Fashion Styling"
+
+# 프리미엄 화보 제작 서브메뉴
+msgid "패키지 화보"
+msgstr "Package Photoshoot"
+
+msgid "커스터마이징 화보"
+msgstr "Customized Photoshoot"
+
+# Legacy menu items (keep for backward compatibility)
 #: templates/base.html:139
 msgid "퍼스널 컬러 진단"
 msgstr "Personal Color Diagnosis"
@@ -369,10 +400,6 @@ msgstr "Makeup"
 #: templates/base.html:177
 msgid "헤어 드라이"
 msgstr "Hair Styling"
-
-#: templates/base.html:182
-msgid "패션 스타일링"
-msgstr "Fashion Styling"
 
 #: templates/base.html:200
 msgid "개인화보"
