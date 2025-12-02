@@ -3,26 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stylegrapher {{ _('스타일그래퍼') }} {% block title %}{% endblock %}</title>
+    <title>{% block title %}{% endblock %}Stylegrapher {{ _('스타일그래퍼') }}</title>
     <meta name="description" content="{% block meta_description %}{{ _('스타일그래퍼는 AI 얼굴분석, 퍼스널컬러 진단, 스타일링 컨설팅, 화보 및 프로필 촬영 서비스를 제공하는 전문 스타일링 스튜디오입니다.') }}{% endblock %}">
+    
+    <!-- SEO 메타 태그 -->
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="keywords" content="{% block meta_keywords %}{{ _('스타일그래퍼, 퍼스널컬러, AI 얼굴분석, 스타일링 컨설팅, 화보 촬영, 프로필 촬영, 메이크업, 헤어스타일링, 패션 컨설팅, 강남 스타일링') }}{% endblock %}">
+    <meta name="author" content="Stylegrapher">
+    <link rel="canonical" href="{{ request.url }}">
+    
+    <!-- Open Graph 메타 태그 (Facebook, LinkedIn, KakaoTalk) -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Stylegrapher">
+    <meta property="og:title" content="{% block og_title %}Stylegrapher - {{ _('당신의 스타일을 완성하는 프리미엄 스타일링 스튜디오') }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ _('AI 얼굴분석, 퍼스널컬러 진단, 스타일링 컨설팅, 프리미엄 화보 촬영까지. 스타일그래퍼와 함께 새로운 나를 만나보세요.') }}{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ url_for('static', filename='images/logo_new.png', _external=True) }}{% endblock %}">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:locale" content="{{ current_lang }}_{% if current_lang == 'ko' %}KR{% elif current_lang == 'en' %}US{% elif current_lang == 'ja' %}JP{% elif current_lang == 'zh' %}CN{% elif current_lang == 'es' %}ES{% endif %}">
+    
+    <!-- Twitter Card 메타 태그 -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}Stylegrapher - {{ _('프리미엄 스타일링 스튜디오') }}{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}{{ _('AI 얼굴분석, 퍼스널컬러 진단, 스타일링 컨설팅, 프리미엄 화보 촬영 서비스') }}{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{{ url_for('static', filename='images/logo_new.png', _external=True) }}{% endblock %}">
+    
+    <!-- 구조화된 데이터 (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "Stylegrapher 스타일그래퍼",
+        "description": "{{ _('AI 얼굴분석, 퍼스널컬러 진단, 스타일링 컨설팅, 화보 및 프로필 촬영 서비스를 제공하는 전문 스타일링 스튜디오') }}",
+        "url": "https://www.stylegrapher.com",
+        "logo": "{{ url_for('static', filename='images/logo_new.png', _external=True) }}",
+        "image": "{{ url_for('static', filename='images/logo_new.png', _external=True) }}",
+        "telephone": "02-545-5028",
+        "email": "stylegrapher.ysg@gmail.com",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "압구정로 46길 5-6 A동 502호",
+            "addressLocality": "강남구",
+            "addressRegion": "서울시",
+            "postalCode": "06019",
+            "addressCountry": "KR"
+        },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": "37.5263",
+            "longitude": "127.0375"
+        },
+        "openingHoursSpecification": [
+            {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": ["Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+                "opens": "09:00",
+                "closes": "18:00"
+            }
+        ],
+        "priceRange": "₩₩₩",
+        "sameAs": [
+            "https://www.instagram.com/stylegrapher_official",
+            "https://www.youtube.com/@stylegrapher",
+            "https://www.facebook.com/stylegrapher.us"
+        ],
+        "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "{{ _('스타일링 서비스') }}",
+            "itemListElement": [
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Service",
+                        "name": "{{ _('AI 얼굴 분석') }}"
+                    }
+                },
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Service",
+                        "name": "{{ _('퍼스널 컬러 진단') }}"
+                    }
+                },
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Service",
+                        "name": "{{ _('프리미엄 화보 촬영') }}"
+                    }
+                }
+            ]
+        }
+    }
+    </script>
+    {% block structured_data %}{% endblock %}
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo_new.png') }}">
     
-    <!-- Google Fonts - Cormorant Garamond (Serif), Noto Sans KR & Nanum Gothic (Sans-serif) -->
+    <!-- DNS Prefetch & Preconnect (성능 최적화) -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    
+    <!-- Critical CSS - 폰트 로딩 최적화 -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet"></noscript>
     
     <!-- Bootstrap CSS & Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"></noscript>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     
-    <!-- Bootstrap JS -->
+    <!-- Bootstrap JS (defer로 비동기 로딩) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
     
     <!-- Dynamic Site Colors & Mode -->

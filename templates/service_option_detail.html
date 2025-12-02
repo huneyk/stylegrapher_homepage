@@ -187,10 +187,10 @@
                             {% if ns.in_account %}</div>{% endif %}
                             
                             <div class="text-center mt-4">
-                                <button type="button" class="stg_button" onclick="showKakaoModal()">
+                                <a href="{{ url_for('main.booking_choice') }}" class="stg_button">
                                     <span class="stg_button_text">{{ _('문의/예약 신청') }}</span>
                                     <i class="bi bi-arrow-right stg_button_arrow"></i>
-                                </button>
+                                </a>
                             </div>
                         </div>
                     </div>

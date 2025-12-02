@@ -6,7 +6,7 @@ import json
 from flask import Flask, request, abort, send_from_directory, session, g, redirect, url_for, jsonify
 from routes.main import main
 from routes.admin import admin
-from extensions import db, login_manager, migrate, mail, babel
+from extensions import db, login_manager, migrate, mail, babel, compress, cache
 from config import Config
 from dotenv import load_dotenv
 from utils.security import add_security_headers, is_suspicious_request, get_client_ip, log_security_event
@@ -39,6 +39,21 @@ def create_app():
     app.config['BABEL_DEFAULT_LOCALE'] = 'ko'
     app.config['BABEL_SUPPORTED_LOCALES'] = list(SUPPORTED_LANGUAGES.keys())
     app.config['LANGUAGES'] = SUPPORTED_LANGUAGES
+    
+    # 성능 최적화 - Gzip 압축 설정
+    app.config['COMPRESS_MIMETYPES'] = [
+        'text/html', 'text/css', 'text/xml', 'text/javascript',
+        'application/json', 'application/javascript', 'application/xml',
+        'application/x-javascript', 'image/svg+xml'
+    ]
+    app.config['COMPRESS_LEVEL'] = 6
+    app.config['COMPRESS_MIN_SIZE'] = 500
+    compress.init_app(app)
+    
+    # 캐싱 설정 (SimpleCache - 메모리 기반)
+    app.config['CACHE_TYPE'] = 'SimpleCache'
+    app.config['CACHE_DEFAULT_TIMEOUT'] = 300  # 5분
+    cache.init_app(app)
     
     # SQLAlchemy 초기화 (마이그레이션 스크립트용으로 유지)
     db.init_app(app)
@@ -93,15 +108,99 @@ def create_app():
             log_security_event("BLOCKED_REQUEST", reason)
             abort(404)
     
-    # 보안 헤더 추가
+    # 보안 헤더 및 캐싱 헤더 추가
     @app.after_request
     def after_request(response):
-        return add_security_headers(response)
+        response = add_security_headers(response)
+        
+        # 정적 파일 캐싱 헤더 설정 (성능 최적화)
+        if request.path.startswith('/static/'):
+            # CSS, JS 파일 - 1주일 캐싱
+            if request.path.endswith(('.css', '.js')):
+                response.headers['Cache-Control'] = 'public, max-age=604800'
+            # 이미지 파일 - 1개월 캐싱
+            elif request.path.endswith(('.jpg', '.jpeg', '.png', '.gif', '.ico', '.svg', '.webp')):
+                response.headers['Cache-Control'] = 'public, max-age=2592000'
+            # 폰트 파일 - 1년 캐싱
+            elif request.path.endswith(('.woff', '.woff2', '.ttf', '.eot')):
+                response.headers['Cache-Control'] = 'public, max-age=31536000'
+        
+        return response
     
     # robots.txt 제공
     @app.route('/robots.txt')
     def robots_txt():
         return send_from_directory(app.static_folder, 'robots.txt')
+    
+    # sitemap.xml 생성 (SEO 최적화)
+    @app.route('/sitemap.xml')
+    def sitemap():
+        from flask import make_response, url_for
+        from datetime import datetime
+        from utils.mongo_models import ServiceOption, GalleryGroup
+        
+        base_url = 'https://www.stylegrapher.com'
+        
+        # 정적 페이지 목록
+        static_pages = [
+            {'loc': '/', 'priority': '1.0', 'changefreq': 'daily'},
+            {'loc': '/services', 'priority': '0.9', 'changefreq': 'weekly'},
+            {'loc': '/gallery', 'priority': '0.8', 'changefreq': 'weekly'},
+            {'loc': '/booking-choice', 'priority': '0.8', 'changefreq': 'monthly'},
+            {'loc': '/customer-story', 'priority': '0.7', 'changefreq': 'weekly'},
+            {'loc': '/commercial-portfolio', 'priority': '0.7', 'changefreq': 'monthly'},
+            {'loc': '/about', 'priority': '0.6', 'changefreq': 'monthly'},
+            {'loc': '/ask', 'priority': '0.7', 'changefreq': 'monthly'},
+            {'loc': '/terms-of-service', 'priority': '0.3', 'changefreq': 'yearly'},
+            {'loc': '/privacy-policy', 'priority': '0.3', 'changefreq': 'yearly'},
+        ]
+        
+        xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n'
+        xml_content += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        
+        today = datetime.now().strftime('%Y-%m-%d')
+        
+        # 정적 페이지 추가
+        for page in static_pages:
+            xml_content += f'''  <url>
+    <loc>{base_url}{page['loc']}</loc>
+    <lastmod>{today}</lastmod>
+    <changefreq>{page['changefreq']}</changefreq>
+    <priority>{page['priority']}</priority>
+  </url>\n'''
+        
+        # 서비스 옵션 페이지 추가
+        try:
+            service_options = ServiceOption.query_all()
+            for option in service_options:
+                xml_content += f'''  <url>
+    <loc>{base_url}/service_option/{option.id}</loc>
+    <lastmod>{today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>\n'''
+        except Exception as e:
+            print(f"Sitemap - 서비스 옵션 조회 오류: {str(e)}")
+        
+        # 갤러리 상세 페이지 추가
+        try:
+            gallery_groups = GalleryGroup.query_all_ordered()
+            for group in gallery_groups:
+                xml_content += f'''  <url>
+    <loc>{base_url}/gallery/detail/{group.id}</loc>
+    <lastmod>{today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>\n'''
+        except Exception as e:
+            print(f"Sitemap - 갤러리 조회 오류: {str(e)}")
+        
+        xml_content += '</urlset>'
+        
+        response = make_response(xml_content)
+        response.headers['Content-Type'] = 'application/xml'
+        response.headers['Cache-Control'] = 'public, max-age=3600'  # 1시간 캐싱
+        return response
     
     # 404 오류 핸들러
     @app.errorhandler(404)

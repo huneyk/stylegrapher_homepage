@@ -50,8 +50,8 @@
 
 /* ============================================
    Base Styles & Typography
+   폰트는 base.html에서 preload로 최적화하여 로드됩니다.
    ============================================ */
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
 
 * {
     margin: 0;

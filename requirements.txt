@@ -18,5 +18,7 @@ email-validator==2.0.0
 Flask-WTF==1.1.1
 WTForms==3.0.1
 Flask-Babel==4.0.0
+Flask-Compress==1.14
+Flask-Caching==2.1.0
 pymongo==4.0.0
 openai>=1.0.0
