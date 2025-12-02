@@ -6,9 +6,15 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="admin-page-title">문의 관리</h2>
-        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-primary">
-            <i class="bi bi-house-door"></i> 관리자 대시보드 바로가기
-        </a>
+        <div>
+            <a href="{{ url_for('admin.list_spam_inquiries') }}" class="btn btn-outline-warning me-2">
+                <i class="bi bi-shield-exclamation"></i> 스팸 문의
+                {% if spam_count %}<span class="badge bg-warning text-dark">{{ spam_count }}</span>{% endif %}
+            </a>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-primary">
+                <i class="bi bi-house-door"></i> 관리자 대시보드
+            </a>
+        </div>
     </div>
     
     <div class="card">
@@ -22,6 +28,7 @@
                             <th>연락처</th>
                             <th>이메일</th>
                             <th>서비스</th>
+                            <th>AI 분석</th>
                             <th>메시지</th>
                             <th>상태</th>
                             <th>관리</th>
@@ -29,17 +36,48 @@
                     </thead>
                     <tbody>
                         {% for inquiry in inquiries %}
-                        <tr>
-                            <td>{{ inquiry.created_at.strftime('%Y-%m-%d') }}</td>
+                        <tr class="{% if inquiry.is_spam %}table-warning{% endif %}">
+                            <td>{% if inquiry.created_at is string %}{{ inquiry.created_at[:10] }}{% else %}{{ inquiry.created_at.strftime('%Y-%m-%d') }}{% endif %}</td>
                             <td>{{ inquiry.name }}</td>
                             <td>{{ inquiry.phone }}</td>
                             <td>{{ inquiry.email }}</td>
-                            <td>{{ inquiry.service.name }}</td>
+                            <td>{{ inquiry.service.name if inquiry.service else '알 수 없음' }}</td>
+                            <td>
+                                {% if inquiry.ai_processed %}
+                                <div class="ai-analysis-badges">
+                                    <span class="badge bg-info" title="감지된 언어">
+                                        <i class="bi bi-globe"></i> {{ inquiry.detected_language|upper }}
+                                    </span>
+                                    {% if inquiry.sentiment %}
+                                    <span class="badge 
+                                        {% if inquiry.sentiment == 'positive' %}bg-success
+                                        {% elif inquiry.sentiment == 'negative' %}bg-danger
+                                        {% else %}bg-secondary{% endif %}" 
+                                        title="감성 분석">
+                                        {% if inquiry.sentiment == 'positive' %}<i class="bi bi-emoji-smile"></i>
+                                        {% elif inquiry.sentiment == 'negative' %}<i class="bi bi-emoji-frown"></i>
+                                        {% else %}<i class="bi bi-emoji-neutral"></i>{% endif %}
+                                        {{ inquiry.sentiment }}
+                                    </span>
+                                    {% endif %}
+                                    {% if inquiry.response_sent %}
+                                    <span class="badge bg-success" title="AI 회신 발송됨{% if inquiry.response_sent_at %} - {% if inquiry.response_sent_at is string %}{{ inquiry.response_sent_at[:16] }}{% else %}{{ inquiry.response_sent_at.strftime('%m/%d %H:%M') }}{% endif %}{% endif %}">
+                                        <i class="bi bi-envelope-check"></i> 회신완료
+                                    </span>
+                                    {% elif inquiry.ai_response %}
+                                    <span class="badge bg-warning text-dark" title="AI 응답 생성됨 (미발송)">
+                                        <i class="bi bi-envelope-exclamation"></i> 미발송
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                {% else %}
+                                <span class="badge bg-secondary">미처리</span>
+                                {% endif %}
+                            </td>
                             <td>
                                 <button type="button" class="btn btn-sm btn-link" 
-                                        data-message="{{ inquiry.message }}"
-                                        onclick="showMessage(this.getAttribute('data-message'))">
-                                    메시지 보기
+                                        onclick="showInquiryDetail('{{ inquiry.id }}')">
+                                    상세 보기
                                 </button>
                             </td>
                             <td>
@@ -55,9 +93,8 @@
                             </td>
                             <td>
                                 <form action="{{ url_for('admin.delete_inquiry', id=inquiry.id) }}" 
-                                      method="POST" class="d-inline">
-                                    <button type="submit" class="btn btn-sm btn-danger" 
-                                            onclick="return confirm('정말 삭제하시겠습니까?')">
+                                      method="POST" class="d-inline delete-form">
+                                    <button type="submit" class="btn btn-sm btn-danger delete-btn">
                                         삭제
                                     </button>
                                 </form>
@@ -71,21 +108,211 @@
     </div>
 </div>
 
-<!-- 커스텀 모달 (루프 밖에 단일 모달) -->
-<div id="customModal" class="custom-modal">
-    <div class="custom-modal-content">
+<!-- 삭제 확인 모달 -->
+<div id="deleteConfirmModal" class="custom-modal">
+    <div class="custom-modal-content" style="max-width: 400px;">
         <div class="custom-modal-header">
-            <h5>문의 메시지</h5>
+            <h5>🗑️ 삭제 확인</h5>
+            <button type="button" class="close-button" onclick="closeDeleteModal()">&times;</button>
+        </div>
+        <div class="custom-modal-body" style="text-align: center; padding: 2rem;">
+            <p style="font-size: 1.1rem; margin-bottom: 0;">정말 이 문의를 삭제하시겠습니까?</p>
+            <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">이 작업은 되돌릴 수 없습니다.</p>
+        </div>
+        <div class="custom-modal-footer" style="display: flex; gap: 10px; justify-content: center;">
+            <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">취소</button>
+            <button type="button" class="btn btn-danger" onclick="confirmDelete()">삭제</button>
+        </div>
+    </div>
+</div>
+
+<!-- 문의 상세 모달 -->
+<div id="inquiryDetailModal" class="custom-modal">
+    <div class="custom-modal-content modal-lg">
+        <div class="custom-modal-header">
+            <h5>📧 문의 상세 정보</h5>
             <button type="button" class="close-button" onclick="closeModal()">&times;</button>
         </div>
         <div class="custom-modal-body">
-            <p id="modalMessage"></p>
+            <div id="inquiryDetailContent">
+                <!-- 동적으로 채워짐 -->
+            </div>
         </div>
         <div class="custom-modal-footer">
             <button type="button" class="btn btn-secondary" onclick="closeModal()">닫기</button>
         </div>
     </div>
 </div>
+
+<!-- 문의 데이터 (JavaScript용) -->
+<script>
+const inquiriesData = {
+    {% for inquiry in inquiries %}
+    "{{ inquiry.id }}": {
+        name: {{ inquiry.name|tojson|safe }},
+        phone: {{ inquiry.phone|tojson|safe }},
+        email: {{ inquiry.email|tojson|safe }},
+        service: {{ (inquiry.service.name if inquiry.service else '알 수 없음')|tojson|safe }},
+        message: {{ (inquiry.message or '')|tojson|safe }},
+        translated_message: {{ (inquiry.translated_message or '')|tojson|safe }},
+        ai_response: {{ (inquiry.ai_response or '')|tojson|safe }},
+        detected_language: {{ (inquiry.detected_language or 'ko')|tojson|safe }},
+        sentiment: {{ (inquiry.sentiment or 'neutral')|tojson|safe }},
+        sentiment_detail: {{ (inquiry.sentiment_detail or '')|tojson|safe }},
+        is_spam: {{ 'true' if inquiry.is_spam else 'false' }},
+        spam_reason: {{ (inquiry.spam_reason or '')|tojson|safe }},
+        ai_processed: {{ 'true' if inquiry.ai_processed else 'false' }},
+        response_sent: {{ 'true' if inquiry.response_sent else 'false' }},
+        response_sent_at: "{% if inquiry.response_sent_at %}{% if inquiry.response_sent_at is string %}{{ inquiry.response_sent_at[:16] }}{% else %}{{ inquiry.response_sent_at.strftime('%Y-%m-%d %H:%M') }}{% endif %}{% endif %}",
+        response_email_subject: {{ (inquiry.response_email_subject or '')|tojson|safe }},
+        admin_notified: {{ 'true' if inquiry.admin_notified else 'false' }},
+        created_at: "{% if inquiry.created_at is string %}{{ inquiry.created_at[:16] }}{% else %}{{ inquiry.created_at.strftime('%Y-%m-%d %H:%M') }}{% endif %}"
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+};
+
+function showInquiryDetail(inquiryId) {
+    const inquiry = inquiriesData[inquiryId];
+    if (!inquiry) return;
+    
+    const languageNames = {
+        'ko': '한국어',
+        'en': 'English',
+        'ja': '日本語',
+        'zh': '中文'
+    };
+    
+    const sentimentEmojis = {
+        'positive': '😊 긍정적',
+        'neutral': '😐 중립',
+        'negative': '😟 부정적'
+    };
+    
+    let content = `
+        <div class="inquiry-detail">
+            <div class="detail-section">
+                <h6><i class="bi bi-person"></i> 문의자 정보</h6>
+                <table class="table table-sm">
+                    <tr><td><strong>이름</strong></td><td>${inquiry.name}</td></tr>
+                    <tr><td><strong>전화번호</strong></td><td>${inquiry.phone}</td></tr>
+                    <tr><td><strong>이메일</strong></td><td>${inquiry.email}</td></tr>
+                    <tr><td><strong>문의 서비스</strong></td><td>${inquiry.service}</td></tr>
+                    <tr><td><strong>접수일시</strong></td><td>${inquiry.created_at}</td></tr>
+                </table>
+            </div>
+            
+            ${inquiry.ai_processed ? `
+            <div class="detail-section">
+                <h6><i class="bi bi-robot"></i> AI 분석 결과</h6>
+                <table class="table table-sm">
+                    <tr><td><strong>감지된 언어</strong></td><td>${languageNames[inquiry.detected_language] || inquiry.detected_language}</td></tr>
+                    <tr><td><strong>감성 분석</strong></td><td>${sentimentEmojis[inquiry.sentiment] || inquiry.sentiment} ${inquiry.sentiment_detail ? '(' + inquiry.sentiment_detail + ')' : ''}</td></tr>
+                    <tr><td><strong>응답 발송</strong></td><td>${inquiry.response_sent ? '✅ 발송 완료' : '❌ 미발송'}</td></tr>
+                    <tr><td><strong>관리자 알림</strong></td><td>${inquiry.admin_notified ? '✅ 발송 완료' : '❌ 미발송'}</td></tr>
+                </table>
+            </div>
+            ` : ''}
+            
+            ${inquiry.is_spam ? `
+            <div class="detail-section spam-warning">
+                <h6><i class="bi bi-shield-exclamation"></i> 스팸 감지</h6>
+                <p class="text-warning"><strong>차단 사유:</strong> ${inquiry.spam_reason}</p>
+            </div>
+            ` : ''}
+            
+            <div class="detail-section">
+                <h6><i class="bi bi-chat-left-text"></i> 문의 원문</h6>
+                <div class="message-box">${inquiry.message.replace(/\n/g, '<br>')}</div>
+            </div>
+            
+            ${inquiry.translated_message && inquiry.detected_language !== 'ko' ? `
+            <div class="detail-section">
+                <h6><i class="bi bi-translate"></i> 한국어 번역</h6>
+                <div class="message-box translated">${inquiry.translated_message.replace(/\n/g, '<br>')}</div>
+            </div>
+            ` : ''}
+            
+            ${inquiry.ai_response ? `
+            <div class="detail-section">
+                <h6><i class="bi bi-envelope-check"></i> AI 자동 회신 이메일</h6>
+                ${inquiry.response_sent ? `
+                <div class="sent-email-info">
+                    <table class="table table-sm">
+                        <tr><td><strong>발송 상태</strong></td><td><span class="badge bg-success"><i class="bi bi-check-circle"></i> 발송 완료</span></td></tr>
+                        ${inquiry.response_sent_at ? `<tr><td><strong>발송 시간</strong></td><td>${inquiry.response_sent_at}</td></tr>` : ''}
+                        <tr><td><strong>수신자</strong></td><td>${inquiry.email}</td></tr>
+                        ${inquiry.response_email_subject ? `<tr><td><strong>이메일 제목</strong></td><td>${inquiry.response_email_subject}</td></tr>` : ''}
+                    </table>
+                </div>
+                ` : `
+                <div class="sent-email-info">
+                    <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle"></i> 미발송</span>
+                </div>
+                `}
+                <div class="email-content-label">📧 발송된 이메일 내용:</div>
+                <div class="message-box ai-response">${inquiry.ai_response.replace(/\n/g, '<br>')}</div>
+            </div>
+            ` : ''}
+        </div>
+    `;
+    
+    document.getElementById('inquiryDetailContent').innerHTML = content;
+    document.getElementById('inquiryDetailModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    document.getElementById('inquiryDetailModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// 모달 외부 클릭 시 닫기
+window.onclick = function(event) {
+    const modal = document.getElementById('inquiryDetailModal');
+    if (event.target == modal) {
+        closeModal();
+    }
+}
+
+// ESC 키로 모달 닫기
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeModal();
+        closeDeleteModal();
+    }
+});
+
+// 삭제 확인 처리
+let currentDeleteForm = null;
+
+function showDeleteConfirm(form) {
+    currentDeleteForm = form;
+    document.getElementById('deleteConfirmModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteConfirmModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+    currentDeleteForm = null;
+}
+
+function confirmDelete() {
+    if (currentDeleteForm) {
+        currentDeleteForm.submit();
+    }
+}
+
+// 삭제 버튼에 이벤트 리스너 추가
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.delete-form').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            showDeleteConfirm(this);
+        });
+    });
+});
+</script>
 
 <style>
 .admin-page-title {
@@ -95,6 +322,16 @@
 
 .card-body {
     background: rgba(18, 0, 36, 0.6);
+}
+
+.ai-analysis-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.ai-analysis-badges .badge {
+    font-size: 0.7rem;
 }
 
 .custom-modal {
@@ -107,18 +344,23 @@
     background-color: rgba(10, 0, 26, 0.85);
     backdrop-filter: blur(10px);
     z-index: 1000;
+    overflow-y: auto;
 }
 
 .custom-modal-content {
     position: relative;
     background: rgba(18, 0, 36, 0.95);
-    margin: 10% auto;
+    margin: 5% auto;
     padding: 0;
-    width: 50%;
-    max-width: 500px;
+    width: 90%;
+    max-width: 800px;
     border-radius: 15px;
     box-shadow: 0 4px 30px rgba(200, 170, 255, 0.3);
     border: 1px solid rgba(200, 170, 255, 0.3);
+}
+
+.custom-modal-content.modal-lg {
+    max-width: 900px;
 }
 
 .custom-modal-header {
@@ -136,11 +378,9 @@
 }
 
 .custom-modal-body {
-    padding: 1rem;
-    white-space: pre-wrap;
-    word-break: keep-all;
-    overflow-wrap: break-word;
-    line-break: strict;
+    padding: 1.5rem;
+    max-height: 70vh;
+    overflow-y: auto;
     color: rgba(255, 255, 255, 0.9);
 }
 
@@ -174,62 +414,88 @@
     border-color: rgba(200, 170, 255, 0.8);
 }
 
+/* 문의 상세 스타일 */
+.inquiry-detail .detail-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(200, 170, 255, 0.2);
+}
+
+.inquiry-detail .detail-section:last-child {
+    border-bottom: none;
+}
+
+.inquiry-detail h6 {
+    color: #E8D4FF;
+    margin-bottom: 0.75rem;
+}
+
+.inquiry-detail .table {
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0;
+}
+
+.inquiry-detail .table td {
+    border-color: rgba(200, 170, 255, 0.2);
+    padding: 0.5rem;
+}
+
+.message-box {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(200, 170, 255, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    white-space: pre-wrap;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    line-height: 1.6;
+}
+
+.message-box.translated {
+    background: rgba(0, 100, 150, 0.2);
+    border-color: rgba(0, 150, 200, 0.3);
+}
+
+.message-box.ai-response {
+    background: rgba(50, 150, 50, 0.2);
+    border-color: rgba(50, 200, 50, 0.3);
+}
+
+.sent-email-info {
+    background: rgba(0, 100, 50, 0.15);
+    border: 1px solid rgba(50, 200, 100, 0.3);
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.sent-email-info .table {
+    margin-bottom: 0;
+}
+
+.email-content-label {
+    color: #90EE90;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.spam-warning {
+    background: rgba(255, 200, 0, 0.1);
+    border: 1px solid rgba(255, 200, 0, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
 @media (max-width: 768px) {
     .custom-modal-content {
-        width: 90%;
-        margin: 20% auto;
+        width: 95%;
+        margin: 2% auto;
+    }
+    
+    .custom-modal-body {
+        padding: 1rem;
     }
 }
 </style>
-
-<script>
-function showMessage(message) {
-    console.log('showMessage 호출됨:', message);
-    const modalElement = document.getElementById('customModal');
-    const messageElement = document.getElementById('modalMessage');
-    
-    if (modalElement && messageElement) {
-        messageElement.textContent = message;
-        modalElement.style.display = 'block';
-        document.body.style.overflow = 'hidden';
-        console.log('모달 표시됨');
-    } else {
-        console.error('모달 요소를 찾을 수 없습니다.');
-    }
-}
-
-function closeModal() {
-    console.log('closeModal 호출됨');
-    const modalElement = document.getElementById('customModal');
-    if (modalElement) {
-        modalElement.style.display = 'none';
-        document.body.style.overflow = 'auto';
-        console.log('모달 숨김');
-    }
-}
-
-// 모달 외부 클릭 시 닫기
-window.onclick = function(event) {
-    const modal = document.getElementById('customModal');
-    if (event.target == modal) {
-        closeModal();
-    }
-}
-
-// ESC 키로 모달 닫기
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        closeModal();
-    }
-});
-
-// DOM 로드 후 초기화
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM 로드 완료');
-    const modal = document.getElementById('customModal');
-    const message = document.getElementById('modalMessage');
-    console.log('모달 요소:', modal);
-    console.log('메시지 요소:', message);
-});
-</script>
-{% endblock %} 
+{% endblock %}

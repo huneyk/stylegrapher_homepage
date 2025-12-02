@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}알림 이메일 관리{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <h1 class="mb-0">알림 이메일 관리</h1>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-tachometer-alt"></i> 관리자 대시보드 바로가기
+        </a>
+    </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'info' }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<!-- 새 이메일 추가 폼 -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0"><i class="fas fa-plus-circle"></i> 새 알림 이메일 추가</h5>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('admin.add_notification_email') }}" method="POST" class="row g-3">
+            <div class="col-md-4">
+                <label for="email" class="form-label">이메일 주소 <span class="text-danger">*</span></label>
+                <input type="email" class="form-control" id="email" name="email" required placeholder="example@email.com">
+            </div>
+            <div class="col-md-3">
+                <label for="name" class="form-label">담당자 이름</label>
+                <input type="text" class="form-control" id="name" name="name" placeholder="(선택사항)">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label d-block">알림 유형</label>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="receive_inquiries" name="receive_inquiries" checked>
+                    <label class="form-check-label" for="receive_inquiries">문의</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="receive_bookings" name="receive_bookings" checked>
+                    <label class="form-check-label" for="receive_bookings">예약</label>
+                </div>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-plus"></i> 이메일 추가
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 등록된 이메일 목록 -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0"><i class="fas fa-envelope"></i> 등록된 알림 이메일 목록</h5>
+    </div>
+    <div class="card-body">
+        {% if emails %}
+            <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th>상태</th>
+                            <th>이메일</th>
+                            <th>담당자</th>
+                            <th>문의 알림</th>
+                            <th>예약 알림</th>
+                            <th>등록일</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for email in emails %}
+                        <tr class="{{ 'table-secondary' if not email.is_active else '' }}">
+                            <td>
+                                <form action="{{ url_for('admin.toggle_notification_email_active', id=email.id) }}" method="POST" class="d-inline">
+                                    {% if email.is_active %}
+                                        <button type="submit" class="btn btn-sm btn-success" title="클릭하여 비활성화">
+                                            <i class="fas fa-check-circle"></i> 활성
+                                        </button>
+                                    {% else %}
+                                        <button type="submit" class="btn btn-sm btn-secondary" title="클릭하여 활성화">
+                                            <i class="fas fa-times-circle"></i> 비활성
+                                        </button>
+                                    {% endif %}
+                                </form>
+                            </td>
+                            <td>
+                                <strong>{{ email.email }}</strong>
+                            </td>
+                            <td>{{ email.name or '-' }}</td>
+                            <td>
+                                {% if email.receive_inquiries %}
+                                    <span class="badge bg-info"><i class="fas fa-question-circle"></i> 수신</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">미수신</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if email.receive_bookings %}
+                                    <span class="badge bg-primary"><i class="fas fa-calendar-check"></i> 수신</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">미수신</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ email.created_at.strftime('%Y-%m-%d') if email.created_at else '-' }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editModal{{ email.id }}">
+                                        <i class="fas fa-edit"></i> 수정
+                                    </button>
+                                    <form action="{{ url_for('admin.delete_notification_email', id=email.id) }}" 
+                                          method="POST" 
+                                          class="d-inline"
+                                          onsubmit="return confirm('정말 삭제하시겠습니까? 이 이메일 주소로는 더 이상 알림을 받지 않게 됩니다.')">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i> 삭제
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- 수정 모달 -->
+                        <div class="modal fade" id="editModal{{ email.id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form action="{{ url_for('admin.update_notification_email', id=email.id) }}" method="POST">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">이메일 설정 수정</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label class="form-label">이메일 주소</label>
+                                                <input type="email" class="form-control" value="{{ email.email }}" disabled>
+                                                <small class="text-muted">이메일 주소는 변경할 수 없습니다.</small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="name{{ email.id }}" class="form-label">담당자 이름</label>
+                                                <input type="text" class="form-control" id="name{{ email.id }}" name="name" value="{{ email.name or '' }}">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">알림 유형</label>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="receive_inquiries{{ email.id }}" name="receive_inquiries" {{ 'checked' if email.receive_inquiries else '' }}>
+                                                    <label class="form-check-label" for="receive_inquiries{{ email.id }}">
+                                                        <i class="fas fa-question-circle text-info"></i> 문의 알림 수신
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="receive_bookings{{ email.id }}" name="receive_bookings" {{ 'checked' if email.receive_bookings else '' }}>
+                                                    <label class="form-check-label" for="receive_bookings{{ email.id }}">
+                                                        <i class="fas fa-calendar-check text-primary"></i> 예약 알림 수신
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                                            <button type="submit" class="btn btn-primary">저장</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-envelope fa-3x text-muted mb-3"></i>
+                <p class="text-muted">등록된 알림 이메일이 없습니다.</p>
+                <p class="text-muted">위 폼에서 첫 번째 이메일을 추가해주세요.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="mt-4">
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        <strong>사용 방법:</strong>
+        <ul class="mb-0 mt-2">
+            <li><strong>활성/비활성:</strong> 버튼을 클릭하여 이메일 수신 상태를 즉시 변경할 수 있습니다.</li>
+            <li><strong>문의 알림:</strong> 고객이 문의 페이지에서 문의를 접수할 때 이메일을 받습니다.</li>
+            <li><strong>예약 알림:</strong> 고객이 예약 신청을 할 때 이메일을 받습니다.</li>
+            <li>여러 이메일을 등록하면 모든 활성화된 이메일로 동시에 알림이 발송됩니다.</li>
+            <li>비활성화된 이메일은 알림을 받지 않습니다.</li>
+        </ul>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+

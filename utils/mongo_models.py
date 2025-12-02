@@ -114,6 +114,12 @@ def init_collections():
     if 'privacy_policy' not in db.list_collection_names():
         db.create_collection('privacy_policy')
     
+    # admin_notification_emails 컬렉션
+    if 'admin_notification_emails' not in db.list_collection_names():
+        db.create_collection('admin_notification_emails')
+    db.admin_notification_emails.create_index('email', unique=True)
+    db.admin_notification_emails.create_index('is_active')
+    
     print("MongoDB 컬렉션 및 인덱스 초기화 완료")
 
 
@@ -452,18 +458,46 @@ class Booking(MongoModel):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.name = kwargs.get('name', '')
+        self.phone = kwargs.get('phone', '')  # 휴대폰 번호 추가
         self.email = kwargs.get('email', '')
         self.service_id = kwargs.get('service_id')
         self.message = kwargs.get('message', '')
         self.status = kwargs.get('status', '대기')
         self.created_at = kwargs.get('created_at', datetime.utcnow())
         self._service = None
+        
+        # AI 처리 관련 필드
+        self.is_spam = kwargs.get('is_spam', False)  # 스팸 여부
+        self.spam_reason = kwargs.get('spam_reason', '')  # 스팸 판단 이유
+        self.detected_language = kwargs.get('detected_language', '')  # 감지된 언어
+        self.sentiment = kwargs.get('sentiment', '')  # 감성
+        self.sentiment_detail = kwargs.get('sentiment_detail', '')  # 감성 상세
+        self.ai_response = kwargs.get('ai_response', '')  # AI가 생성한 응답
+        self.translated_message = kwargs.get('translated_message', '')  # 번역된 원문
+        self.response_sent = kwargs.get('response_sent', False)  # 응답 전송 여부
+        self.response_sent_at = kwargs.get('response_sent_at')  # 응답 발송 시간
+        self.response_email_subject = kwargs.get('response_email_subject', '')  # 발송된 이메일 제목
+        self.admin_notified = kwargs.get('admin_notified', False)  # 관리자 알림 여부
+        self.ai_processed = kwargs.get('ai_processed', False)  # AI 처리 완료 여부
+        self.ai_processed_at = kwargs.get('ai_processed_at')  # AI 처리 시간
     
     @property
     def service(self):
         """연결된 서비스 조회"""
         if self._service is None and self.service_id:
-            self._service = Service.get_by_id(self.service_id)
+            try:
+                # service_id가 정수형인지 확인하고 변환
+                if isinstance(self.service_id, int):
+                    service_id_int = self.service_id
+                elif isinstance(self.service_id, str) and self.service_id.isdigit():
+                    service_id_int = int(self.service_id)
+                else:
+                    # ObjectId나 기타 형식은 그대로 사용
+                    service_id_int = self.service_id
+                self._service = Service.get_by_id(service_id_int)
+            except Exception as e:
+                print(f"⚠️ 예약 서비스 조회 실패 (service_id={self.service_id}, type={type(self.service_id)}): {str(e)}")
+                self._service = None
         return self._service
     
     def get_datetimes(self):
@@ -487,7 +521,15 @@ class Booking(MongoModel):
         cursor = collection.find().sort('created_at', DESCENDING)
         if limit:
             cursor = cursor.limit(limit)
-        return [cls.from_doc(doc) for doc in cursor]
+        results = []
+        for doc in cursor:
+            try:
+                booking = cls.from_doc(doc)
+                if booking:
+                    results.append(booking)
+            except Exception as e:
+                print(f"⚠️ 예약 문서 로드 오류 (건너뜀): _id={doc.get('_id')}, error={str(e)}")
+        return results
 
 
 class Inquiry(MongoModel):
@@ -504,12 +546,39 @@ class Inquiry(MongoModel):
         self.status = kwargs.get('status', '대기')
         self.created_at = kwargs.get('created_at', datetime.utcnow())
         self._service = None
+        
+        # AI 처리 관련 필드
+        self.is_spam = kwargs.get('is_spam', False)  # 스팸 여부
+        self.spam_reason = kwargs.get('spam_reason', '')  # 스팸 판단 이유
+        self.detected_language = kwargs.get('detected_language', '')  # 감지된 언어 (ko, en, ja, zh 등)
+        self.sentiment = kwargs.get('sentiment', '')  # 감성 (positive, neutral, negative)
+        self.sentiment_detail = kwargs.get('sentiment_detail', '')  # 감성 상세 (formal, casual, urgent 등)
+        self.ai_response = kwargs.get('ai_response', '')  # AI가 생성한 응답
+        self.translated_message = kwargs.get('translated_message', '')  # 번역된 원문 (한국어로)
+        self.response_sent = kwargs.get('response_sent', False)  # 고객에게 응답 전송 여부
+        self.response_sent_at = kwargs.get('response_sent_at')  # 응답 발송 시간
+        self.response_email_subject = kwargs.get('response_email_subject', '')  # 발송된 이메일 제목
+        self.admin_notified = kwargs.get('admin_notified', False)  # 관리자에게 알림 전송 여부
+        self.ai_processed = kwargs.get('ai_processed', False)  # AI 처리 완료 여부
+        self.ai_processed_at = kwargs.get('ai_processed_at')  # AI 처리 시간
     
     @property
     def service(self):
         """연결된 서비스 조회"""
         if self._service is None and self.service_id:
-            self._service = Service.get_by_id(self.service_id)
+            try:
+                # service_id가 정수형인지 확인하고 변환
+                if isinstance(self.service_id, int):
+                    service_id_int = self.service_id
+                elif isinstance(self.service_id, str) and self.service_id.isdigit():
+                    service_id_int = int(self.service_id)
+                else:
+                    # ObjectId나 기타 형식은 그대로 사용
+                    service_id_int = self.service_id
+                self._service = Service.get_by_id(service_id_int)
+            except Exception as e:
+                print(f"⚠️ 문의 서비스 조회 실패 (service_id={self.service_id}, type={type(self.service_id)}): {str(e)}")
+                self._service = None
         return self._service
     
     @classmethod
@@ -519,7 +588,49 @@ class Inquiry(MongoModel):
         cursor = collection.find().sort('created_at', DESCENDING)
         if limit:
             cursor = cursor.limit(limit)
-        return [cls.from_doc(doc) for doc in cursor]
+        results = []
+        for doc in cursor:
+            try:
+                inquiry = cls.from_doc(doc)
+                if inquiry:
+                    results.append(inquiry)
+            except Exception as e:
+                print(f"⚠️ 문의 문서 로드 오류 (건너뜀): _id={doc.get('_id')}, error={str(e)}")
+        return results
+    
+    @classmethod
+    def query_spam(cls, limit=None):
+        """스팸으로 분류된 문의 조회"""
+        collection = cls.get_collection()
+        cursor = collection.find({'is_spam': True}).sort('created_at', DESCENDING)
+        if limit:
+            cursor = cursor.limit(limit)
+        results = []
+        for doc in cursor:
+            try:
+                inquiry = cls.from_doc(doc)
+                if inquiry:
+                    results.append(inquiry)
+            except Exception as e:
+                print(f"⚠️ 스팸 문의 문서 로드 오류 (건너뜀): _id={doc.get('_id')}, error={str(e)}")
+        return results
+    
+    @classmethod
+    def query_non_spam(cls, limit=None):
+        """정상 문의 조회 (스팸 제외)"""
+        collection = cls.get_collection()
+        cursor = collection.find({'$or': [{'is_spam': False}, {'is_spam': {'$exists': False}}]}).sort('created_at', DESCENDING)
+        if limit:
+            cursor = cursor.limit(limit)
+        results = []
+        for doc in cursor:
+            try:
+                inquiry = cls.from_doc(doc)
+                if inquiry:
+                    results.append(inquiry)
+            except Exception as e:
+                print(f"⚠️ 문의 문서 로드 오류 (건너뜀): _id={doc.get('_id')}, error={str(e)}")
+        return results
 
 
 class CollageText(MongoModel):
@@ -640,6 +751,69 @@ class PrivacyPolicy(MongoModel):
         policy = cls(content='개인정보처리방침 내용을 입력해주세요.')
         policy.save()
         return policy
+
+
+class AdminNotificationEmail(MongoModel):
+    """관리자 알림 이메일 모델"""
+    collection_name = 'admin_notification_emails'
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.email = kwargs.get('email', '')
+        self.name = kwargs.get('name', '')  # 담당자 이름 (선택)
+        self.is_active = kwargs.get('is_active', True)  # 활성화 상태
+        self.receive_inquiries = kwargs.get('receive_inquiries', True)  # 문의 알림 수신
+        self.receive_bookings = kwargs.get('receive_bookings', True)  # 예약 알림 수신
+        self.created_at = kwargs.get('created_at', datetime.utcnow())
+        self.updated_at = kwargs.get('updated_at', datetime.utcnow())
+    
+    @classmethod
+    def query_all_ordered(cls):
+        """모든 알림 이메일 조회 (생성일 기준)"""
+        collection = cls.get_collection()
+        docs = collection.find().sort('created_at', ASCENDING)
+        return [cls.from_doc(doc) for doc in docs]
+    
+    @classmethod
+    def get_active_emails(cls, email_type='all'):
+        """활성화된 이메일 목록 가져오기
+        
+        Args:
+            email_type: 'all', 'inquiries', 'bookings'
+        """
+        collection = cls.get_collection()
+        
+        if email_type == 'inquiries':
+            filter_query = {'is_active': True, 'receive_inquiries': True}
+        elif email_type == 'bookings':
+            filter_query = {'is_active': True, 'receive_bookings': True}
+        else:
+            filter_query = {'is_active': True}
+        
+        docs = collection.find(filter_query)
+        return [doc['email'] for doc in docs]
+    
+    @classmethod
+    def get_by_email(cls, email):
+        """이메일 주소로 조회"""
+        collection = cls.get_collection()
+        doc = collection.find_one({'email': email})
+        return cls.from_doc(doc) if doc else None
+    
+    @classmethod
+    def initialize_default(cls):
+        """기본 이메일 초기화 (없는 경우에만)"""
+        collection = cls.get_collection()
+        if collection.count_documents({}) == 0:
+            default_email = cls(
+                email='ysg.stylegrapher@gmail.com',
+                name='스타일그래퍼 관리자',
+                is_active=True,
+                receive_inquiries=True,
+                receive_bookings=True
+            )
+            default_email.save()
+            print("📧 기본 알림 이메일 초기화 완료: ysg.stylegrapher@gmail.com")
 
 
 # 편의 함수들

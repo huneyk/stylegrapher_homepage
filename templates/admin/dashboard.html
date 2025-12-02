@@ -14,176 +14,249 @@
     </div>
 
     <div class="row g-4">
-        <!-- 서비스 관리 카드 -->
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
+        <!-- 그룹 1: 콘텐츠 관리 (서비스 관리 - 갤러리 관리) -->
+        <div class="col-12">
+            <div class="card shadow-sm group-card">
+                <div class="card-header group-card-header">
+                    <h6 class="mb-0"><i class="bi bi-folder-fill me-2"></i>콘텐츠 관리</h6>
+                </div>
                 <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="bi bi-gear-fill me-2"></i>서비스 관리
-                    </h5>
-                    <p class="card-text text-muted">서비스 정보를 추가, 수정, 삭제합니다.</p>
-                    <div class="d-grid gap-2">
-                        <a href="{{ url_for('admin.list_services') }}" class="btn btn-primary">
-                            서비스 관리
-                        </a>
+                    <div class="row g-3">
+                        <!-- 서비스 관리 카드 -->
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm inner-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="bi bi-gear-fill me-2"></i>서비스 관리
+                                    </h5>
+                                    <p class="card-text text-muted">서비스 정보를 추가, 수정, 삭제합니다.</p>
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('admin.list_services') }}" class="btn btn-primary">
+                                            서비스 관리
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 갤러리 관리 카드 -->
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm inner-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="bi bi-images me-2"></i>갤러리 관리
+                                    </h5>
+                                    <p class="card-text text-muted">갤러리 이미지를 업로드하거나 관리합니다.</p>
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('admin.upload_image') }}" class="btn btn-outline-primary">
+                                            <i class="bi bi-upload me-2"></i>이미지 업로드
+                                        </a>
+                                        <a href="{{ url_for('admin.list_gallery') }}" class="btn btn-outline-primary">
+                                            <i class="bi bi-gear me-2"></i>갤러리 관리
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 갤러리 관리 카드 -->
-        <div class="col-md-4">
-            <div class="card h-100">
+        <!-- 그룹 2: 고객 관리 (예약 관리 - 문의 관리) -->
+        <div class="col-12">
+            <div class="card shadow-sm group-card">
+                <div class="card-header group-card-header">
+                    <h6 class="mb-0"><i class="bi bi-people-fill me-2"></i>고객 관리</h6>
+                </div>
                 <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="bi bi-images me-2"></i>갤러리 관리
-                    </h5>
-                    <p class="card-text">갤러리 이미지를 업로드하거나 관리합니다.</p>
-                    <div class="d-grid gap-2">
-                        <a href="{{ url_for('admin.upload_image') }}" class="btn btn-outline-primary">
-                            <i class="bi bi-upload me-2"></i>이미지 업로드
-                        </a>
-                        <a href="{{ url_for('admin.list_gallery') }}" class="btn btn-outline-primary">
-                            <i class="bi bi-gear me-2"></i>갤러리 관리
-                        </a>
+                    <div class="row g-3">
+                        <!-- 예약 관리 카드 -->
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm inner-card {% if pending_bookings > 0 %}card-has-pending{% endif %}">
+                                <div class="card-body">
+                                    <h5 class="card-title d-flex align-items-center">
+                                        <i class="bi bi-calendar-check me-2"></i>예약 관리
+                                        {% if pending_bookings > 0 %}
+                                        <span class="badge bg-danger ms-2 pending-badge" title="미확인 예약">
+                                            {{ pending_bookings }}
+                                        </span>
+                                        {% endif %}
+                                    </h5>
+                                    <p class="card-text text-muted">
+                                        예약 현황을 확인하고 관리합니다.
+                                        {% if pending_bookings > 0 %}
+                                        <br><small class="text-warning"><i class="bi bi-exclamation-circle me-1"></i>{{ pending_bookings }}건의 새 예약이 대기 중입니다</small>
+                                        {% endif %}
+                                    </p>
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('admin.list_bookings') }}" class="btn btn-primary {% if pending_bookings > 0 %}btn-pulse{% endif %}">
+                                            예약 관리
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 문의 관리 카드 -->
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm inner-card {% if pending_inquiries > 0 %}card-has-pending{% endif %}">
+                                <div class="card-body">
+                                    <h5 class="card-title d-flex align-items-center">
+                                        <i class="bi bi-envelope-fill me-2"></i>문의 관리
+                                        {% if pending_inquiries > 0 %}
+                                        <span class="badge bg-danger ms-2 pending-badge" title="미확인 문의">
+                                            {{ pending_inquiries }}
+                                        </span>
+                                        {% endif %}
+                                    </h5>
+                                    <p class="card-text text-muted">
+                                        고객 문의를 확인하고 관리합니다.
+                                        {% if pending_inquiries > 0 %}
+                                        <br><small class="text-warning"><i class="bi bi-exclamation-circle me-1"></i>{{ pending_inquiries }}건의 새 문의가 대기 중입니다</small>
+                                        {% endif %}
+                                    </p>
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('admin.list_inquiries') }}" class="btn btn-primary {% if pending_inquiries > 0 %}btn-pulse{% endif %}">
+                                            문의 관리
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 예약 관리 카드 -->
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
+        <!-- 그룹 3: 법적 문서 관리 (이용약관 - 개인정보처리방침) -->
+        <div class="col-12">
+            <div class="card shadow-sm group-card">
+                <div class="card-header group-card-header">
+                    <h6 class="mb-0"><i class="bi bi-file-earmark-text-fill me-2"></i>법적 문서 관리</h6>
+                </div>
                 <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="bi bi-calendar-check me-2"></i>예약 관리
-                    </h5>
-                    <p class="card-text text-muted">예약 현황을 확인하고 관리합니다.</p>
-                    <div class="d-grid gap-2">
-                        <a href="{{ url_for('admin.list_bookings') }}" class="btn btn-primary">
-                            예약 관리
-                        </a>
+                    <div class="row g-3">
+                        <!-- 이용약관 관리 카드 -->
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm inner-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-file-contract me-2"></i>이용약관 관리
+                                    </h5>
+                                    <p class="card-text text-muted">웹사이트의 이용약관을 관리합니다.</p>
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('admin.manage_terms') }}" class="btn btn-primary">
+                                            이용약관 관리
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 개인정보처리방침 관리 카드 -->
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm inner-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-shield-alt me-2"></i>개인정보처리방침 관리
+                                    </h5>
+                                    <p class="card-text text-muted">개인정보처리방침을 관리합니다.</p>
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('admin.manage_privacy') }}" class="btn btn-primary">
+                                            개인정보처리방침 관리
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-
-
-        <!-- Fade Text 관리 카드 -->
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
+        <!-- 그룹 4: 사이트 설정 (모드 관리 - 색상 관리) -->
+        <div class="col-12">
+            <div class="card shadow-sm group-card">
+                <div class="card-header group-card-header">
+                    <h6 class="mb-0"><i class="bi bi-sliders me-2"></i>사이트 설정</h6>
+                </div>
                 <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="bi bi-type me-2"></i>Fade Text 관리
-                    </h5>
-                    <p class="card-text text-muted">인덱스 페이지의 Fade Text를 관리합니다.</p>
-                    <div class="d-grid gap-2">
-                        <a href="{{ url_for('admin.list_fade_texts') }}" class="btn btn-primary">
-                            Fade Text 관리
-                        </a>
+                    <div class="row g-3">
+                        <!-- 사이트 모드 관리 카드 -->
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm inner-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="bi bi-moon-stars me-2"></i>사이트 모드 관리
+                                    </h5>
+                                    <p class="card-text text-muted">라이트/다크 모드를 선택하여 사이트 분위기를 변경합니다.</p>
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('admin.site_mode') }}" class="btn btn-primary">
+                                            모드 관리
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 사이트 색상 관리 카드 -->
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm inner-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="bi bi-palette me-2"></i>사이트 색상 관리
+                                    </h5>
+                                    <p class="card-text text-muted">웹사이트 전체의 색상 테마를 관리합니다.</p>
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('admin.site_colors') }}" class="btn btn-primary">
+                                            색상 관리
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 사이트 색상 관리 카드 -->
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="bi bi-palette me-2"></i>사이트 색상 관리
-                    </h5>
-                    <p class="card-text text-muted">웹사이트 전체의 색상 테마를 관리합니다.</p>
-                    <div class="d-grid gap-2">
-                        <a href="{{ url_for('admin.site_colors') }}" class="btn btn-primary">
-                            색상 관리
-                        </a>
-                    </div>
+        <!-- 그룹 5: 시스템 관리 (보안 대시보드 - 알림 이메일) -->
+        <div class="col-12">
+            <div class="card shadow-sm group-card">
+                <div class="card-header group-card-header">
+                    <h6 class="mb-0"><i class="bi bi-gear-wide-connected me-2"></i>시스템 관리</h6>
                 </div>
-            </div>
-        </div>
-
-        <!-- 사이트 모드 관리 카드 -->
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
                 <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="bi bi-moon-stars me-2"></i>사이트 모드 관리
-                    </h5>
-                    <p class="card-text text-muted">라이트/다크 모드를 선택하여 사이트 분위기를 변경합니다.</p>
-                    <div class="d-grid gap-2">
-                        <a href="{{ url_for('admin.site_mode') }}" class="btn btn-primary">
-                            모드 관리
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 이용약관 관리 카드 -->
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="fas fa-file-contract me-2"></i>이용약관 관리
-                    </h5>
-                    <p class="card-text text-muted">웹사이트의 이용약관을 관리합니다.</p>
-                    <div class="d-grid gap-2">
-                        <a href="{{ url_for('admin.manage_terms') }}" class="btn btn-primary">
-                            이용약관 관리
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 개인정보처리방침 관리 카드 -->
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="fas fa-shield-alt me-2"></i>개인정보처리방침 관리
-                    </h5>
-                    <p class="card-text text-muted">개인정보처리방침을 관리합니다.</p>
-                    <div class="d-grid gap-2">
-                        <a href="{{ url_for('admin.manage_privacy') }}" class="btn btn-primary">
-                            개인정보처리방침 관리
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 문의 관리 카드 -->
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="bi bi-envelope-fill me-2"></i>문의 관리
-                    </h5>
-                    <p class="card-text text-muted">고객 문의를 확인하고 관리합니다.</p>
-                    <div class="d-grid gap-2">
-                        <a href="{{ url_for('admin.list_inquiries') }}" class="btn btn-primary">
-                            문의 관리
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 보안 대시보드 카드 -->
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="bi bi-shield-lock-fill me-2"></i>보안 대시보드
-                    </h5>
-                    <p class="card-text text-muted">실시간 보안 모니터링 및 위협 분석을 확인합니다.</p>
-                    <div class="d-grid gap-2">
-                        <a href="{{ url_for('admin.security_dashboard') }}" class="btn btn-primary">
-                            보안 대시보드
-                        </a>
+                    <div class="row g-3">
+                        <!-- 보안 대시보드 카드 -->
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm inner-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="bi bi-shield-lock-fill me-2"></i>보안 대시보드
+                                    </h5>
+                                    <p class="card-text text-muted">실시간 보안 모니터링 및 위협 분석을 확인합니다.</p>
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('admin.security_dashboard') }}" class="btn btn-primary">
+                                            보안 대시보드
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 알림 이메일 관리 카드 -->
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm inner-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="bi bi-envelope-at-fill me-2"></i>알림 이메일 관리
+                                    </h5>
+                                    <p class="card-text text-muted">문의/예약 알림을 받을 이메일 주소를 관리합니다.</p>
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('admin.list_notification_emails') }}" class="btn btn-primary">
+                                            알림 이메일 관리
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -271,6 +344,40 @@
 <!-- Bootstrap Icons loaded from base.html -->
 
 <style>
+/* ============================================
+   Group Card Styles
+   ============================================ */
+
+.group-card {
+    background: rgba(18, 0, 36, 0.4);
+    border: 1px solid rgba(200, 170, 255, 0.2);
+}
+
+.group-card-header {
+    background: rgba(200, 170, 255, 0.1);
+    border-bottom: 1px solid rgba(200, 170, 255, 0.2);
+    padding: 0.75rem 1rem;
+}
+
+.group-card-header h6 {
+    color: #E8D4FF;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.inner-card {
+    background: rgba(18, 0, 36, 0.6);
+    border: 1px solid rgba(200, 170, 255, 0.25);
+}
+
+.inner-card:hover {
+    background: rgba(30, 10, 50, 0.7);
+}
+
+/* ============================================
+   List Group Styles
+   ============================================ */
+
 .list-group-item {
     border-color: rgba(200, 170, 255, 0.3);
     transition: all 0.2s ease;
@@ -347,6 +454,29 @@ h6.text-muted {
    Light Mode - Admin Dashboard
    ============================================ */
 
+body.light-mode .group-card {
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(139, 92, 246, 0.15);
+}
+
+body.light-mode .group-card-header {
+    background: rgba(139, 92, 246, 0.08);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.15);
+}
+
+body.light-mode .group-card-header h6 {
+    color: #5B3A8C;
+}
+
+body.light-mode .inner-card {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(139, 92, 246, 0.15);
+}
+
+body.light-mode .inner-card:hover {
+    background: rgba(255, 255, 255, 1);
+}
+
 body.light-mode .list-group-item {
     border-color: rgba(139, 92, 246, 0.2);
     transition: all 0.2s ease;
@@ -418,6 +548,55 @@ body.light-mode h2 {
 
 body.light-mode h6.text-muted {
     color: #5B3A8C !important;
+}
+
+/* ============================================
+   Pending Badge Styles
+   ============================================ */
+
+.pending-badge {
+    font-size: 0.75rem;
+    padding: 0.35em 0.6em;
+    animation: badge-pulse 2s infinite;
+}
+
+@keyframes badge-pulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 10px 3px rgba(220, 53, 69, 0.4);
+    }
+}
+
+.card-has-pending {
+    border-color: rgba(220, 53, 69, 0.5) !important;
+    box-shadow: 0 0 15px rgba(220, 53, 69, 0.2);
+}
+
+.btn-pulse {
+    animation: btn-glow 2s infinite;
+}
+
+@keyframes btn-glow {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(220, 53, 69, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 15px rgba(220, 53, 69, 0.5);
+    }
+}
+
+/* Light mode pending styles */
+body.light-mode .card-has-pending {
+    border-color: rgba(220, 53, 69, 0.4) !important;
+    box-shadow: 0 0 15px rgba(220, 53, 69, 0.15);
+}
+
+body.light-mode .text-warning {
+    color: #c27600 !important;
 }
 </style>
 {% endblock %} 

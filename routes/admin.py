@@ -31,7 +31,7 @@ from utils.mongo_models import (
     get_mongo_db, init_collections,
     User, Service, ServiceOption, GalleryGroup, Gallery,
     Booking, Inquiry, CollageText, SiteSettings,
-    TermsOfService, PrivacyPolicy
+    TermsOfService, PrivacyPolicy, AdminNotificationEmail
 )
 
 # .env 파일 로드 (fork-safe: MongoDB 연결은 lazy하게 생성됨)
@@ -121,13 +121,22 @@ def dashboard():
         total_inquiries = Inquiry.count()
         total_galleries = GalleryGroup.count()
         
+        # 미확인 (대기 상태) 예약/문의 개수
+        pending_bookings = Booking.count({'status': '대기'})
+        pending_inquiries = Inquiry.count({'$and': [
+            {'status': '대기'},
+            {'$or': [{'is_spam': False}, {'is_spam': {'$exists': False}}]}
+        ]})
+        
         return render_template('admin/dashboard.html',
                              recent_bookings=recent_bookings,
                              recent_inquiries=recent_inquiries,
                              recent_galleries=recent_galleries,
                              total_bookings=total_bookings,
                              total_inquiries=total_inquiries,
-                             total_galleries=total_galleries)
+                             total_galleries=total_galleries,
+                             pending_bookings=pending_bookings,
+                             pending_inquiries=pending_inquiries)
                              
     except Exception as e:
         print(f"Error in dashboard route: {str(e)}")
@@ -140,7 +149,9 @@ def dashboard():
                              recent_galleries=[],
                              total_bookings=0,
                              total_inquiries=0,
-                             total_galleries=0)
+                             total_galleries=0,
+                             pending_bookings=0,
+                             pending_inquiries=0)
 
 
 @admin.route('/services/add', methods=['GET', 'POST'])
@@ -962,7 +973,8 @@ def list_gallery():
 def list_inquiries():
     try:
         kst = pytz.timezone('Asia/Seoul')
-        inquiries = Inquiry.query_all_ordered()
+        # 스팸이 아닌 문의만 표시 (기본)
+        inquiries = Inquiry.query_non_spam()
         
         for inquiry in inquiries:
             if inquiry.created_at and isinstance(inquiry.created_at, datetime):
@@ -971,14 +983,57 @@ def list_inquiries():
                 else:
                     inquiry.created_at = inquiry.created_at.astimezone(kst)
         
-        return render_template('admin/inquiries.html', inquiries=inquiries)
+        # 스팸 문의 개수
+        spam_count = len(Inquiry.query_spam())
+        
+        return render_template('admin/inquiries.html', inquiries=inquiries, spam_count=spam_count)
     except Exception as e:
         print(f"Error in list_inquiries: {str(e)}")
         flash('문의 목록을 불러오는 중 오류가 발생했습니다.', 'error')
-        return render_template('admin/inquiries.html', inquiries=[])
+        return render_template('admin/inquiries.html', inquiries=[], spam_count=0)
 
 
-@admin.route('/inquiries/<int:id>/status', methods=['POST'])
+@admin.route('/inquiries/spam')
+@login_required
+def list_spam_inquiries():
+    """스팸으로 분류된 문의 목록"""
+    try:
+        kst = pytz.timezone('Asia/Seoul')
+        inquiries = Inquiry.query_spam()
+        
+        for inquiry in inquiries:
+            if inquiry.created_at and isinstance(inquiry.created_at, datetime):
+                if inquiry.created_at.tzinfo is None:
+                    inquiry.created_at = pytz.utc.localize(inquiry.created_at).astimezone(kst)
+                else:
+                    inquiry.created_at = inquiry.created_at.astimezone(kst)
+        
+        return render_template('admin/spam_inquiries.html', inquiries=inquiries)
+    except Exception as e:
+        print(f"Error in list_spam_inquiries: {str(e)}")
+        flash('스팸 문의 목록을 불러오는 중 오류가 발생했습니다.', 'error')
+        return render_template('admin/spam_inquiries.html', inquiries=[])
+
+
+@admin.route('/inquiries/<id>/unmark-spam', methods=['POST'])
+@login_required
+def unmark_spam(id):
+    """스팸 표시 해제"""
+    try:
+        inquiry = Inquiry.get_by_id(id)
+        if inquiry:
+            inquiry.is_spam = False
+            inquiry.spam_reason = ''
+            inquiry.save()
+            flash('스팸 표시가 해제되었습니다.')
+    except Exception as e:
+        print(f"Error unmarking spam: {str(e)}")
+        flash('스팸 표시 해제 중 오류가 발생했습니다.', 'error')
+    
+    return redirect(url_for('admin.list_spam_inquiries'))
+
+
+@admin.route('/inquiries/<id>/status', methods=['POST'])
 @login_required
 def update_inquiry_status(id):
     try:
@@ -995,7 +1050,7 @@ def update_inquiry_status(id):
     return redirect(url_for('admin.list_inquiries'))
 
 
-@admin.route('/inquiries/<int:id>/delete', methods=['POST'])
+@admin.route('/inquiries/<id>/delete', methods=['POST'])
 @login_required
 def delete_inquiry(id):
     try:
@@ -1465,3 +1520,136 @@ def storage_stats_json():
     """GridFS 저장소 통계 JSON 반환"""
     stats = get_gridfs_stats()
     return jsonify(stats)
+
+
+# ========== 알림 이메일 관리 ==========
+
+@admin.route('/notification-emails')
+@login_required
+def list_notification_emails():
+    """알림 이메일 목록"""
+    try:
+        emails = AdminNotificationEmail.query_all_ordered()
+        return render_template('admin/notification_emails.html', emails=emails)
+    except Exception as e:
+        print(f"Error listing notification emails: {str(e)}")
+        flash('알림 이메일 목록을 불러오는 중 오류가 발생했습니다.', 'error')
+        return render_template('admin/notification_emails.html', emails=[])
+
+
+@admin.route('/notification-emails/add', methods=['POST'])
+@login_required
+def add_notification_email():
+    """알림 이메일 추가"""
+    try:
+        email = request.form.get('email', '').strip().lower()
+        name = request.form.get('name', '').strip()
+        receive_inquiries = request.form.get('receive_inquiries') == 'on'
+        receive_bookings = request.form.get('receive_bookings') == 'on'
+        
+        if not email:
+            flash('이메일 주소를 입력해주세요.', 'error')
+            return redirect(url_for('admin.list_notification_emails'))
+        
+        # 이메일 형식 간단 검증
+        if '@' not in email or '.' not in email:
+            flash('올바른 이메일 형식이 아닙니다.', 'error')
+            return redirect(url_for('admin.list_notification_emails'))
+        
+        # 중복 확인
+        existing = AdminNotificationEmail.get_by_email(email)
+        if existing:
+            flash('이미 등록된 이메일 주소입니다.', 'error')
+            return redirect(url_for('admin.list_notification_emails'))
+        
+        notification_email = AdminNotificationEmail(
+            email=email,
+            name=name,
+            is_active=True,
+            receive_inquiries=receive_inquiries,
+            receive_bookings=receive_bookings
+        )
+        notification_email.save()
+        
+        flash(f'알림 이메일 "{email}"이(가) 추가되었습니다.', 'success')
+        
+    except Exception as e:
+        print(f"Error adding notification email: {str(e)}")
+        flash('알림 이메일 추가 중 오류가 발생했습니다.', 'error')
+    
+    return redirect(url_for('admin.list_notification_emails'))
+
+
+@admin.route('/notification-emails/<int:id>/toggle-active', methods=['POST'])
+@login_required
+def toggle_notification_email_active(id):
+    """알림 이메일 활성화/비활성화 토글"""
+    try:
+        email_obj = AdminNotificationEmail.get_by_id(id)
+        if not email_obj:
+            flash('이메일을 찾을 수 없습니다.', 'error')
+            return redirect(url_for('admin.list_notification_emails'))
+        
+        email_obj.is_active = not email_obj.is_active
+        email_obj.updated_at = datetime.utcnow()
+        email_obj.save()
+        
+        status = '활성화' if email_obj.is_active else '비활성화'
+        flash(f'"{email_obj.email}" 이메일이 {status}되었습니다.', 'success')
+        
+    except Exception as e:
+        print(f"Error toggling notification email: {str(e)}")
+        flash('이메일 상태 변경 중 오류가 발생했습니다.', 'error')
+    
+    return redirect(url_for('admin.list_notification_emails'))
+
+
+@admin.route('/notification-emails/<int:id>/update', methods=['POST'])
+@login_required
+def update_notification_email(id):
+    """알림 이메일 정보 수정"""
+    try:
+        email_obj = AdminNotificationEmail.get_by_id(id)
+        if not email_obj:
+            flash('이메일을 찾을 수 없습니다.', 'error')
+            return redirect(url_for('admin.list_notification_emails'))
+        
+        name = request.form.get('name', '').strip()
+        receive_inquiries = request.form.get('receive_inquiries') == 'on'
+        receive_bookings = request.form.get('receive_bookings') == 'on'
+        
+        email_obj.name = name
+        email_obj.receive_inquiries = receive_inquiries
+        email_obj.receive_bookings = receive_bookings
+        email_obj.updated_at = datetime.utcnow()
+        email_obj.save()
+        
+        flash(f'"{email_obj.email}" 이메일 설정이 업데이트되었습니다.', 'success')
+        
+    except Exception as e:
+        print(f"Error updating notification email: {str(e)}")
+        flash('이메일 설정 수정 중 오류가 발생했습니다.', 'error')
+    
+    return redirect(url_for('admin.list_notification_emails'))
+
+
+@admin.route('/notification-emails/<int:id>/delete', methods=['POST'])
+@login_required
+def delete_notification_email(id):
+    """알림 이메일 삭제"""
+    try:
+        email_obj = AdminNotificationEmail.get_by_id(id)
+        if not email_obj:
+            flash('이메일을 찾을 수 없습니다.', 'error')
+            return redirect(url_for('admin.list_notification_emails'))
+        
+        email_address = email_obj.email
+        email_obj.delete()
+        
+        flash(f'"{email_address}" 이메일이 삭제되었습니다.', 'success')
+        
+    except Exception as e:
+        print(f"Error deleting notification email: {str(e)}")
+        flash('이메일 삭제 중 오류가 발생했습니다.', 'error')
+    
+    return redirect(url_for('admin.list_notification_emails'))

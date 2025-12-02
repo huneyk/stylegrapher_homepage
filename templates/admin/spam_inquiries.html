@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block title %}스팸 문의 관리{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="admin-page-title">
+            <i class="bi bi-shield-exclamation"></i> 스팸 문의 관리
+        </h2>
+        <div>
+            <a href="{{ url_for('admin.list_inquiries') }}" class="btn btn-outline-primary me-2">
+                <i class="bi bi-arrow-left"></i> 정상 문의로 돌아가기
+            </a>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-primary">
+                <i class="bi bi-house-door"></i> 관리자 대시보드
+            </a>
+        </div>
+    </div>
+    
+    <div class="alert alert-warning">
+        <i class="bi bi-info-circle"></i> 
+        아래 문의들은 AI가 스팸으로 분류하여 자동 차단된 문의입니다. 
+        정상 문의인 경우 "스팸 해제" 버튼을 눌러주세요.
+    </div>
+    
+    {% if inquiries %}
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>날짜</th>
+                            <th>이름</th>
+                            <th>이메일</th>
+                            <th>서비스</th>
+                            <th>차단 사유</th>
+                            <th>메시지</th>
+                            <th>관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inquiry in inquiries %}
+                        <tr>
+                            <td>{{ inquiry.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ inquiry.name }}</td>
+                            <td>{{ inquiry.email }}</td>
+                            <td>{{ inquiry.service.name if inquiry.service else '알 수 없음' }}</td>
+                            <td>
+                                <span class="badge bg-warning text-dark">
+                                    {{ inquiry.spam_reason or '자동 감지' }}
+                                </span>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-link" 
+                                        data-message="{{ inquiry.message }}"
+                                        onclick="showMessage(this.getAttribute('data-message'))">
+                                    메시지 보기
+                                </button>
+                            </td>
+                            <td>
+                                <form action="{{ url_for('admin.unmark_spam', id=inquiry.id) }}" 
+                                      method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-success" 
+                                            onclick="return confirm('이 문의를 정상 문의로 변경하시겠습니까?')">
+                                        <i class="bi bi-check-circle"></i> 스팸 해제
+                                    </button>
+                                </form>
+                                <form action="{{ url_for('admin.delete_inquiry', id=inquiry.id) }}" 
+                                      method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-danger" 
+                                            onclick="return confirm('정말 삭제하시겠습니까?')">
+                                        <i class="bi bi-trash"></i> 삭제
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-check-circle"></i> 스팸으로 분류된 문의가 없습니다.
+    </div>
+    {% endif %}
+</div>
+
+<!-- 메시지 모달 -->
+<div id="customModal" class="custom-modal">
+    <div class="custom-modal-content">
+        <div class="custom-modal-header">
+            <h5>스팸 문의 메시지</h5>
+            <button type="button" class="close-button" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="custom-modal-body">
+            <p id="modalMessage"></p>
+        </div>
+        <div class="custom-modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal()">닫기</button>
+        </div>
+    </div>
+</div>
+
+<style>
+.admin-page-title {
+    color: #FFFFFF;
+    text-shadow: 0 0 20px rgba(200, 170, 255, 0.5);
+}
+
+.card-body {
+    background: rgba(18, 0, 36, 0.6);
+}
+
+.custom-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(10, 0, 26, 0.85);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+}
+
+.custom-modal-content {
+    position: relative;
+    background: rgba(18, 0, 36, 0.95);
+    margin: 10% auto;
+    padding: 0;
+    width: 50%;
+    max-width: 600px;
+    border-radius: 15px;
+    box-shadow: 0 4px 30px rgba(200, 170, 255, 0.3);
+    border: 1px solid rgba(200, 170, 255, 0.3);
+}
+
+.custom-modal-header {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(200, 170, 255, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.custom-modal-header h5 {
+    color: #F0E8FF;
+    text-shadow: 0 0 10px rgba(200, 170, 255, 0.4);
+    margin: 0;
+}
+
+.custom-modal-body {
+    padding: 1rem;
+    white-space: pre-wrap;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    line-break: strict;
+    color: rgba(255, 255, 255, 0.9);
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.custom-modal-footer {
+    padding: 1rem;
+    border-top: 1px solid rgba(200, 170, 255, 0.2);
+    text-align: right;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    color: #E8D4FF;
+}
+
+.close-button:hover {
+    color: #FFFFFF;
+}
+
+.btn-secondary {
+    background-color: rgba(100, 60, 150, 0.8);
+    border-color: rgba(200, 170, 255, 0.5);
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: rgba(120, 80, 170, 0.9);
+    border-color: rgba(200, 170, 255, 0.8);
+}
+
+@media (max-width: 768px) {
+    .custom-modal-content {
+        width: 90%;
+        margin: 20% auto;
+    }
+}
+</style>
+
+<script>
+function showMessage(message) {
+    const modalElement = document.getElementById('customModal');
+    const messageElement = document.getElementById('modalMessage');
+    
+    if (modalElement && messageElement) {
+        messageElement.textContent = message;
+        modalElement.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeModal() {
+    const modalElement = document.getElementById('customModal');
+    if (modalElement) {
+        modalElement.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('customModal');
+    if (event.target == modal) {
+        closeModal();
+    }
+}
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeModal();
+    }
+});
+</script>
+{% endblock %}
+

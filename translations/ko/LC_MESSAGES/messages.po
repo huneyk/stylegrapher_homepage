@@ -750,3 +750,36 @@ msgstr ""
 msgid "영업시간: 화-토 9:00-18:00 | 일/월요일 휴무"
 msgstr ""
 
+# Preferred booking datetime (Contact page)
+msgid "희망 예약 일시"
+msgstr ""
+
+msgid "우선순위에 따라 최대 3개까지 선택해주세요"
+msgstr ""
+
+msgid "1순위"
+msgstr ""
+
+msgid "2순위"
+msgstr ""
+
+msgid "3순위"
+msgstr ""
+
+msgid "날짜 선택"
+msgstr ""
+
+msgid "시간 선택"
+msgstr ""
+
+
+# Loading Modal (Contact/Booking page)
+msgid "AI 에이전트 처리 중"
+msgstr ""
+
+msgid "고객님의 문의 신청을 저희 AI 에이전트가 정리해서 전달하고 있습니다. 잠시만 기다려주세요."
+msgstr ""
+
+msgid "고객님의 예약 신청을 저희 AI 에이전트가 정리해서 전달하고 있습니다. 잠시만 기다려주세요."
+msgstr ""
+

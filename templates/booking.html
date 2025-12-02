@@ -8,7 +8,7 @@
         <div class="col-md-8 col-lg-6">
             <div class="card">
                 <div class="card-body p-4">
-                    <h2 class="text-center mb-4">{{ _('예약하기') }}</h2>
+                    <h2 class="text-center mb-4">{{ _('문의/예약 신청') }}</h2>
                     
                     {% with messages = get_flashed_messages() %}
                         {% if messages %}
@@ -21,6 +21,30 @@
                     {% endwith %}
 
                     <form method="POST">
+                        <!-- 문의/예약 타입 선택 -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">{{ _('요청 유형') }}</label>
+                            <div class="request-type-selector">
+                                <div class="form-check form-check-inline request-type-option">
+                                    <input class="form-check-input" type="radio" name="request_type" 
+                                           id="type_inquiry" value="inquiry" {% if default_mode != 'booking' %}checked{% endif %}
+                                           onchange="toggleDatetimeSection()">
+                                    <label class="form-check-label" for="type_inquiry">
+                                        <i class="bi bi-chat-dots me-1"></i>{{ _('문의') }}
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline request-type-option">
+                                    <input class="form-check-input" type="radio" name="request_type" 
+                                           id="type_booking" value="booking" {% if default_mode == 'booking' %}checked{% endif %}
+                                           onchange="toggleDatetimeSection()">
+                                    <label class="form-check-label" for="type_booking">
+                                        <i class="bi bi-calendar-check me-1"></i>{{ _('예약') }}
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-text">{{ _('문의는 일반 문의로, 예약은 방문 예약 신청으로 저장됩니다.') }}</div>
+                        </div>
+                        
                         <div class="mb-3">
                             <label for="name" class="form-label">{{ _('이름') }}</label>
                             <input type="text" class="form-control" id="name" name="name" required>
@@ -38,15 +62,19 @@
                             <input type="email" class="form-control" id="email" name="email" 
                                    placeholder="example@email.com" required>
                         </div>
+                        <!-- 문의 대상 서비스 선택 (계층적 dropdown) -->
                         <div class="mb-3">
                             <label for="service" class="form-label">{{ _('문의 대상 서비스') }}</label>
                             <select class="form-select" id="service" name="service" required>
-                                <option value="">{{ _('선택해주세요') }}</option>
-                                {% for service in services %}
-                                <option value="{{ service.id }}" 
-                                    {% if selected_service_id and service.id == selected_service_id|int %}selected{% endif %}>
-                                    {{ service.name }}
-                                </option>
+                                <option value="" {% if not default_selection %}selected{% endif %} disabled>{{ _('서비스를 선택해주세요') }}</option>
+                                {% for category, items in all_services.items() %}
+                                    <optgroup label="{{ category }}">
+                                    {% for service in items %}
+                                        <option value="{{ service['id'] }}" {% if default_selection == service['id'] %}selected{% endif %}>
+                                            {{ service['name'] }}
+                                        </option>
+                                    {% endfor %}
+                                    </optgroup>
                                 {% endfor %}
                             </select>
                         </div>
@@ -54,8 +82,132 @@
                             <label for="message" class="form-label">{{ _('메시지') }}</label>
                             <textarea class="form-control" id="message" name="message" rows="4"></textarea>
                         </div>
+                        
+                        <!-- 희망 예약 일시 선택 (3순위) - 예약 선택 시에만 표시 -->
+                        <div class="mb-4 datetime-section" id="datetimeSection" style="display: none;">
+                            <label class="form-label fw-semibold">{{ _('희망 예약 일시') }}</label>
+                            <p class="text-muted small mb-3">{{ _('우선순위에 따라 최대 3개까지 선택해주세요') }}</p>
+                            
+                            <!-- 1순위 -->
+                            <div class="datetime-row mb-3">
+                                <div class="datetime-label">
+                                    <span class="badge bg-primary">{{ _('1순위') }}</span>
+                                </div>
+                                <div class="datetime-inputs">
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <input type="date" class="form-control" name="date[]" 
+                                                   min="{{ today }}" placeholder="{{ _('날짜 선택') }}">
+                                        </div>
+                                        <div class="col-6">
+                                            <select class="form-select" name="time[]">
+                                                <option value="">{{ _('시간 선택') }}</option>
+                                                <option value="09:00">09:00</option>
+                                                <option value="09:30">09:30</option>
+                                                <option value="10:00">10:00</option>
+                                                <option value="10:30">10:30</option>
+                                                <option value="11:00">11:00</option>
+                                                <option value="11:30">11:30</option>
+                                                <option value="12:00">12:00</option>
+                                                <option value="12:30">12:30</option>
+                                                <option value="13:00">13:00</option>
+                                                <option value="13:30">13:30</option>
+                                                <option value="14:00">14:00</option>
+                                                <option value="14:30">14:30</option>
+                                                <option value="15:00">15:00</option>
+                                                <option value="15:30">15:30</option>
+                                                <option value="16:00">16:00</option>
+                                                <option value="16:30">16:30</option>
+                                                <option value="17:00">17:00</option>
+                                                <option value="17:30">17:30</option>
+                                                <option value="18:00">18:00</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 2순위 -->
+                            <div class="datetime-row mb-3">
+                                <div class="datetime-label">
+                                    <span class="badge bg-secondary">{{ _('2순위') }}</span>
+                                </div>
+                                <div class="datetime-inputs">
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <input type="date" class="form-control" name="date[]" 
+                                                   min="{{ today }}" placeholder="{{ _('날짜 선택') }}">
+                                        </div>
+                                        <div class="col-6">
+                                            <select class="form-select" name="time[]">
+                                                <option value="">{{ _('시간 선택') }}</option>
+                                                <option value="09:00">09:00</option>
+                                                <option value="09:30">09:30</option>
+                                                <option value="10:00">10:00</option>
+                                                <option value="10:30">10:30</option>
+                                                <option value="11:00">11:00</option>
+                                                <option value="11:30">11:30</option>
+                                                <option value="12:00">12:00</option>
+                                                <option value="12:30">12:30</option>
+                                                <option value="13:00">13:00</option>
+                                                <option value="13:30">13:30</option>
+                                                <option value="14:00">14:00</option>
+                                                <option value="14:30">14:30</option>
+                                                <option value="15:00">15:00</option>
+                                                <option value="15:30">15:30</option>
+                                                <option value="16:00">16:00</option>
+                                                <option value="16:30">16:30</option>
+                                                <option value="17:00">17:00</option>
+                                                <option value="17:30">17:30</option>
+                                                <option value="18:00">18:00</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 3순위 -->
+                            <div class="datetime-row mb-3">
+                                <div class="datetime-label">
+                                    <span class="badge bg-outline-secondary">{{ _('3순위') }}</span>
+                                </div>
+                                <div class="datetime-inputs">
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <input type="date" class="form-control" name="date[]" 
+                                                   min="{{ today }}" placeholder="{{ _('날짜 선택') }}">
+                                        </div>
+                                        <div class="col-6">
+                                            <select class="form-select" name="time[]">
+                                                <option value="">{{ _('시간 선택') }}</option>
+                                                <option value="09:00">09:00</option>
+                                                <option value="09:30">09:30</option>
+                                                <option value="10:00">10:00</option>
+                                                <option value="10:30">10:30</option>
+                                                <option value="11:00">11:00</option>
+                                                <option value="11:30">11:30</option>
+                                                <option value="12:00">12:00</option>
+                                                <option value="12:30">12:30</option>
+                                                <option value="13:00">13:00</option>
+                                                <option value="13:30">13:30</option>
+                                                <option value="14:00">14:00</option>
+                                                <option value="14:30">14:30</option>
+                                                <option value="15:00">15:00</option>
+                                                <option value="15:30">15:30</option>
+                                                <option value="16:00">16:00</option>
+                                                <option value="16:30">16:30</option>
+                                                <option value="17:00">17:00</option>
+                                                <option value="17:30">17:30</option>
+                                                <option value="18:00">18:00</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- End of datetime section -->
+                        
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg">{{ _('예약 신청') }}</button>
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">{{ _('이메일로 전송') }}</button>
                         </div>
                     </form>
                 </div>
@@ -64,100 +216,93 @@
     </div>
 </div>
 
-<script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="loadingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content loading-modal-content">
+            <div class="modal-body text-center py-5">
+                <div class="loading-spinner mb-4">
+                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                <h5 class="mb-3" id="loadingModalLabel">
+                    <i class="bi bi-robot me-2"></i>{{ _('AI 에이전트 처리 중') }}
+                </h5>
+                <p class="text-muted mb-0" id="loadingMessage">
+                    {{ _('고객님의 문의 신청을 저희 AI 에이전트가 정리해서 전달하고 있습니다. 잠시만 기다려주세요.') }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    Kakao.init('YOUR_KAKAO_JAVASCRIPT_KEY');
+    // 서비스 선택 시 선택된 옵션의 텍스트 가져오기 (optgroup 내부 option도 처리)
+    function getSelectedServiceName() {
+        const serviceSelect = document.getElementById('service');
+        const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+        return selectedOption ? selectedOption.text.trim() : '';
+    }
     
-    document.querySelector('form').addEventListener('submit', function(e) {
-        e.preventDefault();
+    // 문의/예약 선택에 따라 희망 예약일시 섹션 토글
+    function toggleDatetimeSection() {
+        const bookingRadio = document.getElementById('type_booking');
+        const datetimeSection = document.getElementById('datetimeSection');
         
-        const name = document.getElementById('name').value;
-        const contact = document.getElementById('contact').value;
-        const service = document.getElementById('service');
-        const serviceName = service.options[service.selectedIndex].text;
-        const message = document.getElementById('message').value;
-
-        const kakaoMessage = `[새로운 예약]
-이름: ${name}
-연락처: ${contact} 
-서비스: ${serviceName}
-메시지: ${message}`;
-
-        Kakao.Link.sendDefault({
-            objectType: 'text',
-            text: kakaoMessage,
-            link: {
-                mobileWebUrl: window.location.href,
-                webUrl: window.location.href
+        if (bookingRadio.checked) {
+            datetimeSection.style.display = 'block';
+            // 애니메이션 효과
+            datetimeSection.style.opacity = '0';
+            setTimeout(() => {
+                datetimeSection.style.transition = 'opacity 0.3s ease';
+                datetimeSection.style.opacity = '1';
+            }, 10);
+        } else {
+            datetimeSection.style.transition = 'opacity 0.3s ease';
+            datetimeSection.style.opacity = '0';
+            setTimeout(() => {
+                datetimeSection.style.display = 'none';
+            }, 300);
+        }
+    }
+    
+    // 로딩 모달 관련
+    const loadingMessages = {
+        inquiry: "{{ _('고객님의 문의 신청을 저희 AI 에이전트가 정리해서 전달하고 있습니다. 잠시만 기다려주세요.') }}",
+        booking: "{{ _('고객님의 예약 신청을 저희 AI 에이전트가 정리해서 전달하고 있습니다. 잠시만 기다려주세요.') }}"
+    };
+    
+    // 폼 제출 시 로딩 모달 표시
+    function showLoadingModal() {
+        const isBooking = document.getElementById('type_booking').checked;
+        const messageEl = document.getElementById('loadingMessage');
+        
+        // 요청 유형에 따라 메시지 변경
+        messageEl.textContent = isBooking ? loadingMessages.booking : loadingMessages.inquiry;
+        
+        // 모달 표시
+        const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+        loadingModal.show();
+        
+        return true; // 폼 제출 허용
+    }
+    
+    // 페이지 로드 시 초기 상태 설정
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleDatetimeSection();
+        
+        // 폼 제출 이벤트에 로딩 모달 연결
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            // 폼 유효성 검사가 통과된 경우에만 모달 표시
+            if (form.checkValidity()) {
+                showLoadingModal();
             }
         });
-
-        this.submit();
     });
 </script>
 
-<script>
-document.getElementById('add-datetime').addEventListener('click', function() {
-    const container = document.getElementById('datetime-container');
-    const datetimeCount = container.children.length;
-    
-    if (datetimeCount < 3) {
-        const newDatetime = document.createElement('div');
-        newDatetime.className = 'mb-2';
-        newDatetime.innerHTML = `
-            <label class="form-label">${datetimeCount + 1}순위</label>
-            <div class="row">
-                <div class="col-md-6 mb-2">
-                    <input type="date" class="form-control" name="date[]">
-                </div>
-                <div class="col-md-6 mb-2">
-                    <div class="input-group">
-                        <select class="form-select" name="time[]">
-                            <option value="">시간 선택</option>
-                            <option value="09:00">오전 9:00</option>
-                            <option value="09:30">오전 9:30</option>
-                            <option value="10:00">오전 10:00</option>
-                            <option value="10:30">오전 10:30</option>
-                            <option value="11:00">오전 11:00</option>
-                            <option value="11:30">오전 11:30</option>
-                            <option value="12:00">오후 12:00</option>
-                            <option value="12:30">오후 12:30</option>
-                            <option value="13:00">오후 1:00</option>
-                            <option value="13:30">오후 1:30</option>
-                            <option value="14:00">오후 2:00</option>
-                            <option value="14:30">오후 2:30</option>
-                            <option value="15:00">오후 3:00</option>
-                            <option value="15:30">오후 3:30</option>
-                            <option value="16:00">오후 4:00</option>
-                        </select>
-                        <button type="button" class="btn btn-outline-danger remove-datetime">{{ _('삭제') }}</button>
-                    </div>
-                </div>
-            </div>
-        `;
-        container.appendChild(newDatetime);
-    }
-    
-    if (datetimeCount + 1 >= 3) {
-        this.style.display = 'none';
-    }
-});
-
-document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('remove-datetime')) {
-        e.target.closest('.mb-2').remove();
-        const addButton = document.getElementById('add-datetime');
-        addButton.style.display = 'block';
-    }
-});
-
-// 오늘 이전 날짜 선택 방지
-const dateInputs = document.getElementsByName('date[]');
-const today = new Date().toISOString().split('T')[0];
-dateInputs.forEach(input => {
-    input.min = today;
-});
-</script>
 
 <style>
 .card {
@@ -165,6 +310,7 @@ dateInputs.forEach(input => {
     border-radius: 15px;
     box-shadow: 0 4px 15px rgba(139, 95, 191, 0.15);
     transition: all 0.3s ease;
+    background-color: #ffffff !important;
 }
 
 .card:hover {
@@ -174,6 +320,200 @@ dateInputs.forEach(input => {
 .card h2.text-center {
     color: rgba(139, 95, 191, 1) !important;
     font-weight: 600;
+}
+
+/* Light mode form elements */
+.card .form-control,
+.card .form-select {
+    background-color: #ffffff !important;
+    color: #333333 !important;
+    border: 1px solid rgba(139, 95, 191, 0.3) !important;
+}
+
+.card .form-control:focus,
+.card .form-select:focus {
+    background-color: #ffffff !important;
+    border-color: rgba(139, 95, 191, 0.6) !important;
+    box-shadow: 0 0 0 0.2rem rgba(139, 95, 191, 0.15) !important;
+}
+
+.card .form-control::placeholder {
+    color: #999999 !important;
+}
+
+.card .form-label {
+    color: #333333 !important;
+    font-weight: 500;
+}
+
+.card .form-text {
+    color: #666666 !important;
+}
+
+/* Dropdown optgroup styling */
+.card .form-select option {
+    background-color: #ffffff;
+    color: #333333;
+}
+
+.card .form-select optgroup {
+    background-color: #f8f9fa;
+    color: rgba(139, 95, 191, 1);
+    font-weight: 600;
+}
+
+/* Alert info styling for light mode */
+.card .alert-info {
+    background-color: rgba(139, 95, 191, 0.1) !important;
+    border-color: rgba(139, 95, 191, 0.3) !important;
+    color: #555555 !important;
+}
+
+.card .alert-info i {
+    color: rgba(139, 95, 191, 0.8) !important;
+}
+
+/* 요청 유형 선택 스타일 */
+.request-type-selector {
+    display: flex;
+    gap: 20px;
+    margin-top: 8px;
+}
+
+.request-type-option {
+    flex: 1;
+    max-width: 200px;
+}
+
+.request-type-option .form-check-input {
+    margin-top: 0.3em;
+}
+
+.request-type-option .form-check-label {
+    cursor: pointer;
+    padding: 10px 16px;
+    border: 1px solid rgba(139, 95, 191, 0.3);
+    border-radius: 8px;
+    display: block;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.request-type-option .form-check-input:checked + .form-check-label {
+    background-color: rgba(139, 95, 191, 0.1);
+    border-color: rgba(139, 95, 191, 0.6);
+    color: rgba(139, 95, 191, 1);
+    font-weight: 500;
+}
+
+.request-type-option .form-check-label:hover {
+    background-color: rgba(139, 95, 191, 0.05);
+    border-color: rgba(139, 95, 191, 0.4);
+}
+
+/* 희망 예약 일시 스타일 */
+.datetime-section {
+    padding: 16px;
+    background-color: rgba(139, 95, 191, 0.05);
+    border-radius: 10px;
+    border: 1px solid rgba(139, 95, 191, 0.2);
+}
+
+.datetime-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.datetime-label {
+    flex-shrink: 0;
+    padding-top: 8px;
+}
+
+.datetime-label .badge {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+}
+
+.datetime-label .badge.bg-outline-secondary {
+    background-color: transparent !important;
+    border: 1px solid #6c757d;
+    color: #6c757d;
+}
+
+.datetime-inputs {
+    flex-grow: 1;
+}
+
+.datetime-inputs input[type="date"],
+.datetime-inputs select {
+    font-size: 0.9rem;
+}
+
+@media (max-width: 576px) {
+    .datetime-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .datetime-label {
+        padding-top: 0;
+    }
+    
+    .datetime-inputs {
+        width: 100%;
+    }
+}
+
+/* Loading Modal Styles */
+.loading-modal-content {
+    border: 1.5px solid rgba(139, 95, 191, 0.4) !important;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(139, 95, 191, 0.25);
+    background-color: #ffffff !important;
+}
+
+.loading-modal-content .modal-body {
+    padding: 2.5rem 2rem;
+}
+
+.loading-modal-content h5 {
+    color: rgba(139, 95, 191, 1) !important;
+    font-weight: 600;
+}
+
+.loading-modal-content .text-muted {
+    color: #555555 !important;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.loading-modal-content .spinner-border {
+    color: rgba(139, 95, 191, 1) !important;
+    border-width: 0.2em;
+}
+
+.loading-modal-content .bi-robot {
+    color: rgba(139, 95, 191, 0.8);
+}
+
+/* 모달 배경 어둡게 */
+.modal-backdrop.show {
+    opacity: 0.6;
+}
+
+/* 스피너 애니메이션 강화 */
+.loading-spinner {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
 }
 </style>
 {% endblock %} 

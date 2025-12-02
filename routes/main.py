@@ -2,6 +2,7 @@
 Main 라우트 - MongoDB 기반
 """
 from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app, send_file, make_response, session
+from flask_babel import gettext as _
 from flask_mail import Message
 import json
 import os
@@ -17,7 +18,8 @@ from utils.mongo_models import (
     get_mongo_db,
     Service, ServiceOption, GalleryGroup, Gallery,
     Booking, Inquiry, CollageText,
-    TermsOfService, PrivacyPolicy, get_next_id
+    TermsOfService, PrivacyPolicy, get_next_id,
+    AdminNotificationEmail
 )
 from utils.translation_helper import (
     get_current_language, 
@@ -91,31 +93,53 @@ def clear_gallery_cache():
 
 
 def get_all_services():
-    """모든 서비스와 서비스 옵션을 가져와서 통합 목록 생성"""
+    """모든 서비스와 서비스 옵션을 가져와서 카테고리별로 그룹화 (i18n 적용)"""
+    from collections import OrderedDict
+    
+    lang = get_current_language()
     services = Service.query_all()
     service_options = ServiceOption.query_all()
     
-    all_services = []
+    
+    # 카테고리별로 그룹화된 딕셔너리
+    grouped_services = OrderedDict()
     
     for option in service_options:
-        all_services.append({
+        # 번역 적용
+        translated_option = get_translated_service_option(option, lang)
+        translated_service = get_translated_service(option.service, lang) if option.service else None
+        
+        category = translated_service.get('name', option.service.name) if translated_service else '기타'
+        
+        if category not in grouped_services:
+            grouped_services[category] = []
+        
+        grouped_services[category].append({
             'type': 'option',
             'id': f'option_{option.id}',
-            'name': option.name,
-            'category': option.service.name if option.service else '기타'
+            'name': translated_option.get('name', option.name)
         })
     
     for service in services:
         if not service.options:
-            all_services.append({
+            translated_service = get_translated_service(service, lang)
+            category = '기타'
+            
+            if category not in grouped_services:
+                grouped_services[category] = []
+            
+            grouped_services[category].append({
                 'type': 'service',
                 'id': f'service_{service.id}',
-                'name': service.name,
-                'category': '기타'
+                'name': translated_service.get('name', service.name)
             })
     
-    all_services.sort(key=lambda x: (x['category'], x['name']))
-    return all_services
+    # 카테고리별로 정렬하고 각 카테고리 내 서비스도 이름으로 정렬
+    sorted_grouped = OrderedDict()
+    for category in sorted(grouped_services.keys()):
+        sorted_grouped[category] = sorted(grouped_services[category], key=lambda x: x['name'])
+    
+    return sorted_grouped
 
 
 @main.route('/')
@@ -371,97 +395,15 @@ def booking_choice():
 
 @main.route('/contact', methods=['GET', 'POST'])
 def contact():
-    selected_service_id = request.args.get('service_id', None)
-    services = Service.query_all()
-    
     if request.method == 'POST':
         name = request.form.get('name')
-        contact = request.form.get('contact')
-        email = request.form.get('email')
-        service_id = request.form.get('service')
-        message = request.form.get('message')
-        
-        # 희망 예약일시 처리
-        dates = request.form.getlist('date[]')
-        times = request.form.getlist('time[]')
-        datetime_message = "희망 예약일시:\n"
-        
-        for i, (date, time) in enumerate(zip(dates, times), 1):
-            if date and time:
-                datetime_message += f"{i}순위: {date} {time}\n"
-        
-        full_message = f"{message}\n\n{datetime_message}"
-        
-        # MongoDB에 예약 저장
-        booking = Booking(
-            name=name,
-            email=email,
-            service_id=int(service_id) if service_id else None,
-            message=full_message,
-            status='대기'
-        )
-        booking.save()
-        
-        # 이메일 발송
-        try:
-            # 서비스 이름 가져오기
-            service_name = "미지정"
-            if service_id:
-                service = Service.get_by_id(int(service_id))
-                if service:
-                    service_name = service.name
-            
-            subject = f"[스타일그래퍼 예약] {service_name} 예약 신청"
-            
-            email_body = f"""
-스타일그래퍼 홈페이지에서 새로운 예약 신청이 접수되었습니다.
-
-■ 예약자 정보
-• 이름: {name}
-• 연락처: {contact}
-• 이메일: {email}
-
-■ 예약 서비스
-• {service_name}
-
-■ 메시지
-{message}
-
-■ {datetime_message}
----
-이 메일은 스타일그래퍼 홈페이지에서 자동으로 발송되었습니다.
-            """
-            
-            msg = Message(
-                subject=subject,
-                sender=current_app.config['MAIL_DEFAULT_SENDER'],
-                recipients=['stylegrapher.ysg@gmail.com'],
-                body=email_body,
-                reply_to=email
-            )
-            
-            mail.send(msg)
-            
-        except Exception as e:
-            print(f"예약 이메일 발송 오류: {str(e)}")
-        
-        flash('예약 신청이 잘 전달됐습니다. 스타일그래퍼 담당자가 곧 연락 드리겠습니다. 감사합니다.')
-        return redirect(url_for('main.contact'))
-        
-    return render_template('booking.html', 
-                         services=services, 
-                         selected_service_id=selected_service_id)
-
-
-@main.route('/ask', methods=['GET', 'POST'])
-def ask():
-    if request.method == 'POST':
-        name = request.form.get('name')
-        phone = request.form.get('phone')
+        contact_phone = request.form.get('contact')
         email = request.form.get('email')
         selected_service = request.form.get('service')
         message = request.form.get('message')
+        request_type = request.form.get('request_type', 'inquiry')  # 'inquiry' 또는 'booking'
         
+        # 서비스 타입과 ID 파싱 (option_1 또는 service_1 형식)
         service_type, service_db_id = selected_service.split('_', 1)
         service_db_id = int(service_db_id)
         
@@ -474,64 +416,280 @@ def ask():
             actual_service_id = service.id
             selected_service_name = service.name
         
-        enhanced_message = f"[문의 대상: {selected_service_name}]\n\n{message}"
+        # AI Agent 시스템으로 이메일 처리
+        from utils.email_agents import process_inquiry_email
         
-        # MongoDB에 문의 저장
-        inquiry = Inquiry(
+        ai_result = process_inquiry_email(
             name=name,
-            phone=phone,
             email=email,
-            service_id=actual_service_id,
-            message=enhanced_message
+            phone=contact_phone,
+            message=message,
+            service_name=selected_service_name,
+            service_id=actual_service_id
         )
-        inquiry.save()
         
-        # 이메일 발송
         email_sent = False
-        try:
-            subject = f"[스타일그래퍼 문의] {selected_service_name} 관련 문의"
+        response_sent = False
+        admin_notified = False
+        is_booking = (request_type == 'booking')
+        
+        if is_booking:
+            # 예약인 경우: Booking 컬렉션에 저장
+            # 희망 예약일시 처리
+            dates = request.form.getlist('date[]')
+            times = request.form.getlist('time[]')
+            datetime_message = "희망 예약일시:\n"
             
-            email_body = f"""
-스타일그래퍼 홈페이지에서 새로운 문의가 접수되었습니다.
+            for i, (date, time) in enumerate(zip(dates, times), 1):
+                if date and time:
+                    datetime_message += f"{i}순위: {date} {time}\n"
+            
+            enhanced_message = f"[예약 서비스: {selected_service_name}]\n\n{message}\n\n{datetime_message}"
+            
+            # MongoDB에 예약 저장 (AI 분석 결과 포함)
+            booking = Booking(
+                name=name,
+                phone=contact_phone,
+                email=email,
+                service_id=actual_service_id,
+                message=enhanced_message,
+                status='대기',
+                is_spam=ai_result.is_spam,
+                spam_reason=ai_result.spam_reason,
+                detected_language=ai_result.detected_language,
+                sentiment=ai_result.sentiment,
+                sentiment_detail=ai_result.sentiment_detail,
+                ai_response=ai_result.ai_response,
+                translated_message=ai_result.translated_message,
+                ai_processed=ai_result.success,
+                ai_processed_at=datetime.utcnow() if ai_result.success else None
+            )
+            booking.save()
+            
+            # 스팸이 아닌 경우에만 이메일 처리
+            if not ai_result.is_spam:
+                # 1. 고객에게 AI 응답 전송
+                if ai_result.ai_response:
+                    try:
+                        customer_subject = _get_customer_subject(ai_result.detected_language, selected_service_name, is_booking=True)
+                        
+                        customer_msg = Message(
+                            subject=customer_subject,
+                            sender=current_app.config['MAIL_DEFAULT_SENDER'],
+                            recipients=[email],
+                            body=ai_result.ai_response
+                        )
+                        
+                        mail.send(customer_msg)
+                        response_sent = True
+                        booking.response_sent = True
+                        booking.response_sent_at = datetime.utcnow()
+                        booking.response_email_subject = customer_subject
+                        print(f"✅ 예약 고객 응답 이메일 발송 완료: {email}")
+                        
+                    except Exception as e:
+                        print(f"❌ 예약 고객 응답 이메일 발송 오류: {str(e)}")
+                
+                # 2. 관리자에게 알림 전송
+                try:
+                    admin_subject = f"[스타일그래퍼 예약] {selected_service_name} - {name}님 ({ai_result.detected_language.upper()})"
+                    
+                    admin_body = f"""
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📅 스타일그래퍼 새 예약 신청
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+■ 예약자 정보
+• 이름: {name}
+• 휴대폰: {contact_phone}
+• 이메일: {email}
+
+■ 예약 서비스
+• {selected_service_name}
+
+■ AI 분석 결과
+• 감지된 언어: {ai_result.detected_language}
+• 감성: {ai_result.sentiment} ({ai_result.sentiment_detail})
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📝 메시지
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{message}
+
+■ {datetime_message}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔄 한국어 번역 (원문이 한국어가 아닌 경우)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{ai_result.translated_message if ai_result.detected_language != 'ko' else '(원문이 한국어입니다)'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🤖 AI 자동 응답 (고객에게 발송됨)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{ai_result.ai_response if ai_result.ai_response else '(AI 응답 생성 실패)'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+이 메일은 스타일그래퍼 홈페이지에서 자동으로 발송되었습니다.
+"""
+                    
+                    booking_recipients = AdminNotificationEmail.get_active_emails('bookings')
+                    if not booking_recipients:
+                        AdminNotificationEmail.initialize_default()
+                        booking_recipients = AdminNotificationEmail.get_active_emails('bookings')
+                    
+                    if booking_recipients:
+                        admin_msg = Message(
+                            subject=admin_subject,
+                            sender=current_app.config['MAIL_DEFAULT_SENDER'],
+                            recipients=booking_recipients,
+                            body=admin_body,
+                            reply_to=email
+                        )
+                        
+                        mail.send(admin_msg)
+                        email_sent = True
+                        admin_notified = True
+                        booking.admin_notified = True
+                        print(f"✅ 예약 관리자 알림 이메일 발송 완료: {', '.join(booking_recipients)}")
+                    else:
+                        print("⚠️ 예약 알림을 받을 이메일이 없습니다.")
+                    
+                except Exception as e:
+                    print(f"❌ 예약 관리자 알림 이메일 발송 오류: {str(e)}")
+            else:
+                print(f"🚫 스팸 예약 차단: {name} ({email}) - 사유: {ai_result.spam_reason}")
+            
+            booking.save()
+            
+        else:
+            # 문의인 경우: Inquiry 컬렉션에 저장
+            enhanced_message = f"[문의 대상: {selected_service_name}]\n\n{message}"
+            
+            # MongoDB에 문의 저장 (AI 분석 결과 포함)
+            inquiry = Inquiry(
+                name=name,
+                phone=contact_phone,
+                email=email,
+                service_id=actual_service_id,
+                message=enhanced_message,
+                is_spam=ai_result.is_spam,
+                spam_reason=ai_result.spam_reason,
+                detected_language=ai_result.detected_language,
+                sentiment=ai_result.sentiment,
+                sentiment_detail=ai_result.sentiment_detail,
+                ai_response=ai_result.ai_response,
+                translated_message=ai_result.translated_message,
+                ai_processed=ai_result.success,
+                ai_processed_at=datetime.utcnow() if ai_result.success else None
+            )
+            inquiry.save()
+            
+            # 스팸이 아닌 경우에만 이메일 처리
+            if not ai_result.is_spam:
+                # 1. 고객에게 AI 응답 전송
+                if ai_result.ai_response:
+                    try:
+                        customer_subject = _get_customer_subject(ai_result.detected_language, selected_service_name, is_booking=False)
+                        
+                        customer_msg = Message(
+                            subject=customer_subject,
+                            sender=current_app.config['MAIL_DEFAULT_SENDER'],
+                            recipients=[email],
+                            body=ai_result.ai_response
+                        )
+                        
+                        mail.send(customer_msg)
+                        response_sent = True
+                        inquiry.response_sent = True
+                        inquiry.response_sent_at = datetime.utcnow()
+                        inquiry.response_email_subject = customer_subject
+                        print(f"✅ 문의 고객 응답 이메일 발송 완료: {email}")
+                        
+                    except Exception as e:
+                        print(f"❌ 문의 고객 응답 이메일 발송 오류: {str(e)}")
+                
+                # 2. 관리자에게 전체 내용 전송
+                try:
+                    admin_subject = f"[스타일그래퍼 문의] {selected_service_name} - {name}님 ({ai_result.detected_language.upper()})"
+                    
+                    admin_body = f"""
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📧 스타일그래퍼 새 문의 알림
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ■ 문의자 정보
 • 이름: {name}
-• 휴대폰: {phone}
+• 휴대폰: {contact_phone}
 • 이메일: {email}
 
 ■ 문의 서비스
 • {selected_service_name}
 
-■ 문의 내용
+■ AI 분석 결과
+• 감지된 언어: {ai_result.detected_language}
+• 감성: {ai_result.sentiment} ({ai_result.sentiment_detail})
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📝 문의 원문
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 {message}
 
----
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔄 한국어 번역 (원문이 한국어가 아닌 경우)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{ai_result.translated_message if ai_result.detected_language != 'ko' else '(원문이 한국어입니다)'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🤖 AI 자동 응답 (고객에게 발송됨)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{ai_result.ai_response if ai_result.ai_response else '(AI 응답 생성 실패)'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 이 메일은 스타일그래퍼 홈페이지에서 자동으로 발송되었습니다.
-            """
+"""
+                    
+                    inquiry_recipients = AdminNotificationEmail.get_active_emails('inquiries')
+                    if not inquiry_recipients:
+                        AdminNotificationEmail.initialize_default()
+                        inquiry_recipients = AdminNotificationEmail.get_active_emails('inquiries')
+                    
+                    if inquiry_recipients:
+                        admin_msg = Message(
+                            subject=admin_subject,
+                            sender=current_app.config['MAIL_DEFAULT_SENDER'],
+                            recipients=inquiry_recipients,
+                            body=admin_body,
+                            reply_to=email
+                        )
+                        
+                        mail.send(admin_msg)
+                        email_sent = True
+                        admin_notified = True
+                        inquiry.admin_notified = True
+                        print(f"✅ 문의 관리자 알림 이메일 발송 완료: {', '.join(inquiry_recipients)}")
+                    else:
+                        print("⚠️ 문의 알림을 받을 이메일이 없습니다.")
+                    
+                except Exception as e:
+                    print(f"❌ 문의 관리자 알림 이메일 발송 오류: {str(e)}")
+            else:
+                print(f"🚫 스팸 문의 차단: {name} ({email}) - 사유: {ai_result.spam_reason}")
             
-            msg = Message(
-                subject=subject,
-                sender=current_app.config['MAIL_DEFAULT_SENDER'],
-                recipients=['stylegrapher.ysg@gmail.com'],
-                body=email_body,
-                reply_to=email
-            )
-            
-            mail.send(msg)
-            email_sent = True
-            
-        except Exception as e:
-            print(f"이메일 발송 오류: {str(e)}")
+            inquiry.save()
         
-        return render_template('ask.html', 
-                             all_services=get_all_services(),
-                             show_success_modal=True,
-                             email_sent=email_sent)
+        # 성공 메시지 플래시
+        flash(_('이메일이 정상 접수되었습니다. 먼저 담당 AI 에이전트가 바로 회신해드립니다. 추가 확인이나 안내가 필요한 경우 24시간 이내에 저희 담당자가 별도로 응대해드립니다. 감사합니다.'))
+        return redirect(url_for('main.contact'))
     
+    # GET 요청 처리 - 계층적 서비스 목록 생성
     all_services = get_all_services()
     
+    # 기본 선택값 처리 (직전에 보던 서비스/옵션 페이지 기반)
     selected_service_id = request.args.get('service_id')
     selected_option_id = request.args.get('option_id')
+    
+    # 요청 유형 모드 처리 (inquiry 또는 booking)
+    default_mode = request.args.get('mode', 'inquiry')
     
     default_selection = None
     if selected_option_id:
@@ -542,10 +700,37 @@ def ask():
             default_selection = f'option_{service.options[0].id}'
         else:
             default_selection = f'service_{selected_service_id}'
-    
-    return render_template('ask.html', 
+        
+    return render_template('booking.html', 
                          all_services=all_services, 
-                         default_selection=default_selection)
+                         default_selection=default_selection,
+                         default_mode=default_mode)
+
+
+@main.route('/ask', methods=['GET', 'POST'])
+def ask():
+    """문의 페이지 - /contact로 리다이렉트 (통합됨)"""
+    # 기존 링크 호환성을 위해 /contact로 리다이렉트
+    return redirect(url_for('main.contact'))
+
+
+def _get_customer_subject(language: str, service_name: str, is_booking: bool = False) -> str:
+    """언어별 고객 응답 이메일 제목 생성"""
+    if is_booking:
+        subjects = {
+            'ko': f'[스타일그래퍼] {service_name} 예약 문의 답변드립니다',
+            'en': f'[Stylegrapher] Response to your {service_name} booking request',
+            'ja': f'[スタイルグラファー] {service_name}のご予約に関するご回答',
+            'zh': f'[Stylegrapher] 关于{service_name}预约的回复'
+        }
+    else:
+        subjects = {
+            'ko': f'[스타일그래퍼] {service_name} 문의 답변드립니다',
+            'en': f'[Stylegrapher] Response to your {service_name} inquiry',
+            'ja': f'[スタイルグラファー] {service_name}に関するお問い合わせへの回答',
+            'zh': f'[Stylegrapher] 关于{service_name}咨询的回复'
+        }
+    return subjects.get(language, subjects['ko'])
 
 
 # 서비스 카테고리별 라우트

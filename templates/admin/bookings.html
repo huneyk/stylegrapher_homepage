@@ -31,25 +31,57 @@
                             <th>이름</th>
                             <th>연락처</th>
                             <th>서비스</th>
-                            <th>희망 예약일시</th>
-                            <th>메시지</th>
+                            <th>AI 분석</th>
+                            <th>희망일시/메시지</th>
                             <th>상태</th>
                             <th>관리</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for booking in bookings %}
-                        <tr>
+                        <tr class="{% if booking.is_spam %}table-warning{% endif %}">
                             <td>{{ booking.created_at.strftime('%Y-%m-%d') }}</td>
                             <td>{{ booking.name }}</td>
-                            <td>{{ booking.email }}</td>
+                            <td>{{ booking.email }}<br><small class="text-muted">{{ booking.phone or '' }}</small></td>
                             <td>{{ booking.service.name if booking.service else '-' }}</td>
-                            <td style="white-space: pre-line;">
-                                {% for datetime in booking.get_datetimes() %}
-                                    {{ datetime }}
-                                {% endfor %}
+                            <td>
+                                {% if booking.ai_processed %}
+                                <div class="ai-analysis-badges">
+                                    <span class="badge bg-info" title="감지된 언어">
+                                        <i class="bi bi-globe"></i> {{ booking.detected_language|upper }}
+                                    </span>
+                                    {% if booking.sentiment %}
+                                    <span class="badge 
+                                        {% if booking.sentiment == 'positive' %}bg-success
+                                        {% elif booking.sentiment == 'negative' %}bg-danger
+                                        {% else %}bg-secondary{% endif %}" 
+                                        title="감성 분석">
+                                        {% if booking.sentiment == 'positive' %}<i class="bi bi-emoji-smile"></i>
+                                        {% elif booking.sentiment == 'negative' %}<i class="bi bi-emoji-frown"></i>
+                                        {% else %}<i class="bi bi-emoji-neutral"></i>{% endif %}
+                                        {{ booking.sentiment }}
+                                    </span>
+                                    {% endif %}
+                                    {% if booking.response_sent %}
+                                    <span class="badge bg-success" title="AI 회신 발송됨{% if booking.response_sent_at %} - {{ booking.response_sent_at.strftime('%m/%d %H:%M') }}{% endif %}">
+                                        <i class="bi bi-envelope-check"></i> 회신완료
+                                    </span>
+                                    {% elif booking.ai_response %}
+                                    <span class="badge bg-warning text-dark" title="AI 응답 생성됨 (미발송)">
+                                        <i class="bi bi-envelope-exclamation"></i> 미발송
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                {% else %}
+                                <span class="badge bg-secondary">미처리</span>
+                                {% endif %}
                             </td>
-                            <td style="max-width: 200px; white-space: pre-line;">{{ booking.get_message_content() }}</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-link" 
+                                        onclick="showBookingDetail({{ booking.id }})">
+                                    상세 보기
+                                </button>
+                            </td>
                             <td>
                                 <span class="badge {% if booking.status == '확정' %}bg-success
                                              {% elif booking.status == '대기' %}bg-warning
@@ -83,6 +115,177 @@
     </div>
 </div>
 
+<!-- 예약 상세 모달 -->
+<div id="bookingDetailModal" class="custom-modal">
+    <div class="custom-modal-content modal-lg">
+        <div class="custom-modal-header">
+            <h5>📅 예약 상세 정보</h5>
+            <button type="button" class="close-button" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="custom-modal-body">
+            <div id="bookingDetailContent">
+                <!-- 동적으로 채워짐 -->
+            </div>
+        </div>
+        <div class="custom-modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal()">닫기</button>
+        </div>
+    </div>
+</div>
+
+<!-- 예약 데이터 (JavaScript용) -->
+<script>
+const bookingsData = {
+    {% for booking in bookings %}
+    {{ booking.id }}: {
+        name: {{ booking.name|tojson }},
+        phone: {{ (booking.phone or '')|tojson }},
+        email: {{ booking.email|tojson }},
+        service: {{ (booking.service.name if booking.service else '-')|tojson }},
+        message: {{ (booking.message or '')|tojson }},
+        translated_message: {{ (booking.translated_message or '')|tojson }},
+        ai_response: {{ (booking.ai_response or '')|tojson }},
+        detected_language: {{ (booking.detected_language or 'ko')|tojson }},
+        sentiment: {{ (booking.sentiment or 'neutral')|tojson }},
+        sentiment_detail: {{ (booking.sentiment_detail or '')|tojson }},
+        is_spam: {{ 'true' if booking.is_spam else 'false' }},
+        spam_reason: {{ (booking.spam_reason or '')|tojson }},
+        ai_processed: {{ 'true' if booking.ai_processed else 'false' }},
+        response_sent: {{ 'true' if booking.response_sent else 'false' }},
+        response_sent_at: {{ (booking.response_sent_at.strftime('%Y-%m-%d %H:%M') if booking.response_sent_at else '')|tojson }},
+        response_email_subject: {{ (booking.response_email_subject or '')|tojson }},
+        admin_notified: {{ 'true' if booking.admin_notified else 'false' }},
+        status: {{ booking.status|tojson }},
+        created_at: {{ booking.created_at.strftime('%Y-%m-%d %H:%M')|tojson }}
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+};
+
+function showBookingDetail(bookingId) {
+    const booking = bookingsData[bookingId];
+    if (!booking) return;
+    
+    const languageNames = {
+        'ko': '한국어',
+        'en': 'English',
+        'ja': '日本語',
+        'zh': '中文'
+    };
+    
+    const sentimentEmojis = {
+        'positive': '😊 긍정적',
+        'neutral': '😐 중립',
+        'negative': '😟 부정적'
+    };
+    
+    const statusBadges = {
+        '확정': 'bg-success',
+        '대기': 'bg-warning',
+        '취소': 'bg-danger'
+    };
+    
+    let content = `
+        <div class="booking-detail">
+            <div class="detail-section">
+                <h6><i class="bi bi-person"></i> 예약자 정보</h6>
+                <table class="table table-sm">
+                    <tr><td><strong>이름</strong></td><td>${booking.name}</td></tr>
+                    <tr><td><strong>전화번호</strong></td><td>${booking.phone || '-'}</td></tr>
+                    <tr><td><strong>이메일</strong></td><td>${booking.email}</td></tr>
+                    <tr><td><strong>예약 서비스</strong></td><td>${booking.service}</td></tr>
+                    <tr><td><strong>접수일시</strong></td><td>${booking.created_at}</td></tr>
+                    <tr><td><strong>상태</strong></td><td><span class="badge ${statusBadges[booking.status] || 'bg-secondary'}">${booking.status}</span></td></tr>
+                </table>
+            </div>
+            
+            ${booking.ai_processed ? `
+            <div class="detail-section">
+                <h6><i class="bi bi-robot"></i> AI 분석 결과</h6>
+                <table class="table table-sm">
+                    <tr><td><strong>감지된 언어</strong></td><td>${languageNames[booking.detected_language] || booking.detected_language}</td></tr>
+                    <tr><td><strong>감성 분석</strong></td><td>${sentimentEmojis[booking.sentiment] || booking.sentiment} ${booking.sentiment_detail ? '(' + booking.sentiment_detail + ')' : ''}</td></tr>
+                    <tr><td><strong>응답 발송</strong></td><td>${booking.response_sent ? '✅ 발송 완료' : '❌ 미발송'}</td></tr>
+                    <tr><td><strong>관리자 알림</strong></td><td>${booking.admin_notified ? '✅ 발송 완료' : '❌ 미발송'}</td></tr>
+                </table>
+            </div>
+            ` : ''}
+            
+            ${booking.is_spam ? `
+            <div class="detail-section spam-warning">
+                <h6><i class="bi bi-shield-exclamation"></i> 스팸 감지</h6>
+                <p class="text-warning"><strong>차단 사유:</strong> ${booking.spam_reason}</p>
+            </div>
+            ` : ''}
+            
+            <div class="detail-section">
+                <h6><i class="bi bi-chat-left-text"></i> 예약 메시지</h6>
+                <div class="message-box">${booking.message.replace(/\n/g, '<br>')}</div>
+            </div>
+            
+            ${booking.translated_message && booking.detected_language !== 'ko' ? `
+            <div class="detail-section">
+                <h6><i class="bi bi-translate"></i> 한국어 번역</h6>
+                <div class="message-box translated">${booking.translated_message.replace(/\n/g, '<br>')}</div>
+            </div>
+            ` : ''}
+            
+            ${booking.ai_response ? `
+            <div class="detail-section">
+                <h6><i class="bi bi-envelope-check"></i> AI 자동 회신 이메일</h6>
+                ${booking.response_sent ? `
+                <div class="sent-email-info">
+                    <table class="table table-sm">
+                        <tr><td><strong>발송 상태</strong></td><td><span class="badge bg-success"><i class="bi bi-check-circle"></i> 발송 완료</span></td></tr>
+                        ${booking.response_sent_at ? `<tr><td><strong>발송 시간</strong></td><td>${booking.response_sent_at}</td></tr>` : ''}
+                        <tr><td><strong>수신자</strong></td><td>${booking.email}</td></tr>
+                        ${booking.response_email_subject ? `<tr><td><strong>이메일 제목</strong></td><td>${booking.response_email_subject}</td></tr>` : ''}
+                    </table>
+                </div>
+                ` : `
+                <div class="sent-email-info">
+                    <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle"></i> 미발송</span>
+                </div>
+                `}
+                <div class="email-content-label">📧 발송된 이메일 내용:</div>
+                <div class="message-box ai-response">${booking.ai_response.replace(/\n/g, '<br>')}</div>
+            </div>
+            ` : ''}
+        </div>
+    `;
+    
+    document.getElementById('bookingDetailContent').innerHTML = content;
+    document.getElementById('bookingDetailModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    document.getElementById('bookingDetailModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+function deleteBooking(button) {
+    const bookingId = button.getAttribute('data-booking-id');
+    if (confirm('정말 이 예약을 삭제하시겠습니까?')) {
+        window.location.href = `/admin/booking/${bookingId}/delete`;
+    }
+}
+
+// 모달 외부 클릭 시 닫기
+window.onclick = function(event) {
+    const modal = document.getElementById('bookingDetailModal');
+    if (event.target == modal) {
+        closeModal();
+    }
+}
+
+// ESC 키로 모달 닫기
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeModal();
+    }
+});
+</script>
+
 <style>
 .admin-page-title {
     color: #FFFFFF;
@@ -92,14 +295,179 @@
 .card-body {
     background: rgba(18, 0, 36, 0.6);
 }
-</style>
 
-<script>
-function deleteBooking(button) {
-    const bookingId = button.getAttribute('data-booking-id');
-    if (confirm('정말 이 예약을 삭제하시겠습니까?')) {
-        window.location.href = `/admin/booking/${bookingId}/delete`;  // URL 패턴은 실제 라우트에 맞게 수정해주세요
+.ai-analysis-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.ai-analysis-badges .badge {
+    font-size: 0.7rem;
+}
+
+.custom-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(10, 0, 26, 0.85);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+.custom-modal-content {
+    position: relative;
+    background: rgba(18, 0, 36, 0.95);
+    margin: 5% auto;
+    padding: 0;
+    width: 90%;
+    max-width: 800px;
+    border-radius: 15px;
+    box-shadow: 0 4px 30px rgba(200, 170, 255, 0.3);
+    border: 1px solid rgba(200, 170, 255, 0.3);
+}
+
+.custom-modal-content.modal-lg {
+    max-width: 900px;
+}
+
+.custom-modal-header {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(200, 170, 255, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.custom-modal-header h5 {
+    color: #F0E8FF;
+    text-shadow: 0 0 10px rgba(200, 170, 255, 0.4);
+    margin: 0;
+}
+
+.custom-modal-body {
+    padding: 1.5rem;
+    max-height: 70vh;
+    overflow-y: auto;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.custom-modal-footer {
+    padding: 1rem;
+    border-top: 1px solid rgba(200, 170, 255, 0.2);
+    text-align: right;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    color: #E8D4FF;
+}
+
+.close-button:hover {
+    color: #FFFFFF;
+}
+
+.btn-secondary {
+    background-color: rgba(100, 60, 150, 0.8);
+    border-color: rgba(200, 170, 255, 0.5);
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: rgba(120, 80, 170, 0.9);
+    border-color: rgba(200, 170, 255, 0.8);
+}
+
+/* 예약 상세 스타일 */
+.booking-detail .detail-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(200, 170, 255, 0.2);
+}
+
+.booking-detail .detail-section:last-child {
+    border-bottom: none;
+}
+
+.booking-detail h6 {
+    color: #E8D4FF;
+    margin-bottom: 0.75rem;
+}
+
+.booking-detail .table {
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0;
+}
+
+.booking-detail .table td {
+    border-color: rgba(200, 170, 255, 0.2);
+    padding: 0.5rem;
+}
+
+.message-box {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(200, 170, 255, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    white-space: pre-wrap;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    line-height: 1.6;
+}
+
+.message-box.translated {
+    background: rgba(0, 100, 150, 0.2);
+    border-color: rgba(0, 150, 200, 0.3);
+}
+
+.message-box.ai-response {
+    background: rgba(50, 150, 50, 0.2);
+    border-color: rgba(50, 200, 50, 0.3);
+}
+
+.sent-email-info {
+    background: rgba(0, 100, 50, 0.15);
+    border: 1px solid rgba(50, 200, 100, 0.3);
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.sent-email-info .table {
+    margin-bottom: 0;
+}
+
+.email-content-label {
+    color: #90EE90;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.spam-warning {
+    background: rgba(255, 200, 0, 0.1);
+    border: 1px solid rgba(255, 200, 0, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+@media (max-width: 768px) {
+    .custom-modal-content {
+        width: 95%;
+        margin: 2% auto;
+    }
+    
+    .custom-modal-body {
+        padding: 1rem;
     }
 }
-</script>
-{% endblock %} 
+</style>
+{% endblock %}
