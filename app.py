@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 from utils.security import add_security_headers, is_suspicious_request, get_client_ip, log_security_event
 from utils.translation_helper import register_template_helpers
 from utils.mongo_models import get_mongo_db, init_collections, Service, SiteSettings
+from utils.translation import export_mongodb_to_cache, TRANSLATIONS_CACHE_FILE
 
 # 지원하는 언어 목록
 SUPPORTED_LANGUAGES = {
@@ -93,9 +94,25 @@ def create_app():
         except Exception as e:
             print(f"⚠️ MongoDB 초기화 오류: {str(e)}")
     
-    # 앱 시작 시 MongoDB 초기화
+    def init_translation_cache():
+        """번역 JSON 캐시 초기화"""
+        try:
+            # 캐시 파일이 없거나 비어있으면 MongoDB에서 내보내기
+            if not TRANSLATIONS_CACHE_FILE.exists() or TRANSLATIONS_CACHE_FILE.stat().st_size == 0:
+                print("🔧 번역 캐시 파일 생성 중...")
+                if export_mongodb_to_cache():
+                    print("✅ 번역 캐시 파일 생성 완료")
+                else:
+                    print("⚠️ 번역 캐시 파일 생성 실패 (MongoDB fallback 사용)")
+            else:
+                print(f"✅ 번역 캐시 파일 존재: {TRANSLATIONS_CACHE_FILE}")
+        except Exception as e:
+            print(f"⚠️ 번역 캐시 초기화 오류: {str(e)} (MongoDB fallback 사용)")
+    
+    # 앱 시작 시 MongoDB 및 번역 캐시 초기화
     with app.app_context():
         init_mongodb()
+        init_translation_cache()
     
     # 보안 미들웨어
     @app.before_request

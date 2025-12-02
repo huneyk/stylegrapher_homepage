@@ -2,6 +2,10 @@
 번역 헬퍼 모듈
 
 템플릿과 라우트에서 사용할 수 있는 번역 헬퍼 함수들
+
+성능 최적화:
+- JSON 캐시 우선 조회 → 캐시 미스 시 MongoDB fallback
+- 메모리 캐시 활용으로 파일 I/O 최소화
 """
 
 import json
@@ -19,7 +23,11 @@ from utils.translation import (
     translate_gallery_group,
     translate_terms_of_service,
     translate_privacy_policy,
-    SUPPORTED_LANGUAGES
+    SUPPORTED_LANGUAGES,
+    # JSON 캐시 관련 함수들
+    get_translation_from_cache,
+    get_all_translations_from_cache,
+    export_mongodb_to_cache
 )
 
 
@@ -67,6 +75,8 @@ def t(source_type: str, source_id: int, field_name: str, fallback: str = None) -
     """
     번역된 텍스트 조회 (템플릿용 단축 함수)
     
+    성능 최적화: JSON 캐시 우선 조회 → MongoDB fallback
+    
     Args:
         source_type: 데이터 타입 (service, service_option 등)
         source_id: 원본 데이터 ID
@@ -86,7 +96,13 @@ def t(source_type: str, source_id: int, field_name: str, fallback: str = None) -
     if lang == 'ko':
         return fallback if fallback is not None else ''
     
-    # 다른 언어인 경우 번역 테이블 조회
+    # 1. JSON 캐시에서 먼저 조회
+    translated = get_translation_from_cache(source_type, source_id, field_name, lang)
+    
+    if translated:
+        return translated
+    
+    # 2. 캐시에 없으면 MongoDB fallback
     translated = get_translation(source_type, source_id, field_name, lang)
     
     if translated:
@@ -98,6 +114,8 @@ def t(source_type: str, source_id: int, field_name: str, fallback: str = None) -
 def get_translated_service(service, lang: str = None) -> Dict[str, Any]:
     """
     Service 객체의 번역된 버전 반환
+    
+    성능 최적화: JSON 캐시 우선 조회 → MongoDB fallback
     
     Args:
         service: Service 모델 객체
@@ -134,8 +152,12 @@ def get_translated_service(service, lang: str = None) -> Dict[str, Any]:
                 pass
         return result
     
-    # 번역 데이터 조회
-    translations = get_all_translations('service', service.id) or {}
+    # 1. JSON 캐시에서 먼저 조회
+    translations = get_all_translations_from_cache('service', service.id)
+    
+    # 2. 캐시에 없으면 MongoDB fallback
+    if translations is None:
+        translations = get_all_translations('service', service.id) or {}
     
     # 단순 텍스트 필드 - 원본이 비어있으면 번역도 비어있어야 함
     for field in ['name', 'description', 'category']:
@@ -195,6 +217,8 @@ def get_translated_service_option(option, lang: str = None) -> Dict[str, Any]:
     """
     ServiceOption 객체의 번역된 버전 반환
     
+    성능 최적화: JSON 캐시 우선 조회 → MongoDB fallback
+    
     Args:
         option: ServiceOption 모델 객체
         lang: 언어 코드 (None이면 현재 언어 사용)
@@ -238,8 +262,12 @@ def get_translated_service_option(option, lang: str = None) -> Dict[str, Any]:
                 pass
         return result
     
-    # 번역 데이터 조회
-    translations = get_all_translations('service_option', option.id) or {}
+    # 1. JSON 캐시에서 먼저 조회
+    translations = get_all_translations_from_cache('service_option', option.id)
+    
+    # 2. 캐시에 없으면 MongoDB fallback
+    if translations is None:
+        translations = get_all_translations('service_option', option.id) or {}
     
     # 단순 텍스트 필드 - 원본이 비어있으면 번역도 비어있어야 함
     text_fields = [
@@ -325,6 +353,8 @@ def get_translated_collage_text(collage_text, lang: str = None) -> Dict[str, Any
     """
     CollageText 객체의 번역된 버전 반환
     
+    성능 최적화: JSON 캐시 우선 조회 → MongoDB fallback
+    
     Args:
         collage_text: CollageText 모델 객체
         lang: 언어 코드
@@ -344,7 +374,13 @@ def get_translated_collage_text(collage_text, lang: str = None) -> Dict[str, Any
     if lang == 'ko':
         return result
     
-    translated = get_translation('collage_text', collage_text.id, 'text', lang)
+    # 1. JSON 캐시에서 먼저 조회
+    translated = get_translation_from_cache('collage_text', collage_text.id, 'text', lang)
+    
+    # 2. 캐시에 없으면 MongoDB fallback
+    if not translated:
+        translated = get_translation('collage_text', collage_text.id, 'text', lang)
+    
     if translated:
         result['text'] = translated
     
@@ -354,6 +390,8 @@ def get_translated_collage_text(collage_text, lang: str = None) -> Dict[str, Any
 def get_translated_gallery_group(gallery_group, lang: str = None) -> Dict[str, Any]:
     """
     GalleryGroup 객체의 번역된 버전 반환
+    
+    성능 최적화: JSON 캐시 우선 조회 → MongoDB fallback
     
     Args:
         gallery_group: GalleryGroup 모델 객체
@@ -377,7 +415,13 @@ def get_translated_gallery_group(gallery_group, lang: str = None) -> Dict[str, A
     if lang == 'ko':
         return result
     
-    translated = get_translation('gallery_group', gallery_group.id, 'title', lang)
+    # 1. JSON 캐시에서 먼저 조회
+    translated = get_translation_from_cache('gallery_group', gallery_group.id, 'title', lang)
+    
+    # 2. 캐시에 없으면 MongoDB fallback
+    if not translated:
+        translated = get_translation('gallery_group', gallery_group.id, 'title', lang)
+    
     if translated:
         result['title'] = translated
     
@@ -387,6 +431,8 @@ def get_translated_gallery_group(gallery_group, lang: str = None) -> Dict[str, A
 class TranslatedModel:
     """
     모델 객체를 감싸서 번역된 속성에 접근할 수 있게 해주는 래퍼 클래스
+    
+    성능 최적화: JSON 캐시 우선 조회 → MongoDB fallback
     
     사용 예:
         option = ServiceOption.query.get(1)
@@ -402,7 +448,12 @@ class TranslatedModel:
     
     def _load_translations(self):
         if self._translations is None:
-            self._translations = get_all_translations(self._source_type, self._model.id) or {}
+            # 1. JSON 캐시에서 먼저 조회
+            self._translations = get_all_translations_from_cache(self._source_type, self._model.id)
+            
+            # 2. 캐시에 없으면 MongoDB fallback
+            if self._translations is None:
+                self._translations = get_all_translations(self._source_type, self._model.id) or {}
     
     def __getattr__(self, name):
         # 내부 속성

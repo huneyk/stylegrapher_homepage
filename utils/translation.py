@@ -3,18 +3,34 @@
 
 MongoDB에 번역된 텍스트를 저장하고 관리하는 모듈
 OpenAI GPT API를 사용하여 자동 번역 지원
+
+성능 최적화: JSON 파일 캐싱 시스템
+- MongoDB 데이터를 JSON 파일로 캐싱하여 읽기 성능 향상
+- admin에서 데이터 수정 시 JSON 캐시 자동 업데이트
+- JSON 캐시에 데이터가 없으면 MongoDB fallback
 """
 
 import os
 import json
+import threading
 from datetime import datetime
 from typing import Optional, Dict, List, Any
 from pymongo import MongoClient
 from dotenv import load_dotenv
 from openai import OpenAI
+from pathlib import Path
 
 # .env 파일 로드
 load_dotenv()
+
+# JSON 캐시 파일 경로
+TRANSLATIONS_CACHE_DIR = Path(__file__).parent.parent / 'static' / 'data'
+TRANSLATIONS_CACHE_FILE = TRANSLATIONS_CACHE_DIR / 'translations.json'
+
+# 메모리 캐시 (JSON 파일 읽기 최소화)
+_translations_memory_cache = None
+_cache_lock = threading.Lock()
+_cache_last_modified = None
 
 # OpenAI 클라이언트 초기화
 _openai_client = None
@@ -53,6 +69,269 @@ mongo_db = None
 translations_collection = None
 _translation_connection_pid = None  # 연결이 생성된 프로세스 ID 추적
 
+
+# ==========================================
+# JSON 캐시 시스템 함수들
+# ==========================================
+
+def ensure_cache_dir():
+    """캐시 디렉토리 생성"""
+    TRANSLATIONS_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def load_translations_cache() -> Dict:
+    """
+    JSON 캐시 파일에서 번역 데이터 로드
+    
+    메모리 캐시를 사용하여 파일 I/O 최소화
+    파일이 변경되면 자동으로 리로드
+    
+    Returns:
+        번역 데이터 딕셔너리 (없으면 빈 딕셔너리)
+    """
+    global _translations_memory_cache, _cache_last_modified
+    
+    with _cache_lock:
+        # 캐시 파일이 없으면 빈 딕셔너리 반환
+        if not TRANSLATIONS_CACHE_FILE.exists():
+            return {}
+        
+        # 파일 수정 시간 확인
+        file_mtime = TRANSLATIONS_CACHE_FILE.stat().st_mtime
+        
+        # 메모리 캐시가 있고 파일이 변경되지 않았으면 메모리 캐시 반환
+        if _translations_memory_cache is not None and _cache_last_modified == file_mtime:
+            return _translations_memory_cache
+        
+        # 파일에서 로드
+        try:
+            with open(TRANSLATIONS_CACHE_FILE, 'r', encoding='utf-8') as f:
+                _translations_memory_cache = json.load(f)
+                _cache_last_modified = file_mtime
+                return _translations_memory_cache
+        except (json.JSONDecodeError, IOError) as e:
+            print(f"⚠️ 번역 캐시 로드 실패: {str(e)}")
+            return {}
+
+
+def save_translations_cache(data: Dict) -> bool:
+    """
+    번역 데이터를 JSON 캐시 파일로 저장
+    
+    Args:
+        data: 저장할 번역 데이터
+    
+    Returns:
+        성공 여부
+    """
+    global _translations_memory_cache, _cache_last_modified
+    
+    with _cache_lock:
+        try:
+            ensure_cache_dir()
+            
+            # JSON 파일로 저장 (들여쓰기 없이 compact하게)
+            with open(TRANSLATIONS_CACHE_FILE, 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, separators=(',', ':'))
+            
+            # 메모리 캐시 업데이트
+            _translations_memory_cache = data
+            _cache_last_modified = TRANSLATIONS_CACHE_FILE.stat().st_mtime
+            
+            print(f"✅ 번역 캐시 저장 완료: {len(data)} 항목")
+            return True
+        except IOError as e:
+            print(f"❌ 번역 캐시 저장 실패: {str(e)}")
+            return False
+
+
+def invalidate_memory_cache():
+    """메모리 캐시 무효화 (파일 리로드 강제)"""
+    global _translations_memory_cache, _cache_last_modified
+    with _cache_lock:
+        _translations_memory_cache = None
+        _cache_last_modified = None
+
+
+def get_translation_from_cache(source_type: str, source_id: int, field_name: str, lang: str) -> Optional[str]:
+    """
+    JSON 캐시에서 번역된 텍스트 조회
+    
+    Args:
+        source_type: 데이터 타입
+        source_id: 원본 데이터의 ID
+        field_name: 필드명
+        lang: 조회할 언어 코드
+    
+    Returns:
+        번역된 텍스트 또는 None (캐시에 없는 경우)
+    """
+    cache = load_translations_cache()
+    
+    doc_key = f"{source_type}_{source_id}"
+    
+    if doc_key not in cache:
+        return None
+    
+    doc = cache[doc_key]
+    
+    if "fields" not in doc or field_name not in doc["fields"]:
+        return None
+    
+    field_data = doc["fields"][field_name]
+    
+    # 원본 언어인 경우
+    if lang == 'ko':
+        return field_data.get("original")
+    
+    # 번역된 언어인 경우
+    translations = field_data.get("translations", {})
+    return translations.get(lang)
+
+
+def get_all_translations_from_cache(source_type: str, source_id: int) -> Optional[Dict]:
+    """
+    JSON 캐시에서 특정 데이터의 모든 번역 조회
+    
+    Args:
+        source_type: 데이터 타입
+        source_id: 원본 데이터의 ID
+    
+    Returns:
+        모든 필드의 번역 데이터 또는 None
+    """
+    cache = load_translations_cache()
+    
+    doc_key = f"{source_type}_{source_id}"
+    
+    if doc_key not in cache:
+        return None
+    
+    return cache[doc_key].get("fields", {})
+
+
+def export_mongodb_to_cache() -> bool:
+    """
+    MongoDB의 모든 번역 데이터를 JSON 캐시 파일로 내보내기
+    
+    서버 시작 시 또는 전체 데이터 동기화가 필요할 때 호출
+    
+    Returns:
+        성공 여부
+    """
+    if translations_collection is None:
+        if not init_mongodb():
+            return False
+    
+    try:
+        # MongoDB에서 모든 번역 데이터 조회
+        all_docs = translations_collection.find()
+        
+        cache_data = {}
+        for doc in all_docs:
+            doc_key = doc.get('_id')
+            if doc_key:
+                # _id 필드 제외하고 저장 (중복 방지)
+                doc_copy = {k: v for k, v in doc.items() if k != '_id'}
+                
+                # datetime 객체를 문자열로 변환
+                doc_copy = _convert_datetime_to_string(doc_copy)
+                
+                cache_data[doc_key] = doc_copy
+        
+        return save_translations_cache(cache_data)
+    
+    except Exception as e:
+        print(f"❌ MongoDB 캐시 내보내기 실패: {str(e)}")
+        return False
+
+
+def update_cache_entry(source_type: str, source_id: int, field_name: str, 
+                       original_text: str, translations: Dict[str, str]) -> bool:
+    """
+    JSON 캐시의 특정 항목 업데이트
+    
+    MongoDB 저장 후 호출하여 캐시 동기화
+    
+    Args:
+        source_type: 데이터 타입
+        source_id: 원본 데이터의 ID
+        field_name: 필드명
+        original_text: 원본 텍스트
+        translations: 번역된 텍스트 딕셔너리
+    
+    Returns:
+        성공 여부
+    """
+    cache = load_translations_cache()
+    
+    doc_key = f"{source_type}_{source_id}"
+    
+    # 기존 문서가 없으면 새로 생성
+    if doc_key not in cache:
+        cache[doc_key] = {
+            "source_type": source_type,
+            "source_id": source_id,
+            "fields": {},
+            "created_at": datetime.utcnow().isoformat(),
+            "updated_at": datetime.utcnow().isoformat()
+        }
+    
+    # 필드 업데이트
+    cache[doc_key]["fields"][field_name] = {
+        "original": original_text,
+        "translations": translations,
+        "updated_at": datetime.utcnow().isoformat()
+    }
+    cache[doc_key]["updated_at"] = datetime.utcnow().isoformat()
+    
+    return save_translations_cache(cache)
+
+
+def delete_cache_entry(source_type: str, source_id: int) -> bool:
+    """
+    JSON 캐시에서 특정 항목 삭제
+    
+    Args:
+        source_type: 데이터 타입
+        source_id: 원본 데이터의 ID
+    
+    Returns:
+        성공 여부
+    """
+    cache = load_translations_cache()
+    
+    doc_key = f"{source_type}_{source_id}"
+    
+    if doc_key in cache:
+        del cache[doc_key]
+        return save_translations_cache(cache)
+    
+    return True
+
+
+def _convert_datetime_to_string(obj: Any) -> Any:
+    """
+    딕셔너리 내의 datetime 객체를 ISO 문자열로 변환
+    
+    Args:
+        obj: 변환할 객체
+    
+    Returns:
+        datetime이 문자열로 변환된 객체
+    """
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    elif isinstance(obj, dict):
+        return {k: _convert_datetime_to_string(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [_convert_datetime_to_string(item) for item in obj]
+    return obj
+
+
+# ==========================================
+# MongoDB 연결 및 기존 함수들
+# ==========================================
 
 def init_mongodb():
     """MongoDB 연결 초기화 (fork-safe)"""
@@ -283,7 +562,7 @@ def translate_to_all_languages_batch(texts: List[str], source_lang: str = 'ko') 
 def save_translation(source_type: str, source_id: int, field_name: str, 
                     original_text: str, translations: Dict[str, str] = None) -> bool:
     """
-    번역된 텍스트를 MongoDB에 저장
+    번역된 텍스트를 MongoDB에 저장하고 JSON 캐시도 업데이트
     
     Args:
         source_type: 데이터 타입 (service, service_option, collage_text 등)
@@ -341,6 +620,9 @@ def save_translation(source_type: str, source_id: int, field_name: str,
                 "updated_at": datetime.utcnow()
             }
             translations_collection.insert_one(new_doc)
+        
+        # JSON 캐시도 업데이트
+        update_cache_entry(source_type, source_id, field_name, original_text, translations)
         
         print(f"✅ 번역 저장 완료: {source_type}_{source_id}.{field_name}")
         return True
@@ -449,7 +731,7 @@ def get_translated_object(source_type: str, source_id: int, lang: str = 'ko') ->
 
 def delete_translation(source_type: str, source_id: int) -> bool:
     """
-    번역 데이터 삭제
+    번역 데이터 삭제 (MongoDB + JSON 캐시)
     
     Args:
         source_type: 데이터 타입
@@ -465,6 +747,9 @@ def delete_translation(source_type: str, source_id: int) -> bool:
     try:
         doc_key = f"{source_type}_{source_id}"
         result = translations_collection.delete_one({"_id": doc_key})
+        
+        # JSON 캐시에서도 삭제
+        delete_cache_entry(source_type, source_id)
         
         if result.deleted_count > 0:
             print(f"✅ 번역 삭제 완료: {doc_key}")
