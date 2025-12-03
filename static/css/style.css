@@ -1756,9 +1756,7 @@ body.light-mode .stg_page_title {
 .gallery-section-card {
     background: var(--glass-bg);
     backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid var(--glass-border);
-    border-radius: 24px;
-    box-shadow: var(--card-shadow);
+    /* border, border-radius, box-shadow는 stg_card_sub_format 클래스에서 상속 */
 }
 
 .gallery-main-title {
@@ -3511,6 +3509,91 @@ body.light-mode .stg_floating_menu .floating-text {
     
     .stg_floating_menu:hover {
         transform: translateY(-3px) !important;
+    }
+}
+
+/* ============================================
+   STG Card Sub Format - 서브 카드 스타일 (얇은 보라색 테두리 + 엷은 보라색 그림자)
+   갤러리 섹션 등에서 사용되는 카드 외곽선 스타일
+   ============================================ */
+
+/* STG Card Sub Format CSS Variables */
+:root {
+    --stg-card-sub-border-color-light: rgba(139, 92, 246, 0.35);
+    --stg-card-sub-border-color-dark: rgba(181, 126, 220, 0.4);
+    --stg-card-sub-shadow-light: 0 4px 20px rgba(139, 92, 246, 0.12), 0 8px 40px rgba(139, 92, 246, 0.08);
+    --stg-card-sub-shadow-dark: 0 4px 25px rgba(181, 126, 220, 0.15), 0 10px 50px rgba(138, 43, 226, 0.1);
+    --stg-card-sub-border-width: 1.5px;
+    --stg-card-sub-border-radius: 24px;
+}
+
+/* STG Card Sub Format 기본 클래스 */
+.stg_card_sub_format,
+.card.stg_card_sub_format,
+div.stg_card_sub_format {
+    border: none !important;
+    border-radius: var(--stg-card-sub-border-radius) !important;
+    outline: 1.5px solid rgba(181, 126, 220, 0.5) !important;
+    outline-offset: 0px;
+    box-shadow: 
+        0 0 15px rgba(181, 126, 220, 0.15),
+        0 0 30px rgba(138, 43, 226, 0.08),
+        0 4px 20px rgba(0, 0, 0, 0.1) !important;
+    transition: outline-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+/* STG Card Sub Format Hover */
+.stg_card_sub_format:hover,
+.card.stg_card_sub_format:hover,
+div.stg_card_sub_format:hover {
+    outline-color: rgba(181, 126, 220, 0.8) !important;
+    box-shadow: 
+        0 0 25px rgba(181, 126, 220, 0.3),
+        0 0 50px rgba(138, 43, 226, 0.15),
+        0 8px 35px rgba(0, 0, 0, 0.15) !important;
+    transform: translateY(-3px);
+}
+
+/* Light Mode STG Card Sub Format - 높은 특이성으로 정의 */
+body.light-mode .stg_card_sub_format,
+body.light-mode .card.stg_card_sub_format,
+body.light-mode div.stg_card_sub_format,
+body.light-mode .card.gallery-section-card.stg_card_sub_format {
+    border: none !important;
+    outline: 1.5px solid rgba(139, 92, 246, 0.4) !important;
+    outline-offset: 0px;
+    box-shadow: 
+        0 0 12px rgba(139, 92, 246, 0.12),
+        0 0 25px rgba(139, 92, 246, 0.06),
+        0 4px 15px rgba(0, 0, 0, 0.06) !important;
+}
+
+body.light-mode .stg_card_sub_format:hover,
+body.light-mode .card.stg_card_sub_format:hover,
+body.light-mode div.stg_card_sub_format:hover,
+body.light-mode .card.gallery-section-card.stg_card_sub_format:hover {
+    outline-color: rgba(139, 92, 246, 0.65) !important;
+    box-shadow: 
+        0 0 20px rgba(139, 92, 246, 0.2),
+        0 0 40px rgba(139, 92, 246, 0.1),
+        0 8px 30px rgba(0, 0, 0, 0.1) !important;
+    transform: translateY(-3px);
+}
+
+/* STG Card Sub Format 반응형 */
+@media (max-width: 768px) {
+    .stg_card_sub_format,
+    .card.stg_card_sub_format,
+    div.stg_card_sub_format {
+        border-radius: 20px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .stg_card_sub_format,
+    .card.stg_card_sub_format,
+    div.stg_card_sub_format {
+        border-radius: 16px !important;
     }
 }
 

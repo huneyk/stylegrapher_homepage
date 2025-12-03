@@ -870,7 +870,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- Gallery Preview Section -->
 <section class="container py-5">
-    <div class="card gallery-section-card">
+    <div class="card gallery-section-card stg_card_sub_format">
         <div class="card-body p-4 p-md-5">
             <h1 class="text-center mb-5 gallery-main-title">Gallery</h1>
             <div class="row g-4">
@@ -909,9 +909,7 @@ document.addEventListener('DOMContentLoaded', function() {
 .gallery-section-card {
     background: rgba(18, 0, 36, 0.7);
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(181, 126, 220, 0.2);
-    border-radius: 30px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    /* border, border-radius, box-shadow는 stg_card_sub_format 클래스에서 상속 */
     position: relative;
     overflow: hidden;
 }
@@ -1034,9 +1032,7 @@ body.light-mode .gallery-main-title {
 }
 
 @media (max-width: 768px) {
-    .gallery-section-card {
-        border-radius: 20px;
-    }
+    /* .gallery-section-card border-radius는 stg_card_sub_format에서 처리 */
     
     .gallery-main-title {
         font-size: 2.5rem;
