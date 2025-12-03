@@ -115,18 +115,21 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
     --stg-body-margin: 0px 0px 24px;
     --stg-body-padding: 0px 8px;
     
-    /* STG Card Title - 사이트 전체 카드 제목 기준 */
-    --stg-card-title-font-family: 'Noto Sans KR', sans-serif;
-    --stg-card-title-font-size: 1.25rem;
+    /* STG Card Title - 사이트 전체 카드 제목 기준 (단일 소스) */
+    --stg-card-title-font-family: 'Nanum Gothic', sans-serif;
+    --stg-card-title-font-size: 22.4px;
+    --stg-card-title-font-size-mobile: 18px;
     --stg-card-title-font-weight: 600;
-    --stg-card-title-color-light: #5B3A8C;
+    --stg-card-title-color-light: #44237A;
     --stg-card-title-color-dark: rgb(var(--main-color-rgb));
-    --stg-card-title-bg-light: rgba(139, 92, 246, 0.08);
+    --stg-card-title-bg-light: #9379BC1A;
     --stg-card-title-bg-dark: rgba(200, 170, 255, 0.12);
     --stg-card-title-border-light: rgba(139, 92, 246, 0.2);
     --stg-card-title-border-dark: rgba(200, 170, 255, 0.2);
-    --stg-card-title-padding: 0.7rem 1.8rem;
+    --stg-card-title-padding: 12px 24px;
+    --stg-card-title-padding-mobile: 10px 18px;
     --stg-card-title-border-radius: 12px;
+    --stg-card-title-text-shadow-dark: 0 0 20px rgba(200, 170, 255, 0.5);
 }
 
 /* STG Body Text 기본 클래스 (hyphen 버전) */
@@ -172,7 +175,13 @@ body:not(.light-mode) .stg-card-text {
 body.light-mode .stg_body_text,
 body.light-mode .stg-body-text,
 body.light-mode .stg_card_text,
-body.light-mode .stg-card-text {
+body.light-mode .stg-card-text,
+body.light-mode .stg_card_description,
+body.light-mode .card-text,
+body.light-mode .service-card-description,
+body.light-mode .additional-card-text,
+body.light-mode p,
+body.light-mode li {
     color: var(--stg-body-color-light) !important;
 }
 
@@ -209,100 +218,46 @@ p, li,
 }
 
 /* ============================================
-   STG Card Title - 사이트 전체 카드 제목 기준
-   이 스타일이 모든 카드 제목의 기준입니다.
+   STG Card Title - 사이트 전체 카드 제목 기준 (단일 소스)
+   이 클래스가 모든 카드 제목의 유일한 스타일 정의입니다.
+   다른 요소들은 이 클래스를 상속받아 사용합니다.
    ============================================ */
 
-/* STG Card Title 기본 클래스 (Light Mode 기본) */
+/* STG Card Title 기본 클래스 - 모든 변형이 이 스타일을 상속 */
+.stg_card_title,
 .stg-card-title {
-    font-family: 'Noto Sans KR', sans-serif !important;
-    font-size: 1.25rem !important;
-    font-weight: 600 !important;
-    color: #5B3A8C !important;
-    background: rgba(139, 92, 246, 0.08);
-    padding: 0.7rem 1.8rem;
-    border-radius: 12px;
-    border: 1px solid rgba(139, 92, 246, 0.2);
+    font-family: var(--stg-card-title-font-family) !important;
+    font-size: var(--stg-card-title-font-size) !important;
+    font-weight: var(--stg-card-title-font-weight) !important;
+    color: var(--stg-card-title-color-light) !important;
+    background: var(--stg-card-title-bg-light);
+    padding: var(--stg-card-title-padding);
+    border-radius: var(--stg-card-title-border-radius);
+    border: 1px solid var(--stg-card-title-border-light);
     display: inline-block;
     margin-bottom: 1rem;
 }
 
 /* STG Card Title Dark Mode */
+body:not(.light-mode) .stg_card_title,
 body:not(.light-mode) .stg-card-title {
-    color: rgb(var(--main-color-rgb)) !important;
-    background: rgba(200, 170, 255, 0.12);
-    border-color: rgba(200, 170, 255, 0.2);
-    text-shadow: 0 0 20px rgba(200, 170, 255, 0.5);
+    color: var(--stg-card-title-color-dark) !important;
+    background: var(--stg-card-title-bg-dark);
+    border-color: var(--stg-card-title-border-dark);
+    text-shadow: var(--stg-card-title-text-shadow-dark);
 }
 
-/* 반응형 - 모바일 */
+/* STG Card Title 반응형 */
 @media (max-width: 768px) {
+    .stg_card_title,
     .stg-card-title {
-        font-size: 1.1rem !important;
-        padding: 0.55rem 1.3rem;
+        font-size: var(--stg-card-title-font-size-mobile) !important;
+        padding: var(--stg-card-title-padding-mobile);
     }
 }
 
-/* Standalone .stg_card_title (underscore version) - 래퍼 없이도 작동 */
-.stg_card_title {
-    font-family: 'Nanum Gothic', sans-serif !important;
-    font-size: 22.4px !important;
-    font-weight: 600 !important;
-    color: #44237A !important;
-    background: #9379BC1A;
-    padding: 12px 24px;
-    border-radius: 12px;
-    border: 1px solid rgba(139, 92, 246, 0.2);
-    display: inline-block;
-    margin: 0 0 16px;
-}
-
-/* Dark Mode - Standalone stg_card_title */
-body:not(.light-mode) .stg_card_title {
-    color: rgb(var(--main-color-rgb)) !important;
-    background: rgba(200, 170, 255, 0.12);
-    border-color: rgba(200, 170, 255, 0.2);
-    text-shadow: 0 0 20px rgba(200, 170, 255, 0.5);
-}
-
-/* Standalone stg_card_title 반응형 */
-@media (max-width: 768px) {
-    .stg_card_title {
-        font-size: 18px !important;
-        padding: 10px 18px;
-    }
-}
-
-/* service-option-name이 stg_card_title 스타일을 상속받도록 명시 */
-.service-option-name.stg_card_title,
-.service-option-name.stg-card-title {
-    font-family: 'Nanum Gothic', sans-serif !important;
-    font-size: 22.4px !important;
-    font-weight: 600 !important;
-    color: #44237A !important;
-    background: #9379BC1A;
-    padding: 12px 24px;
-    border-radius: 12px;
-    border: 1px solid rgba(139, 92, 246, 0.2);
-    display: inline-block;
-    margin: 0 0 16px;
-}
-
-body:not(.light-mode) .service-option-name.stg_card_title,
-body:not(.light-mode) .service-option-name.stg-card-title {
-    color: rgb(var(--main-color-rgb)) !important;
-    background: rgba(200, 170, 255, 0.12);
-    border-color: rgba(200, 170, 255, 0.2);
-    text-shadow: 0 0 20px rgba(200, 170, 255, 0.5);
-}
-
-@media (max-width: 768px) {
-    .service-option-name.stg_card_title,
-    .service-option-name.stg-card-title {
-        font-size: 18px !important;
-        padding: 10px 18px;
-    }
-}
+/* service-option-name은 stg_card_title 클래스를 함께 사용하여 스타일 상속 */
+/* 별도의 스타일 정의 불필요 - .stg_card_title 클래스가 스타일 제공 */
 
 /* ============================================
    STG Card Format - 사이트 전체 카드 포맷 기준
@@ -406,34 +361,8 @@ body.light-mode .stg_card_format .stg_card_icon i {
     filter: none !important;
 }
 
-/* Card Title - stg-card-title을 상속하여 사용 */
-.stg_card_format .stg_card_title {
-    font-family: 'Noto Sans KR', sans-serif !important;
-    font-size: 25px !important;
-    font-weight: 600 !important;
-    background: rgba(139, 92, 246, 0.08);
-    padding: 0.7rem 1.8rem;
-    border-radius: 12px;
-    border: 1px solid rgba(139, 92, 246, 0.2);
-    display: inline-block;
-    margin-bottom: 1rem;
-}
-
-/* Dark Mode Title */
-body:not(.light-mode) .stg_card_format .stg_card_title {
-    color: rgb(var(--main-color-rgb)) !important;
-    background: rgba(200, 170, 255, 0.12);
-    border-color: rgba(200, 170, 255, 0.2);
-    text-shadow: 0 0 20px rgba(200, 170, 255, 0.5);
-}
-
-/* Light Mode Title */
-body.light-mode .stg_card_format .stg_card_title {
-    color: #5B3A8C !important;
-    background: rgba(139, 92, 246, 0.08);
-    border-color: rgba(139, 92, 246, 0.2);
-    text-shadow: none !important;
-}
+/* Card Title - stg_card_title 클래스가 스타일 제공 (중복 정의 제거) */
+/* .stg_card_format 내의 .stg_card_title은 기본 클래스 스타일을 상속받음 */
 
 /* Card Description - stg_body_text 스타일 적용 */
 .stg_card_format .stg_card_description {
@@ -603,10 +532,7 @@ body.light-mode .stg_card_format .stg_card_option_arrow {
         padding: 1.25rem;
     }
     
-    .stg_card_format .stg_card_title {
-        font-size: 22px !important;
-        padding: 0.55rem 1.3rem;
-    }
+    /* .stg_card_format .stg_card_title 반응형은 기본 .stg_card_title에서 처리 */
     
     .stg_card_format .stg_card_description {
         font-size: var(--stg-body-font-size) !important;
@@ -2626,12 +2552,421 @@ body.light-mode .stg_table tbody tr:hover td {
 
 /* ============================================
    Light Mode Base Support
-   (Full override styles are in base.html template)
+   모든 Light Mode 기본 스타일 정의
    ============================================ */
 body.light-mode {
     --deep-violet: #f8f9fa;
     --rich-black: #ffffff;
+    --text-primary: #000000;
+    --text-secondary: #6c757d;
+    --text-muted: #8e8e8e;
+    --primary-purple: #663399;
+    --light-purple: #9966cc;
+    --dark-purple: #4B0082;
+    --white: #ffffff;
+    --black: #000000;
+    --glass-bg: rgba(255, 255, 255, 0.9);
+    --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    
+    font-family: 'Nanum Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
     background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 16px !important;
+    font-weight: 400 !important;
+    line-height: 1.6 !important;
+}
+
+body.light-mode * {
+    font-family: 'Nanum Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Light Mode - Navbar */
+body.light-mode .navbar {
+    background: transparent !important;
+}
+
+body.light-mode .navbar.scrolled {
+    background: rgba(255, 255, 255, 0.95) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+body.light-mode .navbar-brand img {
+    filter: none !important;
+    mix-blend-mode: normal !important;
+}
+
+/* Light Mode - Side Menu */
+body.light-mode .side-menu {
+    background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%) !important;
+}
+
+body.light-mode .close-menu {
+    font-size: 2rem !important;
+}
+
+body.light-mode .main-menu-link {
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    color: #333 !important;
+}
+
+body.light-mode .category-header {
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    color: #333 !important;
+}
+
+body.light-mode .sub-menu-link {
+    font-size: 0.95rem !important;
+    font-weight: 400 !important;
+    color: #6c757d !important;
+}
+
+body.light-mode .category-toggle {
+    font-size: 0.8rem !important;
+    color: #333 !important;
+}
+
+/* Light Mode - Menu Overlay */
+body.light-mode .menu-overlay {
+    background: rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Light Mode - Cards */
+body.light-mode .card:not(.bg-info):not(.bg-warning):not(.bg-danger):not(.bg-success),
+body.light-mode .glass-card,
+body.light-mode .service-simple-card,
+body.light-mode .additional-card,
+body.light-mode .gallery-item,
+body.light-mode .gallery-preview-card {
+    background: rgba(255, 255, 255, 0.95) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+body.light-mode .card-title {
+    font-size: 1.8rem !important;
+    font-weight: 700 !important;
+    color: rgba(139, 95, 191, 0.8) !important;
+    text-shadow: none !important;
+}
+
+/* Light Mode - Section Titles */
+body.light-mode .services-section-title {
+    font-size: 2.2rem !important;
+    font-weight: 700 !important;
+    text-shadow: none !important;
+}
+
+body.light-mode .story-section-title {
+    font-size: 2.5rem !important;
+    font-weight: 400 !important;
+    color: rgba(139, 95, 191, 0.8) !important;
+    text-shadow: none !important;
+}
+
+body.light-mode .service-title,
+body.light-mode .section-title {
+    font-size: 1.5rem !important;
+    font-weight: 600 !important;
+    color: rgba(139, 95, 191, 0.8) !important;
+    text-shadow: none !important;
+}
+
+body.light-mode .page-title {
+    font-size: 2.5rem !important;
+    font-weight: 700 !important;
+    color: rgba(139, 95, 191, 0.8) !important;
+    text-shadow: none !important;
+}
+
+body.light-mode .hero-title {
+    font-size: 3.5rem !important;
+    font-weight: 700 !important;
+    color: rgba(139, 95, 191, 0.9) !important;
+    text-shadow: none !important;
+}
+
+body.light-mode .hero-subtitle {
+    font-size: 1.5rem !important;
+    font-weight: 500 !important;
+    color: rgba(139, 95, 191, 0.8) !important;
+}
+
+body.light-mode .hero-tagline {
+    font-size: 1.2rem !important;
+    font-weight: 400 !important;
+    color: #6c757d !important;
+}
+
+body.light-mode .gallery-subtitle {
+    font-size: 1rem !important;
+    font-weight: 400 !important;
+}
+
+body.light-mode .gallery-page-subtitle {
+    color: #6c757d !important;
+}
+
+/* Light Mode - Buttons */
+body.light-mode .btn {
+    font-size: 0.9rem !important;
+    border-color: rgba(139, 95, 191, 0.8) !important;
+    color: rgba(139, 95, 191, 0.8) !important;
+}
+
+body.light-mode .btn-primary,
+body.light-mode .btn-primary:focus,
+body.light-mode .btn-primary:active {
+    background: linear-gradient(135deg, rgba(100, 60, 150, 0.95), rgba(120, 80, 170, 0.95)) !important;
+    border-color: rgba(100, 60, 150, 0.8) !important;
+    color: #FFFFFF !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+body.light-mode .btn:hover {
+    color: white !important;
+}
+
+body.light-mode .btn-danger {
+    color: white !important;
+}
+
+body.light-mode .contact-button {
+    color: white !important;
+}
+
+/* Light Mode - Floating Menu */
+body.light-mode .floating-menu-right {
+    opacity: 0;
+}
+
+body.light-mode .floating-menu-right.visible {
+    opacity: 0.95;
+}
+
+body.light-mode .floating-item {
+    background: rgba(255, 255, 255, 0.65) !important;
+    color: #333 !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+}
+
+body.light-mode .floating-text {
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    color: #333 !important;
+}
+
+body.light-mode .floating-icon {
+    font-size: 1.1rem !important;
+    color: #ffffff !important;
+}
+
+body.light-mode .floating-item:hover {
+    background: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Light Mode - Footer */
+body.light-mode .footer {
+    background: rgba(139, 95, 191, 0.8) !important;
+}
+
+body.light-mode .footer-info {
+    font-size: 14px !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    line-height: 0.8 !important;
+}
+
+body.light-mode .footer-info p {
+    text-shadow: none !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 14px !important;
+}
+
+body.light-mode .social-link {
+    font-size: 1.2rem !important;
+    color: #fff !important;
+    text-shadow: none !important;
+}
+
+body.light-mode .social-link:hover {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+body.light-mode .contact-link,
+body.light-mode .footer-link {
+    color: #fff !important;
+    text-shadow: none !important;
+}
+
+body.light-mode .contact-link:hover,
+body.light-mode .footer-link:hover {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+body.light-mode .text-neon {
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-shadow: none !important;
+}
+
+/* Light Mode - Forms */
+body.light-mode .form-control,
+body.light-mode .form-select {
+    font-size: 1rem !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: #000000 !important;
+}
+
+body.light-mode .form-control::placeholder {
+    color: #9966cc !important;
+}
+
+body.light-mode .form-label {
+    font-weight: 600 !important;
+}
+
+/* Light Mode - Tables */
+body.light-mode .table thead th,
+body.light-mode .table-light,
+body.light-mode .packages-table thead th {
+    font-weight: 600 !important;
+    color: white !important;
+}
+
+body.light-mode .table td,
+body.light-mode .table th,
+body.light-mode .packages-table td {
+    color: rgba(139, 95, 191, 0.8) !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Light Mode - Alerts */
+body.light-mode .alert {
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: #333 !important;
+}
+
+/* Light Mode - Language Selector */
+body.light-mode .language-dropdown {
+    background: rgba(255, 255, 255, 0.98) !important;
+}
+
+body.light-mode .language-option {
+    color: #333 !important;
+}
+
+/* Light Mode - Gallery */
+body.light-mode .gallery-preview-title {
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+    color: rgba(139, 95, 191, 0.8) !important;
+    text-shadow: none !important;
+}
+
+body.light-mode .gallery-detail-title {
+    font-size: 2rem !important;
+    font-weight: 500 !important;
+    color: rgba(139, 95, 191, 0.8) !important;
+}
+
+/* Light Mode - Additional Card Icon */
+body.light-mode .additional-card-icon i {
+    font-size: 3rem !important;
+    color: rgba(139, 95, 191, 0.8) !important;
+    filter: none !important;
+}
+
+/* Light Mode - Fade Title */
+body.light-mode .fade-title,
+body.light-mode .fade-text-title {
+    font-family: 'Nanum Gothic', sans-serif !important;
+    font-size: 2.2rem !important;
+    font-weight: 700 !important;
+    color: #44237A !important;
+    text-shadow: none !important;
+}
+
+/* Light Mode - Text Muted Override */
+body.light-mode .text-muted {
+    color: #6c757d !important;
+}
+
+/* Light Mode - Mobile Responsive */
+@media (max-width: 768px) {
+    body.light-mode .btn {
+        font-size: 0.85rem !important;
+    }
+    
+    body.light-mode .floating-text {
+        font-size: 0.7rem !important;
+    }
+    
+    body.light-mode .floating-icon {
+        font-size: 0.8rem !important;
+    }
+    
+    body.light-mode .main-menu-link {
+        font-size: 1rem !important;
+    }
+    
+    body.light-mode .social-link {
+        font-size: 1.2rem !important;
+    }
+    
+    body.light-mode .footer-info {
+        font-size: 12px !important;
+    }
+    
+    body.light-mode .services-page-title,
+    body.light-mode .services-main-title {
+        font-size: 2.2rem !important;
+    }
+    
+    body.light-mode .hero-title {
+        font-size: 2.5rem !important;
+    }
+    
+    body.light-mode .section-title {
+        font-size: 1.8rem !important;
+    }
+    
+    body.light-mode .page-title {
+        font-size: 2rem !important;
+    }
+    
+    body.light-mode .service-icon i,
+    body.light-mode .service-detail-icon i {
+        font-size: 3rem !important;
+    }
+    
+    body.light-mode .additional-card-icon i {
+        font-size: 2rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    body.light-mode .hero-title {
+        font-size: 2rem !important;
+    }
+    
+    body.light-mode .services-page-title,
+    body.light-mode .services-main-title {
+        font-size: 1.8rem !important;
+    }
+    
+    body.light-mode .card-title {
+        font-size: 1.5rem !important;
+    }
+    
+    body.light-mode .option-name {
+        font-size: 1.1rem !important;
+    }
+    
+    body.light-mode .option-desc,
+    body.light-mode .option-price {
+        font-size: 0.95rem !important;
+    }
 }
 
 /* Light Mode - Remove pattern overlay */

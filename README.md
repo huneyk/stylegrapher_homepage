@@ -105,24 +105,28 @@
 
 ```css
 :root {
-    --stg-card-title-font-family: 'Noto Sans KR', sans-serif;
-    --stg-card-title-font-size: 1.25rem;
+    /* STG Card Title - 단일 소스 정의 */
+    --stg-card-title-font-family: 'Nanum Gothic', sans-serif;
+    --stg-card-title-font-size: 22.4px;
+    --stg-card-title-font-size-mobile: 18px;
     --stg-card-title-font-weight: 600;
-    --stg-card-title-color-light: #5B3A8C;
+    --stg-card-title-color-light: #44237A;
     --stg-card-title-color-dark: rgb(var(--main-color-rgb));
-    --stg-card-title-bg-light: rgba(139, 92, 246, 0.08);
+    --stg-card-title-bg-light: #9379BC1A;
     --stg-card-title-bg-dark: rgba(200, 170, 255, 0.12);
     --stg-card-title-border-light: rgba(139, 92, 246, 0.2);
     --stg-card-title-border-dark: rgba(200, 170, 255, 0.2);
-    --stg-card-title-padding: 0.7rem 1.8rem;
+    --stg-card-title-padding: 12px 24px;
+    --stg-card-title-padding-mobile: 10px 18px;
     --stg-card-title-border-radius: 12px;
+    --stg-card-title-text-shadow-dark: 0 0 20px rgba(200, 170, 255, 0.5);
 }
 ```
 
-**사용 클래스:**
-- `.stg-card-title` (hyphen 버전)
-- `.stg_card_title` (underscore 버전)
-- `.service-option-name.stg_card_title`
+**사용 클래스 (모두 동일한 CSS 변수 참조):**
+- `.stg_card_title` - 기본 클래스
+- `.stg-card-title` - hyphen 버전 (동일 스타일)
+- `.service-option-name.stg_card_title` - 서비스 옵션명 (stg_card_title 클래스 상속)
 
 ### 4. STG Card Format - 카드 컨테이너 기준
 
