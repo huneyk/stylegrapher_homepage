@@ -765,6 +765,9 @@
                 dropdown.classList.remove('active');
             }
             
+            // 클라이언트 측 쿠키 저장 (1년 유지) - 서버 응답 전에 미리 저장
+            document.cookie = 'preferred_lang=' + langCode + '; max-age=' + (365*24*60*60) + '; path=/; SameSite=Lax';
+            
             // AJAX로 언어 설정 변경
             fetch('/set-language/' + langCode, {
                 method: 'GET',
@@ -777,18 +780,14 @@
                 return response.json();
             }).then(function(data) {
                 if (data.success) {
-                    // URL에서 lang 파라미터를 제거하거나 새 언어로 업데이트
+                    // URL에서 lang 파라미터 제거 후 새로고침 (세션/쿠키 기반으로 언어 유지)
                     const url = new URL(window.location.href);
-                    if (url.searchParams.has('lang')) {
-                        // lang 파라미터가 있으면 새 언어로 변경
-                        url.searchParams.set('lang', langCode);
-                    }
-                    // URL 업데이트 후 페이지 이동
+                    url.searchParams.delete('lang');  // URL에서 lang 파라미터 제거
                     window.location.href = url.toString();
                 }
             }).catch(function(error) {
                 console.error('언어 변경 오류:', error);
-                // 에러 발생 시 URL에서 lang 파라미터 제거 후 새로고침
+                // 에러 발생해도 쿠키가 저장되어 있으므로 새로고침
                 const url = new URL(window.location.href);
                 url.searchParams.delete('lang');
                 window.location.href = url.toString();

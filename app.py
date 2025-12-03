@@ -66,18 +66,35 @@ def create_app():
     
     # Babel 초기화
     def get_locale():
+        # 1. URL 파라미터에서 언어 확인 (최우선)
         lang = request.args.get('lang')
         if lang and lang in SUPPORTED_LANGUAGES:
             session['lang'] = lang
+            session.permanent = True  # 세션 영구 저장
             return lang
         
+        # 2. 쿠키에서 언어 확인 (세션과 별도로 클라이언트 측 저장)
+        cookie_lang = request.cookies.get('preferred_lang')
+        if cookie_lang and cookie_lang in SUPPORTED_LANGUAGES:
+            # 쿠키 언어가 있으면 세션에도 동기화
+            if session.get('lang') != cookie_lang:
+                session['lang'] = cookie_lang
+                session.permanent = True
+            return cookie_lang
+        
+        # 3. 세션에서 언어 확인
         if 'lang' in session and session['lang'] in SUPPORTED_LANGUAGES:
             return session['lang']
         
+        # 4. 브라우저 Accept-Language 헤더에서 언어 감지 (첫 접속 시)
         best_match = request.accept_languages.best_match(list(SUPPORTED_LANGUAGES.keys()))
         if best_match:
+            # 브라우저 언어를 세션에 저장 (첫 접속 시에만)
+            session['lang'] = best_match
+            session.permanent = True
             return best_match
         
+        # 5. 기본값
         return 'ko'
     
     babel.init_app(app, locale_selector=get_locale)
@@ -265,16 +282,23 @@ def create_app():
     def set_language(lang):
         if lang in SUPPORTED_LANGUAGES:
             session['lang'] = lang
+            session.permanent = True  # 세션 영구 저장
         
+        # AJAX 요청인 경우 JSON 응답 + 쿠키 설정
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
            'application/json' in request.headers.get('Accept', '') or \
            request.headers.get('Sec-Fetch-Mode') == 'cors':
-            return jsonify({'success': True, 'lang': lang})
+            response = jsonify({'success': True, 'lang': lang})
+            # 클라이언트 측 쿠키도 설정 (1년 유지)
+            response.set_cookie('preferred_lang', lang, max_age=365*24*60*60, samesite='Lax')
+            return response
         
+        # 일반 요청인 경우 리다이렉트 + 쿠키 설정
         referrer = request.referrer
-        if referrer:
-            return redirect(referrer)
-        return redirect(url_for('main.index'))
+        redirect_url = referrer if referrer else url_for('main.index')
+        response = redirect(redirect_url)
+        response.set_cookie('preferred_lang', lang, max_age=365*24*60*60, samesite='Lax')
+        return response
     
     # 전역 컨텍스트 - 사이드 메뉴용 카테고리별 서비스
     @app.context_processor

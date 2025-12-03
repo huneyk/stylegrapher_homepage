@@ -37,9 +37,10 @@ def get_current_language() -> str:
     
     우선순위:
     1. URL 파라미터 (lang)
-    2. 세션 저장된 언어
-    3. 브라우저 Accept-Language
-    4. 기본값 (ko)
+    2. 쿠키 (preferred_lang) - 클라이언트 측 저장
+    3. 세션 저장된 언어
+    4. 브라우저 Accept-Language
+    5. 기본값 (ko)
     
     Returns:
         언어 코드 (ko, en, ja, zh, es)
@@ -48,25 +49,39 @@ def get_current_language() -> str:
     if hasattr(g, 'current_lang'):
         return g.current_lang
     
-    # URL 파라미터
+    # 1. URL 파라미터 (최우선)
     lang = request.args.get('lang')
     if lang and lang in SUPPORTED_LANGUAGES:
         session['lang'] = lang
+        session.permanent = True
         g.current_lang = lang
         return lang
     
-    # 세션
+    # 2. 쿠키에서 언어 확인 (클라이언트 측 저장)
+    cookie_lang = request.cookies.get('preferred_lang')
+    if cookie_lang and cookie_lang in SUPPORTED_LANGUAGES:
+        # 쿠키 언어가 있으면 세션에도 동기화
+        if session.get('lang') != cookie_lang:
+            session['lang'] = cookie_lang
+            session.permanent = True
+        g.current_lang = cookie_lang
+        return cookie_lang
+    
+    # 3. 세션
     if 'lang' in session and session['lang'] in SUPPORTED_LANGUAGES:
         g.current_lang = session['lang']
         return session['lang']
     
-    # 브라우저 Accept-Language
+    # 4. 브라우저 Accept-Language (첫 접속 시)
     best_match = request.accept_languages.best_match(list(SUPPORTED_LANGUAGES.keys()))
     if best_match:
+        # 브라우저 언어를 세션에 저장
+        session['lang'] = best_match
+        session.permanent = True
         g.current_lang = best_match
         return best_match
     
-    # 기본값
+    # 5. 기본값
     g.current_lang = 'ko'
     return 'ko'
 
