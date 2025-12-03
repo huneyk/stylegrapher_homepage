@@ -114,6 +114,24 @@
         padding: 2.5rem 0;
     }
     
+    .services-simple-section .row {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    
+    .services-simple-section .col-lg-6 {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        width: 100% !important;
+    }
+    
+    .services-simple-section .stg_card_format {
+        width: 100% !important;
+        border-radius: 16px !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    
     .services-section-title {
         font-size: 1.6rem;
     }
@@ -150,6 +168,14 @@
 body.light-mode .services-simple-section .row {
     --bs-gutter-x: 4.5rem;
     --bs-gutter-y: 4.5rem;
+}
+
+/* Mobile - Light Mode에서도 gutter 제거 */
+@media (max-width: 768px) {
+    body.light-mode .services-simple-section .row {
+        --bs-gutter-x: 0 !important;
+        --bs-gutter-y: 1rem !important;
+    }
 }
 
 /* 다크 모드 지원 */
