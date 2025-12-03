@@ -3533,12 +3533,14 @@ body.light-mode .stg_floating_menu .floating-text {
 div.stg_card_sub_format {
     border: none !important;
     border-radius: var(--stg-card-sub-border-radius) !important;
-    outline: 1.5px solid rgba(181, 126, 220, 0.5) !important;
+    outline: 1.5px solid rgba(181, 126, 220, 0.55) !important;
     outline-offset: 0px;
     box-shadow: 
-        0 0 15px rgba(181, 126, 220, 0.15),
-        0 0 30px rgba(138, 43, 226, 0.08),
-        0 4px 20px rgba(0, 0, 0, 0.1) !important;
+        0 0 25px rgba(181, 126, 220, 0.35),
+        0 0 55px rgba(138, 43, 226, 0.22),
+        0 0 85px rgba(138, 43, 226, 0.12),
+        0 0 120px rgba(138, 43, 226, 0.06),
+        0 8px 35px rgba(0, 0, 0, 0.15) !important;
     transition: outline-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 }
 
@@ -3546,12 +3548,14 @@ div.stg_card_sub_format {
 .stg_card_sub_format:hover,
 .card.stg_card_sub_format:hover,
 div.stg_card_sub_format:hover {
-    outline-color: rgba(181, 126, 220, 0.8) !important;
+    outline-color: rgba(181, 126, 220, 0.9) !important;
     box-shadow: 
-        0 0 25px rgba(181, 126, 220, 0.3),
-        0 0 50px rgba(138, 43, 226, 0.15),
-        0 8px 35px rgba(0, 0, 0, 0.15) !important;
-    transform: translateY(-3px);
+        0 0 35px rgba(181, 126, 220, 0.5),
+        0 0 75px rgba(138, 43, 226, 0.35),
+        0 0 110px rgba(138, 43, 226, 0.2),
+        0 0 150px rgba(138, 43, 226, 0.1),
+        0 15px 55px rgba(0, 0, 0, 0.22) !important;
+    transform: translateY(-6px);
 }
 
 /* Light Mode STG Card Sub Format - 높은 특이성으로 정의 */
@@ -3560,24 +3564,28 @@ body.light-mode .card.stg_card_sub_format,
 body.light-mode div.stg_card_sub_format,
 body.light-mode .card.gallery-section-card.stg_card_sub_format {
     border: none !important;
-    outline: 1.5px solid rgba(139, 92, 246, 0.4) !important;
+    outline: 1.5px solid rgba(139, 92, 246, 0.45) !important;
     outline-offset: 0px;
     box-shadow: 
-        0 0 12px rgba(139, 92, 246, 0.12),
-        0 0 25px rgba(139, 92, 246, 0.06),
-        0 4px 15px rgba(0, 0, 0, 0.06) !important;
+        0 0 22px rgba(139, 92, 246, 0.25),
+        0 0 50px rgba(139, 92, 246, 0.15),
+        0 0 80px rgba(139, 92, 246, 0.08),
+        0 0 110px rgba(139, 92, 246, 0.04),
+        0 8px 30px rgba(0, 0, 0, 0.1) !important;
 }
 
 body.light-mode .stg_card_sub_format:hover,
 body.light-mode .card.stg_card_sub_format:hover,
 body.light-mode div.stg_card_sub_format:hover,
 body.light-mode .card.gallery-section-card.stg_card_sub_format:hover {
-    outline-color: rgba(139, 92, 246, 0.65) !important;
+    outline-color: rgba(139, 92, 246, 0.7) !important;
     box-shadow: 
-        0 0 20px rgba(139, 92, 246, 0.2),
-        0 0 40px rgba(139, 92, 246, 0.1),
-        0 8px 30px rgba(0, 0, 0, 0.1) !important;
-    transform: translateY(-3px);
+        0 0 32px rgba(139, 92, 246, 0.38),
+        0 0 70px rgba(139, 92, 246, 0.25),
+        0 0 100px rgba(139, 92, 246, 0.12),
+        0 0 140px rgba(139, 92, 246, 0.06),
+        0 15px 50px rgba(0, 0, 0, 0.15) !important;
+    transform: translateY(-6px);
 }
 
 /* STG Card Sub Format 반응형 */
