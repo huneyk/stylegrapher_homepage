@@ -936,6 +936,17 @@ document.addEventListener('DOMContentLoaded', function() {
     letter-spacing: 0.15em;
 }
 
+/* Light Mode - Gallery Main Title (스크린샷 스타일) */
+body.light-mode .gallery-main-title {
+    font-family: 'Nanum Gothic', sans-serif !important;
+    font-size: 40px !important;
+    color: #44237ACC !important;
+    text-shadow: none !important;
+    font-weight: 400 !important;
+    letter-spacing: normal !important;
+    margin: 0px 0px 48px !important;
+}
+
 .preview-carousel-container {
     position: relative;
     width: 100%;
@@ -1029,6 +1040,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     .gallery-main-title {
         font-size: 2.5rem;
+    }
+    
+    /* Light Mode 반응형 - Gallery Main Title */
+    body.light-mode .gallery-main-title {
+        font-size: 32px !important;
+        margin: 0px 0px 36px !important;
     }
     
     .gallery-preview-card {
