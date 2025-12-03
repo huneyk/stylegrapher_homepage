@@ -106,12 +106,14 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
    이 스타일이 모든 본문 텍스트의 기준입니다.
    ============================================ */
 :root {
-    --stg-body-font-family: 'Noto Sans KR', sans-serif;
-    --stg-body-font-size: 1.15rem;
+    --stg-body-font-family: 'Nanum Gothic', -apple-system, BlinkMacSystemFont, sans-serif;
+    --stg-body-font-size: 16px;
     --stg-body-line-height: 1.8;
     --stg-body-font-weight: 400;
     --stg-body-color-dark: rgba(255, 255, 255, 0.9);
-    --stg-body-color-light: #666666;
+    --stg-body-color-light: #6C757D;
+    --stg-body-margin: 0px 0px 24px;
+    --stg-body-padding: 0px 8px;
     
     /* STG Card Title - 사이트 전체 카드 제목 기준 */
     --stg-card-title-font-family: 'Noto Sans KR', sans-serif;
@@ -133,6 +135,8 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
     font-size: var(--stg-body-font-size) !important;
     line-height: var(--stg-body-line-height) !important;
     font-weight: var(--stg-body-font-weight) !important;
+    margin: var(--stg-body-margin) !important;
+    padding: var(--stg-body-padding) !important;
 }
 
 /* 모든 본문 텍스트 요소에 STG Body Text 스타일 적용 */
@@ -203,16 +207,16 @@ body:not(.light-mode) .stg-card-title {
 
 /* Standalone .stg_card_title (underscore version) - 래퍼 없이도 작동 */
 .stg_card_title {
-    font-family: 'Noto Sans KR', sans-serif !important;
-    font-size: 25px !important;
+    font-family: 'Nanum Gothic', sans-serif !important;
+    font-size: 22.4px !important;
     font-weight: 600 !important;
-    color: #5B3A8C !important;
-    background: rgba(139, 92, 246, 0.08);
-    padding: 0.7rem 1.8rem;
+    color: #44237A !important;
+    background: #9379BC1A;
+    padding: 12px 24px;
     border-radius: 12px;
     border: 1px solid rgba(139, 92, 246, 0.2);
     display: inline-block;
-    margin-bottom: 1rem;
+    margin: 0 0 16px;
 }
 
 /* Dark Mode - Standalone stg_card_title */
@@ -226,24 +230,24 @@ body:not(.light-mode) .stg_card_title {
 /* Standalone stg_card_title 반응형 */
 @media (max-width: 768px) {
     .stg_card_title {
-        font-size: 22px !important;
-        padding: 0.55rem 1.3rem;
+        font-size: 18px !important;
+        padding: 10px 18px;
     }
 }
 
 /* service-option-name이 stg_card_title 스타일을 상속받도록 명시 */
 .service-option-name.stg_card_title,
 .service-option-name.stg-card-title {
-    font-family: 'Noto Sans KR', sans-serif !important;
-    font-size: 25px !important;
+    font-family: 'Nanum Gothic', sans-serif !important;
+    font-size: 22.4px !important;
     font-weight: 600 !important;
-    color: #5B3A8C !important;
-    background: rgba(139, 92, 246, 0.08);
-    padding: 0.7rem 1.8rem;
+    color: #44237A !important;
+    background: #9379BC1A;
+    padding: 12px 24px;
     border-radius: 12px;
     border: 1px solid rgba(139, 92, 246, 0.2);
     display: inline-block;
-    margin-bottom: 1rem;
+    margin: 0 0 16px;
 }
 
 body:not(.light-mode) .service-option-name.stg_card_title,
@@ -257,8 +261,8 @@ body:not(.light-mode) .service-option-name.stg-card-title {
 @media (max-width: 768px) {
     .service-option-name.stg_card_title,
     .service-option-name.stg-card-title {
-        font-size: 22px !important;
-        padding: 0.55rem 1.3rem;
+        font-size: 18px !important;
+        padding: 10px 18px;
     }
 }
 
@@ -399,8 +403,8 @@ body.light-mode .stg_card_format .stg_card_title {
     font-size: var(--stg-body-font-size) !important;
     line-height: var(--stg-body-line-height) !important;
     font-weight: var(--stg-body-font-weight) !important;
-    margin-bottom: 1.5rem;
-    padding: 0 1rem;
+    margin: var(--stg-body-margin) !important;
+    padding: var(--stg-body-padding) !important;
     white-space: pre-line;
 }
 
@@ -556,9 +560,10 @@ body:not(.light-mode) .stg_card_format .stg_card_option_btn:hover .stg_card_opti
     }
     
     .stg_card_format .stg_card_description {
-        font-size: 1rem !important;
-        line-height: 1.8 !important;
-        padding: 0;
+        font-size: var(--stg-body-font-size) !important;
+        line-height: var(--stg-body-line-height) !important;
+        margin: var(--stg-body-margin) !important;
+        padding: var(--stg-body-padding) !important;
     }
     
     .stg_card_format .stg_card_options {
@@ -649,17 +654,19 @@ body:not(.light-mode) .stg_card_format--additional:hover .stg_card_icon i {
 
 /* Description Short 변형 (옵션 버튼 없는 카드용) */
 .stg_card_format .stg_card_description--short {
+    font-family: var(--stg-body-font-family) !important;
+    font-size: var(--stg-body-font-size) !important;
+    line-height: var(--stg-body-line-height) !important;
+    font-weight: var(--stg-body-font-weight) !important;
     margin-bottom: 0;
-    font-size: 1rem;
-    line-height: 1.6;
 }
 
 body:not(.light-mode) .stg_card_format .stg_card_description--short {
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--stg-body-color-dark);
 }
 
 body.light-mode .stg_card_format .stg_card_description--short {
-    color: #6c757d;
+    color: var(--stg-body-color-light);
 }
 
 @media (max-width: 768px) {
@@ -3079,7 +3086,9 @@ body.light-mode .stg_kakao_format .stg_kakao_text {
     }
     
     .stg_kakao_format .stg_kakao_text {
-        font-size: 1.1rem;
+        font-family: var(--stg-body-font-family) !important;
+        font-size: var(--stg-body-font-size) !important;
+        line-height: var(--stg-body-line-height) !important;
     }
     
     .stg_kakao_format .stg_kakao_btn {
@@ -3094,7 +3103,9 @@ body.light-mode .stg_kakao_format .stg_kakao_text {
     }
     
     .stg_kakao_format .stg_kakao_text {
-        font-size: 1rem;
+        font-family: var(--stg-body-font-family) !important;
+        font-size: var(--stg-body-font-size) !important;
+        line-height: var(--stg-body-line-height) !important;
     }
     
     .stg_kakao_format .stg_kakao_btn {

@@ -142,12 +142,14 @@
             --electric-violet: rgb(var(--sub-color-rgb));
             
             /* STG Body Text Variables */
-            --stg-body-font-family: 'Noto Sans KR', sans-serif;
-            --stg-body-font-size: 1.15rem;
+            --stg-body-font-family: 'Nanum Gothic', -apple-system, BlinkMacSystemFont, sans-serif;
+            --stg-body-font-size: 16px;
             --stg-body-line-height: 1.8;
             --stg-body-font-weight: 400;
             --stg-body-color-dark: rgba(255, 255, 255, 0.9);
-            --stg-body-color-light: #666666;
+            --stg-body-color-light: #6C757D;
+            --stg-body-margin: 0px 0px 24px;
+            --stg-body-padding: 0px 8px;
         }
         
         /* ============================================
@@ -370,11 +372,11 @@
         }
         
         body.light-mode .card-text {
-            font-family: 'Noto Sans KR', sans-serif !important;
-            font-size: 0.95rem !important;
-            line-height: 1.7 !important;
-            font-weight: 400 !important;
-            color: #6c757d !important;
+            font-family: var(--stg-body-font-family) !important;
+            font-size: var(--stg-body-font-size) !important;
+            line-height: var(--stg-body-line-height) !important;
+            font-weight: var(--stg-body-font-weight) !important;
+            color: var(--stg-body-color-light) !important;
         }
         
         /* Light Mode - Global Body Text Style (STG Body Text 기준 적용) */
@@ -389,14 +391,15 @@
         /* Light Mode - STG Card Title 기준 스타일 (hyphen & underscore 모두 지원) */
         body.light-mode .stg-card-title,
         body.light-mode .stg_card_title {
-            font-family: 'Noto Sans KR', sans-serif !important;
-            font-size: 25px !important;
+            font-family: 'Nanum Gothic', sans-serif !important;
+            font-size: 22.4px !important;
             font-weight: 600 !important;
-            color: #5B3A8C !important;
-            background: rgba(139, 92, 246, 0.08);
-            padding: 0.7rem 1.8rem;
+            color: #44237A !important;
+            background: rgba(147, 121, 188, 0.1);
+            padding: 12px 24px;
             border-radius: 12px;
             border: 1px solid rgba(139, 92, 246, 0.2);
+            margin: 0 0 16px;
             text-shadow: none !important;
         }
         
@@ -450,14 +453,15 @@
         
         /* Light Mode - STG Card Format Title 스타일 */
         body.light-mode .stg_card_format .stg_card_title {
-            font-family: 'Noto Sans KR', sans-serif !important;
-            font-size: 25px !important;
+            font-family: 'Nanum Gothic', sans-serif !important;
+            font-size: 22.4px !important;
             font-weight: 600 !important;
-            color: #5B3A8C !important;
-            background: rgba(139, 92, 246, 0.08);
-            padding: 0.7rem 1.8rem;
+            color: #44237A !important;
+            background: rgba(147, 121, 188, 0.1);
+            padding: 12px 24px;
             border-radius: 12px;
             border: 1px solid rgba(139, 92, 246, 0.2);
+            margin: 0 0 16px;
             text-shadow: none !important;
         }
         
@@ -467,16 +471,18 @@
             line-height: var(--stg-body-line-height) !important;
             font-weight: var(--stg-body-font-weight) !important;
             color: var(--stg-body-color-light) !important;
-            margin-bottom: 1.5rem;
-            padding: 0 1rem;
+            margin: var(--stg-body-margin) !important;
+            padding: var(--stg-body-padding) !important;
             white-space: pre-line;
         }
         
         body.light-mode .stg_card_format .stg_card_description--short {
-            color: #6c757d !important;
+            font-family: var(--stg-body-font-family) !important;
+            font-size: var(--stg-body-font-size) !important;
+            line-height: var(--stg-body-line-height) !important;
+            font-weight: var(--stg-body-font-weight) !important;
+            color: var(--stg-body-color-light) !important;
             margin-bottom: 0;
-            font-size: 1rem;
-            line-height: 1.6;
         }
         
         body.light-mode .stg_card_format .stg_card_icon {
@@ -564,8 +570,8 @@
         }
         
         body.light-mode .prism-service-inner.stg_card_format .stg_card_description {
-            padding: 0;
-            margin-bottom: 1rem;
+            padding: var(--stg-body-padding) !important;
+            margin: var(--stg-body-margin) !important;
         }
         
         /* service-card-title, additional-card-title, service-option-name은 stg-card-title을 상속 */
@@ -584,11 +590,11 @@
         }
         
         body.light-mode .additional-card-text {
-            font-family: 'Noto Sans KR', sans-serif !important;
-            font-size: 0.95rem !important;
-            line-height: 1.7 !important;
-            font-weight: 400 !important;
-            color: #6c757d !important;
+            font-family: var(--stg-body-font-family) !important;
+            font-size: var(--stg-body-font-size) !important;
+            line-height: var(--stg-body-line-height) !important;
+            font-weight: var(--stg-body-font-weight) !important;
+            color: var(--stg-body-color-light) !important;
         }
         
         /* Light Mode - Section Titles */
@@ -682,9 +688,11 @@
         }
         
         body.light-mode .category-description {
-            font-size: 1rem !important;
-            font-weight: 400 !important;
-            color: #495057 !important;
+            font-family: var(--stg-body-font-family) !important;
+            font-size: var(--stg-body-font-size) !important;
+            line-height: var(--stg-body-line-height) !important;
+            font-weight: var(--stg-body-font-weight) !important;
+            color: var(--stg-body-color-light) !important;
         }
         
         body.light-mode .services-main-title,
@@ -1294,8 +1302,11 @@
         }
         
         body.light-mode .gallery-description {
-            font-size: 0.95rem !important;
-            color: #6c757d !important;
+            font-family: var(--stg-body-font-family) !important;
+            font-size: var(--stg-body-font-size) !important;
+            line-height: var(--stg-body-line-height) !important;
+            font-weight: var(--stg-body-font-weight) !important;
+            color: var(--stg-body-color-light) !important;
         }
         
         /* Light Mode - Additional Card Icon */
@@ -1317,10 +1328,11 @@
         /* Light Mode - Fade Title (Hero Section) */
         body.light-mode .fade-title,
         body.light-mode .fade-text-title {
-            font-size: 1.6rem !important;
+            font-family: 'Nanum Gothic', sans-serif !important;
+            font-size: 2.2rem !important;
             font-weight: 700 !important;
-            color: rgba(139, 95, 191, 0.95) !important;
-            text-shadow: 0 0 15px rgba(139, 95, 191, 0.15), 0 0 30px rgba(139, 95, 191, 0.08) !important;
+            color: #44237A !important;
+            text-shadow: none !important;
         }
         
         /* Light Mode - About Page */
@@ -1348,11 +1360,11 @@
         }
         
         body.light-mode .message-text {
-            font-family: 'Noto Sans KR', sans-serif !important;
-            font-size: 0.95rem !important;
-            line-height: 1.7 !important;
-            font-weight: 400 !important;
-            color: #333333 !important;
+            font-family: var(--stg-body-font-family) !important;
+            font-size: var(--stg-body-font-size) !important;
+            line-height: var(--stg-body-line-height) !important;
+            font-weight: var(--stg-body-font-weight) !important;
+            color: var(--stg-body-color-light) !important;
         }
         
         body.light-mode .message-highlight {
@@ -1366,11 +1378,11 @@
         body.light-mode .era-text,
         body.light-mode .experience-text,
         body.light-mode .mission-text {
-            font-family: 'Noto Sans KR', sans-serif !important;
-            font-size: 0.95rem !important;
-            line-height: 1.7 !important;
-            font-weight: 400 !important;
-            color: #333333 !important;
+            font-family: var(--stg-body-font-family) !important;
+            font-size: var(--stg-body-font-size) !important;
+            line-height: var(--stg-body-line-height) !important;
+            font-weight: var(--stg-body-font-weight) !important;
+            color: var(--stg-body-color-light) !important;
         }
         
         body.light-mode .text-neon {
@@ -1414,14 +1426,20 @@
         }
         
         body.light-mode .content {
-            font-size: 1rem !important;
-            color: #333 !important;
+            font-family: var(--stg-body-font-family) !important;
+            font-size: var(--stg-body-font-size) !important;
+            line-height: var(--stg-body-line-height) !important;
+            font-weight: var(--stg-body-font-weight) !important;
+            color: var(--stg-body-color-light) !important;
         }
         
         /* Light Mode - Booking Conditions */
         body.light-mode .guide-paragraph {
-            line-height: 1.7 !important;
-            color: #333 !important;
+            font-family: var(--stg-body-font-family) !important;
+            font-size: var(--stg-body-font-size) !important;
+            line-height: var(--stg-body-line-height) !important;
+            font-weight: var(--stg-body-font-weight) !important;
+            color: var(--stg-body-color-light) !important;
         }
         
         body.light-mode .booking-list li::before {
@@ -1501,14 +1519,15 @@
             }
             
             body.light-mode .stg_card_format .stg_card_title {
-                font-size: 22px !important;
-                padding: 0.55rem 1.3rem;
+                font-size: 18px !important;
+                padding: 10px 18px;
             }
             
             body.light-mode .stg_card_format .stg_card_description {
-                font-size: 1rem !important;
-                line-height: 1.8 !important;
-                padding: 0;
+                font-size: var(--stg-body-font-size) !important;
+                line-height: var(--stg-body-line-height) !important;
+                margin: var(--stg-body-margin) !important;
+                padding: var(--stg-body-padding) !important;
             }
             
             body.light-mode .stg_card_format .stg_card_options {
@@ -1564,7 +1583,10 @@
             }
             
             body.light-mode .stg_kakao_format .stg_kakao_text {
-                font-size: 1.1rem !important;
+                font-family: var(--stg-body-font-family) !important;
+                font-size: var(--stg-body-font-size) !important;
+                line-height: var(--stg-body-line-height) !important;
+                color: var(--stg-body-color-light) !important;
             }
             
             body.light-mode .stg_kakao_format .stg_kakao_btn {
@@ -1620,27 +1642,28 @@
             /* Light Mode - STG Card Title 반응형 (hyphen & underscore 모두 지원) */
             body.light-mode .stg-card-title,
             body.light-mode .stg_card_title {
-                font-size: 22px !important;
-                padding: 0.55rem 1.3rem;
+                font-size: 18px !important;
+                padding: 10px 18px;
             }
             
             /* Light Mode - STG Card Format 반응형 */
             body.light-mode .stg_card_format .stg_card_title {
-                font-size: 22px !important;
-                padding: 0.55rem 1.3rem;
+                font-size: 18px !important;
+                padding: 10px 18px;
             }
             
             /* Light Mode - service-option-name 반응형 */
             body.light-mode .service-option-name.stg_card_title,
             body.light-mode .service-option-name.stg-card-title {
-                font-size: 22px !important;
-                padding: 0.55rem 1.3rem;
+                font-size: 18px !important;
+                padding: 10px 18px;
             }
             
             body.light-mode .stg_card_format .stg_card_description {
-                font-size: 1rem !important;
+                font-size: var(--stg-body-font-size) !important;
                 line-height: var(--stg-body-line-height) !important;
-                padding: 0;
+                margin: var(--stg-body-margin) !important;
+                padding: var(--stg-body-padding) !important;
             }
             
             body.light-mode .stg_card_format {
@@ -1695,7 +1718,10 @@
             }
             
             body.light-mode .stg_kakao_format .stg_kakao_text {
-                font-size: 1rem !important;
+                font-family: var(--stg-body-font-family) !important;
+                font-size: var(--stg-body-font-size) !important;
+                line-height: var(--stg-body-line-height) !important;
+                color: var(--stg-body-color-light) !important;
             }
             
             body.light-mode .stg_kakao_format .stg_kakao_btn {
@@ -1710,8 +1736,11 @@
             body.light-mode .card-text,
             body.light-mode .service-card-description,
             body.light-mode .additional-card-text {
-                font-size: 1rem !important;
+                font-family: var(--stg-body-font-family) !important;
+                font-size: var(--stg-body-font-size) !important;
                 line-height: var(--stg-body-line-height) !important;
+                font-weight: var(--stg-body-font-weight) !important;
+                color: var(--stg-body-color-light) !important;
             }
             
             body.light-mode .option-name {
@@ -1747,14 +1776,15 @@
         /* service-option-name은 stg_card_title 스타일을 상속받음 */
         body.light-mode .service-option-name.stg_card_title,
         body.light-mode .service-option-name.stg-card-title {
-            font-family: 'Noto Sans KR', sans-serif !important;
-            font-size: 25px !important;
+            font-family: 'Nanum Gothic', sans-serif !important;
+            font-size: 22.4px !important;
             font-weight: 600 !important;
-            color: #5B3A8C !important;
-            background: rgba(139, 92, 246, 0.08);
-            padding: 0.7rem 1.8rem;
+            color: #44237A !important;
+            background: rgba(147, 121, 188, 0.1);
+            padding: 12px 24px;
             border-radius: 12px;
             border: 1px solid rgba(139, 92, 246, 0.2);
+            margin: 0 0 16px;
             text-shadow: none !important;
         }
         
@@ -2216,13 +2246,21 @@
                 return response.json();
             }).then(function(data) {
                 if (data.success) {
-                    // 현재 페이지를 새로고침 (리다이렉트 없이 현재 URL 유지)
-                    window.location.reload();
+                    // URL에서 lang 파라미터를 제거하거나 새 언어로 업데이트
+                    const url = new URL(window.location.href);
+                    if (url.searchParams.has('lang')) {
+                        // lang 파라미터가 있으면 새 언어로 변경
+                        url.searchParams.set('lang', langCode);
+                    }
+                    // URL 업데이트 후 페이지 이동
+                    window.location.href = url.toString();
                 }
             }).catch(function(error) {
                 console.error('언어 변경 오류:', error);
-                // 에러 발생 시에도 페이지 새로고침 시도
-                window.location.reload();
+                // 에러 발생 시 URL에서 lang 파라미터 제거 후 새로고침
+                const url = new URL(window.location.href);
+                url.searchParams.delete('lang');
+                window.location.href = url.toString();
             });
         }
         

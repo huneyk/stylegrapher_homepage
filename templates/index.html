@@ -685,13 +685,14 @@ body.light-mode .fade-text-section {
 }
 
 body.light-mode .fade-title {
-    color: rgba(139, 95, 191, 0.95) !important;
-    font-size: 1.6rem;
+    font-family: 'Nanum Gothic', sans-serif !important;
+    color: #44237A !important;
+    font-size: 2.2rem;
     font-weight: 700;
     opacity: 0;
     animation: fadeInGlowLight 6s ease;
     animation-iteration-count: 3;
-    text-shadow: 0 0 15px rgba(139, 95, 191, 0.15), 0 0 30px rgba(139, 95, 191, 0.08);
+    text-shadow: none;
 }
 
 body.light-mode .fade-title.delayed {
@@ -701,11 +702,9 @@ body.light-mode .fade-title.delayed {
 @keyframes fadeInGlowLight {
     0%, 100% {
         opacity: 0;
-        text-shadow: 0 0 8px rgba(139, 95, 191, 0.1);
     }
     25%, 75% {
         opacity: 1;
-        text-shadow: 0 0 15px rgba(139, 95, 191, 0.15), 0 0 30px rgba(139, 95, 191, 0.08);
     }
 }
 
@@ -786,11 +785,17 @@ body.light-mode .fade-title.delayed {
 document.addEventListener('DOMContentLoaded', function() {
     // Fade Title Animation
     const titles = document.querySelectorAll('.fade-title');
+    const isLightModeInit = document.body.classList.contains('light-mode');
     titles.forEach(title => {
         title.addEventListener('animationend', function() {
             this.style.opacity = '1';
             this.style.animation = 'none';
-            this.style.textShadow = '0 0 40px rgba(181, 126, 220, 0.6)';
+            // Apply different text-shadow based on mode
+            if (isLightModeInit) {
+                this.style.textShadow = 'none';
+            } else {
+                this.style.textShadow = '0 0 40px rgba(181, 126, 220, 0.6)';
+            }
         });
     });
     
