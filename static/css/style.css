@@ -584,6 +584,7 @@ body.light-mode .stg_card_format .stg_card_option_arrow {
 .stg_card_format.stg_card_format--additional {
     justify-content: center;
     min-height: 300px;
+    padding-top: 0.75rem;
 }
 
 /* Additional 카드 호버 시 더 강한 효과 */
@@ -649,6 +650,7 @@ body.light-mode .stg_card_format .stg_card_description--short {
     .stg_card_format.stg_card_format--additional {
         min-height: 250px;
         border-radius: 20px;
+        padding-top: 0.625rem;
     }
     
     .stg_card_format--additional .stg_card_icon {
@@ -704,6 +706,8 @@ body.light-mode .stg_card_format .stg_card_description--short {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    width: 202px;
+    height: 42px;
     gap: 0.3rem;
     text-align: center;
     cursor: pointer;
@@ -1558,7 +1562,7 @@ body.light-mode .stg_page_title {
    Footer
    ============================================ */
 .footer {
-    background: linear-gradient(180deg, rgba(10, 0, 26, 0.8) 0%, var(--rich-black) 100%);
+    background: #44237A;
     border-top: 1px solid rgba(200, 170, 255, 0.25);
     padding: 2rem 0 1.5rem;
     margin-top: auto;
@@ -2780,7 +2784,7 @@ body.light-mode .floating-item:hover {
 
 /* Light Mode - Footer */
 body.light-mode .footer {
-    background: rgba(139, 95, 191, 0.8) !important;
+    background: #44237A !important;
 }
 
 body.light-mode .footer-info {
@@ -3644,30 +3648,16 @@ body.light-mode .stg_card_format.stg_card_format--additional.stg_card_sub_format
    모든 페이지에서 사용되는 카카오 문의 섹션 스타일
    ============================================ */
 
-/* STG Kakao Format 기본 클래스 */
+/* STG Kakao Format 기본 클래스 - 카드 스타일 제거, 텍스트와 버튼만 표시 */
 .stg_kakao_format {
     position: relative;
-    padding: 3rem;
-    background: rgba(181, 126, 220, 0.2);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border-radius: 30px;
-    border: 1px solid rgba(181, 126, 220, 0.3);
+    padding: 2rem 0;
     text-align: center;
-    overflow: hidden;
-    transition: all 0.4s ease;
 }
 
-/* Kakao Format 상단 그라데이션 라인 */
+/* Kakao Format 상단 그라데이션 라인 - 비활성화 */
 .stg_kakao_format::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, var(--neon-lavender), var(--electric-violet), transparent);
-    box-shadow: 0 0 20px rgba(200, 170, 255, 0.6);
+    display: none;
 }
 
 /* Kakao Format Content 래퍼 */
@@ -3697,55 +3687,16 @@ body.light-mode .stg_kakao_format .stg_kakao_text {
     color: var(--stg-body-color-light);
 }
 
-/* Kakao Format 버튼 */
-.stg_kakao_format .stg_kakao_btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: linear-gradient(135deg, #FEE500, #FFD700) !important;
-    color: #3C1E1E !important;
-    border: none;
-    padding: 1rem 3rem;
-    border-radius: 35px;
-    font-weight: 600;
-    font-size: 1.1rem;
-    box-shadow: 0 0 30px rgba(254, 229, 0, 0.4) !important;
-    transition: all 0.4s ease;
-    cursor: pointer;
-    animation: stgKakaoGlow 2s ease-in-out infinite;
-}
 
-@keyframes stgKakaoGlow {
-    0%, 100% {
-        box-shadow: 0 0 30px rgba(254, 229, 0, 0.4);
-    }
-    50% {
-        box-shadow: 0 0 50px rgba(254, 229, 0, 0.6), 0 0 80px rgba(254, 229, 0, 0.3);
-    }
-}
-
-.stg_kakao_format .stg_kakao_btn:hover {
-    transform: translateY(-5px) scale(1.05);
-    box-shadow: 0 0 50px rgba(254, 229, 0, 0.6), 0 15px 40px rgba(0, 0, 0, 0.3) !important;
-}
-
-/* Kakao Format Glow 효과 */
+/* Kakao Format Glow 효과 - 비활성화 */
 .stg_kakao_format .stg_kakao_glow {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 400px;
-    height: 200px;
-    background: radial-gradient(ellipse, rgba(181, 126, 220, 0.1) 0%, transparent 70%);
-    pointer-events: none;
+    display: none;
 }
 
 /* STG Kakao Format 반응형 */
 @media (max-width: 768px) {
     .stg_kakao_format {
-        padding: 2rem 1.5rem;
-        border-radius: 20px;
+        padding: 1.5rem 0;
     }
     
     .stg_kakao_format .stg_kakao_text {
@@ -3754,17 +3705,12 @@ body.light-mode .stg_kakao_format .stg_kakao_text {
         line-height: var(--stg-body-line-height) !important;
         margin: var(--stg-body-margin) !important;
         padding: var(--stg-body-padding) !important;
-    }
-    
-    .stg_kakao_format .stg_kakao_btn {
-        padding: 0.9rem 2rem;
-        font-size: 1rem;
     }
 }
 
 @media (max-width: 576px) {
     .stg_kakao_format {
-        padding: 1.5rem 1rem;
+        padding: 1rem 0;
     }
     
     .stg_kakao_format .stg_kakao_text {
@@ -3773,10 +3719,5 @@ body.light-mode .stg_kakao_format .stg_kakao_text {
         line-height: var(--stg-body-line-height) !important;
         margin: var(--stg-body-margin) !important;
         padding: var(--stg-body-padding) !important;
-    }
-    
-    .stg_kakao_format .stg_kakao_btn {
-        padding: 0.8rem 1.5rem;
-        font-size: 0.95rem;
     }
 }

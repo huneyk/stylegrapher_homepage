@@ -1060,7 +1060,7 @@ body.light-mode .gallery-main-title {
                     <div class="stg_card_icon">
                         <i class="bi bi-chat-heart-fill"></i>
                     </div>
-                    <h5 class="stg_card_title">{{ _('고객 스토리') }}</h5>
+                    <h5 class="additional-card-title">{{ _('고객 스토리') }}</h5>
                     <p class="stg_card_description stg_card_description--short">{{ _('고객들의 변화와 감동의 이야기') }}</p>
                 </div>
             </a>
@@ -1074,7 +1074,7 @@ body.light-mode .gallery-main-title {
                     <div class="stg_card_icon">
                         <i class="bi bi-briefcase-fill"></i>
                     </div>
-                    <h5 class="stg_card_title">{{ _('커머셜 포트폴리오') }}</h5>
+                    <h5 class="additional-card-title">{{ _('커머셜 포트폴리오') }}</h5>
                     <p class="stg_card_description stg_card_description--short">{{ _('전문적인 상업 촬영 포트폴리오') }}</p>
                 </div>
             </a>
@@ -1088,7 +1088,7 @@ body.light-mode .gallery-main-title {
                     <div class="stg_card_icon">
                         <i class="bi bi-person-circle"></i>
                     </div>
-                    <h5 class="stg_card_title">{{ _('스타일그래퍼 소개') }}</h5>
+                    <h5 class="additional-card-title">{{ _('스타일그래퍼 소개') }}</h5>
                     <p class="stg_card_description stg_card_description--short">{{ _('스타일그래퍼와 함께하는 스타일 여정') }}</p>
                 </div>
             </a>
@@ -1097,9 +1097,50 @@ body.light-mode .gallery-main-title {
 </section>
 
 <style>
-/* stg_card_format이 이제 카드 컨테이너 스타일을 포함하므로
-   additional-card 스타일은 더 이상 필요하지 않습니다.
-   stg_card_format--additional 스타일은 style.css에서 정의됩니다. */
+/* Additional Card Title - 고객 스토리, 커머셜 포트폴리오, 스타일그래퍼 소개 카드 전용 */
+.additional-card-title {
+    font-family: "Nanum Gothic", sans-serif !important;
+    font-size: 20.8px !important;
+    font-weight: 700 !important;
+    color: #44237A !important;
+    margin: 0px 0px 16px 0px !important;
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    display: block !important;
+}
+
+/* Dark mode에서도 동일한 스타일 유지 */
+body:not(.light-mode) .additional-card-title {
+    color: #44237A !important;
+    text-shadow: none !important;
+}
+
+/* Additional Cards - 카드 크기 고정 (354 x 248) */
+.stg_card_format--additional {
+    width: 354px !important;
+    height: 248px !important;
+    max-width: 100%;
+}
+
+/* Additional Cards - 아이콘 색상 main color (#44237A) */
+.stg_card_format--additional .stg_card_icon i,
+body:not(.light-mode) .stg_card_format--additional .stg_card_icon i,
+body.light-mode .stg_card_format--additional .stg_card_icon i,
+body:not(.light-mode) .stg_card_format--additional:hover .stg_card_icon i,
+body.light-mode .stg_card_format--additional:hover .stg_card_icon i {
+    color: #44237A !important;
+    filter: none !important;
+}
+
+/* 반응형: 모바일에서는 전체 너비 사용 */
+@media (max-width: 768px) {
+    .stg_card_format--additional {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 200px;
+    }
+}
 </style>
 
 <!-- Contact Section -->
