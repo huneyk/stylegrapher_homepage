@@ -321,19 +321,14 @@ def create_app():
             menu_categories_order=categories_order
         )
     
-    # 전역 컨텍스트 - 사이트 색상 및 모드 설정
+    # 전역 컨텍스트 - 사이트 색상 설정 (Light mode 전용)
     @app.context_processor
     def inject_site_colors():
         try:
             settings = SiteSettings.get_current_settings()
             if settings:
-                # 사이트 모드 가져오기 (기본값: dark)
-                site_mode = getattr(settings, 'site_mode', 'dark')
-                if site_mode not in ['light', 'dark']:
-                    site_mode = 'dark'
-                
                 return dict(
-                    site_mode=site_mode,
+                    site_mode='light',
                     site_colors={
                         'main_rgb': settings.get_main_color_rgb(),
                         'sub_rgb': settings.get_sub_color_rgb(),
@@ -347,7 +342,7 @@ def create_app():
             print(f"Error loading site colors: {str(e)}")
         
         return dict(
-            site_mode='dark',
+            site_mode='light',
             site_colors={
                 'main_rgb': None,
                 'sub_rgb': None,

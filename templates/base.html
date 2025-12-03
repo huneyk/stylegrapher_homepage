@@ -154,7 +154,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
     
 <!-- Light Mode Override (동적 색상 기반 오버라이드만 - 나머지는 style.css에서 정의) -->
-    {% if site_mode == 'light' %}
     <style>
         /* Light Mode - 동적 색상 변수를 사용하는 핵심 스타일만 */
         
@@ -214,6 +213,7 @@
         body.light-mode .glass-card,
         body.light-mode .service-simple-card,
         body.light-mode .additional-card,
+        body.light-mode .stg_card_sub_format,
         body.light-mode .gallery-item,
         body.light-mode .gallery-preview-card {
             border-color: rgba(var(--main-color-rgb), 0.2) !important;
@@ -222,7 +222,8 @@
         body.light-mode .card:hover,
         body.light-mode .glass-card:hover,
         body.light-mode .service-simple-card:hover,
-        body.light-mode .additional-card:hover {
+        body.light-mode .additional-card:hover,
+        body.light-mode .stg_card_sub_format:hover {
             box-shadow: 0 8px 30px rgba(var(--main-color-rgb), 0.2) !important;
             border-color: rgba(var(--main-color-rgb), 0.4) !important;
         }
@@ -331,11 +332,10 @@
             background: radial-gradient(circle, rgba(var(--sub-color-rgb), 0.08) 0%, transparent 70%) !important;
         }
     </style>
-    {% endif %}
     
     {% block extra_head %}{% endblock %}
 </head>
-<body class="{% if site_mode == 'light' %}light-mode{% endif %}">
+<body class="light-mode">
     <!-- Animated Background Particles -->
     <div class="bg-particles" id="bgParticles"></div>
     

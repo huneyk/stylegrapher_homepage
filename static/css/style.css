@@ -1806,21 +1806,23 @@ body.light-mode .gallery-main-title {
 }
 
 .gallery-more-btn {
-    background: rgba(255, 255, 255, 0.08);
-    border: 2px solid rgba(255, 255, 255, 0.85);
-    color: #FFFFFF;
-    padding: 0.6rem 2.5rem;
+    background: #FFFFFF;
+    border: 1px solid rgba(68, 35, 122, 0.3);
+    color: #44237ACC;
+    padding: 6.4px 32px;
     border-radius: 30px;
+    font-family: "Nanum Gothic", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14.4px;
     transition: var(--transition-smooth);
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+    text-shadow: none;
+    box-shadow: none;
 }
 
 .gallery-more-btn:hover {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(232, 220, 255, 0.9));
-    border-color: transparent;
-    color: #1a0030;
-    box-shadow: 0 0 35px rgba(255, 255, 255, 0.5), 0 0 60px rgba(200, 170, 255, 0.4);
+    background: #f0f0f0;
+    border: 1px solid rgba(68, 35, 122, 0.5);
+    color: #44237A;
+    box-shadow: 0 2px 8px rgba(68, 35, 122, 0.2);
     text-shadow: none;
 }
 
@@ -3535,12 +3537,7 @@ div.stg_card_sub_format {
     border-radius: var(--stg-card-sub-border-radius) !important;
     outline: 1.5px solid rgba(181, 126, 220, 0.55) !important;
     outline-offset: 0px;
-    box-shadow: 
-        0 0 25px rgba(181, 126, 220, 0.35),
-        0 0 55px rgba(138, 43, 226, 0.22),
-        0 0 85px rgba(138, 43, 226, 0.12),
-        0 0 120px rgba(138, 43, 226, 0.06),
-        0 8px 35px rgba(0, 0, 0, 0.15) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
     transition: outline-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 }
 
@@ -3548,13 +3545,8 @@ div.stg_card_sub_format {
 .stg_card_sub_format:hover,
 .card.stg_card_sub_format:hover,
 div.stg_card_sub_format:hover {
-    outline-color: rgba(181, 126, 220, 0.9) !important;
-    box-shadow: 
-        0 0 35px rgba(181, 126, 220, 0.5),
-        0 0 75px rgba(138, 43, 226, 0.35),
-        0 0 110px rgba(138, 43, 226, 0.2),
-        0 0 150px rgba(138, 43, 226, 0.1),
-        0 15px 55px rgba(0, 0, 0, 0.22) !important;
+    outline-color: rgba(181, 126, 220, 0.7) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12) !important;
     transform: translateY(-6px);
 }
 
@@ -3564,28 +3556,70 @@ body.light-mode .card.stg_card_sub_format,
 body.light-mode div.stg_card_sub_format,
 body.light-mode .card.gallery-section-card.stg_card_sub_format {
     border: none !important;
-    outline: 1.5px solid rgba(139, 92, 246, 0.45) !important;
+    outline: 1.5px solid rgba(139, 92, 246, 0.35) !important;
     outline-offset: 0px;
-    box-shadow: 
-        0 0 22px rgba(139, 92, 246, 0.25),
-        0 0 50px rgba(139, 92, 246, 0.15),
-        0 0 80px rgba(139, 92, 246, 0.08),
-        0 0 110px rgba(139, 92, 246, 0.04),
-        0 8px 30px rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06) !important;
 }
 
 body.light-mode .stg_card_sub_format:hover,
 body.light-mode .card.stg_card_sub_format:hover,
 body.light-mode div.stg_card_sub_format:hover,
 body.light-mode .card.gallery-section-card.stg_card_sub_format:hover {
-    outline-color: rgba(139, 92, 246, 0.7) !important;
-    box-shadow: 
-        0 0 32px rgba(139, 92, 246, 0.38),
-        0 0 70px rgba(139, 92, 246, 0.25),
-        0 0 100px rgba(139, 92, 246, 0.12),
-        0 0 140px rgba(139, 92, 246, 0.06),
-        0 15px 50px rgba(0, 0, 0, 0.15) !important;
+    outline-color: rgba(139, 92, 246, 0.5) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
     transform: translateY(-6px);
+}
+
+/* STG Card Format Additional + Sub Format 결합 스타일 (최고 특이성) */
+.stg_card_format.stg_card_format--additional.stg_card_sub_format,
+div.stg_card_format.stg_card_format--additional.stg_card_sub_format,
+.stg_card_format.stg_card_format--additional.stg_card_sub_format.h-100 {
+    border: none !important;
+    border-radius: var(--stg-card-sub-border-radius) !important;
+    outline: 1.5px solid rgba(181, 126, 220, 0.55) !important;
+    outline-offset: 0px !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* stg_card_sub_format 적용 시 ::before 그라데이션 라인 숨김 */
+.stg_card_format.stg_card_format--additional.stg_card_sub_format::before,
+div.stg_card_format.stg_card_format--additional.stg_card_sub_format::before,
+.stg_card_format.stg_card_format--additional.stg_card_sub_format.h-100::before {
+    display: none !important;
+}
+
+.stg_card_format.stg_card_format--additional.stg_card_sub_format:hover,
+div.stg_card_format.stg_card_format--additional.stg_card_sub_format:hover,
+.stg_card_format.stg_card_format--additional.stg_card_sub_format.h-100:hover {
+    outline-color: rgba(181, 126, 220, 0.7) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12) !important;
+    transform: translateY(-6px) !important;
+}
+
+/* Light Mode - STG Card Format Additional + Sub Format 결합 스타일 (최고 특이성) */
+body.light-mode .stg_card_format.stg_card_format--additional.stg_card_sub_format,
+body.light-mode div.stg_card_format.stg_card_format--additional.stg_card_sub_format,
+body.light-mode .stg_card_format.stg_card_format--additional.stg_card_sub_format.h-100 {
+    border: none !important;
+    border-radius: var(--stg-card-sub-border-radius) !important;
+    outline: 1.5px solid rgba(139, 92, 246, 0.35) !important;
+    outline-offset: 0px !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Light Mode - stg_card_sub_format 적용 시 ::before 그라데이션 라인 숨김 */
+body.light-mode .stg_card_format.stg_card_format--additional.stg_card_sub_format::before,
+body.light-mode div.stg_card_format.stg_card_format--additional.stg_card_sub_format::before,
+body.light-mode .stg_card_format.stg_card_format--additional.stg_card_sub_format.h-100::before {
+    display: none !important;
+}
+
+body.light-mode .stg_card_format.stg_card_format--additional.stg_card_sub_format:hover,
+body.light-mode div.stg_card_format.stg_card_format--additional.stg_card_sub_format:hover,
+body.light-mode .stg_card_format.stg_card_format--additional.stg_card_sub_format.h-100:hover {
+    outline-color: rgba(139, 92, 246, 0.5) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+    transform: translateY(-6px) !important;
 }
 
 /* STG Card Sub Format 반응형 */

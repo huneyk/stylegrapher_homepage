@@ -658,8 +658,8 @@ class SiteSettings(MongoModel):
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # 사이트 모드: 'light' 또는 'dark' (기본값: 'dark')
-        self.site_mode = kwargs.get('site_mode', 'dark')
+        # 사이트 모드: Light mode 전용 (dark mode 제거됨)
+        self.site_mode = 'light'
         # Light Mode 색상 설정 (admin의 '사이트 색상 관리' 값)
         # 기본값: Neon Lavender #B57EDC
         self.main_color_r = kwargs.get('main_color_r', 181)
