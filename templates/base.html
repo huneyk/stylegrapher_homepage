@@ -471,8 +471,8 @@
             line-height: var(--stg-body-line-height) !important;
             font-weight: var(--stg-body-font-weight) !important;
             color: var(--stg-body-color-light) !important;
-            margin: var(--stg-body-margin) !important;
-            padding: var(--stg-body-padding) !important;
+            margin: 0 !important;
+            padding: 0px 8px !important;
             white-space: pre-line;
         }
         
@@ -512,15 +512,16 @@
         }
         
         body.light-mode .stg_card_format .stg_card_option_btn {
-            width: 100%;
-            padding: 0.8rem 1rem;
-            border-radius: 10px;
-            font-family: 'Noto Sans KR', sans-serif;
-            font-size: 1rem;
+            width: 180.59px !important;
+            height: 42.8px !important;
+            padding: 0 !important;
+            border-radius: 6px;
+            font-family: 'Nanum Gothic', sans-serif !important;
+            font-size: 14.4px !important;
             font-weight: 400;
-            background: rgba(255, 255, 255, 0.9) !important;
-            color: #555555 !important;
-            border: 1px solid rgba(139, 92, 246, 0.35) !important;
+            background: #44237A1A !important;
+            color: #44237ACC !important;
+            border: 1px solid rgba(68, 35, 122, 0.3) !important;
             transition: all 0.3s ease;
             cursor: pointer;
             text-align: center;
@@ -539,25 +540,21 @@
         }
         
         body.light-mode .stg_card_format .stg_card_option_text {
-            color: #555555 !important;
+            color: #44237ACC !important;
+            font-size: 14.4px !important;
             transition: transform 0.3s ease;
         }
         
         body.light-mode .stg_card_format .stg_card_option_btn:hover .stg_card_option_text {
             color: #ffffff !important;
-            transform: translateX(-5px);
         }
         
         body.light-mode .stg_card_format .stg_card_option_arrow {
-            font-size: 1.1rem;
-            opacity: 0;
-            transform: translateX(-10px);
-            transition: all 0.3s ease;
+            display: none !important;
         }
         
         body.light-mode .stg_card_format .stg_card_option_btn:hover .stg_card_option_arrow {
-            opacity: 1;
-            transform: translateX(0);
+            display: none !important;
         }
         
         /* Light Mode - Services Page stg_card_format 조정 */
@@ -1067,7 +1064,56 @@
             color: white !important;
         }
         
-        /* option-button 스타일은 style.css의 STG Button 섹션에서 정의됨 */
+        /* Light Mode - STG Button & Option Button 스타일 */
+        body.light-mode .stg_button {
+            font-family: 'Nanum Gothic', sans-serif !important;
+            background: #44237A1A !important;
+            color: #44237ACC !important;
+            border: none !important;
+            text-shadow: none !important;
+            box-shadow: none !important;
+            padding: 9.6px 12.8px !important;
+        }
+        
+        body.light-mode .stg_button:hover {
+            background: #44237A33 !important;
+            border: none !important;
+            color: #44237AFF !important;
+            box-shadow: none !important;
+            transform: translateY(-1px);
+        }
+        
+        body.light-mode .stg_button .stg_button_text {
+            color: #44237ACC !important;
+        }
+        
+        body.light-mode .stg_button:hover .stg_button_text {
+            color: #44237AFF !important;
+            transform: none !important;
+        }
+        
+        /* Light Mode에서 화살표 숨기기 */
+        body.light-mode .stg_button .stg_button_arrow {
+            display: none !important;
+        }
+        
+        body.light-mode .option-button {
+            font-family: 'Nanum Gothic', sans-serif !important;
+            background: #44237A1A !important;
+            color: #44237ACC !important;
+            border: none !important;
+            text-shadow: none !important;
+            box-shadow: none !important;
+            padding: 9.6px 12.8px !important;
+        }
+        
+        body.light-mode .option-button:hover {
+            background: #44237A33 !important;
+            border: none !important;
+            color: #44237AFF !important;
+            box-shadow: none !important;
+            transform: translateY(-1px);
+        }
         
         /* Light Mode - Floating Menu */
         body.light-mode .floating-menu-right {
@@ -1526,8 +1572,8 @@
             body.light-mode .stg_card_format .stg_card_description {
                 font-size: var(--stg-body-font-size) !important;
                 line-height: var(--stg-body-line-height) !important;
-                margin: var(--stg-body-margin) !important;
-                padding: var(--stg-body-padding) !important;
+                margin: 0 !important;
+                padding: 0px 8px !important;
             }
             
             body.light-mode .stg_card_format .stg_card_options {
@@ -1662,8 +1708,8 @@
             body.light-mode .stg_card_format .stg_card_description {
                 font-size: var(--stg-body-font-size) !important;
                 line-height: var(--stg-body-line-height) !important;
-                margin: var(--stg-body-margin) !important;
-                padding: var(--stg-body-padding) !important;
+                margin: 0 !important;
+                padding: 0px 8px !important;
             }
             
             body.light-mode .stg_card_format {

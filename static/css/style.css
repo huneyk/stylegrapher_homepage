@@ -403,8 +403,8 @@ body.light-mode .stg_card_format .stg_card_title {
     font-size: var(--stg-body-font-size) !important;
     line-height: var(--stg-body-line-height) !important;
     font-weight: var(--stg-body-font-weight) !important;
-    margin: var(--stg-body-margin) !important;
-    padding: var(--stg-body-padding) !important;
+    margin: 0 !important;
+    padding: 0px 8px !important;
     white-space: pre-line;
 }
 
@@ -454,9 +454,15 @@ body.light-mode .stg_card_format .stg_card_description {
 
 /* Light Mode Option Button */
 body.light-mode .stg_card_format .stg_card_option_btn {
-    background: rgba(255, 255, 255, 0.9);
-    color: #555555 !important;
-    border: 1px solid rgba(139, 92, 246, 0.35);
+    width: 180.59px !important;
+    height: 42.8px !important;
+    background: #44237A1A !important;
+    color: #44237ACC !important;
+    border: 1px solid rgba(68, 35, 122, 0.3) !important;
+    border-radius: 6px !important;
+    font-family: 'Nanum Gothic', sans-serif !important;
+    font-size: 14.4px !important;
+    padding: 0 !important;
 }
 
 body.light-mode .stg_card_format .stg_card_option_btn:hover {
@@ -487,12 +493,12 @@ body:not(.light-mode) .stg_card_format .stg_card_option_btn:hover {
 }
 
 body.light-mode .stg_card_format .stg_card_option_text {
-    color: #555555 !important;
+    color: #44237ACC !important;
+    font-size: 14.4px !important;
 }
 
 body.light-mode .stg_card_format .stg_card_option_btn:hover .stg_card_option_text {
     color: #ffffff !important;
-    transform: translateX(-5px);
 }
 
 body:not(.light-mode) .stg_card_format .stg_card_option_text {
@@ -515,6 +521,11 @@ body:not(.light-mode) .stg_card_format .stg_card_option_btn:hover .stg_card_opti
 .stg_card_format .stg_card_option_btn:hover .stg_card_option_arrow {
     opacity: 1;
     transform: translateX(0);
+}
+
+/* Light Mode - Hide Arrow */
+body.light-mode .stg_card_format .stg_card_option_arrow {
+    display: none !important;
 }
 
 /* Option Button Shine Effect */
@@ -562,8 +573,8 @@ body:not(.light-mode) .stg_card_format .stg_card_option_btn:hover .stg_card_opti
     .stg_card_format .stg_card_description {
         font-size: var(--stg-body-font-size) !important;
         line-height: var(--stg-body-line-height) !important;
-        margin: var(--stg-body-margin) !important;
-        padding: var(--stg-body-padding) !important;
+        margin: 0 !important;
+        padding: 0px 8px !important;
     }
     
     .stg_card_format .stg_card_options {
@@ -708,12 +719,12 @@ body.light-mode .stg_card_format .stg_card_description--short {
     --stg-button-hover-shadow-dark: 0 0 10px rgba(200, 170, 255, 0.4);
     
     /* Light Mode Colors (반전됨) */
-    --stg-button-bg-light: #5B3A8C;
-    --stg-button-color-light: #ffffff;
-    --stg-button-border-light: #5B3A8C;
-    --stg-button-hover-bg-light: rgba(255, 255, 255, 0.9);
-    --stg-button-hover-color-light: #555555;
-    --stg-button-hover-shadow-light: 0 4px 15px rgba(91, 58, 140, 0.15);
+    --stg-button-bg-light: #44237A1A;
+    --stg-button-color-light: #44237ACC;
+    --stg-button-border-light: transparent;
+    --stg-button-hover-bg-light: #44237A33;
+    --stg-button-hover-color-light: #44237AFF;
+    --stg-button-hover-shadow-light: none;
 }
 
 /* STG Button 기본 클래스 (Dark Mode 기본) */
@@ -756,19 +767,21 @@ body:not(.light-mode) .stg_button:hover {
 
 /* Light Mode STG Button (반전됨) */
 body.light-mode .stg_button {
+    font-family: 'Nanum Gothic', sans-serif !important;
     background: var(--stg-button-bg-light);
     color: var(--stg-button-color-light) !important;
-    border: 1px solid var(--stg-button-border-light);
+    border: none;
     text-shadow: none;
-    box-shadow: 0 4px 15px rgba(91, 58, 140, 0.25);
+    box-shadow: none;
+    padding: 9.6px 12.8px;
 }
 
 body.light-mode .stg_button:hover {
     background: var(--stg-button-hover-bg-light);
-    border-color: rgba(139, 92, 246, 0.35);
+    border: none;
     color: var(--stg-button-hover-color-light) !important;
     box-shadow: var(--stg-button-hover-shadow-light);
-    transform: translateY(-2px);
+    transform: translateY(-1px);
 }
 
 /* STG Button Text */
@@ -782,7 +795,12 @@ body.light-mode .stg_button .stg_button_text {
 
 body.light-mode .stg_button:hover .stg_button_text {
     color: var(--stg-button-hover-color-light) !important;
-    transform: translateX(-5px);
+    transform: none;
+}
+
+/* Light Mode에서 화살표 숨기기 */
+body.light-mode .stg_button .stg_button_arrow {
+    display: none;
 }
 
 body:not(.light-mode) .stg_button .stg_button_text {
@@ -897,18 +915,21 @@ body:not(.light-mode) .option-button:hover {
 
 /* Light Mode option-button */
 body.light-mode .option-button {
+    font-family: 'Nanum Gothic', sans-serif !important;
     background: var(--stg-button-bg-light);
     color: var(--stg-button-color-light) !important;
-    border: 1px solid var(--stg-button-border-light);
+    border: none;
     text-shadow: none;
+    box-shadow: none;
+    padding: 9.6px 12.8px;
 }
 
 body.light-mode .option-button:hover {
     background: var(--stg-button-hover-bg-light);
-    border-color: var(--stg-button-hover-bg-light);
+    border: none;
     color: var(--stg-button-hover-color-light) !important;
     box-shadow: var(--stg-button-hover-shadow-light);
-    transform: translateY(-2px);
+    transform: translateY(-1px);
 }
 
 /* ============================================
