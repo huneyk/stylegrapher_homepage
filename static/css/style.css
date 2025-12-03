@@ -3379,6 +3379,131 @@ textarea::-ms-input-placeholder {
 }
 
 /* ============================================
+   STG Floating Menu - 사이트 전체 플로팅 메뉴 버튼 기준
+   스크린샷 참조 스타일 적용
+   ============================================ */
+
+/* STG Floating Menu CSS Variables */
+:root {
+    --stg-floating-menu-bg: rgba(68, 35, 122, 0.5);
+    --stg-floating-menu-color: #FFFFFF;
+    --stg-floating-menu-font-family: 'Nanum Gothic', -apple-system, sans-serif;
+    --stg-floating-menu-font-size: 16px;
+    --stg-floating-menu-padding: 8px 15px 8px 8px;
+    --stg-floating-menu-margin: 0px 0px 10px;
+    --stg-floating-menu-border-radius: 28px;
+}
+
+/* STG Floating Menu 기본 클래스 */
+.stg_floating_menu {
+    background: var(--stg-floating-menu-bg) !important;
+    color: var(--stg-floating-menu-color) !important;
+    font-family: var(--stg-floating-menu-font-family) !important;
+    font-size: var(--stg-floating-menu-font-size) !important;
+    padding: var(--stg-floating-menu-padding) !important;
+    margin: var(--stg-floating-menu-margin) !important;
+    border-radius: var(--stg-floating-menu-border-radius) !important;
+    border: none !important;
+    text-decoration: none !important;
+    display: flex !important;
+    align-items: center !important;
+    min-width: 130px !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 15px rgba(68, 35, 122, 0.3) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+}
+
+/* STG Floating Menu Hover */
+.stg_floating_menu:hover {
+    background: rgba(68, 35, 122, 0.9) !important;
+    color: var(--stg-floating-menu-color) !important;
+    transform: translateX(-10px) !important;
+    box-shadow: 0 6px 25px rgba(68, 35, 122, 0.5) !important;
+}
+
+/* STG Floating Menu Icon */
+.stg_floating_menu .floating-icon {
+    width: 40px !important;
+    height: 40px !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.1)) !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.1rem !important;
+    margin-right: 10px !important;
+    flex-shrink: 0 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.stg_floating_menu .floating-icon i {
+    color: #FFFFFF !important;
+}
+
+/* STG Floating Menu Text */
+.stg_floating_menu .floating-text {
+    font-family: var(--stg-floating-menu-font-family) !important;
+    font-size: var(--stg-floating-menu-font-size) !important;
+    font-weight: 500 !important;
+    color: var(--stg-floating-menu-color) !important;
+    white-space: nowrap !important;
+}
+
+/* Light Mode STG Floating Menu */
+body.light-mode .stg_floating_menu {
+    background: var(--stg-floating-menu-bg) !important;
+    color: var(--stg-floating-menu-color) !important;
+    box-shadow: 0 4px 15px rgba(68, 35, 122, 0.25) !important;
+}
+
+body.light-mode .stg_floating_menu:hover {
+    background: rgba(68, 35, 122, 0.9) !important;
+    color: var(--stg-floating-menu-color) !important;
+    box-shadow: 0 6px 25px rgba(68, 35, 122, 0.4) !important;
+}
+
+body.light-mode .stg_floating_menu .floating-icon {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.15)) !important;
+}
+
+body.light-mode .stg_floating_menu .floating-icon i {
+    color: #FFFFFF !important;
+}
+
+body.light-mode .stg_floating_menu .floating-text {
+    color: var(--stg-floating-menu-color) !important;
+}
+
+/* STG Floating Menu 반응형 - 모바일 (하단 고정 메뉴) */
+@media (max-width: 768px) {
+    .stg_floating_menu {
+        min-width: 70px !important;
+        padding: 8px !important;
+        flex-direction: column !important;
+        text-align: center !important;
+        border-radius: 14px !important;
+        margin: 0 !important;
+    }
+    
+    .stg_floating_menu .floating-icon {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 0.85rem !important;
+        margin-right: 0 !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .stg_floating_menu .floating-text {
+        font-size: 0.7rem !important;
+    }
+    
+    .stg_floating_menu:hover {
+        transform: translateY(-3px) !important;
+    }
+}
+
+/* ============================================
    STG Kakao Format - 카카오톡 예약/문의 카드
    모든 페이지에서 사용되는 카카오 문의 섹션 스타일
    ============================================ */
