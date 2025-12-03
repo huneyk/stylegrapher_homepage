@@ -241,6 +241,15 @@ def create_app():
         except (json.JSONDecodeError, TypeError):
             return []
     
+    @app.template_filter('oneline')
+    def oneline_filter(value):
+        """줄바꿈을 공백으로 대체하여 한 줄로 만드는 필터"""
+        if not value:
+            return value
+        import re
+        # 줄바꿈 문자를 공백으로 대체하고 연속된 공백을 하나로 정리
+        return re.sub(r'\s+', ' ', str(value)).strip()
+    
     # 전역 컨텍스트 - 언어 설정
     @app.context_processor
     def inject_language_data():

@@ -403,9 +403,9 @@ body.light-mode .stg_card_format .stg_card_title {
     font-size: var(--stg-body-font-size) !important;
     line-height: var(--stg-body-line-height) !important;
     font-weight: var(--stg-body-font-weight) !important;
-    margin: 0 !important;
+    margin: 0 0 1.5rem 0 !important;
     padding: 0px 8px !important;
-    white-space: pre-line;
+    white-space: normal;
 }
 
 /* Dark Mode Description */
@@ -2592,6 +2592,12 @@ body.light-mode .stg_table tbody tr:hover td {
 body.light-mode {
     --deep-violet: #f8f9fa;
     --rich-black: #ffffff;
+    background: #ffffff !important;
+}
+
+/* Light Mode - Remove pattern overlay */
+body.light-mode::before {
+    display: none;
 }
 
 /* ============================================

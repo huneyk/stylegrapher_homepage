@@ -23,15 +23,7 @@
                         {% endif %}
                     </div>
                     <h3 class="stg_card_title">{{ t('service', service.id, 'name', service.name) }}</h3>
-                    <p class="stg_card_description">
-                        {% if service.options and service.options[0].description and service.options[0].description.strip() %}
-                            {{ t('service_option', service.options[0].id, 'description', service.options[0].description) }}
-                        {% elif service.description and service.description.strip() %}
-                            {{ t('service', service.id, 'description', service.description) }}
-                        {% else %}
-                            {{ _('상세 페이지에서 자세한 내용을 확인하세요.') }}
-                        {% endif %}
-                    </p>
+                    <p class="stg_card_description">{% if service.options and service.options[0].description and service.options[0].description.strip() %}{{ t('service_option', service.options[0].id, 'description', service.options[0].description)|oneline }}{% elif service.description and service.description.strip() %}{{ t('service', service.id, 'description', service.description)|oneline }}{% else %}{{ _('상세 페이지에서 자세한 내용을 확인하세요.') }}{% endif %}</p>
                     
                     <!-- 서비스 옵션 버튼들 -->
                     {% if service.options %}
