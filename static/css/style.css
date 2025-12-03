@@ -403,7 +403,7 @@ body.light-mode .stg_card_format .stg_card_title {
     font-size: var(--stg-body-font-size) !important;
     line-height: var(--stg-body-line-height) !important;
     font-weight: var(--stg-body-font-weight) !important;
-    margin: 0 0 1.5rem 0 !important;
+    margin: 5.0625rem 0 8.4375rem 0 !important;
     padding: 0px 8px !important;
     white-space: normal;
 }
@@ -454,15 +454,15 @@ body.light-mode .stg_card_format .stg_card_description {
 
 /* Light Mode Option Button */
 body.light-mode .stg_card_format .stg_card_option_btn {
-    width: 180.59px !important;
-    height: 42.8px !important;
+    width: 100% !important;
+    min-height: 42.8px !important;
     background: #44237A1A !important;
     color: #44237ACC !important;
     border: 1px solid rgba(68, 35, 122, 0.3) !important;
     border-radius: 6px !important;
     font-family: 'Nanum Gothic', sans-serif !important;
     font-size: 14.4px !important;
-    padding: 0 !important;
+    padding: 0.6rem 1rem !important;
 }
 
 body.light-mode .stg_card_format .stg_card_option_btn:hover {
@@ -573,7 +573,7 @@ body.light-mode .stg_card_format .stg_card_option_arrow {
     .stg_card_format .stg_card_description {
         font-size: var(--stg-body-font-size) !important;
         line-height: var(--stg-body-line-height) !important;
-        margin: 0 !important;
+        margin: 5.0625rem 0 8.4375rem 0 !important;
         padding: 0px 8px !important;
     }
     

@@ -146,6 +146,12 @@
     display: none;
 }
 
+/* Light Mode - 서비스 카드 간 여백 3배 확대 (1.5rem → 4.5rem) */
+body.light-mode .services-simple-section .row {
+    --bs-gutter-x: 4.5rem;
+    --bs-gutter-y: 4.5rem;
+}
+
 /* 다크 모드 지원 */
 
 body:not(.light-mode) .services-section-title {
