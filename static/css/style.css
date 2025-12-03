@@ -129,7 +129,7 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
     --stg-card-title-border-radius: 12px;
 }
 
-/* STG Body Text 기본 클래스 */
+/* STG Body Text 기본 클래스 (hyphen 버전) */
 .stg-body-text {
     font-family: var(--stg-body-font-family) !important;
     font-size: var(--stg-body-font-size) !important;
@@ -137,6 +137,43 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
     font-weight: var(--stg-body-font-weight) !important;
     margin: var(--stg-body-margin) !important;
     padding: var(--stg-body-padding) !important;
+}
+
+/* STG Body Text 기본 클래스 (underscore 버전) */
+.stg_body_text {
+    font-family: var(--stg-body-font-family) !important;
+    font-size: var(--stg-body-font-size) !important;
+    line-height: var(--stg-body-line-height) !important;
+    font-weight: var(--stg-body-font-weight) !important;
+    margin: var(--stg-body-margin) !important;
+    padding: var(--stg-body-padding) !important;
+}
+
+/* STG Card Text 클래스 - stg_body_text 상속 (카드 내 본문용) */
+.stg_card_text,
+.stg-card-text {
+    font-family: var(--stg-body-font-family) !important;
+    font-size: var(--stg-body-font-size) !important;
+    line-height: var(--stg-body-line-height) !important;
+    font-weight: var(--stg-body-font-weight) !important;
+    margin: var(--stg-body-margin) !important;
+    padding: var(--stg-body-padding) !important;
+}
+
+/* Dark Mode - STG Body Text & Card Text Color */
+body:not(.light-mode) .stg_body_text,
+body:not(.light-mode) .stg-body-text,
+body:not(.light-mode) .stg_card_text,
+body:not(.light-mode) .stg-card-text {
+    color: var(--stg-body-color-dark);
+}
+
+/* Light Mode - STG Body Text & Card Text Color */
+body.light-mode .stg_body_text,
+body.light-mode .stg-body-text,
+body.light-mode .stg_card_text,
+body.light-mode .stg-card-text {
+    color: var(--stg-body-color-light) !important;
 }
 
 /* 모든 본문 텍스트 요소에 STG Body Text 스타일 적용 */
@@ -155,7 +192,8 @@ p, li,
 .hero-description .lead, 
 .service-card-description,
 .category-prism-description,
-.service-option-description {
+.service-option-description,
+.stg_card_description {
     font-family: var(--stg-body-font-family);
     font-size: var(--stg-body-font-size);
     line-height: var(--stg-body-line-height);
@@ -397,14 +435,14 @@ body.light-mode .stg_card_format .stg_card_title {
     text-shadow: none !important;
 }
 
-/* Card Description - stg-body-text 스타일 적용 */
+/* Card Description - stg_body_text 스타일 적용 */
 .stg_card_format .stg_card_description {
     font-family: var(--stg-body-font-family) !important;
     font-size: var(--stg-body-font-size) !important;
     line-height: var(--stg-body-line-height) !important;
     font-weight: var(--stg-body-font-weight) !important;
-    margin: 5.0625rem 0 8.4375rem 0 !important;
-    padding: 0px 8px !important;
+    margin: var(--stg-body-margin) !important;
+    padding: var(--stg-body-padding) !important;
     white-space: normal;
 }
 
@@ -415,7 +453,7 @@ body:not(.light-mode) .stg_card_format .stg_card_description {
 
 /* Light Mode Description */
 body.light-mode .stg_card_format .stg_card_description {
-    color: var(--stg-body-color-light);
+    color: var(--stg-body-color-light) !important;
 }
 
 /* Options Buttons Grid */
@@ -573,8 +611,8 @@ body.light-mode .stg_card_format .stg_card_option_arrow {
     .stg_card_format .stg_card_description {
         font-size: var(--stg-body-font-size) !important;
         line-height: var(--stg-body-line-height) !important;
-        margin: 5.0625rem 0 8.4375rem 0 !important;
-        padding: 0px 8px !important;
+        margin: var(--stg-body-margin) !important;
+        padding: var(--stg-body-padding) !important;
     }
     
     .stg_card_format .stg_card_options {
@@ -669,7 +707,8 @@ body:not(.light-mode) .stg_card_format--additional:hover .stg_card_icon i {
     font-size: var(--stg-body-font-size) !important;
     line-height: var(--stg-body-line-height) !important;
     font-weight: var(--stg-body-font-weight) !important;
-    margin-bottom: 0;
+    margin: 0px 0px 0px 0px !important;
+    padding: var(--stg-body-padding) !important;
 }
 
 body:not(.light-mode) .stg_card_format .stg_card_description--short {
@@ -677,7 +716,7 @@ body:not(.light-mode) .stg_card_format .stg_card_description--short {
 }
 
 body.light-mode .stg_card_format .stg_card_description--short {
-    color: var(--stg-body-color-light);
+    color: var(--stg-body-color-light) !important;
 }
 
 @media (max-width: 768px) {
@@ -3047,8 +3086,9 @@ textarea::-ms-input-placeholder {
     font-size: var(--stg-body-font-size) !important;
     line-height: var(--stg-body-line-height) !important;
     font-weight: var(--stg-body-font-weight) !important;
+    margin: var(--stg-body-margin) !important;
+    padding: var(--stg-body-padding) !important;
     letter-spacing: 0.02em;
-    margin-bottom: 1.5rem;
 }
 
 /* Dark Mode Kakao Text */
@@ -3116,6 +3156,8 @@ body.light-mode .stg_kakao_format .stg_kakao_text {
         font-family: var(--stg-body-font-family) !important;
         font-size: var(--stg-body-font-size) !important;
         line-height: var(--stg-body-line-height) !important;
+        margin: var(--stg-body-margin) !important;
+        padding: var(--stg-body-padding) !important;
     }
     
     .stg_kakao_format .stg_kakao_btn {
@@ -3133,6 +3175,8 @@ body.light-mode .stg_kakao_format .stg_kakao_text {
         font-family: var(--stg-body-font-family) !important;
         font-size: var(--stg-body-font-size) !important;
         line-height: var(--stg-body-line-height) !important;
+        margin: var(--stg-body-margin) !important;
+        padding: var(--stg-body-padding) !important;
     }
     
     .stg_kakao_format .stg_kakao_btn {
