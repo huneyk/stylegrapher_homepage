@@ -1439,12 +1439,12 @@ body.light-mode .option-button:hover {
 
 /* STG Page Title CSS Variables */
 :root {
-    --stg-page-title-font-family: 'Noto Sans KR', sans-serif;
-    --stg-page-title-font-size: 2.8rem;
+    --stg-page-title-font-family: 'Nanum Gothic', sans-serif;
+    --stg-page-title-font-size: 40px;
     --stg-page-title-font-weight: 400;
     --stg-page-title-letter-spacing: 0.1em;
-    --stg-page-title-color-dark: var(--neon-lavender);
-    --stg-page-title-color-light: rgba(139, 95, 191, 0.8);
+    --stg-page-title-color-dark: #44237A;
+    --stg-page-title-color-light: #44237A;
     --stg-page-title-text-shadow-dark: 0 0 50px rgba(181, 126, 220, 0.5);
 }
 
@@ -2082,7 +2082,7 @@ body.light-mode .kakao-btn-dark:hover {
     font-family: 'Cormorant Garamond', serif;
     font-size: 2.8rem;
     font-weight: 400;
-    color: var(--neon-lavender);
+    color: #44237A;
     text-shadow: 0 0 30px rgba(200, 170, 255, 0.4);
 }
 
@@ -2157,16 +2157,35 @@ body.light-mode .kakao-btn-dark:hover {
 
 .booking-list li {
     position: relative;
-    padding-left: 25px;
-    margin-bottom: 10px;
+    padding-left: 1.5rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
 }
 
 .booking-list li::before {
     content: '•';
-    color: var(--neon-lavender);
+    color: #8B5CF6;
     position: absolute;
     left: 0;
     font-weight: bold;
+}
+
+/* Light Mode bullet color */
+body.light-mode .booking-list li::before {
+    color: #8B5CF6;
+}
+
+/* Dark Mode bullet color */
+body:not(.light-mode) .booking-list li::before {
+    color: #C8AAFF;
+    text-shadow: 0 0 10px rgba(181, 126, 220, 0.5);
+}
+
+/* booking-list 내 stg_body_text 마진/패딩 조정 */
+.booking-list li.stg_body_text {
+    margin: 0 0 0.5rem 0 !important;
+    padding: 0 0 0 1.5rem !important;
+    line-height: 1.5 !important;
 }
 
 .account-info {
@@ -2683,7 +2702,7 @@ body.light-mode .service-title,
 body.light-mode .section-title {
     font-size: 1.5rem !important;
     font-weight: 600 !important;
-    color: rgba(139, 95, 191, 0.8) !important;
+    color: #44237A !important;
     text-shadow: none !important;
 }
 
@@ -3641,6 +3660,51 @@ body.light-mode .stg_card_format.stg_card_format--additional.stg_card_sub_format
     div.stg_card_sub_format {
         border-radius: 16px !important;
     }
+}
+
+/* ============================================
+   Feature List - 카드 내 상세 내용 리스트
+   보라색 bullet point + 좁은 행간
+   ============================================ */
+
+.feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+}
+
+.feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.feature-item:last-child {
+    margin-bottom: 0;
+}
+
+/* 보라색 bullet point 아이콘 */
+.feature-item .bi-check-circle-fill {
+    color: #8B5CF6;
+    font-size: 0.7rem;
+    margin-top: 0.35rem;
+    flex-shrink: 0;
+}
+
+/* Dark Mode - 보라색 bullet point */
+body:not(.light-mode) .feature-item .bi-check-circle-fill {
+    color: #C8AAFF;
+    filter: drop-shadow(0 0 4px rgba(200, 170, 255, 0.5));
+}
+
+/* Feature Item 내 텍스트 행간 조정 */
+.feature-item .stg_body_text {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.4 !important;
 }
 
 /* ============================================

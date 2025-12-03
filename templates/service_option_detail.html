@@ -8,19 +8,8 @@
         <div class="row">
             <div class="col-lg-10 mx-auto">
                 <!-- Service Header -->
-                <div class="service-header text-center mb-5">
-                    <div class="service-icon-wrapper mb-4">
-                        {% if 'AI' in service_option.name or '분석' in service_option.name %}
-                        <i class="bi bi-cpu-fill"></i>
-                        {% elif '컬러' in service_option.name or '레슨' in service_option.name or '컨설팅' in service_option.name %}
-                        <i class="bi bi-palette-fill"></i>
-                        {% elif '메이크업' in service_option.name or '헤어' in service_option.name or '패션' in service_option.name %}
-                        <i class="bi bi-magic"></i>
-                        {% else %}
-                        <i class="bi bi-camera-fill"></i>
-                        {% endif %}
-                    </div>
-                    <h1 class="service-title mb-3">{{ translated.name if translated else service_option.name }}</h1>
+                <div class="service-header stg_card_sub_format text-center mb-5">
+                    <h1 class="stg_page_title mb-3">{{ translated.name if translated else service_option.name }}</h1>
                     <p class="service-subtitle">{{ translated.detailed_description or translated.description if translated else (service_option.detailed_description or service_option.description) }}</p>
                 </div>
                 
@@ -33,7 +22,7 @@
                             {% for detail in details %}
                             <li class="feature-item">
                                 <i class="bi bi-check-circle-fill"></i>
-                                <span>{{ detail }}</span>
+                                <span class="stg_body_text">{{ detail }}</span>
                             </li>
                             {% endfor %}
                         </ul>
@@ -140,7 +129,7 @@
                                             <div class="example-info">
                                             {% set ns.in_example = true %}
                                         {% endif %}
-                                        <p class="example-line">{{ trimmed }}</p>
+                                        <p class="example-line stg_body_text">{{ trimmed }}</p>
                                     
                                     {# 입금계좌 라인 처리 #}
                                     {% elif is_account or is_card_note %}
@@ -157,9 +146,9 @@
                                             {% set ns.in_account = true %}
                                         {% endif %}
                                         {% if is_card_note %}
-                                            <span class="note-text">{{ trimmed }}</span>
+                                            <span class="note-text stg_body_text">{{ trimmed }}</span>
                                         {% else %}
-                                            <strong>{{ trimmed }}</strong><br>
+                                            <strong class="stg_body_text">{{ trimmed }}</strong><br>
                                         {% endif %}
                                     
                                     {# 일반 라인 처리 #}
@@ -176,7 +165,7 @@
                                             <ul class="booking-list">
                                             {% set ns.has_normal = true %}
                                         {% endif %}
-                                        <li>{{ trimmed }}</li>
+                                        <li class="stg_body_text">{{ trimmed }}</li>
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
@@ -207,13 +196,13 @@
                             <ul class="booking-list">
                                 {% for line in payment_info_text.split('\n') %}
                                 {% if line.strip() %}
-                                <li>{{ line.strip() }}</li>
+                                <li class="stg_body_text">{{ line.strip() }}</li>
                                 {% endif %}
                                 {% endfor %}
                             </ul>
                             <div class="account-info">
-                                <strong>{{ _('입금 계좌') }} : 국민 46480101210393 이지은 ((신)스타일그래퍼)</strong><br>
-                                <span class="note-text">{{ _('*카드 결제는 스타일그래퍼 샵으로 직접 방문하시면 가능합니다.') }}</span>
+                                <strong class="stg_body_text">{{ _('입금 계좌') }} : 국민 46480101210393 이지은 ((신)스타일그래퍼)</strong><br>
+                                <span class="note-text stg_body_text">{{ _('*카드 결제는 스타일그래퍼 샵으로 직접 방문하시면 가능합니다.') }}</span>
                             </div>
                         </div>
                     </div>
@@ -227,11 +216,13 @@
                     <div class="stg_card_format service-info-card">
                         <h2 class="section-title"><i class="bi bi-info-circle me-2"></i>{{ _('안내 사항') }}</h2>
                         <div class="booking-content">
-                            {% for line in guide_info_text.split('\n') %}
-                            {% if line.strip() %}
-                            <p class="guide-paragraph">{{ line.strip() }}</p>
-                            {% endif %}
-                            {% endfor %}
+                            <ul class="booking-list">
+                                {% for line in guide_info_text.split('\n') %}
+                                {% if line.strip() %}
+                                <li class="stg_body_text">{{ line.strip() }}</li>
+                                {% endif %}
+                                {% endfor %}
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -251,7 +242,7 @@
                             <ul class="booking-list">
                                 {% for line in refund_policy_text_val.split('\n') %}
                                 {% if line.strip() %}
-                                <li>{{ line.strip() }}</li>
+                                <li class="stg_body_text">{{ line.strip() }}</li>
                                 {% endif %}
                                 {% endfor %}
                             </ul>
@@ -352,46 +343,22 @@
 
 /* Service Header */
 .service-header {
-    background: rgba(18, 0, 36, 0.6);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(181, 126, 220, 0.2);
-    border-radius: 28px;
+    background: #ffffff;
     padding: 4rem 2rem;
-    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
-    position: relative;
-    overflow: hidden;
-}
-
-.service-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, var(--neon-lavender), var(--electric-violet), transparent);
-    box-shadow: 0 0 25px rgba(181, 126, 220, 0.7);
-}
-
-.service-icon-wrapper {
-    font-size: 4rem;
-    color: var(--neon-lavender);
-    filter: drop-shadow(0 0 25px rgba(181, 126, 220, 0.6));
+    /* border, border-radius, box-shadow는 stg_card_sub_format 클래스에서 상속 */
 }
 
 .service-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 2.8rem;
-    color: var(--neon-lavender);
-    font-weight: 400;
-    text-shadow: 0 0 40px rgba(181, 126, 220, 0.5);
-    letter-spacing: 0.05em;
+    font-family: 'Nanum Gothic', sans-serif;
+    font-size: 2.5rem;
+    color: rgba(139, 95, 191, 0.8);
+    font-weight: 600;
+    letter-spacing: 0.02em;
 }
 
 .service-subtitle {
-    font-size: 1.1rem;
-    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.2rem;
+    color: #6c757d;
     line-height: 1.8;
     margin: 0;
     white-space: pre-line;
@@ -416,7 +383,7 @@ body.light-mode .service-info-card {
 .section-title {
     font-family: 'Cormorant Garamond', serif;
     font-size: 1.6rem;
-    color: var(--neon-lavender);
+    color: #44237A;
     font-weight: 400;
     margin-bottom: 1.5rem;
     padding-bottom: 0.75rem;
@@ -473,7 +440,7 @@ body.light-mode .service-info-card {
 .package-table-title {
     font-family: 'Cormorant Garamond', serif;
     font-size: 1.3rem;
-    color: var(--neon-lavender);
+    color: #44237A !important;
     font-weight: 500;
     margin-bottom: 1rem;
     padding-bottom: 0.5rem;
@@ -485,7 +452,7 @@ body.light-mode .service-info-card {
 
 .package-table-title::before {
     content: '▸';
-    color: rgba(181, 126, 220, 0.7);
+    color: #44237A;
 }
 
 .package-table-container {
@@ -507,18 +474,35 @@ body.light-mode .service-info-card {
 .booking-list li {
     position: relative;
     padding-left: 1.5rem;
-    margin-bottom: 1rem;
-    line-height: 1.7;
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
 }
 
 .booking-list li::before {
     content: "•";
-    color: var(--neon-lavender);
+    color: #8B5CF6;
     font-weight: bold;
     position: absolute;
     left: 0;
     top: 0;
+}
+
+/* Light Mode bullet color */
+body.light-mode .booking-list li::before {
+    color: #8B5CF6;
+}
+
+/* Dark Mode bullet color */
+body:not(.light-mode) .booking-list li::before {
+    color: #C8AAFF;
     text-shadow: 0 0 10px rgba(181, 126, 220, 0.5);
+}
+
+/* booking-list 내 stg_body_text 마진/패딩 조정 */
+.booking-list li.stg_body_text {
+    margin: 0 0 0.5rem 0 !important;
+    padding: 0 0 0 1.5rem !important;
+    line-height: 1.5 !important;
 }
 
 .guide-paragraph {
@@ -601,9 +585,13 @@ body.light-mode .account-info strong {
 .refund-subtitle {
     font-family: 'Cormorant Garamond', serif;
     font-size: 1.2rem;
-    color: var(--neon-lavender);
+    color: #44237A !important;
     font-weight: 400;
     margin: 1.5rem 0 1rem 0;
+}
+
+body.light-mode .refund-subtitle {
+    color: #44237A !important;
 }
 
 /* Responsive */
@@ -614,10 +602,6 @@ body.light-mode .account-info strong {
     
     .service-title {
         font-size: 2rem;
-    }
-    
-    .service-icon-wrapper {
-        font-size: 3rem;
     }
     
     .service-info-card {
