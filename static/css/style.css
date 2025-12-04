@@ -2133,7 +2133,7 @@ body.light-mode .booking-list li::before {
     --stg-table-line-height: 1.7;
     --stg-table-font-weight: 400;
     /* Light Purple Header (더 옅은 보라색) */
-    --stg-table-header-bg-dark: rgba(139, 92, 246, 0.6);
+    --stg-table-header-bg-dark: #44237AE6;
     --stg-table-header-bg-light: rgba(139, 92, 246, 0.55);
     --stg-table-header-color: #FFFFFF;
     /* Cell Border - Header와 같은 색상 */

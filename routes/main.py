@@ -120,6 +120,7 @@ def clear_gallery_cache():
     print(f"🧹 갤러리 캐시 클리어 완료: {len(keys_to_remove)}개 항목 제거")
 
 
+@cache_with_timeout(300)  # 5분 캐싱
 def get_all_services():
     """모든 서비스와 서비스 옵션을 가져와서 카테고리별로 그룹화 (i18n 적용)"""
     from collections import OrderedDict
@@ -128,16 +129,24 @@ def get_all_services():
     services = Service.query_all()
     service_options = ServiceOption.query_all()
     
+    # 서비스를 미리 딕셔너리로 캐시하여 N+1 쿼리 방지
+    services_dict = {s.id: s for s in services}
+    
+    # 서비스별 옵션 존재 여부 미리 계산 (N+1 쿼리 방지)
+    services_with_options = set(opt.service_id for opt in service_options)
     
     # 카테고리별로 그룹화된 딕셔너리
     grouped_services = OrderedDict()
     
     for option in service_options:
+        # 캐시된 서비스 딕셔너리에서 조회 (N+1 쿼리 방지)
+        service = services_dict.get(option.service_id)
+        
         # 번역 적용
         translated_option = get_translated_service_option(option, lang)
-        translated_service = get_translated_service(option.service, lang) if option.service else None
+        translated_service = get_translated_service(service, lang) if service else None
         
-        category = translated_service.get('name', option.service.name) if translated_service else '기타'
+        category = translated_service.get('name', service.name) if translated_service else '기타'
         
         if category not in grouped_services:
             grouped_services[category] = []
@@ -149,7 +158,8 @@ def get_all_services():
         })
     
     for service in services:
-        if not service.options:
+        # 캐시된 set에서 옵션 존재 여부 확인 (N+1 쿼리 방지)
+        if service.id not in services_with_options:
             translated_service = get_translated_service(service, lang)
             category = '기타'
             
