@@ -146,6 +146,18 @@ def get_privacy_policy_context() -> str:
     return ""
 
 
+def get_about_context() -> str:
+    """회사 소개 페이지(About) 컨텍스트 (DB에서 동적으로 가져옴)"""
+    from utils.mongo_models import AboutContent
+    
+    try:
+        about_content = AboutContent.get_current_content()
+        return f"\n=== 스타일그래퍼 소개 (About) ===\n{about_content.get_full_text_for_rag()}"
+    except Exception as e:
+        print(f"About 콘텐츠 로드 오류: {str(e)}")
+        return ""
+
+
 def get_full_rag_context(include_terms: bool = False) -> str:
     """
     전체 RAG 컨텍스트 수집
@@ -160,6 +172,9 @@ def get_full_rag_context(include_terms: bool = False) -> str:
     
     # 회사 정보
     context_parts.append(get_company_info_context())
+    
+    # 회사 소개 (About 페이지)
+    context_parts.append(get_about_context())
     
     # 서비스 정보
     context_parts.append(get_services_context())

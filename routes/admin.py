@@ -31,7 +31,7 @@ from utils.mongo_models import (
     get_mongo_db, init_collections,
     User, Service, ServiceOption, GalleryGroup, Gallery,
     Booking, Inquiry, CollageText, SiteSettings,
-    TermsOfService, PrivacyPolicy, AdminNotificationEmail, CompanyInfo
+    TermsOfService, PrivacyPolicy, AdminNotificationEmail, CompanyInfo, AboutContent
 )
 
 # .env 파일 로드 (fork-safe: MongoDB 연결은 lazy하게 생성됨)
@@ -1341,7 +1341,7 @@ def update_privacy():
     return redirect(url_for('admin.manage_privacy'))
 
 
-# 회사 정보 관리 (RAG 컨텍스트용)
+# 회사 안내 정보 관리 (RAG 컨텍스트용)
 @admin.route('/company-info')
 @login_required
 def manage_company_info():
@@ -1374,6 +1374,44 @@ def update_company_info():
         flash(f'오류가 발생했습니다: {str(e)}', 'error')
     
     return redirect(url_for('admin.manage_company_info'))
+
+
+# About 페이지 콘텐츠 관리 (RAG 컨텍스트용)
+@admin.route('/about-content')
+@login_required
+def manage_about_content():
+    try:
+        about_content = AboutContent.get_current_content()
+        return render_template('admin/about_content.html', about_content=about_content)
+    except Exception as e:
+        flash(f'About 페이지 콘텐츠 로드 중 오류가 발생했습니다: {str(e)}', 'error')
+        return redirect(url_for('admin.dashboard'))
+
+
+@admin.route('/about-content/update', methods=['POST'])
+@login_required
+def update_about_content():
+    try:
+        about_content = AboutContent.get_current_content()
+        
+        about_content.hero_title = request.form.get('hero_title', '').strip()
+        about_content.hero_subtitle = request.form.get('hero_subtitle', '').strip()
+        about_content.hero_description = request.form.get('hero_description', '').strip()
+        about_content.hero_message = request.form.get('hero_message', '').strip()
+        about_content.brand_philosophy = request.form.get('brand_philosophy', '').strip()
+        about_content.fashion_icons = request.form.get('fashion_icons', '').strip()
+        about_content.current_era = request.form.get('current_era', '').strip()
+        about_content.experience = request.form.get('experience', '').strip()
+        about_content.mission = request.form.get('mission', '').strip()
+        about_content.updated_at = datetime.utcnow()
+        about_content.save()
+        
+        flash('About 페이지 콘텐츠가 성공적으로 업데이트되었습니다. RAG 컨텍스트 및 About 페이지에 자동 반영됩니다.', 'success')
+        
+    except Exception as e:
+        flash(f'오류가 발생했습니다: {str(e)}', 'error')
+    
+    return redirect(url_for('admin.manage_about_content'))
 
 
 @admin.route('/security-dashboard')

@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}About 페이지 콘텐츠 관리 - 관리자{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4 page-title">About 페이지 콘텐츠 관리</h2>
+            
+            <div class="alert alert-info mb-4">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>RAG 컨텍스트 연동:</strong> 이 정보는 About 페이지에 표시되며, AI 응답 생성 시에도 참조됩니다.
+            </div>
+            
+            <form method="POST" action="{{ url_for('admin.update_about_content') }}">
+                <!-- Hero Section -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-star me-2"></i>Hero 섹션 (메인 소개)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="hero_title" class="form-label">타이틀</label>
+                            <input type="text" class="form-control" id="hero_title" name="hero_title" 
+                                   value="{{ about_content.hero_title }}" placeholder="예: 스타일그래퍼®">
+                        </div>
+                        <div class="mb-3">
+                            <label for="hero_subtitle" class="form-label">서브타이틀</label>
+                            <input type="text" class="form-control" id="hero_subtitle" name="hero_subtitle" 
+                                   value="{{ about_content.hero_subtitle }}" placeholder="예: 나를 브랜딩하는 아름다움과 스타일을 완성해 드립니다.">
+                        </div>
+                        <div class="mb-3">
+                            <label for="hero_description" class="form-label">설명 문구</label>
+                            <textarea class="form-control" id="hero_description" name="hero_description" rows="4"
+                                      placeholder="국내에서 최초로, 그리고 유일하게...">{{ about_content.hero_description }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="hero_message" class="form-label">메시지 문구</label>
+                            <textarea class="form-control" id="hero_message" name="hero_message" rows="4"
+                                      placeholder="획일화되고 정형화된 미의 기준이 아니라...">{{ about_content.hero_message }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Brand Philosophy Section -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-lightbulb me-2"></i>Brand Philosophy (브랜드 철학)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="brand_philosophy" class="form-label">브랜드 철학 내용</label>
+                            <textarea class="form-control" id="brand_philosophy" name="brand_philosophy" rows="5"
+                                      placeholder="Stylegrapher*는 'style'에 기록자를 뜻하는...">{{ about_content.brand_philosophy }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Fashion Icons Section -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-crown me-2"></i>Fashion Icons (패션 아이콘)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="fashion_icons" class="form-label">패션 아이콘 내용</label>
+                            <textarea class="form-control" id="fashion_icons" name="fashion_icons" rows="6"
+                                      placeholder="마를레네 디트리히, 그레타 가르보...">{{ about_content.fashion_icons }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Current Era Section -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-globe me-2"></i>현시대 (Current Era)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="current_era" class="form-label">현시대와 스타일링</label>
+                            <textarea class="form-control" id="current_era" name="current_era" rows="5"
+                                      placeholder="요즘은 일반인과 연예인의 경계가 허물어진...">{{ about_content.current_era }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Experience Section -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-award me-2"></i>Experience (경험)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="experience" class="form-label">스타일그래퍼의 경험</label>
+                            <textarea class="form-control" id="experience" name="experience" rows="6"
+                                      placeholder="스타일그래퍼는 수많은 방송과 광고촬영 현장에서...">{{ about_content.experience }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Mission Section -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-heart me-2"></i>Mission (사명)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="mission" class="form-label">스타일그래퍼의 사명</label>
+                            <textarea class="form-control" id="mission" name="mission" rows="6"
+                                      placeholder="똑같은 청소부여도 매일 기계적으로...">{{ about_content.mission }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 저장 버튼 -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="text-muted">
+                        <small>
+                            <i class="fas fa-clock me-1"></i>
+                            최종 업데이트: {% if about_content.updated_at %}{% if about_content.updated_at is string %}{{ about_content.updated_at }}{% else %}{{ about_content.updated_at.strftime('%Y년 %m월 %d일 %H:%M') }}{% endif %}{% else %}최초 생성{% endif %}
+                        </small>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-home me-1"></i>관리자 대시보드
+                        </a>
+                        <a href="{{ url_for('main.about') }}" class="btn btn-outline-info me-2" target="_blank">
+                            <i class="fas fa-external-link-alt me-1"></i>About 페이지 보기
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>저장
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.page-title {
+    color: rgb(var(--main-color-rgb));
+    font-weight: 600;
+}
+
+.card {
+    border: 1px solid rgba(var(--main-color-rgb), 0.2);
+    border-radius: 15px;
+}
+
+.card-header {
+    background-color: rgba(var(--main-color-rgb), 0.1);
+    border-bottom: 1px solid rgba(var(--main-color-rgb), 0.2);
+    color: rgb(var(--main-color-rgb));
+}
+
+.btn-primary {
+    background-color: rgb(var(--main-color-rgb));
+    border-color: rgb(var(--main-color-rgb));
+}
+
+.btn-primary:hover {
+    background-color: rgba(var(--main-color-rgb), 0.9);
+    border-color: rgba(var(--main-color-rgb), 0.9);
+}
+
+.alert-info {
+    background-color: rgba(var(--main-color-rgb), 0.1);
+    border-color: rgba(var(--main-color-rgb), 0.3);
+    color: rgb(var(--main-color-rgb));
+}
+
+.form-control {
+    border: 1px solid rgba(var(--main-color-rgb), 0.3);
+}
+
+.form-control:focus {
+    border-color: rgb(var(--main-color-rgb));
+    box-shadow: 0 0 0 0.2rem rgba(var(--main-color-rgb), 0.25);
+}
+
+textarea.form-control {
+    min-height: 100px;
+}
+</style>
+{% endblock %}
+

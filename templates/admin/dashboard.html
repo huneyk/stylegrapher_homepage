@@ -201,7 +201,52 @@
             </div>
         </div>
 
-        <!-- 그룹 5: 시스템 관리 (보안 대시보드 - 알림 이메일) -->
+        <!-- 그룹 5: 회사정보 RAG 관리 (About 페이지 관리 - 회사 안내 정보 관리) -->
+        <div class="col-12">
+            <div class="card shadow-sm group-card">
+                <div class="card-header group-card-header">
+                    <h6 class="mb-0"><i class="bi bi-building me-2"></i>회사정보 RAG 관리</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <!-- About 페이지 관리 카드 -->
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm inner-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="bi bi-info-circle-fill me-2"></i>About 페이지 관리
+                                    </h5>
+                                    <p class="card-text text-muted">회사 소개 페이지 내용을 관리합니다. (RAG 연동)</p>
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('admin.manage_about_content') }}" class="btn btn-primary">
+                                            About 페이지 관리
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 회사 안내 정보 관리 카드 (RAG) -->
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm inner-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="bi bi-card-text me-2"></i>회사 안내 정보 관리
+                                    </h5>
+                                    <p class="card-text text-muted">AI 응답에 사용되는 회사 정보를 관리합니다. (RAG 컨텍스트)</p>
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('admin.manage_company_info') }}" class="btn btn-primary">
+                                            회사 안내 정보 관리
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 그룹 6: 시스템 관리 (보안 대시보드 - 알림 이메일) -->
         <div class="col-12">
             <div class="card shadow-sm group-card">
                 <div class="card-header group-card-header">

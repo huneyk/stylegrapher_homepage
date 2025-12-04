@@ -19,7 +19,7 @@ from utils.mongo_models import (
     Service, ServiceOption, GalleryGroup, Gallery,
     Booking, Inquiry, CollageText,
     TermsOfService, PrivacyPolicy, get_next_id,
-    AdminNotificationEmail
+    AdminNotificationEmail, AboutContent
 )
 from utils.translation_helper import (
     get_current_language, 
@@ -885,7 +885,8 @@ def commercial_portfolio():
 
 @main.route('/about')
 def about():
-    return render_template('about.html')
+    about_content = AboutContent.get_current_content()
+    return render_template('about.html', about_content=about_content)
 
 
 @main.route('/terms-of-service')
