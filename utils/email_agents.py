@@ -34,11 +34,15 @@ class EmailAnalysisResult:
     """이메일 분석 결과"""
     is_spam: bool = False
     spam_reason: str = ""
+    is_irrelevant: bool = False  # RAG 파일과 관련 없는 내용인지
+    irrelevant_reason: str = ""  # 관련 없는 내용 판단 이유
+    irrelevant_response: str = ""  # 관련 없는 내용에 대한 간략한 회신
     detected_language: str = "ko"
     sentiment: str = "neutral"
     sentiment_detail: str = ""
     ai_response: str = ""
     translated_message: str = ""
+    translated_ai_response: str = ""  # AI 응답의 한국어 번역
     success: bool = True
     error_message: str = ""
 
@@ -95,14 +99,20 @@ class EmailAgentSystem:
     
     def _setup_agents(self):
         """CrewAI 에이전트 설정"""
-        # 1. 콘텐츠 검증 Agent
+        # 1. 콘텐츠 검증 Agent - RAG 파일 기반 관련성 검증
         self.content_validator = Agent(
             role='Content Validator',
-            goal='이메일 내용이 정상적인 문의인지 스팸/광고인지 판단합니다',
-            backstory='''당신은 이메일 콘텐츠 분석 전문가입니다. 
-            스타일링 서비스 회사의 문의 이메일을 분석하여 
-            정상적인 고객 문의와 스팸/광고/악성 콘텐츠를 구분합니다.
-            비속어, 욕설, 무관한 마케팅 내용을 정확히 감지합니다.''',
+            goal='이메일 내용을 RAG 컨텍스트(회사 서비스 정보)와 비교하여 관련성을 판단하고, 스팸/광고 여부를 검증합니다',
+            backstory='''당신은 이메일 콘텐츠 분석 전문가입니다.
+            스타일그래퍼의 RAG 파일(서비스 정보, 회사 정보, 정책 등)을 기준으로
+            접수된 이메일이 실제 서비스와 관련된 문의인지 판단합니다.
+            
+            분석 기준:
+            1. RAG 컨텍스트에 포함된 서비스(AI 분석, 스타일링 컨설팅, 원데이 스타일링, 프로필 촬영)와의 관련성
+            2. 스팸/광고/악성 콘텐츠 여부 (비속어, 욕설, 무관한 마케팅)
+            3. 회사의 업무 범위(개인 스타일링, 이미지 컨설팅, 프로필 사진 촬영)와의 연관성
+            
+            RAG 파일에 없는 내용이나 서비스 범위를 벗어난 문의는 "irrelevant"로 분류합니다.''',
             llm=self.llm,
             verbose=True
         )
@@ -277,30 +287,41 @@ class EmailAgentSystem:
         service_id: Optional[int]
     ) -> EmailAnalysisResult:
         """CrewAI를 사용한 고급 처리"""
+        import openai
         from utils.rag_context import get_service_specific_context, get_response_guidelines
         
         # RAG 컨텍스트 수집
         rag_context = get_service_specific_context(service_id)
         guidelines = get_response_guidelines()
         
-        # Task 1: 스팸 검증 (더 정밀한 분석)
+        # Task 1: RAG 파일 기반 스팸 및 관련성 검증
         validation_task = Task(
-            description=f'''다음 이메일 내용이 정상적인 스타일링 서비스 문의인지 분석하세요.
+            description=f'''다음 이메일 내용을 아래 RAG 컨텍스트(회사 서비스 정보)와 비교하여 관련성을 분석하세요.
 
-이메일 내용:
+=== 접수된 이메일 내용 ===
 {message}
 
 문의 서비스: {service_name}
 
-다음 기준으로 판단하세요:
-1. 스팸/광고/마케팅 내용인가?
-2. 비속어나 부적절한 표현이 포함되어 있는가?
-3. 스타일링 서비스와 관련 없는 내용인가?
+=== RAG 컨텍스트 (스타일그래퍼 서비스/회사 정보) ===
+{rag_context}
+
+=== 분류 기준 ===
+이메일 내용이 위 RAG 컨텍스트에 포함된 서비스/업무와 관련이 있는지 비교 분석하세요.
+
+1. "spam": 광고, 마케팅, 비속어, 욕설, 사기성 내용 등 명백한 스팸
+2. "irrelevant": 스팸은 아니지만 RAG 컨텍스트의 서비스 범위에 해당하지 않는 문의
+   - RAG 파일에 없는 서비스 문의
+   - 스타일링/이미지 컨설팅/프로필 촬영과 무관한 내용
+   - 회사 업무 범위를 벗어난 요청
+3. "valid": RAG 컨텍스트의 서비스와 관련된 정상적인 문의
+   - 서비스 안내, 가격, 예약 관련 문의
+   - RAG 파일에 포함된 서비스에 대한 질문
 
 JSON 형식으로 응답하세요:
-{{"is_spam": true/false, "reason": "판단 이유"}}''',
+{{"classification": "spam/irrelevant/valid", "reason": "RAG 컨텍스트와 비교한 판단 근거"}}''',
             agent=self.content_validator,
-            expected_output='JSON 형식의 스팸 판단 결과'
+            expected_output='JSON 형식의 콘텐츠 분류 결과 (RAG 파일 기반 관련성 판단 포함)'
         )
         
         # Task 2: 응답 생성
@@ -346,13 +367,39 @@ JSON 형식으로 응답하세요:
         
         # 결과 파싱
         try:
+            import openai
             # 응답 텍스트에서 결과 추출
             result_text = str(crew_result)
             
-            # 스팸 판단 결과 파싱 시도
-            if '"is_spam": true' in result_text.lower():
+            # 분류 결과 파싱 시도 - JSON에서 reason 추출
+            import re
+            reason_match = re.search(r'"reason"\s*:\s*"([^"]+)"', result_text)
+            parsed_reason = reason_match.group(1) if reason_match else ""
+            
+            if '"classification": "spam"' in result_text.lower() or '"classification":"spam"' in result_text.lower():
                 result.is_spam = True
-                result.spam_reason = "AI 분석에 의한 스팸 판단"
+                result.spam_reason = parsed_reason or "AI 분석에 의한 스팸 판단"
+                print(f"🚫 스팸 감지 (CrewAI): {result.spam_reason}")
+                return result
+            elif '"classification": "irrelevant"' in result_text.lower() or '"classification":"irrelevant"' in result_text.lower():
+                result.is_irrelevant = True
+                result.irrelevant_reason = parsed_reason or "RAG 컨텍스트와 비교 결과 관련 없는 내용으로 판단"
+                print(f"⚠️ 관련 없는 내용 감지 (RAG 비교): {result.irrelevant_reason}")
+                # 관련 없는 내용에 대한 간략한 회신 생성
+                result.irrelevant_response = self._generate_irrelevant_response(
+                    name, result.detected_language
+                )
+                result.ai_response = result.irrelevant_response
+                
+                # 번역 처리
+                if result.detected_language != 'ko' and self.openai_api_key:
+                    client = openai.OpenAI(api_key=self.openai_api_key)
+                    result.translated_message = self._translate_to_korean(client, message)
+                    result.translated_ai_response = self._translate_to_korean(client, result.irrelevant_response)
+                else:
+                    result.translated_message = message
+                    result.translated_ai_response = result.irrelevant_response
+                return result
             
             # AI 응답 추출 (마지막 태스크 결과)
             result.ai_response = result_text
@@ -360,6 +407,56 @@ JSON 형식으로 응답하세요:
         except Exception as parse_error:
             print(f"⚠️ CrewAI 결과 파싱 오류: {parse_error}")
             result.ai_response = str(crew_result)
+        
+        # 한국어가 아닌 경우 번역본 생성 (OpenAI API 직접 사용)
+        if result.detected_language != 'ko' and self.openai_api_key:
+            try:
+                client = openai.OpenAI(api_key=self.openai_api_key)
+                
+                # 고객 메시지 번역
+                translate_prompt = f'''다음 텍스트를 한국어로 번역하세요. 원문의 의미를 정확히 전달하세요.
+
+원문:
+{message}
+
+번역:'''
+                
+                translate_response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[{"role": "user", "content": translate_prompt}],
+                    temperature=0.3,
+                    max_tokens=500
+                )
+                
+                result.translated_message = translate_response.choices[0].message.content
+                print(f"✅ 고객 메시지 번역 완료: {result.detected_language} → 한국어")
+                
+                # AI 응답 번역 (외국어로 작성된 경우)
+                if result.ai_response:
+                    translate_ai_prompt = f'''다음 AI 응답을 한국어로 번역하세요. 원문의 의미를 정확히 전달하세요.
+
+원문:
+{result.ai_response}
+
+번역:'''
+                    
+                    translate_ai_response = client.chat.completions.create(
+                        model="gpt-4o-mini",
+                        messages=[{"role": "user", "content": translate_ai_prompt}],
+                        temperature=0.3,
+                        max_tokens=1000
+                    )
+                    
+                    result.translated_ai_response = translate_ai_response.choices[0].message.content
+                    print(f"✅ AI 응답 번역 완료: {result.detected_language} → 한국어")
+                
+            except Exception as translate_error:
+                print(f"⚠️ 번역 오류: {translate_error}")
+                result.translated_message = f"[번역 실패] 원문: {message}"
+                result.translated_ai_response = f"[번역 실패] 원문: {result.ai_response}"
+        else:
+            result.translated_message = message
+            result.translated_ai_response = result.ai_response
         
         return result
     
@@ -389,35 +486,63 @@ JSON 형식으로 응답하세요:
         rag_context = get_service_specific_context(service_id)
         guidelines = get_response_guidelines()
         
-        # 1. 스팸 검증
-        spam_check_prompt = f'''다음 이메일이 스팸인지 판단하세요.
+        # 1. RAG 파일 기반 스팸 및 관련성 검증
+        content_check_prompt = f'''다음 이메일 내용을 RAG 컨텍스트(회사 서비스 정보)와 비교하여 관련성을 분석하세요.
 
-이메일 내용:
+=== 접수된 이메일 내용 ===
 {message}
 
 문의 서비스: {service_name}
 
-스타일링 서비스 회사에 대한 정상적인 문의가 아닌 경우 스팸으로 판단합니다.
-(광고, 마케팅, 비속어, 무관한 내용 등)
+=== RAG 컨텍스트 (스타일그래퍼 서비스/회사 정보) ===
+{rag_context}
 
-JSON으로만 응답: {{"is_spam": true/false, "reason": "판단 이유"}}'''
+=== 분류 기준 ===
+이메일 내용이 위 RAG 컨텍스트에 포함된 서비스/업무와 관련이 있는지 비교 분석하세요.
 
-        spam_response = client.chat.completions.create(
+1. "spam": 광고, 마케팅, 비속어, 욕설, 사기성 내용 등 명백한 스팸
+2. "irrelevant": 스팸은 아니지만 RAG 컨텍스트의 서비스 범위에 해당하지 않는 문의
+   - RAG 파일에 없는 서비스 문의 (예: 웹개발, 배달, 금융 등)
+   - 스타일링/이미지 컨설팅/프로필 촬영과 무관한 내용
+   - 회사 업무 범위를 벗어난 요청
+3. "valid": RAG 컨텍스트의 서비스와 관련된 정상적인 문의
+   - 서비스 안내, 가격, 예약 관련 문의
+   - RAG 파일에 포함된 서비스에 대한 질문
+
+JSON으로만 응답: {{"classification": "spam/irrelevant/valid", "reason": "RAG 컨텍스트와 비교한 판단 근거"}}'''
+
+        content_response = client.chat.completions.create(
             model="gpt-4o-mini",
-            messages=[{"role": "user", "content": spam_check_prompt}],
+            messages=[{"role": "user", "content": content_check_prompt}],
             temperature=0.3,
             max_tokens=200
         )
         
         try:
-            spam_result = json.loads(spam_response.choices[0].message.content)
-            result.is_spam = spam_result.get('is_spam', False)
-            result.spam_reason = spam_result.get('reason', '')
-        except:
+            content_result = json.loads(content_response.choices[0].message.content)
+            classification = content_result.get('classification', 'valid')
+            reason = content_result.get('reason', '')
+            
+            if classification == 'spam':
+                result.is_spam = True
+                result.spam_reason = reason
+                print(f"🚫 스팸 감지 (AI): {reason}")
+                return result
+            elif classification == 'irrelevant':
+                result.is_irrelevant = True
+                result.irrelevant_reason = reason
+                print(f"⚠️ 관련 없는 내용 감지 (RAG 비교): {reason}")
+                # 관련 없는 내용에 대한 간략한 회신 생성
+                result.irrelevant_response = self._generate_irrelevant_response(
+                    name, result.detected_language
+                )
+                result.ai_response = result.irrelevant_response
+                result.translated_ai_response = result.irrelevant_response if result.detected_language == 'ko' else self._translate_to_korean(client, result.irrelevant_response)
+                result.translated_message = message if result.detected_language == 'ko' else self._translate_to_korean(client, message)
+                return result
+        except Exception as parse_error:
+            print(f"⚠️ 콘텐츠 분류 파싱 오류: {parse_error}")
             pass
-        
-        if result.is_spam:
-            return result
         
         # 2. 언어별 응답 생성
         language_instruction = {
@@ -460,6 +585,7 @@ JSON으로만 응답: {{"is_spam": true/false, "reason": "판단 이유"}}'''
         
         # 3. 한국어가 아닌 경우 번역본 생성
         if result.detected_language != 'ko':
+            # 고객 메시지 번역
             translate_prompt = f'''다음 텍스트를 한국어로 번역하세요. 원문의 의미를 정확히 전달하세요.
 
 원문:
@@ -475,10 +601,107 @@ JSON으로만 응답: {{"is_spam": true/false, "reason": "판단 이유"}}'''
             )
             
             result.translated_message = translate_response.choices[0].message.content
+            print(f"✅ 고객 메시지 번역 완료: {result.detected_language} → 한국어")
+            
+            # AI 응답 번역 (외국어로 작성된 경우)
+            if result.ai_response:
+                translate_ai_prompt = f'''다음 AI 응답을 한국어로 번역하세요. 원문의 의미를 정확히 전달하세요.
+
+원문:
+{result.ai_response}
+
+번역:'''
+                
+                translate_ai_response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[{"role": "user", "content": translate_ai_prompt}],
+                    temperature=0.3,
+                    max_tokens=1000
+                )
+                
+                result.translated_ai_response = translate_ai_response.choices[0].message.content
+                print(f"✅ AI 응답 번역 완료: {result.detected_language} → 한국어")
         else:
             result.translated_message = message
+            result.translated_ai_response = result.ai_response
         
         return result
+    
+    def _generate_irrelevant_response(self, name: str, language: str) -> str:
+        """관련 없는 내용에 대한 간략한 회신 생성"""
+        responses = {
+            'ko': f'''안녕하세요, {name}님.
+
+스타일그래퍼에 연락해 주셔서 감사합니다.
+
+죄송합니다만, 문의해 주신 내용은 저희 회사의 서비스 범위와 관련이 없어 특별히 안내드릴 사항이 없습니다.
+
+저희는 스타일링 컨설팅, AI 스타일 분석, 원데이 스타일링, 프로필 촬영 서비스를 제공하고 있습니다.
+관련 문의가 있으시면 언제든지 연락 주세요.
+
+감사합니다.
+스타일그래퍼 팀 드림''',
+            
+            'en': f'''Dear {name},
+
+Thank you for contacting Stylegrapher.
+
+We apologize, but the content of your inquiry is not related to our company's services, so we are unable to provide any specific assistance.
+
+We offer styling consulting, AI style analysis, one-day styling, and profile photography services.
+Please feel free to contact us if you have any related inquiries.
+
+Best regards,
+Stylegrapher Team''',
+            
+            'ja': f'''{name}様
+
+スタイルグラファーにお問い合わせいただきありがとうございます。
+
+申し訳ございませんが、お問い合わせいただいた内容は弊社のサービス範囲と関連がないため、特にご案内できる事項がございません。
+
+弊社はスタイリングコンサルティング、AIスタイル分析、ワンデースタイリング、プロフィール撮影サービスを提供しております。
+関連するお問い合わせがございましたら、いつでもご連絡ください。
+
+どうぞよろしくお願いいたします。
+スタイルグラファーチーム''',
+            
+            'zh': f'''{name}您好，
+
+感谢您联系Stylegrapher。
+
+非常抱歉，您咨询的内容与我们公司的服务范围无关，因此我们无法提供具体的帮助。
+
+我们提供造型咨询、AI风格分析、一日造型、个人写真服务。
+如有相关咨询，请随时联系我们。
+
+此致敬礼，
+Stylegrapher团队'''
+        }
+        
+        return responses.get(language, responses['ko'])
+    
+    def _translate_to_korean(self, client, text: str) -> str:
+        """텍스트를 한국어로 번역"""
+        try:
+            translate_prompt = f'''다음 텍스트를 한국어로 번역하세요. 원문의 의미를 정확히 전달하세요.
+
+원문:
+{text}
+
+번역:'''
+            
+            translate_response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": translate_prompt}],
+                temperature=0.3,
+                max_tokens=500
+            )
+            
+            return translate_response.choices[0].message.content
+        except Exception as e:
+            print(f"⚠️ 번역 오류: {e}")
+            return f"[번역 실패] 원문: {text}"
     
     def _generate_fallback_response(
         self,

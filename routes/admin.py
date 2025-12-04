@@ -31,7 +31,7 @@ from utils.mongo_models import (
     get_mongo_db, init_collections,
     User, Service, ServiceOption, GalleryGroup, Gallery,
     Booking, Inquiry, CollageText, SiteSettings,
-    TermsOfService, PrivacyPolicy, AdminNotificationEmail
+    TermsOfService, PrivacyPolicy, AdminNotificationEmail, CompanyInfo
 )
 
 # .env 파일 로드 (fork-safe: MongoDB 연결은 lazy하게 생성됨)
@@ -1339,6 +1339,41 @@ def update_privacy():
         flash(f'오류가 발생했습니다: {str(e)}', 'error')
     
     return redirect(url_for('admin.manage_privacy'))
+
+
+# 회사 정보 관리 (RAG 컨텍스트용)
+@admin.route('/company-info')
+@login_required
+def manage_company_info():
+    try:
+        company_info = CompanyInfo.get_current_info()
+        return render_template('admin/company_info.html', company_info=company_info)
+    except Exception as e:
+        flash(f'회사 정보 로드 중 오류가 발생했습니다: {str(e)}', 'error')
+        return redirect(url_for('admin.dashboard'))
+
+
+@admin.route('/company-info/update', methods=['POST'])
+@login_required
+def update_company_info():
+    try:
+        company_info = CompanyInfo.get_current_info()
+        
+        company_info.company_name = request.form.get('company_name', '').strip()
+        company_info.email = request.form.get('email', '').strip()
+        company_info.business_type = request.form.get('business_type', '').strip()
+        company_info.service_areas = request.form.get('service_areas', '').strip()
+        company_info.customer_service_principles = request.form.get('customer_service_principles', '').strip()
+        company_info.additional_info = request.form.get('additional_info', '').strip()
+        company_info.updated_at = datetime.utcnow()
+        company_info.save()
+        
+        flash('회사 정보가 성공적으로 업데이트되었습니다. RAG 컨텍스트에 자동으로 반영됩니다.', 'success')
+        
+    except Exception as e:
+        flash(f'오류가 발생했습니다: {str(e)}', 'error')
+    
+    return redirect(url_for('admin.manage_company_info'))
 
 
 @admin.route('/security-dashboard')

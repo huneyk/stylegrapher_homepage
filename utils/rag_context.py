@@ -89,8 +89,29 @@ def get_services_context() -> str:
 
 
 def get_company_info_context() -> str:
-    """회사 기본 정보 컨텍스트"""
-    context = """
+    """회사 기본 정보 컨텍스트 (DB에서 동적으로 가져옴)"""
+    from utils.mongo_models import CompanyInfo
+    
+    try:
+        company_info = CompanyInfo.get_current_info()
+        
+        context_parts = []
+        context_parts.append("=== 스타일그래퍼 회사 정보 ===\n")
+        context_parts.append(f"회사명: {company_info.company_name}")
+        context_parts.append(f"이메일: {company_info.email}")
+        context_parts.append(f"업종: {company_info.business_type}")
+        context_parts.append(f"\n서비스 분야:\n{company_info.service_areas}")
+        context_parts.append(f"\n고객 응대 원칙:\n{company_info.customer_service_principles}")
+        
+        if company_info.additional_info:
+            context_parts.append(f"\n추가 정보:\n{company_info.additional_info}")
+        
+        return "\n".join(context_parts)
+        
+    except Exception as e:
+        print(f"회사 정보 로드 오류: {str(e)}, 기본값 사용")
+        # 기본값 (DB 연결 오류 시 폴백)
+        return """
 === 스타일그래퍼 회사 정보 ===
 
 회사명: 스타일그래퍼 (Stylegrapher)
@@ -98,18 +119,11 @@ def get_company_info_context() -> str:
 업종: 개인 스타일링, 이미지 컨설팅, 프로필 사진 촬영
 
 서비스 분야:
-1. AI 분석 - 인공지능을 활용한 정밀 스타일 분석
-2. 컨설팅 프로그램 - 전문가와 함께하는 1:1 맞춤 컨설팅
-3. 원데이 스타일링 - 하루만에 완성하는 완벽한 변신
-4. 프리미엄 화보 제작 - 특별한 순간을 기록하는 전문 촬영
+AI 분석, 컨설팅 프로그램, 원데이 스타일링, 프리미엄 화보 제작
 
 고객 응대 원칙:
-- 친절하고 전문적인 응대
-- 고객의 요구사항을 정확히 파악
-- 맞춤형 서비스 안내
-- 신속한 답변 제공
+친절하고 전문적인 응대, 고객의 요구사항을 정확히 파악, 맞춤형 서비스 안내, 신속한 답변 제공
 """
-    return context
 
 
 def get_terms_context() -> str:

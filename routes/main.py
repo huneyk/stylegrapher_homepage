@@ -508,6 +508,8 @@ def contact():
                 status='대기',
                 is_spam=ai_result.is_spam,
                 spam_reason=ai_result.spam_reason,
+                is_irrelevant=ai_result.is_irrelevant,
+                irrelevant_reason=ai_result.irrelevant_reason,
                 detected_language=ai_result.detected_language,
                 sentiment=ai_result.sentiment,
                 sentiment_detail=ai_result.sentiment_detail,
@@ -518,8 +520,36 @@ def contact():
             )
             booking.save()
             
-            # 스팸이 아닌 경우에만 이메일 처리
-            if not ai_result.is_spam:
+            # 스팸인 경우: 회신하지 않음
+            if ai_result.is_spam:
+                print(f"🚫 스팸 예약 차단: {name} ({email}) - 사유: {ai_result.spam_reason}")
+            # 관련 없는 내용인 경우: 간략한 회신만 전송, 관리자 알림 없음
+            elif ai_result.is_irrelevant:
+                print(f"⚠️ 관련 없는 예약 요청: {name} ({email}) - 사유: {ai_result.irrelevant_reason}")
+                # 고객에게 간략한 회신만 전송
+                if ai_result.ai_response:
+                    try:
+                        customer_subject = _get_customer_subject(ai_result.detected_language, selected_service_name, is_booking=True)
+                        
+                        customer_msg = Message(
+                            subject=customer_subject,
+                            sender=current_app.config['MAIL_DEFAULT_SENDER'],
+                            recipients=[email],
+                            body=ai_result.ai_response
+                        )
+                        
+                        mail.send(customer_msg)
+                        response_sent = True
+                        booking.response_sent = True
+                        booking.response_sent_at = datetime.utcnow()
+                        booking.response_email_subject = customer_subject
+                        print(f"✅ 관련 없는 예약 요청에 간략한 회신 발송 완료: {email}")
+                        
+                    except Exception as e:
+                        print(f"❌ 관련 없는 예약 요청 회신 발송 오류: {str(e)}")
+                # 관리자 알림 없음
+            # 정상적인 예약인 경우: 고객 응답 + 관리자 알림
+            elif not ai_result.is_spam:
                 # 1. 고객에게 AI 응답 전송
                 if ai_result.ai_response:
                     try:
@@ -564,21 +594,26 @@ def contact():
 • 감성: {ai_result.sentiment} ({ai_result.sentiment_detail})
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📝 메시지
+📝 메시지 원문
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 {message}
 
 ■ {datetime_message}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔄 한국어 번역 (원문이 한국어가 아닌 경우)
+🔄 메시지 한국어 번역 (원문이 한국어가 아닌 경우)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 {ai_result.translated_message if ai_result.detected_language != 'ko' else '(원문이 한국어입니다)'}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🤖 AI 자동 응답 (고객에게 발송됨)
+🤖 AI 자동 응답 원문 (고객에게 발송됨)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 {ai_result.ai_response if ai_result.ai_response else '(AI 응답 생성 실패)'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔄 AI 응답 한국어 번역 (원문이 한국어가 아닌 경우)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{ai_result.translated_ai_response if ai_result.detected_language != 'ko' else '(원문이 한국어입니다)'}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 이 메일은 스타일그래퍼 홈페이지에서 자동으로 발송되었습니다.
@@ -608,8 +643,6 @@ def contact():
                     
                 except Exception as e:
                     print(f"❌ 예약 관리자 알림 이메일 발송 오류: {str(e)}")
-            else:
-                print(f"🚫 스팸 예약 차단: {name} ({email}) - 사유: {ai_result.spam_reason}")
             
             booking.save()
             
@@ -626,6 +659,8 @@ def contact():
                 message=enhanced_message,
                 is_spam=ai_result.is_spam,
                 spam_reason=ai_result.spam_reason,
+                is_irrelevant=ai_result.is_irrelevant,
+                irrelevant_reason=ai_result.irrelevant_reason,
                 detected_language=ai_result.detected_language,
                 sentiment=ai_result.sentiment,
                 sentiment_detail=ai_result.sentiment_detail,
@@ -636,8 +671,36 @@ def contact():
             )
             inquiry.save()
             
-            # 스팸이 아닌 경우에만 이메일 처리
-            if not ai_result.is_spam:
+            # 스팸인 경우: 회신하지 않음
+            if ai_result.is_spam:
+                print(f"🚫 스팸 문의 차단: {name} ({email}) - 사유: {ai_result.spam_reason}")
+            # 관련 없는 내용인 경우: 간략한 회신만 전송, 관리자 알림 없음
+            elif ai_result.is_irrelevant:
+                print(f"⚠️ 관련 없는 문의: {name} ({email}) - 사유: {ai_result.irrelevant_reason}")
+                # 고객에게 간략한 회신만 전송
+                if ai_result.ai_response:
+                    try:
+                        customer_subject = _get_customer_subject(ai_result.detected_language, selected_service_name, is_booking=False)
+                        
+                        customer_msg = Message(
+                            subject=customer_subject,
+                            sender=current_app.config['MAIL_DEFAULT_SENDER'],
+                            recipients=[email],
+                            body=ai_result.ai_response
+                        )
+                        
+                        mail.send(customer_msg)
+                        response_sent = True
+                        inquiry.response_sent = True
+                        inquiry.response_sent_at = datetime.utcnow()
+                        inquiry.response_email_subject = customer_subject
+                        print(f"✅ 관련 없는 문의에 간략한 회신 발송 완료: {email}")
+                        
+                    except Exception as e:
+                        print(f"❌ 관련 없는 문의 회신 발송 오류: {str(e)}")
+                # 관리자 알림 없음
+            # 정상적인 문의인 경우: 고객 응답 + 관리자 알림
+            elif not ai_result.is_spam:
                 # 1. 고객에게 AI 응답 전송
                 if ai_result.ai_response:
                     try:
@@ -687,14 +750,19 @@ def contact():
 {message}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔄 한국어 번역 (원문이 한국어가 아닌 경우)
+🔄 메시지 한국어 번역 (원문이 한국어가 아닌 경우)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 {ai_result.translated_message if ai_result.detected_language != 'ko' else '(원문이 한국어입니다)'}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🤖 AI 자동 응답 (고객에게 발송됨)
+🤖 AI 자동 응답 원문 (고객에게 발송됨)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 {ai_result.ai_response if ai_result.ai_response else '(AI 응답 생성 실패)'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔄 AI 응답 한국어 번역 (원문이 한국어가 아닌 경우)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{ai_result.translated_ai_response if ai_result.detected_language != 'ko' else '(원문이 한국어입니다)'}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 이 메일은 스타일그래퍼 홈페이지에서 자동으로 발송되었습니다.
@@ -724,8 +792,6 @@ def contact():
                     
                 except Exception as e:
                     print(f"❌ 문의 관리자 알림 이메일 발송 오류: {str(e)}")
-            else:
-                print(f"🚫 스팸 문의 차단: {name} ({email}) - 사유: {ai_result.spam_reason}")
             
             inquiry.save()
         

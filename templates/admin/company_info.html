@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}회사 정보 관리 (RAG) - 관리자{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4 page-title">회사 정보 관리</h2>
+            
+            <div class="alert alert-info mb-4">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>RAG 컨텍스트 연동:</strong> 이 정보는 AI 응답 생성 시 참조됩니다. 문의 응답, 예약 문의 답변 등에 활용됩니다.
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-building me-2"></i>회사 기본 정보 편집
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.update_company_info') }}">
+                        <div class="mb-3">
+                            <label for="company_name" class="form-label">
+                                <i class="fas fa-id-badge me-2"></i>회사명
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="company_name" 
+                                   name="company_name" 
+                                   value="{{ company_info.company_name }}"
+                                   placeholder="예: 스타일그래퍼 (Stylegrapher)">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope me-2"></i>대표 이메일
+                            </label>
+                            <input type="email" 
+                                   class="form-control" 
+                                   id="email" 
+                                   name="email" 
+                                   value="{{ company_info.email }}"
+                                   placeholder="예: ysg.stylegrapher@gmail.com">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="business_type" class="form-label">
+                                <i class="fas fa-briefcase me-2"></i>업종
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="business_type" 
+                                   name="business_type" 
+                                   value="{{ company_info.business_type }}"
+                                   placeholder="예: 개인 스타일링, 이미지 컨설팅, 프로필 사진 촬영">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="service_areas" class="form-label">
+                                <i class="fas fa-concierge-bell me-2"></i>서비스 분야 (간단한 요약)
+                            </label>
+                            <textarea class="form-control" 
+                                      id="service_areas" 
+                                      name="service_areas" 
+                                      rows="3"
+                                      placeholder="예: AI 분석, 컨설팅 프로그램, 원데이 스타일링, 프리미엄 화보 제작">{{ company_info.service_areas }}</textarea>
+                            <small class="form-text text-muted">
+                                서비스의 상세 내용은 '서비스 관리'에서 별도로 관리됩니다. 여기서는 간단한 요약만 입력하세요.
+                            </small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="customer_service_principles" class="form-label">
+                                <i class="fas fa-handshake me-2"></i>고객 응대 원칙
+                            </label>
+                            <textarea class="form-control" 
+                                      id="customer_service_principles" 
+                                      name="customer_service_principles" 
+                                      rows="4"
+                                      placeholder="예: 친절하고 전문적인 응대, 고객의 요구사항을 정확히 파악, 맞춤형 서비스 안내, 신속한 답변 제공">{{ company_info.customer_service_principles }}</textarea>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="additional_info" class="form-label">
+                                <i class="fas fa-plus-circle me-2"></i>추가 정보
+                            </label>
+                            <textarea class="form-control" 
+                                      id="additional_info" 
+                                      name="additional_info" 
+                                      rows="4"
+                                      placeholder="AI가 고객 응대 시 참고할 추가적인 정보 (영업시간, 위치, 특별 안내 등)">{{ company_info.additional_info }}</textarea>
+                            <small class="form-text text-muted">
+                                이 정보는 AI 응답 생성 시 참조됩니다. 특별히 안내해야 할 내용이 있다면 여기에 입력하세요.
+                            </small>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="text-muted">
+                                <small>
+                                    <i class="fas fa-clock me-1"></i>
+                                    최종 업데이트: {% if company_info.updated_at %}{% if company_info.updated_at is string %}{{ company_info.updated_at }}{% else %}{{ company_info.updated_at.strftime('%Y년 %m월 %d일 %H:%M') }}{% endif %}{% else %}최초 생성{% endif %}
+                                </small>
+                            </div>
+                            <div>
+                                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary me-2">
+                                    <i class="fas fa-home me-1"></i>관리자 대시보드
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i>저장
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- 미리보기 섹션 -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-robot me-2"></i>RAG 컨텍스트 미리보기
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="preview-content" style="max-height: 400px; overflow-y: auto;">
+                        <pre id="rag-preview" style="white-space: pre-wrap; font-family: 'Nanum Gothic', sans-serif; font-size: 14px; background-color: #f8f9fa; padding: 15px; border-radius: 8px;">
+=== 스타일그래퍼 회사 정보 ===
+
+회사명: {{ company_info.company_name }}
+이메일: {{ company_info.email }}
+업종: {{ company_info.business_type }}
+
+서비스 분야:
+{{ company_info.service_areas }}
+
+고객 응대 원칙:
+{{ company_info.customer_service_principles }}
+{% if company_info.additional_info %}
+추가 정보:
+{{ company_info.additional_info }}
+{% endif %}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.page-title {
+    color: rgb(var(--main-color-rgb));
+    font-weight: 600;
+}
+
+.card {
+    border: 1px solid rgba(var(--main-color-rgb), 0.2);
+    border-radius: 15px;
+}
+
+.card-header {
+    background-color: rgba(var(--main-color-rgb), 0.1);
+    border-bottom: 1px solid rgba(var(--main-color-rgb), 0.2);
+    color: rgb(var(--main-color-rgb));
+}
+
+.btn-primary {
+    background-color: rgb(var(--main-color-rgb));
+    border-color: rgb(var(--main-color-rgb));
+}
+
+.btn-primary:hover {
+    background-color: rgba(var(--main-color-rgb), 0.9);
+    border-color: rgba(var(--main-color-rgb), 0.9);
+}
+
+.alert-info {
+    background-color: rgba(var(--main-color-rgb), 0.1);
+    border-color: rgba(var(--main-color-rgb), 0.3);
+    color: rgb(var(--main-color-rgb));
+}
+
+.form-control {
+    border: 1px solid rgba(var(--main-color-rgb), 0.3);
+}
+
+.form-control:focus {
+    border-color: rgb(var(--main-color-rgb));
+    box-shadow: 0 0 0 0.2rem rgba(var(--main-color-rgb), 0.25);
+}
+
+.preview-content pre {
+    color: #333333 !important;
+}
+</style>
+{% endblock %}
+
+

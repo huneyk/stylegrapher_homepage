@@ -114,6 +114,10 @@ def init_collections():
     if 'privacy_policy' not in db.list_collection_names():
         db.create_collection('privacy_policy')
     
+    # company_info 컬렉션
+    if 'company_info' not in db.list_collection_names():
+        db.create_collection('company_info')
+    
     # admin_notification_emails 컬렉션
     if 'admin_notification_emails' not in db.list_collection_names():
         db.create_collection('admin_notification_emails')
@@ -469,6 +473,8 @@ class Booking(MongoModel):
         # AI 처리 관련 필드
         self.is_spam = kwargs.get('is_spam', False)  # 스팸 여부
         self.spam_reason = kwargs.get('spam_reason', '')  # 스팸 판단 이유
+        self.is_irrelevant = kwargs.get('is_irrelevant', False)  # RAG와 관련 없는 내용 여부
+        self.irrelevant_reason = kwargs.get('irrelevant_reason', '')  # 관련 없는 내용 판단 이유
         self.detected_language = kwargs.get('detected_language', '')  # 감지된 언어
         self.sentiment = kwargs.get('sentiment', '')  # 감성
         self.sentiment_detail = kwargs.get('sentiment_detail', '')  # 감성 상세
@@ -550,6 +556,8 @@ class Inquiry(MongoModel):
         # AI 처리 관련 필드
         self.is_spam = kwargs.get('is_spam', False)  # 스팸 여부
         self.spam_reason = kwargs.get('spam_reason', '')  # 스팸 판단 이유
+        self.is_irrelevant = kwargs.get('is_irrelevant', False)  # RAG와 관련 없는 내용 여부
+        self.irrelevant_reason = kwargs.get('irrelevant_reason', '')  # 관련 없는 내용 판단 이유
         self.detected_language = kwargs.get('detected_language', '')  # 감지된 언어 (ko, en, ja, zh 등)
         self.sentiment = kwargs.get('sentiment', '')  # 감성 (positive, neutral, negative)
         self.sentiment_detail = kwargs.get('sentiment_detail', '')  # 감성 상세 (formal, casual, urgent 등)
@@ -751,6 +759,35 @@ class PrivacyPolicy(MongoModel):
         policy = cls(content='개인정보처리방침 내용을 입력해주세요.')
         policy.save()
         return policy
+
+
+class CompanyInfo(MongoModel):
+    """회사 정보 모델 (RAG 컨텍스트용)"""
+    collection_name = 'company_info'
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.company_name = kwargs.get('company_name', '스타일그래퍼 (Stylegrapher)')
+        self.email = kwargs.get('email', 'ysg.stylegrapher@gmail.com')
+        self.business_type = kwargs.get('business_type', '개인 스타일링, 이미지 컨설팅, 프로필 사진 촬영')
+        self.service_areas = kwargs.get('service_areas', 'AI 분석, 컨설팅 프로그램, 원데이 스타일링, 프리미엄 화보 제작')
+        self.customer_service_principles = kwargs.get('customer_service_principles', 
+            '친절하고 전문적인 응대, 고객의 요구사항을 정확히 파악, 맞춤형 서비스 안내, 신속한 답변 제공')
+        self.additional_info = kwargs.get('additional_info', '')
+        self.created_at = kwargs.get('created_at', datetime.utcnow())
+        self.updated_at = kwargs.get('updated_at', datetime.utcnow())
+    
+    @classmethod
+    def get_current_info(cls):
+        """현재 회사 정보 가져오기"""
+        collection = cls.get_collection()
+        doc = collection.find_one()
+        if doc:
+            return cls.from_doc(doc)
+        # 기본 회사 정보 생성
+        info = cls()
+        info.save()
+        return info
 
 
 class AdminNotificationEmail(MongoModel):
