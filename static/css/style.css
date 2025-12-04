@@ -1,51 +1,58 @@
 /* ============================================
    Stylegrapher - "The Violet Prism" Design
-   Dark Mode Base + Neon Violet Glow
+   Light Mode Base
    ============================================ */
 
 /* ============================================
    CSS Custom Properties (Design Tokens)
    ============================================ */
 :root {
-    /* Primary Colors - Neon Violet Theme */
-    --deep-violet: #120024;
-    --rich-black: #0A001A;
-    --neon-lavender: #F8F4FF;
-    --electric-violet: #E8DCFF;
+    /* Primary Colors - Light Violet Theme */
+    --deep-violet: #f8f9fa;
+    --rich-black: #ffffff;
+    --neon-lavender: #8B5CF6;
+    --electric-violet: #A78BFA;
     --soft-violet: #F0E8FF;
     
     /* Gradient Colors */
-    --glow-start: rgba(253, 252, 255, 0.9);
-    --glow-end: rgba(200, 170, 255, 0.7);
+    --glow-start: rgba(139, 92, 246, 0.3);
+    --glow-end: rgba(167, 139, 250, 0.2);
     
-    /* Text Colors */
-    --text-primary: #FFFFFF;
-    --text-secondary: rgba(255, 255, 255, 0.95);
-    --text-muted: rgba(255, 255, 255, 0.85);
+    /* Text Colors - Light Mode */
+    --text-primary: #000000;
+    --text-secondary: #6c757d;
+    --text-muted: #8e8e8e;
     
-    /* Glass Effect */
-    --glass-bg: rgba(18, 0, 36, 0.85);
-    --glass-border: rgba(200, 170, 255, 0.3);
+    /* Glass Effect - Light Mode */
+    --glass-bg: rgba(255, 255, 255, 0.9);
+    --glass-border: rgba(139, 92, 246, 0.25);
     --glass-blur: 20px;
     
-    /* Shadows */
-    --neon-glow: 0 0 20px rgba(200, 170, 255, 0.5), 0 0 40px rgba(180, 140, 255, 0.3);
-    --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-    --hover-glow: 0 0 30px rgba(200, 170, 255, 0.6), 0 0 60px rgba(180, 140, 255, 0.4);
+    /* Shadows - Light Mode */
+    --neon-glow: 0 0 20px rgba(139, 92, 246, 0.3), 0 0 40px rgba(167, 139, 250, 0.15);
+    --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --hover-glow: 0 0 30px rgba(139, 92, 246, 0.3), 0 0 60px rgba(167, 139, 250, 0.2);
     
     /* Transitions */
     --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-fast: all 0.2s ease;
     
     /* Dynamic Site Colors (overridden by Flask) */
-    --main-color-rgb: 253, 252, 255;
-    --sub-color-rgb: 200, 170, 255;
-    --background-color-rgb: 18, 0, 36;
+    --main-color-rgb: 139, 92, 246;
+    --sub-color-rgb: 167, 139, 250;
+    --background-color-rgb: 255, 255, 255;
     --main-color: rgb(var(--main-color-rgb));
     --sub-color: rgb(var(--sub-color-rgb));
     --background-color: rgb(var(--background-color-rgb));
     --main-color-alpha: rgba(var(--main-color-rgb), 0.9);
     --sub-color-alpha: rgba(var(--sub-color-rgb), 0.8);
+    
+    /* Light Mode Specific */
+    --primary-purple: #663399;
+    --light-purple: #9966cc;
+    --dark-purple: #4B0082;
+    --white: #ffffff;
+    --black: #000000;
 }
 
 /* ============================================
@@ -66,18 +73,19 @@ html {
 }
 
 body {
-    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, var(--rich-black) 0%, var(--deep-violet) 50%, var(--rich-black) 100%);
-    background-attachment: fixed;
-    color: var(--text-primary);
-    line-height: 1.7;
+    font-family: 'Nanum Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    background: #ffffff;
+    color: #000000;
+    line-height: 1.6;
     min-height: 100vh;
     overflow-x: hidden;
     max-width: 100vw;
     position: relative;
+    font-size: 16px;
+    font-weight: 400;
 }
 
-/* Background Pattern Overlay */
+/* Background Pattern Overlay - Light Mode */
 body::before {
     content: '';
     position: fixed;
@@ -86,9 +94,9 @@ body::before {
     width: 100%;
     height: 100%;
     background-image: 
-        radial-gradient(ellipse at 20% 30%, rgba(200, 170, 255, 0.1) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 70%, rgba(180, 140, 255, 0.08) 0%, transparent 50%),
-        radial-gradient(ellipse at 50% 50%, rgba(180, 140, 255, 0.05) 0%, transparent 70%);
+        radial-gradient(ellipse at 20% 30%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 70%, rgba(167, 139, 250, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.04) 0%, transparent 70%);
     pointer-events: none;
     z-index: -1;
 }
@@ -167,13 +175,6 @@ h4, h5, h6, p, span, a, li, label, input, textarea, button {
     padding: var(--stg-body-padding) !important;
 }
 
-/* Dark Mode - STG Body Text & Card Text Color */
-body:not(.light-mode) .stg_body_text,
-body:not(.light-mode) .stg-body-text,
-body:not(.light-mode) .stg_card_text,
-body:not(.light-mode) .stg-card-text {
-    color: var(--stg-body-color-dark);
-}
 
 /* Light Mode - STG Body Text & Card Text Color */
 body.light-mode .stg_body_text,
@@ -242,14 +243,6 @@ p, li,
     margin-bottom: 1rem;
 }
 
-/* STG Card Title Dark Mode */
-body:not(.light-mode) .stg_card_title,
-body:not(.light-mode) .stg-card-title {
-    color: var(--stg-card-title-color-dark) !important;
-    background: var(--stg-card-title-bg-dark);
-    border-color: var(--stg-card-title-border-dark);
-    text-shadow: var(--stg-card-title-text-shadow-dark);
-}
 
 /* STG Card Title 반응형 */
 @media (max-width: 768px) {
@@ -353,11 +346,6 @@ body.light-mode .stg_card_format:hover {
     transition: all 0.4s ease;
 }
 
-/* Dark Mode Icon */
-body:not(.light-mode) .stg_card_format .stg_card_icon i {
-    color: #E0C8FF !important;
-    filter: drop-shadow(0 0 25px rgba(200, 170, 255, 0.7));
-}
 
 /* Light Mode Icon */
 body.light-mode .stg_card_format .stg_card_icon i {
@@ -379,10 +367,6 @@ body.light-mode .stg_card_format .stg_card_icon i {
     white-space: normal;
 }
 
-/* Dark Mode Description */
-body:not(.light-mode) .stg_card_format .stg_card_description {
-    color: var(--stg-body-color-dark);
-}
 
 /* Light Mode Description */
 body.light-mode .stg_card_format .stg_card_description {
@@ -444,19 +428,6 @@ body.light-mode .stg_card_format .stg_card_option_btn:hover {
     transform: translateY(-2px);
 }
 
-/* Dark Mode Option Button */
-body:not(.light-mode) .stg_card_format .stg_card_option_btn {
-    background: rgba(200, 170, 255, 0.1);
-    color: #FDFCFF !important;
-    border: 1px solid rgba(200, 170, 255, 0.3);
-}
-
-body:not(.light-mode) .stg_card_format .stg_card_option_btn:hover {
-    background: linear-gradient(135deg, #F8F4FF, #E8DCFF);
-    color: #1a0030 !important;
-    box-shadow: 0 0 25px rgba(200, 170, 255, 0.5);
-    transform: translateY(-2px);
-}
 
 /* Option Button Text */
 .stg_card_format .stg_card_option_text {
@@ -472,14 +443,6 @@ body.light-mode .stg_card_format .stg_card_option_btn:hover .stg_card_option_tex
     color: #ffffff !important;
 }
 
-body:not(.light-mode) .stg_card_format .stg_card_option_text {
-    color: #FDFCFF !important;
-}
-
-body:not(.light-mode) .stg_card_format .stg_card_option_btn:hover .stg_card_option_text {
-    color: #1a0030 !important;
-    transform: translateX(-5px);
-}
 
 /* Option Arrow */
 .stg_card_format .stg_card_option_arrow {
@@ -596,10 +559,6 @@ body.light-mode .stg_card_format .stg_card_option_arrow {
     transform: translateY(-15px);
 }
 
-body:not(.light-mode) .stg_card_format--additional:hover {
-    border-color: rgba(181, 126, 220, 0.5);
-    box-shadow: 0 0 50px rgba(181, 126, 220, 0.3), 0 25px 70px rgba(0, 0, 0, 0.5);
-}
 
 .stg_card_format--additional .stg_card_icon {
     margin-bottom: 1.5rem;
@@ -610,10 +569,6 @@ body:not(.light-mode) .stg_card_format--additional:hover {
     transform: scale(1.15) rotate(5deg);
 }
 
-body:not(.light-mode) .stg_card_format--additional:hover .stg_card_icon i {
-    color: #F0E0FF !important;
-    filter: drop-shadow(0 0 40px rgba(200, 170, 255, 1));
-}
 
 /* Additional 카드 shine 효과 */
 .stg_card_format--additional::after {
@@ -642,9 +597,6 @@ body:not(.light-mode) .stg_card_format--additional:hover .stg_card_icon i {
     padding: var(--stg-body-padding) !important;
 }
 
-body:not(.light-mode) .stg_card_format .stg_card_description--short {
-    color: var(--stg-body-color-dark);
-}
 
 body.light-mode .stg_card_format .stg_card_description--short {
     color: var(--stg-body-color-light) !important;
@@ -673,32 +625,23 @@ body.light-mode .stg_card_format .stg_card_description--short {
 
 /* STG Button CSS Variables */
 :root {
-    --stg-button-font-family: 'Noto Sans KR', sans-serif;
+    --stg-button-font-family: 'Nanum Gothic', sans-serif;
     --stg-button-font-size: 0.9rem;
     --stg-button-font-weight: 400;
-    --stg-button-padding: 0.7rem 1rem;
+    --stg-button-padding: 9.6px 12.8px;
     --stg-button-border-radius: 12px;
     --stg-button-transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     
-    /* Dark Mode Colors (반전됨) */
-    --stg-button-bg-dark: linear-gradient(135deg, var(--neon-lavender), var(--electric-violet));
-    --stg-button-color-dark: var(--text-primary);
-    --stg-button-border-dark: transparent;
-    --stg-button-text-shadow-dark: none;
-    --stg-button-hover-bg-dark: rgba(200, 170, 255, 0.12);
-    --stg-button-hover-color-dark: rgb(var(--main-color-rgb));
-    --stg-button-hover-shadow-dark: 0 0 10px rgba(200, 170, 255, 0.4);
-    
-    /* Light Mode Colors (반전됨) */
-    --stg-button-bg-light: #44237A1A;
-    --stg-button-color-light: #44237ACC;
-    --stg-button-border-light: transparent;
-    --stg-button-hover-bg-light: #44237A33;
-    --stg-button-hover-color-light: #44237AFF;
-    --stg-button-hover-shadow-light: none;
+    /* Button Colors */
+    --stg-button-bg: #44237A1A;
+    --stg-button-color: #44237ACC;
+    --stg-button-border: transparent;
+    --stg-button-hover-bg: #44237A33;
+    --stg-button-hover-color: #44237AFF;
+    --stg-button-hover-shadow: none;
 }
 
-/* STG Button 기본 클래스 (Dark Mode 기본) */
+/* STG Button 기본 클래스 */
 .stg_button {
     font-family: var(--stg-button-font-family) !important;
     font-size: var(--stg-button-font-size) !important;
@@ -718,72 +661,37 @@ body.light-mode .stg_card_format .stg_card_description--short {
     position: relative;
     overflow: hidden;
     line-height: 1.2;
-}
-
-/* Dark Mode STG Button (반전됨) */
-body:not(.light-mode) .stg_button {
-    background: var(--stg-button-bg-dark);
-    color: var(--stg-button-color-dark) !important;
-    border: 1px solid var(--stg-button-border-dark);
-    text-shadow: var(--stg-button-text-shadow-dark);
-    box-shadow: 0 0 20px rgba(200, 170, 255, 0.5), 0 0 40px rgba(180, 140, 255, 0.3);
-}
-
-body:not(.light-mode) .stg_button:hover {
-    background: var(--stg-button-hover-bg-dark);
-    border-color: rgba(200, 170, 255, 0.4);
-    color: var(--stg-button-hover-color-dark) !important;
-    box-shadow: var(--stg-button-hover-shadow-dark);
-    transform: translateY(-2px);
-    text-shadow: 0 0 10px rgba(200, 170, 255, 0.4);
-}
-
-/* Light Mode STG Button (반전됨) */
-body.light-mode .stg_button {
-    font-family: 'Nanum Gothic', sans-serif !important;
-    background: var(--stg-button-bg-light);
-    color: var(--stg-button-color-light) !important;
+    background: var(--stg-button-bg);
+    color: var(--stg-button-color) !important;
     border: none;
     text-shadow: none;
     box-shadow: none;
-    padding: 9.6px 12.8px;
 }
 
-body.light-mode .stg_button:hover {
-    background: var(--stg-button-hover-bg-light);
+.stg_button:hover {
+    background: var(--stg-button-hover-bg);
     border: none;
-    color: var(--stg-button-hover-color-light) !important;
-    box-shadow: var(--stg-button-hover-shadow-light);
+    color: var(--stg-button-hover-color) !important;
+    box-shadow: var(--stg-button-hover-shadow);
     transform: translateY(-1px);
 }
 
 /* STG Button Text */
 .stg_button .stg_button_text {
     transition: transform 0.3s ease;
+    color: var(--stg-button-color) !important;
 }
 
-body.light-mode .stg_button .stg_button_text {
-    color: var(--stg-button-color-light) !important;
-}
-
-body.light-mode .stg_button:hover .stg_button_text {
-    color: var(--stg-button-hover-color-light) !important;
+.stg_button:hover .stg_button_text {
+    color: var(--stg-button-hover-color) !important;
     transform: none;
 }
 
-/* Light Mode에서 화살표 숨기기 */
-body.light-mode .stg_button .stg_button_arrow {
+/* 화살표 숨기기 */
+.stg_button .stg_button_arrow {
     display: none;
 }
 
-body:not(.light-mode) .stg_button .stg_button_text {
-    color: var(--stg-button-color-dark) !important;
-}
-
-body:not(.light-mode) .stg_button:hover .stg_button_text {
-    color: var(--stg-button-hover-color-dark) !important;
-    transform: translateX(-5px);
-}
 
 /* STG Button Arrow Icon */
 .stg_button .stg_button_arrow {
@@ -867,41 +775,18 @@ body:not(.light-mode) .stg_button:hover .stg_button_text {
     cursor: pointer;
     position: relative;
     overflow: hidden;
-}
-
-/* Dark Mode option-button */
-body:not(.light-mode) .option-button {
-    background: var(--stg-button-bg-dark);
-    color: var(--stg-button-color-dark) !important;
-    border: 1px solid var(--stg-button-border-dark);
-    text-shadow: var(--stg-button-text-shadow-dark);
-}
-
-body:not(.light-mode) .option-button:hover {
-    background: var(--stg-button-hover-bg-dark);
-    border-color: transparent;
-    color: var(--stg-button-hover-color-dark) !important;
-    box-shadow: var(--stg-button-hover-shadow-dark);
-    transform: translateY(-2px);
-    text-shadow: none;
-}
-
-/* Light Mode option-button */
-body.light-mode .option-button {
-    font-family: 'Nanum Gothic', sans-serif !important;
-    background: var(--stg-button-bg-light);
-    color: var(--stg-button-color-light) !important;
+    background: var(--stg-button-bg);
+    color: var(--stg-button-color) !important;
     border: none;
     text-shadow: none;
     box-shadow: none;
-    padding: 9.6px 12.8px;
 }
 
-body.light-mode .option-button:hover {
-    background: var(--stg-button-hover-bg-light);
+.option-button:hover {
+    background: var(--stg-button-hover-bg);
     border: none;
-    color: var(--stg-button-hover-color-light) !important;
-    box-shadow: var(--stg-button-hover-shadow-light);
+    color: var(--stg-button-hover-color) !important;
+    box-shadow: var(--stg-button-hover-shadow);
     transform: translateY(-1px);
 }
 
@@ -2179,11 +2064,6 @@ body.light-mode .booking-list li::before {
     color: #8B5CF6;
 }
 
-/* Dark Mode bullet color */
-body:not(.light-mode) .booking-list li::before {
-    color: #C8AAFF;
-    text-shadow: 0 0 10px rgba(181, 126, 220, 0.5);
-}
 
 /* booking-list 내 stg_body_text 마진/패딩 조정 */
 .booking-list li.stg_body_text {
@@ -3712,11 +3592,6 @@ body.light-mode .stg_card_format.stg_card_format--additional.stg_card_sub_format
     flex-shrink: 0;
 }
 
-/* Dark Mode - 보라색 bullet point */
-body:not(.light-mode) .feature-item .bi-check-circle-fill {
-    color: #C8AAFF;
-    filter: drop-shadow(0 0 4px rgba(200, 170, 255, 0.5));
-}
 
 /* Feature Item 내 텍스트 행간 조정 */
 .feature-item .stg_body_text {
@@ -3759,10 +3634,6 @@ body:not(.light-mode) .feature-item .bi-check-circle-fill {
     letter-spacing: 0.02em;
 }
 
-/* Dark Mode Kakao Text */
-body:not(.light-mode) .stg_kakao_format .stg_kakao_text {
-    color: var(--stg-body-color-dark);
-}
 
 /* Light Mode Kakao Text */
 body.light-mode .stg_kakao_format .stg_kakao_text {

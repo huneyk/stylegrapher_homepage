@@ -414,13 +414,15 @@ body.light-mode .hero-slogan {
     perspective: 1500px;
 }
 
-/* Individual Prism Cards */
+/* Individual Prism Cards - 기본 상태에서 hover 효과 적용 (반전) */
 .prism-card {
     position: relative;
     aspect-ratio: 3/4;
     cursor: pointer;
     transform-style: preserve-3d;
     transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+    transform: translateY(-25px) scale(1.02);
+    z-index: 10;
 }
 
 .prism-card-1 {
@@ -452,12 +454,12 @@ body.light-mode .hero-slogan {
     50% { transform: translateY(-12px) rotateY(1.5deg) rotateX(0.5deg); }
 }
 
-/* Glass Edge Effect */
+/* Glass Edge Effect - 기본 상태에서 hover 효과 적용 (반전) */
 .prism-glass-edge {
     position: absolute;
     inset: 0;
     border-radius: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(200, 170, 255, 0.4);
     background: linear-gradient(135deg,
         rgba(255, 255, 255, 0.08) 0%,
         rgba(255, 255, 255, 0.02) 50%,
@@ -466,13 +468,14 @@ body.light-mode .hero-slogan {
     z-index: 1;
     pointer-events: none;
     transition: all 0.5s ease;
-}
-
-.prism-card:hover .prism-glass-edge {
-    border-color: rgba(200, 170, 255, 0.4);
     box-shadow: 
         0 0 30px rgba(200, 170, 255, 0.2),
         inset 0 0 30px rgba(200, 170, 255, 0.05);
+}
+
+.prism-card:hover .prism-glass-edge {
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: none;
 }
 
 /* Prism Inner Container */
@@ -500,7 +503,7 @@ body.light-mode .hero-slogan {
 
 .prism-image.active {
     opacity: 1;
-    transform: scale(1.05);
+    transform: scale(1.1);
 }
 
 .prism-image img {
@@ -510,25 +513,10 @@ body.light-mode .hero-slogan {
     filter: contrast(1.02) saturate(1.05);
 }
 
-/* Reflection Overlay */
+/* Reflection Overlay - 기본 상태에서 hover 효과 적용 (반전) */
 .prism-reflection {
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-        165deg,
-        rgba(255, 255, 255, 0.15) 0%,
-        rgba(255, 255, 255, 0.05) 20%,
-        transparent 40%,
-        transparent 60%,
-        rgba(200, 170, 255, 0.03) 80%,
-        rgba(200, 170, 255, 0.08) 100%
-    );
-    pointer-events: none;
-    z-index: 3;
-    transition: all 0.5s ease;
-}
-
-.prism-card:hover .prism-reflection {
     background: linear-gradient(
         165deg,
         rgba(255, 255, 255, 0.2) 0%,
@@ -538,9 +526,24 @@ body.light-mode .hero-slogan {
         rgba(200, 170, 255, 0.05) 80%,
         rgba(200, 170, 255, 0.12) 100%
     );
+    pointer-events: none;
+    z-index: 3;
+    transition: all 0.5s ease;
 }
 
-/* Aura Glow Effect */
+.prism-card:hover .prism-reflection {
+    background: linear-gradient(
+        165deg,
+        rgba(255, 255, 255, 0.15) 0%,
+        rgba(255, 255, 255, 0.05) 20%,
+        transparent 40%,
+        transparent 60%,
+        rgba(200, 170, 255, 0.03) 80%,
+        rgba(200, 170, 255, 0.08) 100%
+    );
+}
+
+/* Aura Glow Effect - 기본 상태에서 hover 효과 적용 (반전) */
 .prism-aura {
     position: absolute;
     inset: -20px;
@@ -552,14 +555,14 @@ body.light-mode .hero-slogan {
         transparent 70%
     );
     z-index: 0;
-    opacity: 0;
+    opacity: 1;
     filter: blur(20px);
     transition: opacity 0.6s ease;
     pointer-events: none;
 }
 
 .prism-card:hover .prism-aura {
-    opacity: 1;
+    opacity: 0;
 }
 
 /* Brand Signature */
@@ -590,14 +593,14 @@ body.light-mode .hero-slogan {
     text-transform: uppercase;
 }
 
-/* Hover Effects */
+/* Hover Effects - 기본 상태에서 hover 효과 적용 (반전) */
 .prism-card:hover {
-    transform: translateY(-25px) scale(1.02);
-    z-index: 10;
+    transform: translateY(0) scale(1);
+    z-index: 1;
 }
 
 .prism-card:hover .prism-image.active {
-    transform: scale(1.1);
+    transform: scale(1.05);
 }
 
 /* Responsive Styles */
@@ -658,9 +661,10 @@ body.light-mode .hero-slogan {
         font-size: 1rem;
     }
     
-    /* Disable hover animations on touch */
+    /* 모바일에서는 기본 상태(lifted) 유지 - hover 시에도 변화 없음 */
     .prism-card:hover {
-        transform: none;
+        transform: translateY(-25px) scale(1.02);
+        z-index: 10;
     }
     
     .prism-card-1,
