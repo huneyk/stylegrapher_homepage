@@ -11,18 +11,18 @@
     <div class="container">
         <div class="row align-items-center min-vh-50">
             <div class="col-12 text-center">
-                <h1 class="hero-title fade-in">{{ _('스타일그래퍼') }}®</h1>
-                <p class="hero-subtitle fade-in stagger-1">{{ _('나를 브랜딩하는 아름다움과 스타일을 완성해 드립니다.') }}</p>
+                <h1 class="hero-title">{{ _('스타일그래퍼') }}®</h1>
+                <p class="hero-subtitle">{{ _('나를 브랜딩하는 아름다움과 스타일을 완성해 드립니다.') }}</p>
                 <div class="hero-description mt-4">
-                    <p class="lead fade-in stagger-2">{{ _('국내에서 최초로, 그리고 유일하게') }}</p>
-                    <p class="lead fade-in stagger-2">{{ _('고도로 트레이닝된 아티스트들이') }}</p>
-                    <p class="lead fade-in stagger-3">{{ _('헤어와 메이크업, 의상의 토탈 스타일링으로') }}</p>
-                    <p class="lead fade-in stagger-3">{{ _('고객 한 분 한 분만을 위한 아름다움과 스타일을 찾아 완성해 드립니다.') }}</p>
+                    <p class="lead">{{ _('국내에서 최초로, 그리고 유일하게') }}</p>
+                    <p class="lead">{{ _('고도로 트레이닝된 아티스트들이') }}</p>
+                    <p class="lead">{{ _('헤어와 메이크업, 의상의 토탈 스타일링으로') }}</p>
+                    <p class="lead">{{ _('고객 한 분 한 분만을 위한 아름다움과 스타일을 찾아 완성해 드립니다.') }}</p>
                 </div>
                 <div class="hero-message mt-5">
-                    <p class="message-text fade-in stagger-4">{{ _('획일화되고 정형화된 미의 기준이 아니라') }}<br>
+                    <p class="message-text">{{ _('획일화되고 정형화된 미의 기준이 아니라') }}<br>
                     {{ _('나만의 스타일로 완성된 아름다움을 경험해 보세요!') }}</p>
-                    <p class="message-highlight fade-in stagger-5">{{ _('지금 그 눈빛, 그 미소 그대로...') }}<br>
+                    <p class="message-highlight">{{ _('지금 그 눈빛, 그 미소 그대로...') }}<br>
                     {{ _('가장 아름답게 브랜딩 해드립니다.') }}</p>
                 </div>
             </div>
@@ -148,7 +148,7 @@
         <div class="row">
             <div class="col-12 text-center">
                 <h3 class="closing-title">Stylegrapher® {{ _('드림') }}</h3>
-                <p class="closing-note">
+                <p class="closing-note" style="color: #FFFFFF !important;">
                     {{ _('스타일그래퍼는 상표등록돼 있습니다.') }}
                 </p>
             </div>
@@ -156,283 +156,4 @@
     </div>
 </section>
 
-<style>
-/* Hero Section */
-.hero-about-section {
-    position: relative;
-    padding: 6rem 0;
-    overflow: hidden;
-}
-
-.hero-bg-effect {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(ellipse at 50% 20%, rgba(181, 126, 220, 0.2) 0%, transparent 60%);
-    pointer-events: none;
-}
-
-.hero-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 4.5rem;
-    font-weight: 400;
-    color: var(--neon-lavender);
-    text-shadow: 0 0 60px rgba(181, 126, 220, 0.7);
-    margin-bottom: 1.5rem;
-    letter-spacing: 0.08em;
-}
-
-.hero-subtitle {
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 1.4rem;
-    color: rgba(255, 255, 255, 0.85);
-    font-weight: 400;
-    margin-bottom: 2rem;
-}
-
-.hero-description .lead {
-    font-size: 1.15rem;
-    color: rgba(255, 255, 255, 0.95);
-    margin-bottom: 0.5rem;
-    font-weight: 400;
-}
-
-.message-text {
-    font-size: 1.1rem;
-    color: rgba(255, 255, 255, 0.95);
-    line-height: 2;
-    margin-bottom: 1.5rem;
-}
-
-.message-highlight {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.4rem;
-    color: var(--neon-lavender);
-    font-weight: 500;
-    line-height: 2;
-    margin: 0;
-    text-shadow: 0 0 30px rgba(181, 126, 220, 0.5);
-}
-
-/* Section Headers */
-.section-header {
-    margin-bottom: 3rem;
-}
-
-.section-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 3rem;
-    font-weight: 400;
-    color: var(--neon-lavender);
-    text-shadow: 0 0 40px rgba(181, 126, 220, 0.5);
-    letter-spacing: 0.1em;
-}
-
-.title-divider {
-    width: 100px;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--neon-lavender), transparent);
-    margin: 1.5rem auto 0;
-    box-shadow: 0 0 20px rgba(181, 126, 220, 0.6);
-}
-
-/* Glass Card Sections */
-.glass-card {
-    background: rgba(18, 0, 36, 0.6);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    padding: 3rem;
-    border-radius: 28px;
-    border: 1px solid rgba(181, 126, 220, 0.2);
-    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
-    position: relative;
-    overflow: hidden;
-    transition: all 0.4s ease;
-}
-
-.glass-card:hover {
-    border-color: rgba(181, 126, 220, 0.4);
-    box-shadow: 0 0 50px rgba(181, 126, 220, 0.2), 0 20px 60px rgba(0, 0, 0, 0.4);
-    transform: translateY(-5px);
-}
-
-.content-glow {
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle at center, rgba(181, 126, 220, 0.05) 0%, transparent 50%);
-    pointer-events: none;
-}
-
-.content-icon {
-    font-size: 2.5rem;
-    color: var(--neon-lavender);
-    text-align: center;
-    filter: drop-shadow(0 0 20px rgba(181, 126, 220, 0.6));
-}
-
-/* Text Styles */
-.philosophy-text,
-.icons-text,
-.era-text,
-.experience-text,
-.mission-text {
-    font-size: 1.1rem;
-    line-height: 2;
-    color: rgba(255, 255, 255, 0.95);
-    margin-bottom: 1.5rem;
-}
-
-.philosophy-text:last-child,
-.icons-text:last-child,
-.era-text:last-child,
-.experience-text:last-child,
-.mission-text:last-child {
-    margin-bottom: 0;
-}
-
-.text-neon {
-    color: var(--neon-lavender);
-    text-shadow: 0 0 15px rgba(181, 126, 220, 0.5);
-}
-
-/* Section Backgrounds */
-.brand-philosophy-section,
-.current-era-section,
-.mission-section {
-    position: relative;
-}
-
-.fashion-icons-section,
-.experience-section {
-    background: rgba(18, 0, 36, 0.3);
-}
-
-/* Closing Section */
-.closing-section {
-    position: relative;
-    background: linear-gradient(135deg, var(--neon-lavender), var(--electric-violet));
-    padding: 5rem 0;
-    overflow: hidden;
-}
-
-.closing-glow {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 600px;
-    height: 200px;
-    background: radial-gradient(ellipse, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-.closing-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 2.5rem;
-    font-weight: 400;
-    color: white;
-    text-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
-    margin-bottom: 1rem;
-    letter-spacing: 0.05em;
-}
-
-.closing-note {
-    font-size: 0.95rem;
-    color: rgba(255, 255, 255, 0.85);
-    margin: 0;
-}
-
-/* Fade In Animation */
-.fade-in {
-    opacity: 0;
-    animation: fadeInUp 0.8s ease forwards;
-}
-
-.stagger-1 { animation-delay: 0.1s; }
-.stagger-2 { animation-delay: 0.2s; }
-.stagger-3 { animation-delay: 0.3s; }
-.stagger-4 { animation-delay: 0.4s; }
-.stagger-5 { animation-delay: 0.5s; }
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Responsive Design */
-@media (max-width: 992px) {
-    .hero-title {
-        font-size: 3.5rem;
-    }
-    
-    .section-title {
-        font-size: 2.5rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .hero-about-section {
-        padding: 4rem 0;
-    }
-    
-    .hero-title {
-        font-size: 2.8rem;
-    }
-    
-    .hero-subtitle {
-        font-size: 1.1rem;
-    }
-    
-    .hero-description .lead {
-        font-size: 1rem;
-    }
-    
-    .section-title {
-        font-size: 2rem;
-    }
-    
-    .glass-card {
-        padding: 2rem;
-        border-radius: 20px;
-    }
-    
-    .philosophy-text,
-    .icons-text,
-    .era-text,
-    .experience-text,
-    .mission-text {
-        font-size: 1rem;
-        line-height: 1.9;
-    }
-    
-    .closing-title {
-        font-size: 2rem;
-    }
-    
-    .content-icon {
-        font-size: 2rem;
-    }
-}
-
-@media (max-width: 576px) {
-    .hero-title {
-        font-size: 2.2rem;
-    }
-    
-    .message-highlight {
-        font-size: 1.2rem;
-    }
-}
-</style>
 {% endblock %}

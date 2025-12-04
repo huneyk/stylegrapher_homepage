@@ -29,7 +29,7 @@ from utils.translation_helper import (
     get_translated_gallery_group
 )
 from utils.gridfs_helper import get_image_from_gridfs, get_mongo_connection
-from extensions import mail
+from extensions import mail, cache
 
 # MongoDB 설정 불러오기 (fork-safe: 연결은 lazy하게 생성됨)
 load_dotenv()
@@ -52,18 +52,17 @@ _cache = {}
 _cache_timestamps = {}
 
 
-def cache_with_timeout(timeout_minutes=30):
-    """메모리 캐시 데코레이터 (언어별 캐싱 지원)"""
+def cache_with_timeout(timeout_seconds=300):
+    """메모리 캐시 데코레이터 (언어별 캐싱 지원, 응답 전체 캐싱)"""
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             # 언어 설정을 캐시 키에 포함하여 다국어 지원
-            # get_current_language()를 사용하여 브라우저 언어 감지 포함
             current_lang = get_current_language()
             cache_key = f"{func.__name__}:{current_lang}:{hash(str(args) + str(sorted(kwargs.items())))}"
             
             if cache_key in _cache_timestamps:
-                if datetime.now() - _cache_timestamps[cache_key] < timedelta(minutes=timeout_minutes):
+                if datetime.now() - _cache_timestamps[cache_key] < timedelta(seconds=timeout_seconds):
                     return _cache[cache_key]
             
             result = func(*args, **kwargs)
@@ -73,6 +72,34 @@ def cache_with_timeout(timeout_minutes=30):
             return result
         return wrapper
     return decorator
+
+
+def make_cache_key_with_lang():
+    """언어별 캐시 키 생성 함수"""
+    lang = get_current_language()
+    return f"{request.path}:{lang}"
+
+
+def make_cache_key_gallery():
+    """갤러리 페이지용 캐시 키 생성 함수 (페이지 번호 포함)"""
+    lang = get_current_language()
+    # URL에서 페이지 번호 추출
+    page = request.view_args.get('page', 1) if request.view_args else 1
+    return f"gallery:{lang}:{page}"
+
+
+def make_cache_key_service_detail():
+    """서비스 상세 페이지용 캐시 키 생성 함수"""
+    lang = get_current_language()
+    service_id = request.view_args.get('id', 0) if request.view_args else 0
+    return f"service:{lang}:{service_id}"
+
+
+def make_cache_key_service_option():
+    """서비스 옵션 상세 페이지용 캐시 키 생성 함수"""
+    lang = get_current_language()
+    option_id = request.view_args.get('id', 0) if request.view_args else 0
+    return f"service_option:{lang}:{option_id}"
 
 
 def clear_gallery_cache():
@@ -144,7 +171,7 @@ def get_all_services():
 
 
 @main.route('/')
-@cache_with_timeout(10)  # 10분 캐싱으로 MongoDB 조회 최소화
+@cache.cached(timeout=300, key_prefix=make_cache_key_with_lang)  # 5분 캐싱 (전체 응답)
 def index():
     # 갤러리 그룹을 상단 고정, 표출 순서, 생성일 순으로 가져오기
     all_galleries = GalleryGroup.query_all_ordered()
@@ -178,6 +205,7 @@ def index():
 
 
 @main.route('/services')
+@cache.cached(timeout=300, key_prefix=make_cache_key_with_lang)  # 5분 캐싱
 def services():
     lang = get_current_language()
     
@@ -229,6 +257,7 @@ def services():
 
 
 @main.route('/service/<int:id>')
+@cache.cached(timeout=300, key_prefix=make_cache_key_service_detail)  # 5분 캐싱
 def service_detail(id):
     service = Service.get_or_404(id)
     
@@ -246,6 +275,7 @@ def service_detail(id):
 
 
 @main.route('/service_option/<int:id>')
+@cache.cached(timeout=300, key_prefix=make_cache_key_service_option)  # 5분 캐싱
 def service_option_detail(id):
     service_option = ServiceOption.get_or_404(id)
     
@@ -266,13 +296,20 @@ def service_option_detail(id):
 def serve_image(image_path):
     """GridFS 및 레거시 저장소에서 이미지를 효율적으로 서빙하는 라우트"""
     try:
+        # 강화된 캐싱 헤더 설정 (7일 캐싱 + ETag)
+        cache_headers = {
+            'Cache-Control': 'public, max-age=604800, immutable',
+            'Vary': 'Accept-Encoding'
+        }
+        
         # 1. GridFS에서 이미지 조회 시도
         try:
             binary_data, content_type = get_image_from_gridfs(image_path)
             if binary_data:
                 response = make_response(binary_data)
                 response.headers['Content-Type'] = content_type
-                response.headers['Cache-Control'] = 'public, max-age=86400'
+                for key, value in cache_headers.items():
+                    response.headers[key] = value
                 return response
         except Exception as gridfs_error:
             print(f"GridFS 조회 중 오류: {str(gridfs_error)}")
@@ -285,7 +322,8 @@ def serve_image(image_path):
             if image_doc and 'binary_data' in image_doc:
                 response = make_response(image_doc['binary_data'])
                 response.headers['Content-Type'] = image_doc.get('content_type', 'image/jpeg')
-                response.headers['Cache-Control'] = 'public, max-age=86400'
+                for key, value in cache_headers.items():
+                    response.headers[key] = value
                 return response
         except Exception as mongo_error:
             print(f"레거시 MongoDB 조회 중 오류: {str(mongo_error)}")
@@ -293,7 +331,10 @@ def serve_image(image_path):
         # 3. 파일 시스템에서 서빙
         file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_path)
         if os.path.exists(file_path):
-            return send_file(file_path)
+            response = send_file(file_path)
+            for key, value in cache_headers.items():
+                response.headers[key] = value
+            return response
         
         return "Image not found", 404
         
@@ -304,7 +345,7 @@ def serve_image(image_path):
 
 @main.route('/gallery')
 @main.route('/gallery/<int:page>')
-@cache_with_timeout(15)
+@cache.cached(timeout=300, key_prefix=make_cache_key_gallery)  # 5분 캐싱
 def gallery(page=1):
     try:
         per_page = 9

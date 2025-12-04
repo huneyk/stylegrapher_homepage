@@ -3,6 +3,8 @@ Flask 애플리케이션 팩토리 - MongoDB 기반
 """
 import os
 import json
+import threading
+from datetime import datetime, timedelta
 from flask import Flask, request, abort, send_from_directory, session, g, redirect, url_for, jsonify
 from routes.main import main
 from routes.admin import admin
@@ -13,6 +15,12 @@ from utils.security import add_security_headers, is_suspicious_request, get_clie
 from utils.translation_helper import register_template_helpers
 from utils.mongo_models import get_mongo_db, init_collections, Service, SiteSettings
 from utils.translation import export_mongodb_to_cache, TRANSLATIONS_CACHE_FILE
+
+# 전역 메모리 캐시 (context_processor용 성능 최적화)
+_context_cache = {}
+_context_cache_timestamps = {}
+_context_cache_lock = threading.Lock()
+CONTEXT_CACHE_TIMEOUT = 300  # 5분
 
 # 지원하는 언어 목록
 SUPPORTED_LANGUAGES = {
@@ -147,17 +155,25 @@ def create_app():
     def after_request(response):
         response = add_security_headers(response)
         
-        # 정적 파일 캐싱 헤더 설정 (성능 최적화)
+        # 정적 파일 캐싱 헤더 설정 (성능 최적화 강화)
         if request.path.startswith('/static/'):
-            # CSS, JS 파일 - 1주일 캐싱
+            # CSS, JS 파일 - 1주일 캐싱 (immutable 추가)
             if request.path.endswith(('.css', '.js')):
-                response.headers['Cache-Control'] = 'public, max-age=604800'
-            # 이미지 파일 - 1개월 캐싱
+                response.headers['Cache-Control'] = 'public, max-age=604800, immutable'
+            # 이미지 파일 - 1개월 캐싱 (immutable 추가)
             elif request.path.endswith(('.jpg', '.jpeg', '.png', '.gif', '.ico', '.svg', '.webp')):
-                response.headers['Cache-Control'] = 'public, max-age=2592000'
-            # 폰트 파일 - 1년 캐싱
+                response.headers['Cache-Control'] = 'public, max-age=2592000, immutable'
+            # 폰트 파일 - 1년 캐싱 (immutable 추가)
             elif request.path.endswith(('.woff', '.woff2', '.ttf', '.eot')):
-                response.headers['Cache-Control'] = 'public, max-age=31536000'
+                response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+            # JSON 데이터 파일 (번역 등) - 5분 캐싱
+            elif request.path.endswith('.json'):
+                response.headers['Cache-Control'] = 'public, max-age=300'
+            
+            # Vary 헤더 추가 (압축 지원)
+            response.headers['Vary'] = 'Accept-Encoding'
+        
+        # /image/ 경로는 별도로 처리됨 (routes/main.py)
         
         # 세션에 언어가 있지만 쿠키가 없는 경우 쿠키 설정 (브라우저 언어 감지 후 자동 설정)
         if 'lang' in session and session['lang'] in SUPPORTED_LANGUAGES:
@@ -307,9 +323,17 @@ def create_app():
         response.set_cookie('preferred_lang', lang, max_age=365*24*60*60, samesite='Lax')
         return response
     
-    # 전역 컨텍스트 - 사이드 메뉴용 카테고리별 서비스
-    @app.context_processor
-    def inject_menu_data():
+    # 전역 컨텍스트 - 사이드 메뉴용 카테고리별 서비스 (캐싱 적용)
+    def _get_cached_menu_data():
+        """메뉴 데이터를 캐시에서 조회하거나 새로 생성"""
+        cache_key = 'menu_data'
+        
+        with _context_cache_lock:
+            # 캐시 유효성 확인
+            if cache_key in _context_cache_timestamps:
+                if datetime.now() - _context_cache_timestamps[cache_key] < timedelta(seconds=CONTEXT_CACHE_TIMEOUT):
+                    return _context_cache[cache_key]
+        
         # 카테고리 순서와 설정 (표시 순서대로 정렬)
         categories_order = ['ai_analysis', 'consulting', 'oneday', 'photo']
         categories_config = {
@@ -347,18 +371,49 @@ def create_app():
         except Exception as e:
             print(f"Error loading menu data: {str(e)}")
         
-        return dict(
+        result = dict(
             menu_categories=categories_config,
             menu_categories_order=categories_order
         )
+        
+        # 캐시에 저장
+        with _context_cache_lock:
+            _context_cache[cache_key] = result
+            _context_cache_timestamps[cache_key] = datetime.now()
+        
+        return result
     
-    # 전역 컨텍스트 - 사이트 색상 설정 (Light mode 전용)
     @app.context_processor
-    def inject_site_colors():
+    def inject_menu_data():
+        return _get_cached_menu_data()
+    
+    # 전역 컨텍스트 - 사이트 색상 설정 (Light mode 전용, 캐싱 적용)
+    def _get_cached_site_colors():
+        """사이트 색상 설정을 캐시에서 조회하거나 새로 생성"""
+        cache_key = 'site_colors'
+        
+        with _context_cache_lock:
+            # 캐시 유효성 확인
+            if cache_key in _context_cache_timestamps:
+                if datetime.now() - _context_cache_timestamps[cache_key] < timedelta(seconds=CONTEXT_CACHE_TIMEOUT):
+                    return _context_cache[cache_key]
+        
+        result = dict(
+            site_mode='light',
+            site_colors={
+                'main_rgb': None,
+                'sub_rgb': None,
+                'background_rgb': None,
+                'main_hex': None,
+                'sub_hex': None,
+                'background_hex': None
+            }
+        )
+        
         try:
             settings = SiteSettings.get_current_settings()
             if settings:
-                return dict(
+                result = dict(
                     site_mode='light',
                     site_colors={
                         'main_rgb': settings.get_main_color_rgb(),
@@ -372,17 +427,16 @@ def create_app():
         except Exception as e:
             print(f"Error loading site colors: {str(e)}")
         
-        return dict(
-            site_mode='light',
-            site_colors={
-                'main_rgb': None,
-                'sub_rgb': None,
-                'background_rgb': None,
-                'main_hex': None,
-                'sub_hex': None,
-                'background_hex': None
-            }
-        )
+        # 캐시에 저장
+        with _context_cache_lock:
+            _context_cache[cache_key] = result
+            _context_cache_timestamps[cache_key] = datetime.now()
+        
+        return result
+    
+    @app.context_processor
+    def inject_site_colors():
+        return _get_cached_site_colors()
     
     # 블루프린트 등록
     app.register_blueprint(main)

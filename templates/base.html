@@ -110,18 +110,22 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     
-    <!-- 폰트 로딩 (동기식 - FOUC 방지) -->
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=block" rel="stylesheet">
+    <!-- 핵심 CSS Preload (LCP 최적화) -->
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" as="style">
+    <link rel="preload" href="{{ url_for('static', filename='css/style.css') }}?v=20241204_v3" as="style">
     
-    <!-- Bootstrap CSS & Icons (동기식 - FOUC 방지) -->
+    <!-- 폰트 로딩 (swap으로 변경 - 성능 우선) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap CSS & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" media="print" onload="this.media='all'">
     
     <!-- Dynamic Site Colors (style.css 앞에 로드 - CSS 변수 초기화) -->
     <style>
-        /* FOUC 방지 - 페이지 로드 시 깜빡임 방지 */
-        html { visibility: hidden; }
-        html.loaded { visibility: visible; }
+        /* 최소한의 FOUC 방지 - 빠른 로딩 우선 */
+        html { opacity: 0; }
+        html.loaded { opacity: 1; transition: opacity 0.15s ease; }
         
         :root {
             --main-color-rgb: {{ site_colors.main_rgb }};
@@ -137,18 +141,12 @@
         }
     </style>
     <script>
-        // FOUC 방지 - 모든 CSS 로드 완료 후 페이지 표시
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function() {
-                document.documentElement.classList.add('loaded');
-            });
-        } else {
-            document.documentElement.classList.add('loaded');
-        }
+        // 빠른 페이지 표시 - DOMContentLoaded 대기 없이 즉시 표시
+        document.documentElement.classList.add('loaded');
     </script>
     
     <!-- Custom CSS (모든 STG 클래스 스타일 정의) -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20241204_lightmode">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20241204_v3">
     
     <!-- Bootstrap JS (defer로 비동기 로딩) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
@@ -340,7 +338,7 @@
     
     {% block extra_head %}{% endblock %}
 </head>
-<body class="light-mode">
+<body class="light-mode" style="background: #ffffff;">
     <!-- Animated Background Particles -->
     <div class="bg-particles" id="bgParticles"></div>
     
@@ -770,6 +768,9 @@
                 dropdown.classList.remove('active');
             }
             
+            // 로딩 오버레이 표시 (부드러운 트랜지션)
+            showLanguageLoadingOverlay();
+            
             // 클라이언트 측 쿠키 저장 (1년 유지) - 서버 응답 전에 미리 저장
             document.cookie = 'preferred_lang=' + langCode + '; max-age=' + (365*24*60*60) + '; path=/; SameSite=Lax';
             
@@ -799,6 +800,18 @@
             });
         }
         
+        // 언어 변경 로딩 오버레이 표시
+        function showLanguageLoadingOverlay() {
+            let overlay = document.getElementById('langLoadingOverlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'langLoadingOverlay';
+                overlay.innerHTML = '<div class="lang-loading-spinner"></div>';
+                document.body.appendChild(overlay);
+            }
+            overlay.classList.add('active');
+        }
+        
         // 페이지 로드 후 저장된 스크롤 위치로 복원
         window.addEventListener('load', function() {
             const savedScrollPosition = sessionStorage.getItem('scrollPosition');
@@ -807,7 +820,7 @@
                 setTimeout(function() {
                     window.scrollTo(0, parseInt(savedScrollPosition, 10));
                     sessionStorage.removeItem('scrollPosition');
-                }, 100);
+                }, 50);
             }
         });
     </script>
@@ -981,6 +994,41 @@
         75% {
             transform: translate(-50px, 100px) scale(1.05);
         }
+    }
+    
+    /* 언어 변경 로딩 오버레이 */
+    #langLoadingOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.95);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 99999;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+    
+    #langLoadingOverlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .lang-loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(139, 92, 246, 0.2);
+        border-top-color: #8B5CF6;
+        border-radius: 50%;
+        animation: langSpin 0.8s linear infinite;
+    }
+    
+    @keyframes langSpin {
+        to { transform: rotate(360deg); }
     }
     </style>
 </body>
