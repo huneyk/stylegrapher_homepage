@@ -818,3 +818,8 @@ msgstr "我们的AI代理正在整理并转发您的咨询。请稍候。"
 msgid "고객님의 예약 신청을 저희 AI 에이전트가 정리해서 전달하고 있습니다. 잠시만 기다려주세요."
 msgstr "我们的AI代理正在整理并转发您的预约申请。请稍候。"
 
+
+# Off-hours surcharge tooltip (Booking page)
+msgid "시간외 업차지가 추가됩니다"
+msgstr "将收取非营业时间附加费"
+

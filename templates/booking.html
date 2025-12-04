@@ -42,9 +42,8 @@
                                     </label>
                                 </div>
                             </div>
-                            <div class="form-text">{{ _('문의는 일반 문의로, 예약은 방문 예약 신청으로 저장됩니다.') }}</div>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label for="name" class="form-label">{{ _('이름') }}</label>
                             <input type="text" class="form-control" id="name" name="name" required>
@@ -62,21 +61,46 @@
                             <input type="email" class="form-control" id="email" name="email" 
                                    placeholder="example@email.com" required>
                         </div>
-                        <!-- 문의 대상 서비스 선택 (계층적 dropdown) -->
+                        <!-- 문의 대상 서비스 선택 (커스텀 dropdown) -->
                         <div class="mb-3">
-                            <label for="service" class="form-label">{{ _('문의 대상 서비스') }}</label>
-                            <select class="form-select" id="service" name="service" required>
-                                <option value="" {% if not default_selection %}selected{% endif %} disabled>{{ _('서비스를 선택해주세요') }}</option>
-                                {% for category, items in all_services.items() %}
-                                    <optgroup label="{{ category }}">
-                                    {% for service in items %}
-                                        <option value="{{ service['id'] }}" {% if default_selection == service['id'] %}selected{% endif %}>
-                                            {{ service['name'] }}
-                                        </option>
+                            <label class="form-label">{{ _('문의 대상 서비스') }}</label>
+                            <!-- 숨겨진 실제 input (폼 제출용) -->
+                            <input type="hidden" id="service" name="service" required 
+                                   value="{% if default_selection %}{{ default_selection }}{% endif %}">
+                            
+                            <!-- 커스텀 드롭다운 -->
+                            <div class="custom-service-dropdown">
+                                <button type="button" class="service-dropdown-btn" id="serviceDropdownBtn" onclick="toggleServiceDropdown()">
+                                    <span class="selected-service-text" id="selectedServiceText">
+                                        {% if default_selection %}
+                                            {% for category, items in all_services.items() %}
+                                                {% for service in items %}
+                                                    {% if default_selection == service['id'] %}{{ service['name'] }}{% endif %}
+                                                {% endfor %}
+                                            {% endfor %}
+                                        {% else %}
+                                            {{ _('서비스를 선택해주세요') }}
+                                        {% endif %}
+                                    </span>
+                                    <i class="bi bi-chevron-down dropdown-arrow"></i>
+                                </button>
+                                <div class="service-dropdown-menu" id="serviceDropdownMenu">
+                                    {% for category, items in all_services.items() %}
+                                        <div class="service-category-group">
+                                            <div class="service-category-label">{{ category }}</div>
+                                            {% for service in items %}
+                                                <a href="javascript:void(0)" 
+                                                   class="service-option {% if default_selection == service['id'] %}active{% endif %}"
+                                                   data-value="{{ service['id'] }}"
+                                                   data-name="{{ service['name'] }}"
+                                                   onclick="selectService(this)">
+                                                    {{ service['name'] }}
+                                                </a>
+                                            {% endfor %}
+                                        </div>
                                     {% endfor %}
-                                    </optgroup>
-                                {% endfor %}
-                            </select>
+                                </div>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="message" class="form-label">{{ _('메시지') }}</label>
@@ -91,7 +115,7 @@
                             <!-- 1순위 -->
                             <div class="datetime-row mb-3">
                                 <div class="datetime-label">
-                                    <span class="badge bg-primary">{{ _('1순위') }}</span>
+                                    <span class="badge badge-priority-1">{{ _('1순위') }}</span>
                                 </div>
                                 <div class="datetime-inputs">
                                     <div class="row g-2">
@@ -100,28 +124,50 @@
                                                    min="{{ today }}" placeholder="{{ _('날짜 선택') }}">
                                         </div>
                                         <div class="col-6">
-                                            <select class="form-select" name="time[]">
-                                                <option value="">{{ _('시간 선택') }}</option>
-                                                <option value="09:00">09:00</option>
-                                                <option value="09:30">09:30</option>
-                                                <option value="10:00">10:00</option>
-                                                <option value="10:30">10:30</option>
-                                                <option value="11:00">11:00</option>
-                                                <option value="11:30">11:30</option>
-                                                <option value="12:00">12:00</option>
-                                                <option value="12:30">12:30</option>
-                                                <option value="13:00">13:00</option>
-                                                <option value="13:30">13:30</option>
-                                                <option value="14:00">14:00</option>
-                                                <option value="14:30">14:30</option>
-                                                <option value="15:00">15:00</option>
-                                                <option value="15:30">15:30</option>
-                                                <option value="16:00">16:00</option>
-                                                <option value="16:30">16:30</option>
-                                                <option value="17:00">17:00</option>
-                                                <option value="17:30">17:30</option>
-                                                <option value="18:00">18:00</option>
-                                            </select>
+                                            <!-- 커스텀 시간 드롭다운 1 -->
+                                            <input type="hidden" name="time[]" id="time1">
+                                            <div class="custom-time-dropdown">
+                                                <div class="time-tooltip" id="timeTooltip1">
+                                                    <i class="bi bi-exclamation-circle me-1"></i>{{ _('시간외 업차지가 추가됩니다') }}
+                                                </div>
+                                                <button type="button" class="time-dropdown-btn" id="timeDropdownBtn1" onclick="toggleTimeDropdown(1)">
+                                                    <span class="selected-time-text" id="selectedTimeText1">{{ _('시간 선택') }}</span>
+                                                    <i class="bi bi-chevron-down dropdown-arrow"></i>
+                                                </button>
+                                                <div class="time-dropdown-menu" id="timeDropdownMenu1">
+                                                    <a href="javascript:void(0)" class="time-option" data-value="06:00" onclick="selectTime(1, this)">06:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="06:30" onclick="selectTime(1, this)">06:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="07:00" onclick="selectTime(1, this)">07:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="07:30" onclick="selectTime(1, this)">07:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="08:00" onclick="selectTime(1, this)">08:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="08:30" onclick="selectTime(1, this)">08:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="09:00" onclick="selectTime(1, this)">09:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="09:30" onclick="selectTime(1, this)">09:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="10:00" onclick="selectTime(1, this)">10:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="10:30" onclick="selectTime(1, this)">10:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="11:00" onclick="selectTime(1, this)">11:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="11:30" onclick="selectTime(1, this)">11:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="12:00" onclick="selectTime(1, this)">12:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="12:30" onclick="selectTime(1, this)">12:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="13:00" onclick="selectTime(1, this)">13:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="13:30" onclick="selectTime(1, this)">13:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="14:00" onclick="selectTime(1, this)">14:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="14:30" onclick="selectTime(1, this)">14:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="15:00" onclick="selectTime(1, this)">15:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="15:30" onclick="selectTime(1, this)">15:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="16:00" onclick="selectTime(1, this)">16:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="16:30" onclick="selectTime(1, this)">16:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="17:00" onclick="selectTime(1, this)">17:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="17:30" onclick="selectTime(1, this)">17:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="18:00" onclick="selectTime(1, this)">18:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="18:30" onclick="selectTime(1, this)">18:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="19:00" onclick="selectTime(1, this)">19:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="19:30" onclick="selectTime(1, this)">19:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="20:00" onclick="selectTime(1, this)">20:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="20:30" onclick="selectTime(1, this)">20:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="21:00" onclick="selectTime(1, this)">21:00</a>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -130,7 +176,7 @@
                             <!-- 2순위 -->
                             <div class="datetime-row mb-3">
                                 <div class="datetime-label">
-                                    <span class="badge bg-secondary">{{ _('2순위') }}</span>
+                                    <span class="badge badge-priority-2">{{ _('2순위') }}</span>
                                 </div>
                                 <div class="datetime-inputs">
                                     <div class="row g-2">
@@ -139,28 +185,50 @@
                                                    min="{{ today }}" placeholder="{{ _('날짜 선택') }}">
                                         </div>
                                         <div class="col-6">
-                                            <select class="form-select" name="time[]">
-                                                <option value="">{{ _('시간 선택') }}</option>
-                                                <option value="09:00">09:00</option>
-                                                <option value="09:30">09:30</option>
-                                                <option value="10:00">10:00</option>
-                                                <option value="10:30">10:30</option>
-                                                <option value="11:00">11:00</option>
-                                                <option value="11:30">11:30</option>
-                                                <option value="12:00">12:00</option>
-                                                <option value="12:30">12:30</option>
-                                                <option value="13:00">13:00</option>
-                                                <option value="13:30">13:30</option>
-                                                <option value="14:00">14:00</option>
-                                                <option value="14:30">14:30</option>
-                                                <option value="15:00">15:00</option>
-                                                <option value="15:30">15:30</option>
-                                                <option value="16:00">16:00</option>
-                                                <option value="16:30">16:30</option>
-                                                <option value="17:00">17:00</option>
-                                                <option value="17:30">17:30</option>
-                                                <option value="18:00">18:00</option>
-                                            </select>
+                                            <!-- 커스텀 시간 드롭다운 2 -->
+                                            <input type="hidden" name="time[]" id="time2">
+                                            <div class="custom-time-dropdown">
+                                                <div class="time-tooltip" id="timeTooltip2">
+                                                    <i class="bi bi-exclamation-circle me-1"></i>{{ _('시간외 업차지가 추가됩니다') }}
+                                                </div>
+                                                <button type="button" class="time-dropdown-btn" id="timeDropdownBtn2" onclick="toggleTimeDropdown(2)">
+                                                    <span class="selected-time-text" id="selectedTimeText2">{{ _('시간 선택') }}</span>
+                                                    <i class="bi bi-chevron-down dropdown-arrow"></i>
+                                                </button>
+                                                <div class="time-dropdown-menu" id="timeDropdownMenu2">
+                                                    <a href="javascript:void(0)" class="time-option" data-value="06:00" onclick="selectTime(2, this)">06:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="06:30" onclick="selectTime(2, this)">06:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="07:00" onclick="selectTime(2, this)">07:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="07:30" onclick="selectTime(2, this)">07:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="08:00" onclick="selectTime(2, this)">08:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="08:30" onclick="selectTime(2, this)">08:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="09:00" onclick="selectTime(2, this)">09:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="09:30" onclick="selectTime(2, this)">09:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="10:00" onclick="selectTime(2, this)">10:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="10:30" onclick="selectTime(2, this)">10:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="11:00" onclick="selectTime(2, this)">11:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="11:30" onclick="selectTime(2, this)">11:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="12:00" onclick="selectTime(2, this)">12:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="12:30" onclick="selectTime(2, this)">12:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="13:00" onclick="selectTime(2, this)">13:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="13:30" onclick="selectTime(2, this)">13:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="14:00" onclick="selectTime(2, this)">14:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="14:30" onclick="selectTime(2, this)">14:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="15:00" onclick="selectTime(2, this)">15:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="15:30" onclick="selectTime(2, this)">15:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="16:00" onclick="selectTime(2, this)">16:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="16:30" onclick="selectTime(2, this)">16:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="17:00" onclick="selectTime(2, this)">17:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="17:30" onclick="selectTime(2, this)">17:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="18:00" onclick="selectTime(2, this)">18:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="18:30" onclick="selectTime(2, this)">18:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="19:00" onclick="selectTime(2, this)">19:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="19:30" onclick="selectTime(2, this)">19:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="20:00" onclick="selectTime(2, this)">20:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="20:30" onclick="selectTime(2, this)">20:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="21:00" onclick="selectTime(2, this)">21:00</a>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -169,7 +237,7 @@
                             <!-- 3순위 -->
                             <div class="datetime-row mb-3">
                                 <div class="datetime-label">
-                                    <span class="badge bg-outline-secondary">{{ _('3순위') }}</span>
+                                    <span class="badge badge-priority-3">{{ _('3순위') }}</span>
                                 </div>
                                 <div class="datetime-inputs">
                                     <div class="row g-2">
@@ -178,28 +246,50 @@
                                                    min="{{ today }}" placeholder="{{ _('날짜 선택') }}">
                                         </div>
                                         <div class="col-6">
-                                            <select class="form-select" name="time[]">
-                                                <option value="">{{ _('시간 선택') }}</option>
-                                                <option value="09:00">09:00</option>
-                                                <option value="09:30">09:30</option>
-                                                <option value="10:00">10:00</option>
-                                                <option value="10:30">10:30</option>
-                                                <option value="11:00">11:00</option>
-                                                <option value="11:30">11:30</option>
-                                                <option value="12:00">12:00</option>
-                                                <option value="12:30">12:30</option>
-                                                <option value="13:00">13:00</option>
-                                                <option value="13:30">13:30</option>
-                                                <option value="14:00">14:00</option>
-                                                <option value="14:30">14:30</option>
-                                                <option value="15:00">15:00</option>
-                                                <option value="15:30">15:30</option>
-                                                <option value="16:00">16:00</option>
-                                                <option value="16:30">16:30</option>
-                                                <option value="17:00">17:00</option>
-                                                <option value="17:30">17:30</option>
-                                                <option value="18:00">18:00</option>
-                                            </select>
+                                            <!-- 커스텀 시간 드롭다운 3 -->
+                                            <input type="hidden" name="time[]" id="time3">
+                                            <div class="custom-time-dropdown">
+                                                <div class="time-tooltip" id="timeTooltip3">
+                                                    <i class="bi bi-exclamation-circle me-1"></i>{{ _('시간외 업차지가 추가됩니다') }}
+                                                </div>
+                                                <button type="button" class="time-dropdown-btn" id="timeDropdownBtn3" onclick="toggleTimeDropdown(3)">
+                                                    <span class="selected-time-text" id="selectedTimeText3">{{ _('시간 선택') }}</span>
+                                                    <i class="bi bi-chevron-down dropdown-arrow"></i>
+                                                </button>
+                                                <div class="time-dropdown-menu" id="timeDropdownMenu3">
+                                                    <a href="javascript:void(0)" class="time-option" data-value="06:00" onclick="selectTime(3, this)">06:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="06:30" onclick="selectTime(3, this)">06:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="07:00" onclick="selectTime(3, this)">07:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="07:30" onclick="selectTime(3, this)">07:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="08:00" onclick="selectTime(3, this)">08:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="08:30" onclick="selectTime(3, this)">08:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="09:00" onclick="selectTime(3, this)">09:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="09:30" onclick="selectTime(3, this)">09:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="10:00" onclick="selectTime(3, this)">10:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="10:30" onclick="selectTime(3, this)">10:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="11:00" onclick="selectTime(3, this)">11:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="11:30" onclick="selectTime(3, this)">11:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="12:00" onclick="selectTime(3, this)">12:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="12:30" onclick="selectTime(3, this)">12:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="13:00" onclick="selectTime(3, this)">13:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="13:30" onclick="selectTime(3, this)">13:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="14:00" onclick="selectTime(3, this)">14:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="14:30" onclick="selectTime(3, this)">14:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="15:00" onclick="selectTime(3, this)">15:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="15:30" onclick="selectTime(3, this)">15:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="16:00" onclick="selectTime(3, this)">16:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="16:30" onclick="selectTime(3, this)">16:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="17:00" onclick="selectTime(3, this)">17:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="17:30" onclick="selectTime(3, this)">17:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="18:00" onclick="selectTime(3, this)">18:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="18:30" onclick="selectTime(3, this)">18:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="19:00" onclick="selectTime(3, this)">19:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="19:30" onclick="selectTime(3, this)">19:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="20:00" onclick="selectTime(3, this)">20:00</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="20:30" onclick="selectTime(3, this)">20:30</a>
+                                                    <a href="javascript:void(0)" class="time-option" data-value="21:00" onclick="selectTime(3, this)">21:00</a>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -238,11 +328,117 @@
 </div>
 
 <script>
-    // 서비스 선택 시 선택된 옵션의 텍스트 가져오기 (optgroup 내부 option도 처리)
+    // 커스텀 서비스 드롭다운 토글
+    function toggleServiceDropdown() {
+        const btn = document.getElementById('serviceDropdownBtn');
+        const menu = document.getElementById('serviceDropdownMenu');
+        
+        btn.classList.toggle('active');
+        menu.classList.toggle('active');
+    }
+    
+    // 서비스 선택
+    function selectService(element) {
+        const value = element.getAttribute('data-value');
+        const name = element.getAttribute('data-name');
+        
+        // 숨겨진 input 값 설정
+        document.getElementById('service').value = value;
+        
+        // 버튼 텍스트 업데이트
+        document.getElementById('selectedServiceText').textContent = name;
+        
+        // 이전 active 클래스 제거
+        document.querySelectorAll('.service-option').forEach(opt => {
+            opt.classList.remove('active');
+        });
+        
+        // 선택된 옵션에 active 클래스 추가
+        element.classList.add('active');
+        
+        // 드롭다운 닫기
+        toggleServiceDropdown();
+    }
+    
+    // 드롭다운 외부 클릭 시 닫기
+    document.addEventListener('click', function(e) {
+        // 서비스 드롭다운
+        const dropdown = document.querySelector('.custom-service-dropdown');
+        const btn = document.getElementById('serviceDropdownBtn');
+        const menu = document.getElementById('serviceDropdownMenu');
+        
+        if (dropdown && !dropdown.contains(e.target)) {
+            btn.classList.remove('active');
+            menu.classList.remove('active');
+        }
+        
+        // 시간 드롭다운들
+        for (let i = 1; i <= 3; i++) {
+            const timeDropdown = document.querySelector(`#timeDropdownBtn${i}`)?.closest('.custom-time-dropdown');
+            const timeBtn = document.getElementById(`timeDropdownBtn${i}`);
+            const timeMenu = document.getElementById(`timeDropdownMenu${i}`);
+            
+            if (timeDropdown && !timeDropdown.contains(e.target)) {
+                if (timeBtn) timeBtn.classList.remove('active');
+                if (timeMenu) timeMenu.classList.remove('active');
+            }
+        }
+    });
+    
+    // 커스텀 시간 드롭다운 토글
+    function toggleTimeDropdown(index) {
+        const btn = document.getElementById(`timeDropdownBtn${index}`);
+        const menu = document.getElementById(`timeDropdownMenu${index}`);
+        
+        // 다른 시간 드롭다운들 닫기
+        for (let i = 1; i <= 3; i++) {
+            if (i !== index) {
+                const otherBtn = document.getElementById(`timeDropdownBtn${i}`);
+                const otherMenu = document.getElementById(`timeDropdownMenu${i}`);
+                if (otherBtn) otherBtn.classList.remove('active');
+                if (otherMenu) otherMenu.classList.remove('active');
+            }
+        }
+        
+        btn.classList.toggle('active');
+        menu.classList.toggle('active');
+    }
+    
+    // 시간 선택
+    function selectTime(index, element) {
+        const value = element.getAttribute('data-value');
+        
+        // 숨겨진 input 값 설정
+        document.getElementById(`time${index}`).value = value;
+        
+        // 버튼 텍스트 업데이트
+        document.getElementById(`selectedTimeText${index}`).textContent = value;
+        
+        // 이전 active 클래스 제거
+        document.querySelectorAll(`#timeDropdownMenu${index} .time-option`).forEach(opt => {
+            opt.classList.remove('active');
+        });
+        
+        // 선택된 옵션에 active 클래스 추가
+        element.classList.add('active');
+        
+        // 시간외 체크 (09:00 이전 또는 18:00 이후)
+        const hour = parseInt(value.split(':')[0]);
+        const tooltip = document.getElementById(`timeTooltip${index}`);
+        
+        if (hour < 9 || hour >= 18) {
+            tooltip.classList.add('show');
+        } else {
+            tooltip.classList.remove('show');
+        }
+        
+        // 드롭다운 닫기
+        toggleTimeDropdown(index);
+    }
+    
+    // 서비스 선택 시 선택된 옵션의 텍스트 가져오기
     function getSelectedServiceName() {
-        const serviceSelect = document.getElementById('service');
-        const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
-        return selectedOption ? selectedOption.text.trim() : '';
+        return document.getElementById('selectedServiceText').textContent.trim();
     }
     
     // 문의/예약 선택에 따라 희망 예약일시 섹션 토글
@@ -350,16 +546,306 @@
     color: #666666 !important;
 }
 
-/* Dropdown optgroup styling */
-.card .form-select option {
-    background-color: #ffffff;
-    color: #333333;
+/* 커스텀 서비스 드롭다운 스타일 */
+.custom-service-dropdown {
+    position: relative;
+    width: 100%;
 }
 
-.card .form-select optgroup {
-    background-color: #f8f9fa;
-    color: rgba(139, 95, 191, 1);
+.service-dropdown-btn {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    background-color: #ffffff;
+    border: 1px solid rgba(139, 95, 191, 0.3);
+    border-radius: 12px;
+    color: #333333;
+    font-family: var(--stg-body-font-family, 'Nanum Gothic', sans-serif);
+    font-size: var(--stg-body-font-size, 16px);
+    line-height: var(--stg-body-line-height, 1.8);
+    font-weight: var(--stg-body-font-weight, 400);
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.service-dropdown-btn:hover {
+    border-color: rgba(139, 95, 191, 0.5);
+    background-color: rgba(139, 95, 191, 0.02);
+}
+
+.service-dropdown-btn:focus {
+    outline: none;
+    border-color: rgba(139, 95, 191, 0.6);
+    box-shadow: 0 0 0 0.2rem rgba(139, 95, 191, 0.15);
+}
+
+.service-dropdown-btn .dropdown-arrow {
+    transition: transform 0.3s ease;
+    color: rgba(139, 95, 191, 0.7);
+}
+
+.service-dropdown-btn.active .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.selected-service-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-right: 10px;
+}
+
+.service-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: #F8F5FF;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 95, 191, 0.3);
+    border-radius: 12px;
+    padding: 0.5rem 0;
+    max-height: 300px;
+    overflow-y: auto;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 10px 30px rgba(139, 95, 191, 0.2);
+}
+
+.service-dropdown-menu.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.service-category-group {
+    margin-bottom: 0.5rem;
+}
+
+.service-category-group:last-child {
+    margin-bottom: 0;
+}
+
+.service-category-label {
+    padding: 0.5rem 1rem;
+    font-family: var(--stg-body-font-family, 'Nanum Gothic', sans-serif);
+    font-size: 0.85rem;
     font-weight: 600;
+    color: rgba(139, 95, 191, 1);
+    background-color: rgba(139, 95, 191, 0.1);
+    border-bottom: 1px solid rgba(139, 95, 191, 0.15);
+}
+
+.service-option {
+    display: block;
+    padding: 0.6rem 1rem 0.6rem 1.5rem;
+    font-family: var(--stg-body-font-family, 'Nanum Gothic', sans-serif);
+    font-size: var(--stg-body-font-size, 16px);
+    line-height: 1.5;
+    font-weight: var(--stg-body-font-weight, 400);
+    color: #333333;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.service-option:hover {
+    background: rgba(139, 95, 191, 0.15);
+    color: rgba(139, 95, 191, 1);
+}
+
+.service-option.active {
+    color: rgba(139, 95, 191, 1);
+    background: rgba(139, 95, 191, 0.12);
+    font-weight: 500;
+}
+
+.service-option.active::before {
+    content: '✓';
+    margin-right: 0.5rem;
+    color: rgba(139, 95, 191, 1);
+}
+
+/* 스크롤바 스타일 */
+.service-dropdown-menu::-webkit-scrollbar,
+.time-dropdown-menu::-webkit-scrollbar {
+    width: 6px;
+}
+
+.service-dropdown-menu::-webkit-scrollbar-track,
+.time-dropdown-menu::-webkit-scrollbar-track {
+    background: rgba(139, 95, 191, 0.1);
+    border-radius: 3px;
+}
+
+.service-dropdown-menu::-webkit-scrollbar-thumb,
+.time-dropdown-menu::-webkit-scrollbar-thumb {
+    background: rgba(139, 95, 191, 0.3);
+    border-radius: 3px;
+}
+
+.service-dropdown-menu::-webkit-scrollbar-thumb:hover,
+.time-dropdown-menu::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 95, 191, 0.5);
+}
+
+/* 커스텀 시간 드롭다운 스타일 */
+.custom-time-dropdown {
+    position: relative;
+    width: 100%;
+}
+
+.time-dropdown-btn {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    background-color: #ffffff;
+    border: 1px solid rgba(139, 95, 191, 0.3);
+    border-radius: 12px;
+    color: #333333;
+    font-family: var(--stg-body-font-family, 'Nanum Gothic', sans-serif);
+    font-size: 0.9rem;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.time-dropdown-btn:hover {
+    border-color: rgba(139, 95, 191, 0.5);
+    background-color: rgba(139, 95, 191, 0.02);
+}
+
+.time-dropdown-btn:focus {
+    outline: none;
+    border-color: rgba(139, 95, 191, 0.6);
+    box-shadow: 0 0 0 0.2rem rgba(139, 95, 191, 0.15);
+}
+
+.time-dropdown-btn .dropdown-arrow {
+    transition: transform 0.3s ease;
+    color: rgba(139, 95, 191, 0.7);
+    font-size: 0.8rem;
+}
+
+.time-dropdown-btn.active .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.selected-time-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.time-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #F8F5FF;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 95, 191, 0.3);
+    border-radius: 12px;
+    padding: 0.5rem 0;
+    max-height: 200px;
+    overflow-y: auto;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 10px 30px rgba(139, 95, 191, 0.2);
+}
+
+.time-dropdown-menu.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.time-option {
+    display: block;
+    padding: 0.5rem 1rem;
+    font-family: var(--stg-body-font-family, 'Nanum Gothic', sans-serif);
+    font-size: 0.9rem;
+    color: #333333;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.time-option:hover {
+    background: rgba(139, 95, 191, 0.15);
+    color: rgba(139, 95, 191, 1);
+}
+
+.time-option.active {
+    color: rgba(139, 95, 191, 1);
+    background: rgba(139, 95, 191, 0.12);
+    font-weight: 500;
+}
+
+.time-option.active::before {
+    content: '✓ ';
+    color: rgba(139, 95, 191, 1);
+}
+
+/* 시간외 업차지 말풍선 */
+.time-tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #FF6B6B;
+    color: #ffffff;
+    font-family: var(--stg-body-font-family, 'Nanum Gothic', sans-serif);
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 8px 14px;
+    border-radius: 8px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1001;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+}
+
+.time-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #FF6B6B;
+}
+
+.time-tooltip.show {
+    opacity: 1;
+    visibility: visible;
+    animation: tooltipBounce 0.4s ease;
+}
+
+@keyframes tooltipBounce {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px);
+    }
+    50% {
+        transform: translateX(-50%) translateY(-3px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
 }
 
 /* Alert info styling for light mode */
@@ -435,10 +921,23 @@
     padding: 6px 12px;
 }
 
-.datetime-label .badge.bg-outline-secondary {
-    background-color: transparent !important;
-    border: 1px solid #6c757d;
-    color: #6c757d;
+/* 순위 배지 커스텀 색상 */
+.datetime-label .badge.badge-priority-1 {
+    background-color: #44237A !important;
+    color: #ffffff !important;
+    border: none;
+}
+
+.datetime-label .badge.badge-priority-2 {
+    background-color: rgba(139, 95, 191, 0.6) !important;
+    color: #ffffff !important;
+    border: none;
+}
+
+.datetime-label .badge.badge-priority-3 {
+    background-color: #ffffff !important;
+    border: 1px solid rgba(139, 95, 191, 0.5) !important;
+    color: rgba(139, 95, 191, 1) !important;
 }
 
 .datetime-inputs {

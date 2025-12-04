@@ -815,3 +815,8 @@ msgstr "お客様のお問い合わせをAIエージェントが整理してお�
 msgid "고객님의 예약 신청을 저희 AI 에이전트가 정리해서 전달하고 있습니다. 잠시만 기다려주세요."
 msgstr "お客様のご予約をAIエージェントが整理してお伝えしています。少々お待ちください。"
 
+
+# Off-hours surcharge tooltip (Booking page)
+msgid "시간외 업차지가 추가됩니다"
+msgstr "時間外料金が追加されます"
+

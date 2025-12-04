@@ -2758,6 +2758,33 @@ body.light-mode .form-label {
     font-weight: 600 !important;
 }
 
+body.light-mode .form-text {
+    color: #6c757d !important;
+}
+
+/* Light Mode - Select Dropdown Menu */
+body.light-mode .form-select option,
+body.light-mode .form-select optgroup {
+    background-color: #F5F0FF !important;
+    color: #333333 !important;
+    font-family: var(--stg-body-font-family) !important;
+    font-size: var(--stg-body-font-size) !important;
+    line-height: var(--stg-body-line-height) !important;
+    font-weight: var(--stg-body-font-weight) !important;
+}
+
+body.light-mode .form-select option:hover,
+body.light-mode .form-select option:checked {
+    background-color: #E8DCFF !important;
+    color: #44237A !important;
+}
+
+body.light-mode .form-select optgroup {
+    background-color: #EDE5FF !important;
+    color: #44237A !important;
+    font-weight: 600 !important;
+}
+
 /* Light Mode - Tables */
 body.light-mode .table thead th,
 body.light-mode .table-light,

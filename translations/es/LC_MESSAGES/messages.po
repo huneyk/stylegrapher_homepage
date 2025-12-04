@@ -809,3 +809,8 @@ msgstr "Abrir Canal de KakaoTalk"
 msgid "영업시간: 화-토 9:00-18:00 | 일/월요일 휴무"
 msgstr "Horario: Mar-Sáb 9:00-18:00 | Cerrado Dom/Lun"
 
+
+# Off-hours surcharge tooltip (Booking page)
+msgid "시간외 업차지가 추가됩니다"
+msgstr "Se añadirá un recargo por horario fuera de oficina"
+
