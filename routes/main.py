@@ -58,7 +58,8 @@ def cache_with_timeout(timeout_minutes=30):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             # 언어 설정을 캐시 키에 포함하여 다국어 지원
-            current_lang = session.get('lang', 'ko')
+            # get_current_language()를 사용하여 브라우저 언어 감지 포함
+            current_lang = get_current_language()
             cache_key = f"{func.__name__}:{current_lang}:{hash(str(args) + str(sorted(kwargs.items())))}"
             
             if cache_key in _cache_timestamps:

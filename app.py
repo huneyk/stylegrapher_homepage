@@ -159,6 +159,13 @@ def create_app():
             elif request.path.endswith(('.woff', '.woff2', '.ttf', '.eot')):
                 response.headers['Cache-Control'] = 'public, max-age=31536000'
         
+        # 세션에 언어가 있지만 쿠키가 없는 경우 쿠키 설정 (브라우저 언어 감지 후 자동 설정)
+        if 'lang' in session and session['lang'] in SUPPORTED_LANGUAGES:
+            cookie_lang = request.cookies.get('preferred_lang')
+            if not cookie_lang or cookie_lang != session['lang']:
+                response.set_cookie('preferred_lang', session['lang'], 
+                                   max_age=365*24*60*60, samesite='Lax')
+        
         return response
     
     # robots.txt 제공
