@@ -2533,34 +2533,58 @@ body.light-mode .navbar-brand img {
 
 /* Light Mode - Side Menu */
 body.light-mode .side-menu {
-    background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%) !important;
+    background: #44237A !important;
 }
 
 body.light-mode .close-menu {
     font-size: 2rem !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+body.light-mode .close-menu:hover {
+    color: #ffffff !important;
 }
 
 body.light-mode .main-menu-link {
     font-size: 1.1rem !important;
     font-weight: 600 !important;
-    color: #333 !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+body.light-mode .main-menu-link:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
 }
 
 body.light-mode .category-header {
     font-size: 1.1rem !important;
     font-weight: 600 !important;
-    color: #333 !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+body.light-mode .category-header:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
 }
 
 body.light-mode .sub-menu-link {
     font-size: 0.95rem !important;
     font-weight: 400 !important;
-    color: #6c757d !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+body.light-mode .sub-menu-link:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+}
+
+body.light-mode .sub-menu {
+    background: rgba(0, 0, 0, 0.15) !important;
 }
 
 body.light-mode .category-toggle {
     font-size: 0.8rem !important;
-    color: #333 !important;
+    color: rgba(255, 255, 255, 0.9) !important;
 }
 
 /* Light Mode - Menu Overlay */

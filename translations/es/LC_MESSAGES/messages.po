@@ -380,11 +380,11 @@ msgstr "Estilismo de Moda"
 
 #: templates/base.html:200
 msgid "개인화보"
-msgstr "Sesión Fotográfica Personal"
+msgstr "Editorial Personal"
 
 #: templates/base.html:205
 msgid "프로필 촬영"
-msgstr "Fotografía de Perfil"
+msgstr "Retrato de Marca Personal"
 
 #: templates/base.html:210 templates/base.html:259 templates/gallery.html:3
 #: templates/gallery_detail.html:3
