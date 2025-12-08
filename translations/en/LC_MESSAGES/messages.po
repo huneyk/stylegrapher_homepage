@@ -57,7 +57,7 @@ msgstr "One-Day Styling"
 
 #: templates/_services.html:6 templates/base.html:193
 msgid "프리미엄 화보 제작"
-msgstr "Premium Photo Production"
+msgstr "Premium Photo Editorial Production"
 
 #: templates/about.html:3 templates/base.html:233 templates/index.html:525
 msgid "스타일그래퍼 소개"
@@ -371,10 +371,10 @@ msgstr "Fashion Styling"
 
 # 프리미엄 화보 제작 서브메뉴
 msgid "패키지 화보"
-msgstr "Package Photoshoot"
+msgstr "Personal Editorial"
 
 msgid "커스터마이징 화보"
-msgstr "Customized Photoshoot"
+msgstr "Personal Branding Headshot"
 
 # Legacy menu items (keep for backward compatibility)
 #: templates/base.html:139
