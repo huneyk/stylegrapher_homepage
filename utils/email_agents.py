@@ -350,7 +350,12 @@ JSON 형식으로 응답하세요:
 1. 감지된 언어({result.detected_language})로 응답 작성
 2. 감성({result.sentiment})에 맞는 톤 사용
 3. RAG Context의 정확한 서비스 정보 활용
-4. "스타일그래퍼 팀" 또는 해당 언어의 서명으로 마무리''',
+4. 응답 마지막 부분(서명 직전)에 다음 안내 문구를 반드시 포함:
+   - 한국어: "필요한 경우 더 정확하고 자세한 안내를 위해 담당자가 추가로 연락 드리겠습니다."
+   - 영어: "If needed, our staff will contact you for more accurate and detailed assistance."
+   - 일본어: "必要に応じて、より正確で詳しいご案内のため、担当者から追加でご連絡させていただきます。"
+   - 중국어: "如有需要，我们的工作人员将与您联系，为您提供更准确、更详细的帮助。"
+5. "스타일그래퍼 팀" 또는 해당 언어의 서명으로 마무리''',
             agent=self.response_generator,
             expected_output='고객 문의에 대한 응답 이메일'
         )
@@ -572,6 +577,12 @@ JSON으로만 응답: {{"classification": "spam/irrelevant/valid", "reason": "RA
 
 {guidelines}
 
+응답 마지막 부분(서명 직전)에 다음 안내 문구를 반드시 포함하세요:
+- 한국어: "필요한 경우 더 정확하고 자세한 안내를 위해 담당자가 추가로 연락 드리겠습니다."
+- 영어: "If needed, our staff will contact you for more accurate and detailed assistance."
+- 일본어: "必要に応じて、より正確で詳しいご案内のため、担当者から追加でご連絡させていただきます。"
+- 중국어: "如有需要，我们的工作人员将与您联系，为您提供更准确、更详细的帮助。"
+
 친절하고 전문적인 응답을 작성하세요.'''
 
         response = client.chat.completions.create(
@@ -639,6 +650,8 @@ JSON으로만 응답: {{"classification": "spam/irrelevant/valid", "reason": "RA
 저희는 스타일링 컨설팅, AI 스타일 분석, 원데이 스타일링, 프로필 촬영 서비스를 제공하고 있습니다.
 관련 문의가 있으시면 언제든지 연락 주세요.
 
+필요한 경우 더 정확하고 자세한 안내를 위해 담당자가 추가로 연락 드리겠습니다.
+
 감사합니다.
 스타일그래퍼 팀 드림''',
             
@@ -650,6 +663,8 @@ We apologize, but the content of your inquiry is not related to our company's se
 
 We offer styling consulting, AI style analysis, one-day styling, and profile photography services.
 Please feel free to contact us if you have any related inquiries.
+
+If needed, our staff will contact you for more accurate and detailed assistance.
 
 Best regards,
 Stylegrapher Team''',
@@ -663,6 +678,8 @@ Stylegrapher Team''',
 弊社はスタイリングコンサルティング、AIスタイル分析、ワンデースタイリング、プロフィール撮影サービスを提供しております。
 関連するお問い合わせがございましたら、いつでもご連絡ください。
 
+必要に応じて、より正確で詳しいご案内のため、担当者から追加でご連絡させていただきます。
+
 どうぞよろしくお願いいたします。
 スタイルグラファーチーム''',
             
@@ -674,6 +691,8 @@ Stylegrapher Team''',
 
 我们提供造型咨询、AI风格分析、一日造型、个人写真服务。
 如有相关咨询，请随时联系我们。
+
+如有需要，我们的工作人员将与您联系，为您提供更准确、更详细的帮助。
 
 此致敬礼，
 Stylegrapher团队'''
@@ -718,6 +737,8 @@ Stylegrapher团队'''
 {service_name}에 관한 문의를 접수하였습니다.
 담당자가 확인 후 빠른 시간 내에 연락 드리겠습니다.
 
+필요한 경우 더 정확하고 자세한 안내를 위해 담당자가 추가로 연락 드리겠습니다.
+
 감사합니다.
 스타일그래퍼 팀 드림''',
             
@@ -727,6 +748,8 @@ Thank you for contacting Stylegrapher.
 
 We have received your inquiry about {service_name}.
 Our team will review and get back to you shortly.
+
+If needed, our staff will contact you for more accurate and detailed assistance.
 
 Best regards,
 Stylegrapher Team''',
@@ -738,6 +761,8 @@ Stylegrapher Team''',
 {service_name}に関するお問い合わせを受け付けました。
 担当者が確認後、早急にご連絡いたします。
 
+必要に応じて、より正確で詳しいご案内のため、担当者から追加でご連絡させていただきます。
+
 どうぞよろしくお願いいたします。
 スタイルグラファーチーム''',
             
@@ -747,6 +772,8 @@ Stylegrapher Team''',
 
 我们已收到您关于{service_name}的咨询。
 我们的团队将尽快审核并与您联系。
+
+如有需要，我们的工作人员将与您联系，为您提供更准确、更详细的帮助。
 
 此致敬礼，
 Stylegrapher团队'''
