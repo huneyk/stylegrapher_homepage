@@ -222,6 +222,10 @@ def add_category():
             )
             service_option.save()
             
+            # 서비스 옵션 캐시 클리어
+            from routes.main import clear_service_option_cache
+            clear_service_option_cache(service_option.id)
+            
             # 다국어 번역 트리거
             trigger_translation('service', service)
             trigger_translation('service_option', service_option)
@@ -677,6 +681,11 @@ def add_option_standalone():
             option.packages = None
         
         option.save()
+        
+        # 서비스 옵션 캐시 클리어
+        from routes.main import clear_service_option_cache
+        clear_service_option_cache(option.id)
+        
         trigger_translation('service_option', option)
         
         flash(f'{service.name} 카테고리에 "{option.name}" 서비스가 추가되었습니다.')
@@ -743,6 +752,11 @@ def add_option(service_id):
             option.packages = None
         
         option.save()
+        
+        # 서비스 옵션 캐시 클리어
+        from routes.main import clear_service_option_cache
+        clear_service_option_cache(option.id)
+        
         trigger_translation('service_option', option)
         
         flash('옵션이 추가되었습니다.')
@@ -856,6 +870,11 @@ def edit_option(option_id):
         try:
             option.save()
             print(f"✅ MongoDB 저장 성공 - 옵션 ID: {option_id}")
+            
+            # 서비스 옵션 캐시 클리어
+            from routes.main import clear_service_option_cache
+            clear_service_option_cache(option_id)
+            
             flash('옵션이 수정되었습니다.')
             trigger_translation('service_option', option)
         except Exception as e:
@@ -887,6 +906,11 @@ def delete_option(option_id):
     option = ServiceOption.get_or_404(option_id)
     service_name = option.name
     option.delete()
+    
+    # 서비스 옵션 캐시 클리어
+    from routes.main import clear_service_option_cache
+    clear_service_option_cache(option_id)
+    
     flash(f'서비스 "{service_name}"이(가) 삭제되었습니다.')
     return redirect(url_for('admin.list_services'))
 

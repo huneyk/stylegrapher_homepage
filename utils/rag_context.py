@@ -88,6 +88,36 @@ def get_services_context() -> str:
     return "\n".join(context_parts)
 
 
+def get_contact_info_context() -> str:
+    """연락처 정보 컨텍스트"""
+    return """
+=== 스타일그래퍼 연락처 정보 ===
+
+주소: 서울시 강남구 압구정로 46길 5-6 A동 502호
+우편번호: 06019
+
+전화번호: 02-545-5028
+
+이메일: stylegrapher.ysg@gmail.com
+
+카카오톡 채널: 스타일그래퍼
+카카오톡 채널 URL: https://pf.kakao.com/_xgDcFK
+
+영업시간: 화요일~토요일 09:00-18:00
+휴무일: 일요일, 월요일
+
+대표자: 이사금 (Lee Sa Geum / 李事昑)
+사업자 등록번호: 412-26-00896
+
+웹사이트: https://www.stylegrapher.com
+
+SNS:
+- 인스타그램: https://www.instagram.com/stylegrapher_official
+- 유튜브: https://www.youtube.com/@stylegrapher
+- 페이스북: https://www.facebook.com/stylegrapher.us
+"""
+
+
 def get_company_info_context() -> str:
     """회사 기본 정보 컨텍스트 (DB에서 동적으로 가져옴)"""
     from utils.mongo_models import CompanyInfo
@@ -172,6 +202,9 @@ def get_full_rag_context(include_terms: bool = False) -> str:
     
     # 회사 정보
     context_parts.append(get_company_info_context())
+    
+    # 연락처 정보
+    context_parts.append(get_contact_info_context())
     
     # 회사 소개 (About 페이지)
     context_parts.append(get_about_context())

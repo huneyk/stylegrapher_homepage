@@ -120,6 +120,45 @@ def clear_gallery_cache():
     print(f"🧹 갤러리 캐시 클리어 완료: {len(keys_to_remove)}개 항목 제거")
 
 
+def clear_service_option_cache(option_id=None):
+    """서비스 옵션 관련 캐시를 클리어하는 함수
+    
+    Args:
+        option_id: 특정 옵션 ID만 클리어할 경우 지정 (None이면 모든 서비스 옵션 캐시 클리어)
+    """
+    global _cache, _cache_timestamps
+    
+    # 지원되는 언어 목록
+    languages = ['ko', 'en', 'ja', 'zh', 'es']
+    
+    # Flask-Caching 캐시 클리어
+    if option_id:
+        # 특정 옵션에 대해 모든 언어별 캐시 클리어
+        for lang in languages:
+            cache_key = f"service_option:{lang}:{option_id}"
+            cache.delete(cache_key)
+        print(f"🧹 서비스 옵션 캐시 클리어 완료 - 옵션 ID: {option_id}")
+    else:
+        # 모든 서비스 옵션 캐시 클리어 (패턴 삭제가 지원되지 않으면 전체 클리어)
+        cache.clear()
+        print(f"🧹 전체 캐시 클리어 완료")
+    
+    # 메모리 캐시에서도 서비스 관련 캐시 클리어
+    keys_to_remove = []
+    for key in list(_cache.keys()):
+        if key.startswith('get_all_services:') or key.startswith('service_option:'):
+            keys_to_remove.append(key)
+    
+    for key in keys_to_remove:
+        if key in _cache:
+            del _cache[key]
+        if key in _cache_timestamps:
+            del _cache_timestamps[key]
+    
+    if keys_to_remove:
+        print(f"🧹 메모리 캐시 클리어 완료: {len(keys_to_remove)}개 항목 제거")
+
+
 @cache_with_timeout(300)  # 5분 캐싱
 def get_all_services():
     """모든 서비스와 서비스 옵션을 가져와서 카테고리별로 그룹화 (i18n 적용)"""
