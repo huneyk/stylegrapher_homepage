@@ -1978,43 +1978,67 @@ def log_stats_json():
         return jsonify({'error': str(e)}), 500
 
 
-# ========== 세션 관리 ==========
+# ========== 세션 관리 (사용자 세션 분석) ==========
 
 @admin.route('/sessions')
 @login_required
 def sessions_dashboard():
-    """세션 관리 대시보드"""
-    from flask import session
-    from flask_login import current_user
+    """사용자 세션 분석 대시보드"""
+    from utils.visitor_tracker import get_visitor_sessions, get_visitor_stats
     
     try:
-        # 현재 세션 정보
-        current_session = {
-            'language': session.get('language', 'ko'),
-            'user_id': current_user.id if current_user.is_authenticated else None,
-            'username': current_user.username if current_user.is_authenticated else None,
-            'is_permanent': session.permanent
-        }
+        # 필터 파라미터
+        days = request.args.get('days', 30, type=int)
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 50, type=int)
+        sort_by = request.args.get('sort_by', 'timestamp')
+        sort_order_str = request.args.get('sort_order', 'desc')
+        sort_order = -1 if sort_order_str == 'desc' else 1
+        ip_filter = request.args.get('ip', '').strip()
+        country_filter = request.args.get('country', '').strip()
         
-        # 전체 사용자 수
-        total_users = User.count()
+        # 오프셋 계산
+        offset = (page - 1) * per_page
         
-        # 최근 로그인 활동 (예약/문의 접수 기준으로 추정)
-        recent_bookings = Booking.query_all_ordered(limit=10)
-        recent_inquiries = Inquiry.query_all_ordered(limit=10)
+        # 세션 목록 조회
+        sessions, total_count = get_visitor_sessions(
+            days=days,
+            limit=per_page,
+            offset=offset,
+            sort_by=sort_by,
+            sort_order=sort_order,
+            ip_filter=ip_filter if ip_filter else None,
+            country_filter=country_filter if country_filter else None
+        )
         
-        # 언어별 분포 (최근 예약/문의 기준)
-        language_dist = defaultdict(int)
-        for booking in Booking.query_all_ordered(limit=100):
-            lang = getattr(booking, 'language', 'ko') or 'ko'
-            language_dist[lang] += 1
+        # 통계 조회
+        stats = get_visitor_stats(days=days)
+        
+        # 페이징 정보
+        total_pages = (total_count + per_page - 1) // per_page
+        
+        # 시간대 변환 (KST)
+        kst = pytz.timezone('Asia/Seoul')
+        for session in sessions:
+            if session.get('timestamp'):
+                ts = session['timestamp']
+                if isinstance(ts, datetime):
+                    if ts.tzinfo is None:
+                        ts = pytz.utc.localize(ts)
+                    session['timestamp_kst'] = ts.astimezone(kst)
         
         return render_template('admin/sessions.html',
-                             current_session=current_session,
-                             total_users=total_users,
-                             recent_bookings=recent_bookings,
-                             recent_inquiries=recent_inquiries,
-                             language_distribution=dict(language_dist))
+                             sessions=sessions,
+                             stats=stats,
+                             total_count=total_count,
+                             page=page,
+                             per_page=per_page,
+                             total_pages=total_pages,
+                             days=days,
+                             sort_by=sort_by,
+                             sort_order=sort_order_str,
+                             ip_filter=ip_filter,
+                             country_filter=country_filter)
                              
     except Exception as e:
         print(f"Error in sessions dashboard: {str(e)}")
@@ -2022,11 +2046,57 @@ def sessions_dashboard():
         traceback.print_exc()
         flash('세션 정보를 불러오는 중 오류가 발생했습니다.', 'error')
         return render_template('admin/sessions.html',
-                             current_session={},
-                             total_users=0,
-                             recent_bookings=[],
-                             recent_inquiries=[],
-                             language_distribution={})
+                             sessions=[],
+                             stats={'total_sessions': 0, 'unique_visitors': 0, 'total_tokens': 0, 'total_cost': 0, 'by_country': {}, 'by_browser': {}, 'by_device': {}, 'by_page': {}, 'by_language': {}},
+                             total_count=0,
+                             page=1,
+                             per_page=50,
+                             total_pages=0,
+                             days=30,
+                             sort_by='timestamp',
+                             sort_order='desc',
+                             ip_filter='',
+                             country_filter='')
+
+
+@admin.route('/sessions/delete/<session_id>', methods=['POST'])
+@login_required
+def delete_session(session_id):
+    """세션 기록 삭제"""
+    from utils.visitor_tracker import delete_visitor_session
+    
+    try:
+        if delete_visitor_session(session_id):
+            flash('세션 기록이 삭제되었습니다.', 'success')
+        else:
+            flash('세션 삭제에 실패했습니다.', 'error')
+    except Exception as e:
+        print(f"Error deleting session: {str(e)}")
+        flash('세션 삭제 중 오류가 발생했습니다.', 'error')
+    
+    return redirect(url_for('admin.sessions_dashboard'))
+
+
+@admin.route('/sessions/export')
+@login_required
+def export_sessions():
+    """세션 데이터 내보내기"""
+    from utils.visitor_tracker import export_visitor_data
+    
+    try:
+        days = request.args.get('days', 30, type=int)
+        data = export_visitor_data(days=days)
+        
+        response = make_response(json.dumps(data, indent=2, default=str, ensure_ascii=False))
+        response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        response.headers['Content-Disposition'] = f'attachment; filename=visitor_sessions_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
+        
+        return response
+        
+    except Exception as e:
+        print(f"Error exporting sessions: {str(e)}")
+        flash('세션 데이터 내보내기 중 오류가 발생했습니다.', 'error')
+        return redirect(url_for('admin.sessions_dashboard'))
 
 
 # ========== 토큰 사용량 ==========

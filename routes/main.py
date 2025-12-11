@@ -30,6 +30,7 @@ from utils.translation_helper import (
 )
 from utils.gridfs_helper import get_image_from_gridfs, get_mongo_connection
 from extensions import mail, cache
+from utils.visitor_tracker import log_visitor
 
 # MongoDB 설정 불러오기 (fork-safe: 연결은 lazy하게 생성됨)
 load_dotenv()
@@ -46,6 +47,60 @@ def resize_image_memory(img, width=1080):
 
 # Create the Blueprint object
 main = Blueprint('main', __name__)
+
+
+# 방문자 추적 미들웨어
+@main.before_request
+def track_visitor():
+    """페이지 방문 시 방문자 정보 기록"""
+    # 추적 제외 경로
+    excluded_paths = ['/static/', '/admin/', '/api/', '/favicon', '/_']
+    
+    # 제외 경로 확인
+    if any(request.path.startswith(path) for path in excluded_paths):
+        return
+    
+    # 정적 파일 확장자 제외
+    static_extensions = ['.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.ico', '.svg', '.woff', '.woff2', '.ttf']
+    if any(request.path.endswith(ext) for ext in static_extensions):
+        return
+    
+    # AJAX 요청 제외
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return
+    
+    try:
+        # IP 주소 가져오기 (프록시 고려)
+        ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
+        if ip_address and ',' in ip_address:
+            ip_address = ip_address.split(',')[0].strip()
+        
+        # User-Agent
+        user_agent = request.headers.get('User-Agent', '')
+        
+        # 현재 언어
+        language = session.get('language', 'ko')
+        
+        # 세션 ID
+        session_id = session.get('_id') or request.cookies.get('session')
+        
+        # Referrer
+        referrer = request.referrer
+        
+        # 방문 기록
+        log_visitor(
+            ip_address=ip_address,
+            user_agent=user_agent,
+            page_url=request.path,
+            session_id=session_id,
+            language=language,
+            referrer=referrer,
+            tokens_used=0,
+            cost_usd=0.0
+        )
+    except Exception as e:
+        # 추적 실패 시 무시 (사용자 경험에 영향 없음)
+        print(f"방문자 추적 오류 (무시): {str(e)}")
 
 # 간단한 메모리 캐시 구현
 _cache = {}

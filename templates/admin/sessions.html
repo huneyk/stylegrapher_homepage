@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}세션 관리 - 관리자{% endblock %}
+{% block title %}사용자 세션 분석 - 관리자{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
@@ -8,164 +8,341 @@
     <div class="row mb-4">
         <div class="col">
             <div class="d-flex justify-content-between align-items-center">
-                <h2><i class="bi bi-person-badge me-2"></i>세션 관리</h2>
-                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left me-1"></i>대시보드
-                </a>
+                <h2><i class="bi bi-person-badge me-2"></i>사용자 세션 분석</h2>
+                <div>
+                    <a href="{{ url_for('admin.export_sessions', days=days) }}" class="btn btn-success me-2">
+                        <i class="bi bi-download me-1"></i>내보내기
+                    </a>
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>대시보드
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 현재 세션 정보 -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-6">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-person-circle me-2"></i>현재 세션</h5>
+    <!-- 필터 및 정렬 -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label">정렬 기준:</label>
+                    <select name="sort_by" class="form-select">
+                        <option value="timestamp" {% if sort_by == 'timestamp' %}selected{% endif %}>접속 시간</option>
+                        <option value="ip_address" {% if sort_by == 'ip_address' %}selected{% endif %}>IP 주소</option>
+                        <option value="tokens_used" {% if sort_by == 'tokens_used' %}selected{% endif %}>토큰 사용</option>
+                        <option value="cost_usd" {% if sort_by == 'cost_usd' %}selected{% endif %}>비용</option>
+                    </select>
                 </div>
-                <div class="card-body">
-                    <table class="table table-borderless mb-0">
+                <div class="col-md-2">
+                    <label class="form-label">정렬 순서:</label>
+                    <select name="sort_order" class="form-select">
+                        <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>내림차순</option>
+                        <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>오름차순</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">기간:</label>
+                    <select name="days" class="form-select">
+                        <option value="1" {% if days == 1 %}selected{% endif %}>최근 1일</option>
+                        <option value="7" {% if days == 7 %}selected{% endif %}>최근 7일</option>
+                        <option value="30" {% if days == 30 %}selected{% endif %}>최근 1개월</option>
+                        <option value="90" {% if days == 90 %}selected{% endif %}>최근 3개월</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">IP 필터:</label>
+                    <input type="text" name="ip" class="form-control" value="{{ ip_filter }}" placeholder="IP 주소...">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">국가 필터:</label>
+                    <input type="text" name="country" class="form-control" value="{{ country_filter }}" placeholder="국가...">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel me-1"></i>적용
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 통계 요약 -->
+    <div class="alert alert-info mb-4">
+        <i class="bi bi-bar-chart me-2"></i>
+        <strong>분석 기간:</strong> 최근 {{ days }}{% if days == 1 %}일{% elif days == 7 %}일{% elif days == 30 %}개월{% else %}일{% endif %} | 
+        <strong>총 {{ total_count }}개의 세션</strong> (페이지 {{ page }}/{{ total_pages if total_pages > 0 else 1 }})
+    </div>
+
+    <!-- 통계 카드 -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card h-100">
+                <div class="card-body text-center">
+                    <h3 class="stat-number">{{ stats.total_sessions }}</h3>
+                    <p class="stat-label mb-0">총 세션</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card h-100">
+                <div class="card-body text-center">
+                    <h3 class="stat-number">{{ stats.unique_visitors }}</h3>
+                    <p class="stat-label mb-0">고유 방문자</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card h-100">
+                <div class="card-body text-center">
+                    <h3 class="stat-number">{{ "{:,}".format(stats.total_tokens) }}</h3>
+                    <p class="stat-label mb-0">총 토큰 사용</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card h-100">
+                <div class="card-body text-center">
+                    <h3 class="stat-number">${{ "%.4f" | format(stats.total_cost) }}</h3>
+                    <p class="stat-label mb-0">총 비용</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 세션 테이블 -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>
+                <input type="checkbox" id="selectAll" class="form-check-input me-2">
+                <label for="selectAll" class="form-check-label">전체 선택</label>
+            </span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
                         <tr>
-                            <td class="text-muted" style="width: 40%;">사용자</td>
-                            <td><strong>{{ current_session.username or '로그인됨' }}</strong></td>
+                            <th style="width: 40px;"></th>
+                            <th>접속 시간 ↓</th>
+                            <th>IP 주소</th>
+                            <th>위치</th>
+                            <th>브라우저</th>
+                            <th class="text-end">토큰 사용</th>
+                            <th class="text-end">비용</th>
+                            <th>언어</th>
+                            <th>서비스 페이지</th>
+                            <th style="width: 50px;"></th>
                         </tr>
+                    </thead>
+                    <tbody>
+                        {% if sessions %}
+                        {% for session in sessions %}
                         <tr>
-                            <td class="text-muted">언어 설정</td>
                             <td>
-                                <span class="badge bg-primary">{{ current_session.language | upper }}</span>
+                                <input type="checkbox" class="form-check-input session-checkbox" value="{{ session._id }}">
                             </td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted">영구 세션</td>
                             <td>
-                                {% if current_session.is_permanent %}
-                                <span class="badge bg-success">활성화</span>
+                                <small>
+                                    {% if session.timestamp_kst %}
+                                    {{ session.timestamp_kst.strftime('%Y-%m-%d %H:%M:%S') }} KST
+                                    {% elif session.timestamp %}
+                                    {{ session.timestamp.strftime('%Y-%m-%d %H:%M:%S') }} UTC
+                                    {% else %}
+                                    N/A
+                                    {% endif %}
+                                </small>
+                            </td>
+                            <td>
+                                <code>{{ session.ip_address or 'Unknown' }}</code>
+                            </td>
+                            <td>
+                                {% if session.location %}
+                                <span title="{{ session.location.isp or '' }}">
+                                    {{ session.location.country or 'Unknown' }}
+                                    {% if session.location.city and session.location.city != 'Unknown' %}
+                                    - {{ session.location.city }}
+                                    {% endif %}
+                                </span>
                                 {% else %}
-                                <span class="badge bg-secondary">비활성화</span>
+                                Unknown
                                 {% endif %}
                             </td>
+                            <td>
+                                {% if session.user_agent %}
+                                <span class="badge bg-{{ 'primary' if session.user_agent.browser == 'Chrome' else 'info' if session.user_agent.browser == 'Safari' else 'warning' if session.user_agent.browser == 'Firefox' else 'secondary' }}" title="{{ session.user_agent.raw or '' }}">
+                                    {{ session.user_agent.browser or 'Unknown' }}
+                                </span>
+                                <small class="text-muted">{{ session.user_agent.device or '' }}</small>
+                                {% else %}
+                                Unknown
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {{ "{:,}".format(session.tokens_used or 0) }}
+                            </td>
+                            <td class="text-end">
+                                US${{ "%.4f" | format(session.cost_usd or 0) }}
+                            </td>
+                            <td>
+                                <span class="badge bg-outline-secondary">{{ session.language or 'ko' }}</span>
+                            </td>
+                            <td>
+                                {% if session.service_page %}
+                                <span class="badge bg-{{ 'success' if session.service_page == 'Home' else 'primary' if session.service_page == 'Service' else 'info' if session.service_page == 'Gallery' else 'warning' if session.service_page == 'Booking' else 'secondary' }}">
+                                    {{ session.service_page }}
+                                </span>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="POST" action="{{ url_for('admin.delete_session', session_id=session._id) }}" class="d-inline" onsubmit="return confirm('이 세션 기록을 삭제하시겠습니까?');">
+                                    <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="삭제">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
-                    </table>
-                </div>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="10" class="text-center py-5">
+                                <i class="bi bi-inbox fs-1 d-block mb-3 text-muted"></i>
+                                <p class="text-muted mb-0">세션 데이터가 없습니다.</p>
+                                <small class="text-muted">방문자가 사이트에 접속하면 여기에 기록됩니다.</small>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
             </div>
         </div>
         
-        <div class="col-md-6">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-people me-2"></i>사용자 통계</h5>
-                </div>
-                <div class="card-body">
-                    <div class="text-center">
-                        <h1 class="display-4 mb-2">{{ total_users }}</h1>
-                        <p class="text-muted mb-0">등록된 관리자</p>
-                    </div>
-                </div>
-            </div>
+        <!-- 페이징 -->
+        {% if total_pages > 1 %}
+        <div class="card-footer">
+            <nav aria-label="세션 페이지">
+                <ul class="pagination pagination-sm mb-0 justify-content-center">
+                    {% if page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.sessions_dashboard', page=page-1, days=days, sort_by=sort_by, sort_order=sort_order, ip=ip_filter, country=country_filter) }}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for p in range(1, total_pages + 1) %}
+                    {% if p == page %}
+                    <li class="page-item active"><span class="page-link">{{ p }}</span></li>
+                    {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.sessions_dashboard', page=p, days=days, sort_by=sort_by, sort_order=sort_order, ip=ip_filter, country=country_filter) }}">{{ p }}</a>
+                    </li>
+                    {% elif p == page - 3 or p == page + 3 %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    {% if page < total_pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.sessions_dashboard', page=page+1, days=days, sort_by=sort_by, sort_order=sort_order, ip=ip_filter, country=country_filter) }}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
         </div>
+        {% endif %}
     </div>
 
-    <!-- 언어별 분포 -->
-    {% if language_distribution %}
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-translate me-2"></i>언어별 사용 현황 (최근 예약 기준)</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        {% for lang, count in language_distribution.items() %}
-                        <div class="col-md-3 col-6 mb-3">
-                            <div class="text-center p-3 rounded" style="background: rgba(200, 170, 255, 0.1);">
-                                <h4 class="mb-1">{{ count }}</h4>
-                                <span class="badge bg-info">{{ lang | upper }}</span>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
-    <div class="row">
-        <!-- 최근 예약 활동 -->
-        <div class="col-md-6 mb-4">
+    <!-- 통계 상세 -->
+    <div class="row mt-4">
+        <!-- 국가별 -->
+        {% if stats.by_country %}
+        <div class="col-md-4 mb-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-calendar-check me-2"></i>최근 예약 활동</h5>
+                    <h6 class="mb-0"><i class="bi bi-globe me-2"></i>국가별 방문</h6>
                 </div>
                 <div class="card-body p-0">
-                    {% if recent_bookings %}
                     <ul class="list-group list-group-flush">
-                        {% for booking in recent_bookings %}
-                        <li class="list-group-item">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong>{{ booking.name }}</strong>
-                                    <br>
-                                    <small class="text-muted">{{ booking.email }}</small>
-                                </div>
-                                <small class="text-muted">
-                                    {% if booking.created_at %}
-                                    {{ booking.created_at.strftime('%m/%d %H:%M') }}
-                                    {% endif %}
-                                </small>
-                            </div>
+                        {% for country, count in stats.by_country.items() %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ country }}
+                            <span class="badge bg-primary rounded-pill">{{ count }}</span>
                         </li>
                         {% endfor %}
                     </ul>
-                    {% else %}
-                    <div class="text-center py-4 text-muted">
-                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                        최근 예약이 없습니다.
-                    </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
+        {% endif %}
 
-        <!-- 최근 문의 활동 -->
-        <div class="col-md-6 mb-4">
+        <!-- 브라우저별 -->
+        {% if stats.by_browser %}
+        <div class="col-md-4 mb-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-envelope me-2"></i>최근 문의 활동</h5>
+                    <h6 class="mb-0"><i class="bi bi-browser-chrome me-2"></i>브라우저별</h6>
                 </div>
                 <div class="card-body p-0">
-                    {% if recent_inquiries %}
                     <ul class="list-group list-group-flush">
-                        {% for inquiry in recent_inquiries %}
-                        <li class="list-group-item">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong>{{ inquiry.name }}</strong>
-                                    <br>
-                                    <small class="text-muted">{{ inquiry.email }}</small>
-                                </div>
-                                <small class="text-muted">
-                                    {% if inquiry.created_at %}
-                                    {{ inquiry.created_at.strftime('%m/%d %H:%M') }}
-                                    {% endif %}
-                                </small>
-                            </div>
+                        {% for browser, count in stats.by_browser.items() %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ browser }}
+                            <span class="badge bg-info rounded-pill">{{ count }}</span>
                         </li>
                         {% endfor %}
                     </ul>
-                    {% else %}
-                    <div class="text-center py-4 text-muted">
-                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                        최근 문의가 없습니다.
-                    </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
+        {% endif %}
+
+        <!-- 페이지별 -->
+        {% if stats.by_page %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-file-earmark me-2"></i>서비스 페이지별</h6>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for page_name, count in stats.by_page.items() %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ page_name }}
+                            <span class="badge bg-success rounded-pill">{{ count }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 
 <style>
+.stat-card {
+    background: rgba(18, 0, 36, 0.6);
+    border: 1px solid rgba(200, 170, 255, 0.3);
+    border-radius: 12px;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #E8D4FF;
+    margin-bottom: 0;
+}
+
+.stat-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+
 .card {
     background: rgba(18, 0, 36, 0.6);
     border: 1px solid rgba(200, 170, 255, 0.3);
@@ -177,21 +354,116 @@
     color: #E8D4FF;
 }
 
-.list-group-item {
-    background: transparent;
-    border-color: rgba(200, 170, 255, 0.15);
-    color: rgba(255, 255, 255, 0.85);
+.card-footer {
+    background: rgba(200, 170, 255, 0.05);
+    border-top: 1px solid rgba(200, 170, 255, 0.2);
 }
 
 .table {
     color: rgba(255, 255, 255, 0.85);
 }
 
-.display-4 {
+.table thead th {
+    border-bottom-color: rgba(200, 170, 255, 0.2);
+    color: #E8D4FF;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.table td {
+    border-bottom-color: rgba(200, 170, 255, 0.1);
+    vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(200, 170, 255, 0.08);
+}
+
+.list-group-item {
+    background: transparent;
+    border-color: rgba(200, 170, 255, 0.15);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+code {
+    color: #0dcaf0;
+    background: rgba(13, 202, 240, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+.form-control, .form-select {
+    background-color: rgba(18, 0, 36, 0.8);
+    border-color: rgba(200, 170, 255, 0.3);
+    color: #fff;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: rgba(18, 0, 36, 0.9);
+    border-color: rgba(200, 170, 255, 0.6);
+    color: #fff;
+    box-shadow: 0 0 0 0.25rem rgba(200, 170, 255, 0.15);
+}
+
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.form-label {
+    color: #E8D4FF;
+    font-size: 0.85rem;
+}
+
+.alert-info {
+    background: rgba(13, 202, 240, 0.15);
+    border: 1px solid rgba(13, 202, 240, 0.3);
+    color: #0dcaf0;
+}
+
+.page-link {
+    background-color: rgba(18, 0, 36, 0.6);
+    border-color: rgba(200, 170, 255, 0.3);
+    color: #E8D4FF;
+}
+
+.page-link:hover {
+    background-color: rgba(200, 170, 255, 0.2);
+    border-color: rgba(200, 170, 255, 0.5);
+    color: #fff;
+}
+
+.page-item.active .page-link {
+    background-color: rgba(200, 170, 255, 0.3);
+    border-color: rgba(200, 170, 255, 0.5);
+}
+
+.page-item.disabled .page-link {
+    background-color: transparent;
+    border-color: rgba(200, 170, 255, 0.2);
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.badge.bg-outline-secondary {
+    background: transparent;
+    border: 1px solid rgba(200, 170, 255, 0.5);
     color: #E8D4FF;
 }
 
 /* Light Mode */
+body.light-mode .stat-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(139, 92, 246, 0.2);
+}
+
+body.light-mode .stat-number {
+    color: #5B3A8C;
+}
+
+body.light-mode .stat-label {
+    color: #666;
+}
+
 body.light-mode .card {
     background: rgba(255, 255, 255, 0.95);
     border-color: rgba(139, 92, 246, 0.2);
@@ -203,17 +475,71 @@ body.light-mode .card-header {
     color: #5B3A8C;
 }
 
+body.light-mode .table {
+    color: #333;
+}
+
+body.light-mode .table thead th {
+    color: #5B3A8C;
+    border-bottom-color: rgba(139, 92, 246, 0.2);
+}
+
+body.light-mode .table td {
+    border-bottom-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .table-hover tbody tr:hover {
+    background-color: rgba(139, 92, 246, 0.05);
+}
+
 body.light-mode .list-group-item {
     color: #333;
     border-color: rgba(0, 0, 0, 0.1);
 }
 
-body.light-mode .table {
+body.light-mode code {
+    color: #0a8fa5;
+}
+
+body.light-mode .form-control,
+body.light-mode .form-select {
+    background-color: #fff;
+    border-color: rgba(139, 92, 246, 0.3);
     color: #333;
 }
 
-body.light-mode .display-4 {
+body.light-mode .form-label {
+    color: #5B3A8C;
+}
+
+body.light-mode .alert-info {
+    background: rgba(13, 202, 240, 0.1);
+    border-color: rgba(13, 202, 240, 0.2);
+    color: #0a8fa5;
+}
+
+body.light-mode .page-link {
+    background-color: #fff;
+    border-color: rgba(139, 92, 246, 0.2);
+    color: #5B3A8C;
+}
+
+body.light-mode .page-item.active .page-link {
+    background-color: rgba(139, 92, 246, 0.2);
+    border-color: rgba(139, 92, 246, 0.4);
+}
+
+body.light-mode .badge.bg-outline-secondary {
+    border-color: rgba(139, 92, 246, 0.5);
     color: #5B3A8C;
 }
 </style>
+
+<script>
+// 전체 선택 체크박스
+document.getElementById('selectAll').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.session-checkbox');
+    checkboxes.forEach(cb => cb.checked = this.checked);
+});
+</script>
 {% endblock %}
