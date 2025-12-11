@@ -1976,3 +1976,172 @@ def log_stats_json():
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+# ========== 세션 관리 ==========
+
+@admin.route('/sessions')
+@login_required
+def sessions_dashboard():
+    """세션 관리 대시보드"""
+    from flask import session
+    from flask_login import current_user
+    
+    try:
+        # 현재 세션 정보
+        current_session = {
+            'language': session.get('language', 'ko'),
+            'user_id': current_user.id if current_user.is_authenticated else None,
+            'username': current_user.username if current_user.is_authenticated else None,
+            'is_permanent': session.permanent
+        }
+        
+        # 전체 사용자 수
+        total_users = User.count()
+        
+        # 최근 로그인 활동 (예약/문의 접수 기준으로 추정)
+        recent_bookings = Booking.query_all_ordered(limit=10)
+        recent_inquiries = Inquiry.query_all_ordered(limit=10)
+        
+        # 언어별 분포 (최근 예약/문의 기준)
+        language_dist = defaultdict(int)
+        for booking in Booking.query_all_ordered(limit=100):
+            lang = getattr(booking, 'language', 'ko') or 'ko'
+            language_dist[lang] += 1
+        
+        return render_template('admin/sessions.html',
+                             current_session=current_session,
+                             total_users=total_users,
+                             recent_bookings=recent_bookings,
+                             recent_inquiries=recent_inquiries,
+                             language_distribution=dict(language_dist))
+                             
+    except Exception as e:
+        print(f"Error in sessions dashboard: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        flash('세션 정보를 불러오는 중 오류가 발생했습니다.', 'error')
+        return render_template('admin/sessions.html',
+                             current_session={},
+                             total_users=0,
+                             recent_bookings=[],
+                             recent_inquiries=[],
+                             language_distribution={})
+
+
+# ========== 토큰 사용량 ==========
+
+@admin.route('/token-usage')
+@login_required
+def token_usage_dashboard():
+    """AI 토큰 사용량 대시보드"""
+    from utils.ai_usage_tracker import get_usage_stats, get_recent_usage, get_daily_summary
+    
+    try:
+        hours = request.args.get('hours', 24, type=int)
+        
+        # 사용량 통계
+        stats = get_usage_stats(hours=hours)
+        
+        # 최근 사용 내역
+        recent_usage = get_recent_usage(limit=50)
+        
+        # 일별 요약
+        daily_summary = get_daily_summary(days=30)
+        
+        return render_template('admin/token_usage.html',
+                             stats=stats,
+                             recent_usage=recent_usage,
+                             daily_summary=daily_summary,
+                             hours=hours)
+                             
+    except Exception as e:
+        print(f"Error in token usage dashboard: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        flash('토큰 사용량 정보를 불러오는 중 오류가 발생했습니다.', 'error')
+        return render_template('admin/token_usage.html',
+                             stats={'total_requests': 0, 'total_tokens': 0, 'total_cost': 0, 'by_type': {}, 'by_model': {}, 'hourly': []},
+                             recent_usage=[],
+                             daily_summary=[],
+                             hours=24)
+
+
+@admin.route('/token-usage/stats')
+@login_required
+def token_usage_stats_json():
+    """토큰 사용량 통계 JSON 반환"""
+    from utils.ai_usage_tracker import get_usage_stats
+    
+    try:
+        hours = request.args.get('hours', 24, type=int)
+        stats = get_usage_stats(hours=hours)
+        return jsonify(stats)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ========== AI 인사이트 ==========
+
+@admin.route('/ai-insights')
+@login_required
+def ai_insights_dashboard():
+    """AI 인사이트 대시보드"""
+    from utils.ai_usage_tracker import get_ai_insights, get_usage_stats, get_daily_summary
+    
+    try:
+        # AI 인사이트 분석
+        insights = get_ai_insights()
+        
+        # 기본 통계 (24시간)
+        stats_24h = get_usage_stats(hours=24)
+        
+        # 일별 요약 (30일)
+        daily_summary = get_daily_summary(days=30)
+        
+        # 주간 비교 데이터
+        stats_7d = get_usage_stats(hours=168)  # 7일
+        
+        return render_template('admin/ai_insights.html',
+                             insights=insights,
+                             stats_24h=stats_24h,
+                             stats_7d=stats_7d,
+                             daily_summary=daily_summary)
+                             
+    except Exception as e:
+        print(f"Error in AI insights dashboard: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        flash('AI 인사이트를 불러오는 중 오류가 발생했습니다.', 'error')
+        return render_template('admin/ai_insights.html',
+                             insights={'summary': {}, 'trends': {}, 'recommendations': [], 'top_usage': [], 'cost_analysis': {}},
+                             stats_24h={'total_requests': 0, 'total_tokens': 0, 'total_cost': 0},
+                             stats_7d={'total_requests': 0, 'total_tokens': 0, 'total_cost': 0},
+                             daily_summary=[])
+
+
+@admin.route('/ai-insights/export')
+@login_required
+def export_ai_insights():
+    """AI 인사이트 리포트 다운로드"""
+    from utils.ai_usage_tracker import get_ai_insights, get_usage_stats, get_daily_summary
+    
+    try:
+        report = {
+            'generated_at': datetime.now().isoformat(),
+            'insights': get_ai_insights(),
+            'stats_24h': get_usage_stats(hours=24),
+            'stats_7d': get_usage_stats(hours=168),
+            'daily_summary': get_daily_summary(days=30)
+        }
+        
+        response = make_response(json.dumps(report, indent=2, default=str, ensure_ascii=False))
+        response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        response.headers['Content-Disposition'] = f'attachment; filename=ai_insights_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
+        
+        return response
+        
+    except Exception as e:
+        print(f"Error exporting AI insights: {str(e)}")
+        flash('AI 인사이트 내보내기 중 오류가 발생했습니다.', 'error')
+        return redirect(url_for('admin.ai_insights_dashboard'))

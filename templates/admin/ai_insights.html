@@ -1,0 +1,390 @@
+{% extends "base.html" %}
+
+{% block title %}AI 인사이트 - 관리자{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- 헤더 -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2><i class="bi bi-lightbulb me-2"></i>AI 인사이트</h2>
+                <div>
+                    <a href="{{ url_for('admin.export_ai_insights') }}" class="btn btn-outline-primary me-2">
+                        <i class="bi bi-download me-1"></i>리포트 다운로드
+                    </a>
+                    <a href="{{ url_for('admin.token_usage_dashboard') }}" class="btn btn-outline-secondary me-2">
+                        <i class="bi bi-coin me-1"></i>토큰 사용량
+                    </a>
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>대시보드
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 추천사항 알림 -->
+    {% if insights.recommendations %}
+    <div class="row mb-4">
+        <div class="col-12">
+            {% for rec in insights.recommendations %}
+            <div class="alert alert-{{ 'warning' if rec.type == 'warning' else 'info' if rec.type == 'info' else 'success' }} d-flex align-items-center" role="alert">
+                <i class="bi bi-{{ 'exclamation-triangle' if rec.type == 'warning' else 'info-circle' if rec.type == 'info' else 'lightbulb' }} me-2 fs-5"></i>
+                <div>{{ rec.message }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 주간 비교 카드 -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-muted">API 호출 (7일)</h6>
+                            <h2 class="mb-0">{{ insights.summary.last_7_days.requests | default(0) }}</h2>
+                        </div>
+                        <div class="trend-badge {% if insights.trends.requests_change > 0 %}trend-up{% elif insights.trends.requests_change < 0 %}trend-down{% else %}trend-neutral{% endif %}">
+                            <i class="bi bi-{{ 'arrow-up' if insights.trends.requests_change > 0 else 'arrow-down' if insights.trends.requests_change < 0 else 'dash' }}"></i>
+                            {{ insights.trends.requests_change | abs }}%
+                        </div>
+                    </div>
+                    <small class="text-muted">이전 7일: {{ insights.summary.previous_7_days.requests | default(0) }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-muted">토큰 사용량 (7일)</h6>
+                            <h2 class="mb-0">{{ "{:,}".format(insights.summary.last_7_days.tokens | default(0)) }}</h2>
+                        </div>
+                        <div class="trend-badge {% if insights.trends.tokens_change > 0 %}trend-up{% elif insights.trends.tokens_change < 0 %}trend-down{% else %}trend-neutral{% endif %}">
+                            <i class="bi bi-{{ 'arrow-up' if insights.trends.tokens_change > 0 else 'arrow-down' if insights.trends.tokens_change < 0 else 'dash' }}"></i>
+                            {{ insights.trends.tokens_change | abs }}%
+                        </div>
+                    </div>
+                    <small class="text-muted">이전 7일: {{ "{:,}".format(insights.summary.previous_7_days.tokens | default(0)) }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-muted">비용 (7일)</h6>
+                            <h2 class="mb-0">${{ "%.4f" | format(insights.summary.last_7_days.cost | default(0)) }}</h2>
+                        </div>
+                        <div class="trend-badge {% if insights.trends.cost_change > 0 %}trend-up{% elif insights.trends.cost_change < 0 %}trend-down{% else %}trend-neutral{% endif %}">
+                            <i class="bi bi-{{ 'arrow-up' if insights.trends.cost_change > 0 else 'arrow-down' if insights.trends.cost_change < 0 else 'dash' }}"></i>
+                            {{ insights.trends.cost_change | abs }}%
+                        </div>
+                    </div>
+                    <small class="text-muted">이전 7일: ${{ "%.4f" | format(insights.summary.previous_7_days.cost | default(0)) }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- 비용 분석 -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-calculator me-2"></i>비용 분석</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless mb-0">
+                        <tr>
+                            <td class="text-muted">일 평균 비용</td>
+                            <td class="text-end"><strong>${{ "%.4f" | format(insights.cost_analysis.daily_average | default(0)) }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">월간 예상 비용</td>
+                            <td class="text-end"><strong class="text-warning">${{ "%.2f" | format(insights.cost_analysis.monthly_projection | default(0)) }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">가장 비용이 많은 기능</td>
+                            <td class="text-end">
+                                {% if insights.cost_analysis.most_expensive_type %}
+                                <span class="badge bg-danger">{{ insights.cost_analysis.most_expensive_type }}</span>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 24시간 요약 -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-clock me-2"></i>최근 24시간</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h3 class="mb-1">{{ stats_24h.total_requests | default(0) }}</h3>
+                            <small class="text-muted">API 호출</small>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="mb-1">{{ "{:,}".format(stats_24h.total_tokens | default(0)) }}</h3>
+                            <small class="text-muted">토큰</small>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="mb-1">${{ "%.4f" | format(stats_24h.total_cost | default(0)) }}</h3>
+                            <small class="text-muted">비용</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top 사용 기능 -->
+    {% if insights.top_usage %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-trophy me-2"></i>가장 많이 사용되는 AI 기능 (최근 7일)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for item in insights.top_usage %}
+                        <div class="col-md-4 col-6 mb-3">
+                            <div class="usage-card p-3 rounded">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge bg-primary">{{ item.type }}</span>
+                                    <span class="badge bg-secondary">{{ item.count }}회</span>
+                                </div>
+                                <div class="small">
+                                    <span class="text-muted">토큰:</span> {{ "{:,}".format(item.tokens) }}
+                                </div>
+                                <div class="small">
+                                    <span class="text-muted">비용:</span> ${{ "%.4f" | format(item.cost) }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 일별 트렌드 -->
+    {% if daily_summary %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>일별 사용량 트렌드 (최근 30일)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th>날짜</th>
+                                    <th class="text-end">호출</th>
+                                    <th class="text-end">토큰</th>
+                                    <th class="text-end">비용</th>
+                                    <th style="width: 30%;">사용량</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% set max_tokens = daily_summary | map(attribute='tokens') | max if daily_summary else 1 %}
+                                {% for day in daily_summary | reverse %}
+                                <tr>
+                                    <td>{{ day.date }}</td>
+                                    <td class="text-end">{{ day.requests }}</td>
+                                    <td class="text-end">{{ "{:,}".format(day.tokens) }}</td>
+                                    <td class="text-end">${{ "%.4f" | format(day.cost) }}</td>
+                                    <td>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: {{ (day.tokens / max_tokens * 100) if max_tokens else 0 }}%"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.stat-card {
+    background: rgba(18, 0, 36, 0.6);
+    border: 1px solid rgba(200, 170, 255, 0.3);
+    border-radius: 12px;
+}
+
+.stat-card h2 {
+    color: #E8D4FF;
+    font-weight: 700;
+}
+
+.stat-card h6 {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.trend-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.trend-up {
+    background: rgba(220, 53, 69, 0.2);
+    color: #ff6b7a;
+}
+
+.trend-down {
+    background: rgba(25, 135, 84, 0.2);
+    color: #75d4a2;
+}
+
+.trend-neutral {
+    background: rgba(108, 117, 125, 0.2);
+    color: #adb5bd;
+}
+
+.usage-card {
+    background: rgba(200, 170, 255, 0.1);
+    border: 1px solid rgba(200, 170, 255, 0.2);
+}
+
+.card {
+    background: rgba(18, 0, 36, 0.6);
+    border: 1px solid rgba(200, 170, 255, 0.3);
+}
+
+.card-header {
+    background: rgba(200, 170, 255, 0.1);
+    border-bottom: 1px solid rgba(200, 170, 255, 0.2);
+    color: #E8D4FF;
+}
+
+.table {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.table thead th {
+    border-bottom-color: rgba(200, 170, 255, 0.2);
+    color: #E8D4FF;
+}
+
+.table td {
+    border-bottom-color: rgba(200, 170, 255, 0.1);
+}
+
+.progress {
+    background: rgba(200, 170, 255, 0.1);
+}
+
+.progress-bar {
+    background: linear-gradient(90deg, #8B5CF6, #E8D4FF);
+}
+
+.alert {
+    border: none;
+}
+
+.alert-warning {
+    background: rgba(255, 193, 7, 0.15);
+    color: #ffc107;
+}
+
+.alert-info {
+    background: rgba(13, 202, 240, 0.15);
+    color: #0dcaf0;
+}
+
+.alert-success {
+    background: rgba(25, 135, 84, 0.15);
+    color: #75d4a2;
+}
+
+/* Light Mode */
+body.light-mode .stat-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(139, 92, 246, 0.2);
+}
+
+body.light-mode .stat-card h2 {
+    color: #5B3A8C;
+}
+
+body.light-mode .stat-card h6 {
+    color: #666;
+}
+
+body.light-mode .trend-up {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+body.light-mode .trend-down {
+    background: rgba(25, 135, 84, 0.1);
+    color: #198754;
+}
+
+body.light-mode .usage-card {
+    background: rgba(139, 92, 246, 0.08);
+    border-color: rgba(139, 92, 246, 0.15);
+}
+
+body.light-mode .card {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(139, 92, 246, 0.2);
+}
+
+body.light-mode .card-header {
+    background: rgba(139, 92, 246, 0.08);
+    border-bottom-color: rgba(139, 92, 246, 0.15);
+    color: #5B3A8C;
+}
+
+body.light-mode .table {
+    color: #333;
+}
+
+body.light-mode .table thead th {
+    color: #5B3A8C;
+    border-bottom-color: rgba(139, 92, 246, 0.2);
+}
+
+body.light-mode .progress {
+    background: rgba(139, 92, 246, 0.1);
+}
+
+body.light-mode .alert-warning {
+    background: rgba(255, 193, 7, 0.15);
+    color: #b38600;
+}
+
+body.light-mode .alert-info {
+    background: rgba(13, 202, 240, 0.15);
+    color: #0a8fa5;
+}
+</style>
+{% endblock %}

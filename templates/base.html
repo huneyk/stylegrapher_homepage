@@ -460,7 +460,8 @@
         </div>
     </div>
 
-    <!-- Floating Menu (Visible on Scroll) -->
+    <!-- Floating Menu (Visible on Scroll) - Hidden on Admin Pages -->
+    {% if not request.path.startswith('/admin') %}
     <div class="floating-menu-right" id="floatingMenu">
         <div class="floating-nav">
             <a href="{{ url_for('main.index') }}" class="floating-item stg_floating_menu">
@@ -495,6 +496,7 @@
             </a>
         </div>
     </div>
+    {% endif %}
 
     <!-- Kakao Modal -->
     <div id="kakaoModal" class="kakao-modal">

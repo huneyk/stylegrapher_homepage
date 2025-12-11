@@ -3093,6 +3093,67 @@ body.light-mode .card.bg-warning.text-white p {
     text-shadow: none;
 }
 
+/* Light Mode - Admin Pages (nested cards, headers, text visibility) */
+body.light-mode .card .card {
+    background: rgba(255, 255, 255, 0.98) !important;
+    border: 1px solid rgba(139, 92, 246, 0.2) !important;
+}
+
+body.light-mode .card .card-header {
+    background: rgba(139, 92, 246, 0.1) !important;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.2) !important;
+    color: #333333 !important;
+}
+
+body.light-mode .card-header h5,
+body.light-mode .card-header h6,
+body.light-mode .card .card-header h5,
+body.light-mode .card .card-header h6 {
+    color: #333333 !important;
+    text-shadow: none !important;
+}
+
+body.light-mode .card .card-body p,
+body.light-mode .card .card-body {
+    color: #333333 !important;
+}
+
+body.light-mode .card .card-body .text-muted {
+    color: #666666 !important;
+}
+
+body.light-mode .card .table thead th {
+    background: rgba(139, 92, 246, 0.15) !important;
+    color: #333333 !important;
+    border-color: rgba(139, 92, 246, 0.2) !important;
+}
+
+body.light-mode .card .table td,
+body.light-mode .card .table th {
+    color: #333333 !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-color: rgba(139, 92, 246, 0.15) !important;
+}
+
+body.light-mode .card .table code {
+    background: rgba(139, 92, 246, 0.1) !important;
+    color: #5b21b6 !important;
+}
+
+body.light-mode .card .table tbody tr:hover {
+    background-color: rgba(139, 92, 246, 0.08) !important;
+}
+
+body.light-mode .container-fluid h5.mb-0,
+body.light-mode .card > .card-header > h5.mb-0 {
+    color: #333333 !important;
+    text-shadow: none !important;
+}
+
+body.light-mode .card > .card-header > small.text-muted {
+    color: #666666 !important;
+}
+
 .d-grid .btn {
     padding: 0.6rem 1rem;
 }
