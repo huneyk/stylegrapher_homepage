@@ -1713,3 +1713,266 @@ def delete_notification_email(id):
         flash('이메일 삭제 중 오류가 발생했습니다.', 'error')
     
     return redirect(url_for('admin.list_notification_emails'))
+
+
+# ========== 로그 분석 시스템 ==========
+
+import re
+from collections import defaultdict
+
+def parse_log_line(line: str) -> dict:
+    """로그 라인을 파싱하여 구조화된 데이터로 반환"""
+    result = {
+        'raw': line.strip(),
+        'timestamp': None,
+        'level': 'INFO',
+        'logger': None,
+        'message': line.strip(),
+        'ip': None,
+        'user_agent': None,
+        'details': None
+    }
+    
+    # Flask/Werkzeug 요청 로그 패턴: 127.0.0.1 - - [01/Dec/2025 11:39:09] "GET /gallery HTTP/1.1" 404 -
+    werkzeug_pattern = r'^([\d.]+) - - \[([^\]]+)\] "([^"]+)" (\d+) -?$'
+    werkzeug_match = re.match(werkzeug_pattern, line.strip())
+    if werkzeug_match:
+        result['ip'] = werkzeug_match.group(1)
+        result['timestamp'] = werkzeug_match.group(2)
+        result['message'] = werkzeug_match.group(3)
+        status_code = int(werkzeug_match.group(4))
+        if status_code >= 500:
+            result['level'] = 'ERROR'
+        elif status_code >= 400:
+            result['level'] = 'WARNING'
+        else:
+            result['level'] = 'INFO'
+        result['details'] = f'Status: {status_code}'
+        return result
+    
+    # 표준 로그 패턴: 2025-12-01 11:39:09,027 - SECURITY - WARNING - ...
+    standard_pattern = r'^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},?\d*) - (\w+) - (\w+) - (.+)$'
+    standard_match = re.match(standard_pattern, line.strip())
+    if standard_match:
+        result['timestamp'] = standard_match.group(1)
+        result['logger'] = standard_match.group(2)
+        result['level'] = standard_match.group(3).upper()
+        rest = standard_match.group(4)
+        
+        # IP, UA, Details 추출
+        ip_match = re.search(r'IP: ([\d.]+)', rest)
+        if ip_match:
+            result['ip'] = ip_match.group(1)
+        
+        ua_match = re.search(r'UA: ([^-]+)', rest)
+        if ua_match:
+            result['user_agent'] = ua_match.group(1).strip()
+        
+        details_match = re.search(r'Details: (.+)$', rest)
+        if details_match:
+            result['details'] = details_match.group(1)
+        
+        result['message'] = rest
+        return result
+    
+    # 일반 로그 (MongoDB 연결 등)
+    if 'MongoDB' in line or 'GridFS' in line:
+        result['logger'] = 'DATABASE'
+        if '성공' in line or 'success' in line.lower():
+            result['level'] = 'INFO'
+        elif '실패' in line or 'error' in line.lower() or 'fail' in line.lower():
+            result['level'] = 'ERROR'
+    elif 'WARNING' in line.upper():
+        result['level'] = 'WARNING'
+    elif 'ERROR' in line.upper():
+        result['level'] = 'ERROR'
+    elif 'DEBUG' in line.upper():
+        result['level'] = 'DEBUG'
+    
+    return result
+
+
+def get_log_statistics(logs: list) -> dict:
+    """로그 통계 계산"""
+    stats = {
+        'total': len(logs),
+        'by_level': defaultdict(int),
+        'by_logger': defaultdict(int),
+        'by_ip': defaultdict(int),
+        'recent_errors': [],
+        'recent_warnings': []
+    }
+    
+    for log in logs:
+        stats['by_level'][log['level']] += 1
+        if log['logger']:
+            stats['by_logger'][log['logger']] += 1
+        if log['ip']:
+            stats['by_ip'][log['ip']] += 1
+        
+        if log['level'] == 'ERROR' and len(stats['recent_errors']) < 10:
+            stats['recent_errors'].append(log)
+        elif log['level'] == 'WARNING' and len(stats['recent_warnings']) < 10:
+            stats['recent_warnings'].append(log)
+    
+    # defaultdict을 일반 dict로 변환
+    stats['by_level'] = dict(stats['by_level'])
+    stats['by_logger'] = dict(stats['by_logger'])
+    stats['by_ip'] = dict(sorted(stats['by_ip'].items(), key=lambda x: x[1], reverse=True)[:20])
+    
+    return stats
+
+
+@admin.route('/logs')
+@login_required
+def log_analysis():
+    """로그 분석 대시보드"""
+    try:
+        log_file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'app.log')
+        
+        # 필터 파라미터
+        level_filter = request.args.get('level', '').upper()
+        search_query = request.args.get('search', '').strip()
+        ip_filter = request.args.get('ip', '').strip()
+        limit = request.args.get('limit', 500, type=int)
+        
+        logs = []
+        all_logs = []
+        
+        if os.path.exists(log_file_path):
+            with open(log_file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                lines = f.readlines()
+            
+            # 최신 로그가 위로 오도록 역순 처리
+            for line in reversed(lines):
+                if not line.strip():
+                    continue
+                
+                parsed = parse_log_line(line)
+                all_logs.append(parsed)
+                
+                # 필터 적용
+                if level_filter and parsed['level'] != level_filter:
+                    continue
+                if search_query and search_query.lower() not in parsed['raw'].lower():
+                    continue
+                if ip_filter and parsed['ip'] != ip_filter:
+                    continue
+                
+                logs.append(parsed)
+                
+                if len(logs) >= limit:
+                    break
+        
+        # 통계 계산 (전체 로그 기준)
+        stats = get_log_statistics(all_logs[:5000])  # 최대 5000개로 통계 계산
+        
+        return render_template('admin/log_analysis.html',
+                             logs=logs,
+                             stats=stats,
+                             level_filter=level_filter,
+                             search_query=search_query,
+                             ip_filter=ip_filter,
+                             limit=limit,
+                             log_file_exists=os.path.exists(log_file_path))
+                             
+    except Exception as e:
+        print(f"Error in log analysis: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        flash('로그 분석 중 오류가 발생했습니다.', 'error')
+        return render_template('admin/log_analysis.html',
+                             logs=[],
+                             stats={'total': 0, 'by_level': {}, 'by_logger': {}, 'by_ip': {}, 'recent_errors': [], 'recent_warnings': []},
+                             level_filter='',
+                             search_query='',
+                             ip_filter='',
+                             limit=500,
+                             log_file_exists=False)
+
+
+@admin.route('/logs/download')
+@login_required
+def download_logs():
+    """로그 파일 다운로드"""
+    try:
+        log_file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'app.log')
+        
+        if not os.path.exists(log_file_path):
+            flash('로그 파일이 존재하지 않습니다.', 'error')
+            return redirect(url_for('admin.log_analysis'))
+        
+        with open(log_file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            log_content = f.read()
+        
+        response = make_response(log_content)
+        response.headers['Content-Type'] = 'text/plain; charset=utf-8'
+        response.headers['Content-Disposition'] = f'attachment; filename=app_log_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log'
+        
+        return response
+        
+    except Exception as e:
+        print(f"Error downloading logs: {str(e)}")
+        flash('로그 다운로드 중 오류가 발생했습니다.', 'error')
+        return redirect(url_for('admin.log_analysis'))
+
+
+@admin.route('/logs/clear', methods=['POST'])
+@login_required
+def clear_logs():
+    """로그 파일 초기화 (백업 후 삭제)"""
+    try:
+        log_file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'app.log')
+        
+        if not os.path.exists(log_file_path):
+            flash('로그 파일이 존재하지 않습니다.', 'error')
+            return redirect(url_for('admin.log_analysis'))
+        
+        # 백업 생성
+        backup_path = os.path.join(
+            os.path.dirname(log_file_path),
+            f'app_log_backup_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log'
+        )
+        
+        with open(log_file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            log_content = f.read()
+        
+        with open(backup_path, 'w', encoding='utf-8') as f:
+            f.write(log_content)
+        
+        # 로그 파일 초기화
+        with open(log_file_path, 'w', encoding='utf-8') as f:
+            f.write(f"# Log cleared at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        
+        flash(f'로그가 초기화되었습니다. 백업 파일: {os.path.basename(backup_path)}', 'success')
+        
+    except Exception as e:
+        print(f"Error clearing logs: {str(e)}")
+        flash('로그 초기화 중 오류가 발생했습니다.', 'error')
+    
+    return redirect(url_for('admin.log_analysis'))
+
+
+@admin.route('/logs/stats')
+@login_required
+def log_stats_json():
+    """로그 통계 JSON 반환 (AJAX용)"""
+    try:
+        log_file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'app.log')
+        
+        if not os.path.exists(log_file_path):
+            return jsonify({'error': 'Log file not found'}), 404
+        
+        with open(log_file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            lines = f.readlines()
+        
+        all_logs = []
+        for line in lines[-5000:]:  # 최근 5000개만
+            if line.strip():
+                all_logs.append(parse_log_line(line))
+        
+        stats = get_log_statistics(all_logs)
+        return jsonify(stats)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
