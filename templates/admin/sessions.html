@@ -8,11 +8,222 @@
     <div class="row mb-4">
         <div class="col">
             <div class="d-flex justify-content-between align-items-center">
-                <h2>사용자 세션 분석</h2>
+                <h2><i class="bi bi-person-badge me-2"></i>사용자 세션 분석</h2>
                 <div>
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary me-2">
+                        <i class="bi bi-arrow-left me-1"></i>대시보드로 돌아가기
+                    </a>
                     <a href="{{ url_for('admin.export_sessions', days=days) }}" class="btn btn-info">
                         <i class="bi bi-download me-1"></i>내보내기
                     </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 통계 대시보드 -->
+    <div class="row mb-4 g-3">
+        <!-- 총 세션 수 -->
+        <div class="col-md-3 col-sm-6">
+            <div class="stats-card bg-primary-subtle">
+                <div class="stats-icon bg-primary">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <div class="stats-content">
+                    <h3>{{ stats.total_sessions or total_count }}</h3>
+                    <p>총 세션 수</p>
+                </div>
+            </div>
+        </div>
+        <!-- 고유 방문자 -->
+        <div class="col-md-3 col-sm-6">
+            <div class="stats-card bg-success-subtle">
+                <div class="stats-icon bg-success">
+                    <i class="bi bi-people"></i>
+                </div>
+                <div class="stats-content">
+                    <h3>{{ stats.unique_visitors or 0 }}</h3>
+                    <p>고유 방문자</p>
+                </div>
+            </div>
+        </div>
+        <!-- 총 토큰 사용량 -->
+        <div class="col-md-3 col-sm-6">
+            <div class="stats-card bg-warning-subtle">
+                <div class="stats-icon bg-warning">
+                    <i class="bi bi-cpu"></i>
+                </div>
+                <div class="stats-content">
+                    <h3>{{ "{:,}".format(stats.total_tokens|int) if stats.total_tokens else 0 }}</h3>
+                    <p>토큰 사용량</p>
+                </div>
+            </div>
+        </div>
+        <!-- 총 비용 -->
+        <div class="col-md-3 col-sm-6">
+            <div class="stats-card bg-danger-subtle">
+                <div class="stats-icon bg-danger">
+                    <i class="bi bi-currency-dollar"></i>
+                </div>
+                <div class="stats-content">
+                    <h3>US${{ "%.2f" | format(stats.total_cost or 0) }}</h3>
+                    <p>총 비용</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 분석 차트 영역 -->
+    <div class="row mb-4 g-3">
+        <!-- 국가별 통계 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card analysis-card">
+                <div class="card-header">
+                    <i class="bi bi-globe me-2"></i>국가별 방문자
+                </div>
+                <div class="card-body">
+                    {% if stats.by_country %}
+                        <div class="stats-list">
+                            {% for country, count in stats.by_country.items()|sort(attribute='1', reverse=true)|list[:5] %}
+                            <div class="stats-item">
+                                <span class="stats-label">{{ country or 'Unknown' }}</span>
+                                <span class="stats-value badge bg-primary">{{ count }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0 text-center py-3">데이터가 없습니다.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <!-- 브라우저별 통계 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card analysis-card">
+                <div class="card-header">
+                    <i class="bi bi-browser-chrome me-2"></i>브라우저별 통계
+                </div>
+                <div class="card-body">
+                    {% if stats.by_browser %}
+                        <div class="stats-list">
+                            {% for browser, count in stats.by_browser.items()|sort(attribute='1', reverse=true)|list[:5] %}
+                            <div class="stats-item">
+                                <span class="stats-label">
+                                    <i class="bi bi-{{ 'browser-chrome' if browser == 'Chrome' else 'browser-safari' if browser == 'Safari' else 'browser-firefox' if browser == 'Firefox' else 'browser-edge' if browser == 'Edge' else 'globe' }} me-1"></i>
+                                    {{ browser or 'Unknown' }}
+                                </span>
+                                <span class="stats-value badge bg-info">{{ count }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0 text-center py-3">데이터가 없습니다.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <!-- 언어별 통계 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card analysis-card">
+                <div class="card-header">
+                    <i class="bi bi-translate me-2"></i>언어별 통계
+                </div>
+                <div class="card-body">
+                    {% if stats.by_language %}
+                        <div class="stats-list">
+                            {% for lang, count in stats.by_language.items()|sort(attribute='1', reverse=true)|list[:5] %}
+                            <div class="stats-item">
+                                <span class="stats-label">
+                                    {% if lang == 'ko' %}🇰🇷 한국어
+                                    {% elif lang == 'en' %}🇺🇸 영어
+                                    {% elif lang == 'ja' %}🇯🇵 일본어
+                                    {% elif lang == 'zh' %}🇨🇳 중국어
+                                    {% elif lang == 'es' %}🇪🇸 스페인어
+                                    {% else %}{{ lang|upper }}
+                                    {% endif %}
+                                </span>
+                                <span class="stats-value badge bg-secondary">{{ count }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0 text-center py-3">데이터가 없습니다.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <!-- 페이지별 통계 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card analysis-card">
+                <div class="card-header">
+                    <i class="bi bi-file-earmark-text me-2"></i>페이지별 방문
+                </div>
+                <div class="card-body">
+                    {% if stats.by_page %}
+                        <div class="stats-list">
+                            {% for page_name, count in stats.by_page.items()|sort(attribute='1', reverse=true)|list[:5] %}
+                            <div class="stats-item">
+                                <span class="stats-label">{{ page_name or 'Unknown' }}</span>
+                                <span class="stats-value badge bg-success">{{ count }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0 text-center py-3">데이터가 없습니다.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <!-- 디바이스별 통계 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card analysis-card">
+                <div class="card-header">
+                    <i class="bi bi-phone me-2"></i>디바이스별 통계
+                </div>
+                <div class="card-body">
+                    {% if stats.by_device %}
+                        <div class="stats-list">
+                            {% for device, count in stats.by_device.items()|sort(attribute='1', reverse=true)|list[:5] %}
+                            <div class="stats-item">
+                                <span class="stats-label">
+                                    <i class="bi bi-{{ 'phone' if device == 'Mobile' else 'tablet' if device == 'Tablet' else 'laptop' }} me-1"></i>
+                                    {{ device or 'Unknown' }}
+                                </span>
+                                <span class="stats-value badge bg-warning">{{ count }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0 text-center py-3">데이터가 없습니다.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <!-- 기간 필터 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card analysis-card">
+                <div class="card-header">
+                    <i class="bi bi-calendar-range me-2"></i>분석 기간
+                </div>
+                <div class="card-body text-center py-3">
+                    <div class="btn-group-vertical w-100" role="group">
+                        <a href="{{ url_for('admin.sessions_dashboard', days=1, sort_by=sort_by, sort_order=sort_order) }}" 
+                           class="btn btn-{{ 'primary' if days == 1 else 'outline-primary' }} btn-sm">
+                            오늘
+                        </a>
+                        <a href="{{ url_for('admin.sessions_dashboard', days=7, sort_by=sort_by, sort_order=sort_order) }}" 
+                           class="btn btn-{{ 'primary' if days == 7 else 'outline-primary' }} btn-sm">
+                            최근 7일
+                        </a>
+                        <a href="{{ url_for('admin.sessions_dashboard', days=30, sort_by=sort_by, sort_order=sort_order) }}" 
+                           class="btn btn-{{ 'primary' if days == 30 else 'outline-primary' }} btn-sm">
+                            최근 30일
+                        </a>
+                        <a href="{{ url_for('admin.sessions_dashboard', days=90, sort_by=sort_by, sort_order=sort_order) }}" 
+                           class="btn btn-{{ 'primary' if days == 90 else 'outline-primary' }} btn-sm">
+                            최근 90일
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -49,11 +260,14 @@
         </div>
     </div>
 
-    <!-- 통계 요약 -->
-    <div class="alert alert-info mb-4">
-        <i class="bi bi-bar-chart me-2"></i>
-        <strong>분석 기간:</strong> 최근 {{ days }}{% if days == 1 %}일{% elif days == 7 %}일{% elif days == 30 %}개월{% else %}일{% endif %} | 
-        <strong>총 {{ total_count }}개의 세션</strong> (페이지 {{ page }}/{{ total_pages if total_pages > 0 else 1 }})
+    <!-- 세션 목록 헤더 -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">
+            <i class="bi bi-list-ul me-2"></i>세션 목록
+        </h5>
+        <span class="badge bg-info">
+            총 {{ total_count }}개 (페이지 {{ page }}/{{ total_pages if total_pages > 0 else 1 }})
+        </span>
     </div>
 
     <!-- 세션 테이블 -->
@@ -202,6 +416,114 @@
 </div>
 
 <style>
+/* 통계 카드 스타일 */
+.stats-card {
+    display: flex;
+    align-items: center;
+    padding: 1.25rem;
+    border-radius: 12px;
+    background: rgba(18, 0, 36, 0.6);
+    border: 1px solid rgba(200, 170, 255, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(200, 170, 255, 0.15);
+}
+
+.stats-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.stats-content {
+    margin-left: 1rem;
+}
+
+.stats-content h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0;
+    color: #fff;
+}
+
+.stats-content p {
+    margin-bottom: 0;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.bg-primary-subtle {
+    background: linear-gradient(135deg, rgba(13, 110, 253, 0.15), rgba(13, 110, 253, 0.05));
+    border-color: rgba(13, 110, 253, 0.3);
+}
+
+.bg-success-subtle {
+    background: linear-gradient(135deg, rgba(25, 135, 84, 0.15), rgba(25, 135, 84, 0.05));
+    border-color: rgba(25, 135, 84, 0.3);
+}
+
+.bg-warning-subtle {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.15), rgba(255, 193, 7, 0.05));
+    border-color: rgba(255, 193, 7, 0.3);
+}
+
+.bg-danger-subtle {
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.15), rgba(220, 53, 69, 0.05));
+    border-color: rgba(220, 53, 69, 0.3);
+}
+
+/* 분석 카드 스타일 */
+.analysis-card {
+    background: rgba(18, 0, 36, 0.6);
+    border: 1px solid rgba(200, 170, 255, 0.3);
+    border-radius: 12px;
+    height: 100%;
+}
+
+.analysis-card .card-header {
+    background: rgba(200, 170, 255, 0.1);
+    border-bottom: 1px solid rgba(200, 170, 255, 0.2);
+    color: #E8D4FF;
+    font-weight: 600;
+    border-radius: 12px 12px 0 0;
+}
+
+.stats-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.stats-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(200, 170, 255, 0.1);
+}
+
+.stats-item:last-child {
+    border-bottom: none;
+}
+
+.stats-label {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.9rem;
+}
+
+.stats-value {
+    font-weight: 600;
+}
+
 .card {
     background: rgba(18, 0, 36, 0.6);
     border: 1px solid rgba(200, 170, 255, 0.3);
@@ -300,6 +622,59 @@ code {
 }
 
 /* Light Mode */
+body.light-mode .stats-card {
+    background: #fff;
+    border-color: rgba(139, 92, 246, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+body.light-mode .stats-card:hover {
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.15);
+}
+
+body.light-mode .stats-content h3 {
+    color: #333;
+}
+
+body.light-mode .stats-content p {
+    color: #666;
+}
+
+body.light-mode .bg-primary-subtle {
+    background: linear-gradient(135deg, rgba(13, 110, 253, 0.1), rgba(13, 110, 253, 0.02));
+}
+
+body.light-mode .bg-success-subtle {
+    background: linear-gradient(135deg, rgba(25, 135, 84, 0.1), rgba(25, 135, 84, 0.02));
+}
+
+body.light-mode .bg-warning-subtle {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 193, 7, 0.02));
+}
+
+body.light-mode .bg-danger-subtle {
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.1), rgba(220, 53, 69, 0.02));
+}
+
+body.light-mode .analysis-card {
+    background: #fff;
+    border-color: rgba(139, 92, 246, 0.2);
+}
+
+body.light-mode .analysis-card .card-header {
+    background: rgba(139, 92, 246, 0.08);
+    border-bottom-color: rgba(139, 92, 246, 0.15);
+    color: #5B3A8C;
+}
+
+body.light-mode .stats-item {
+    border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light-mode .stats-label {
+    color: #333;
+}
+
 body.light-mode .card {
     background: rgba(255, 255, 255, 0.95);
     border-color: rgba(139, 92, 246, 0.2);
