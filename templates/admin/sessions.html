@@ -8,13 +8,10 @@
     <div class="row mb-4">
         <div class="col">
             <div class="d-flex justify-content-between align-items-center">
-                <h2><i class="bi bi-person-badge me-2"></i>사용자 세션 분석</h2>
+                <h2>사용자 세션 분석</h2>
                 <div>
-                    <a href="{{ url_for('admin.export_sessions', days=days) }}" class="btn btn-success me-2">
+                    <a href="{{ url_for('admin.export_sessions', days=days) }}" class="btn btn-info">
                         <i class="bi bi-download me-1"></i>내보내기
-                    </a>
-                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
-                        <i class="bi bi-arrow-left me-1"></i>대시보드
                     </a>
                 </div>
             </div>
@@ -23,9 +20,9 @@
 
     <!-- 필터 및 정렬 -->
     <div class="card mb-4">
-        <div class="card-body">
+        <div class="card-body py-3">
             <form method="GET" class="row g-3 align-items-end">
-                <div class="col-md-2">
+                <div class="col-auto">
                     <label class="form-label">정렬 기준:</label>
                     <select name="sort_by" class="form-select">
                         <option value="timestamp" {% if sort_by == 'timestamp' %}selected{% endif %}>접속 시간</option>
@@ -34,33 +31,18 @@
                         <option value="cost_usd" {% if sort_by == 'cost_usd' %}selected{% endif %}>비용</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-auto">
                     <label class="form-label">정렬 순서:</label>
                     <select name="sort_order" class="form-select">
                         <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>내림차순</option>
                         <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>오름차순</option>
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label">기간:</label>
-                    <select name="days" class="form-select">
-                        <option value="1" {% if days == 1 %}selected{% endif %}>최근 1일</option>
-                        <option value="7" {% if days == 7 %}selected{% endif %}>최근 7일</option>
-                        <option value="30" {% if days == 30 %}selected{% endif %}>최근 1개월</option>
-                        <option value="90" {% if days == 90 %}selected{% endif %}>최근 3개월</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">IP 필터:</label>
-                    <input type="text" name="ip" class="form-control" value="{{ ip_filter }}" placeholder="IP 주소...">
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">국가 필터:</label>
-                    <input type="text" name="country" class="form-control" value="{{ country_filter }}" placeholder="국가...">
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-funnel me-1"></i>적용
+                <!-- 숨겨진 기존 파라미터 유지 -->
+                <input type="hidden" name="days" value="{{ days }}">
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-success">
+                        적용
                     </button>
                 </div>
             </form>
@@ -74,49 +56,11 @@
         <strong>총 {{ total_count }}개의 세션</strong> (페이지 {{ page }}/{{ total_pages if total_pages > 0 else 1 }})
     </div>
 
-    <!-- 통계 카드 -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card stat-card h-100">
-                <div class="card-body text-center">
-                    <h3 class="stat-number">{{ stats.total_sessions }}</h3>
-                    <p class="stat-label mb-0">총 세션</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card stat-card h-100">
-                <div class="card-body text-center">
-                    <h3 class="stat-number">{{ stats.unique_visitors }}</h3>
-                    <p class="stat-label mb-0">고유 방문자</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card stat-card h-100">
-                <div class="card-body text-center">
-                    <h3 class="stat-number">{{ "{:,}".format(stats.total_tokens) }}</h3>
-                    <p class="stat-label mb-0">총 토큰 사용</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card stat-card h-100">
-                <div class="card-body text-center">
-                    <h3 class="stat-number">${{ "%.4f" | format(stats.total_cost) }}</h3>
-                    <p class="stat-label mb-0">총 비용</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- 세션 테이블 -->
     <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <span>
-                <input type="checkbox" id="selectAll" class="form-check-input me-2">
-                <label for="selectAll" class="form-check-label">전체 선택</label>
-            </span>
+        <div class="card-header">
+            <input type="checkbox" id="selectAll" class="form-check-input me-2">
+            <label for="selectAll" class="form-check-label">전체 선택</label>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -173,13 +117,12 @@
                                 <span class="badge bg-{{ 'primary' if session.user_agent.browser == 'Chrome' else 'info' if session.user_agent.browser == 'Safari' else 'warning' if session.user_agent.browser == 'Firefox' else 'secondary' }}" title="{{ session.user_agent.raw or '' }}">
                                     {{ session.user_agent.browser or 'Unknown' }}
                                 </span>
-                                <small class="text-muted">{{ session.user_agent.device or '' }}</small>
                                 {% else %}
                                 Unknown
                                 {% endif %}
                             </td>
                             <td class="text-end">
-                                {{ "{:,}".format(session.tokens_used or 0) }}
+                                {{ session.tokens_used or 0 }}
                             </td>
                             <td class="text-end">
                                 US${{ "%.4f" | format(session.cost_usd or 0) }}
@@ -193,12 +136,12 @@
                                     {{ session.service_page }}
                                 </span>
                                 {% else %}
-                                <span class="text-muted">-</span>
+                                <span class="text-danger"><i class="bi bi-x"></i></span>
                                 {% endif %}
                             </td>
                             <td>
                                 <form method="POST" action="{{ url_for('admin.delete_session', session_id=session._id) }}" class="d-inline" onsubmit="return confirm('이 세션 기록을 삭제하시겠습니까?');">
-                                    <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="삭제">
+                                    <button type="submit" class="btn btn-sm btn-link text-muted p-0" title="삭제">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
@@ -226,7 +169,7 @@
                 <ul class="pagination pagination-sm mb-0 justify-content-center">
                     {% if page > 1 %}
                     <li class="page-item">
-                        <a class="page-link" href="{{ url_for('admin.sessions_dashboard', page=page-1, days=days, sort_by=sort_by, sort_order=sort_order, ip=ip_filter, country=country_filter) }}">
+                        <a class="page-link" href="{{ url_for('admin.sessions_dashboard', page=page-1, days=days, sort_by=sort_by, sort_order=sort_order) }}">
                             <i class="bi bi-chevron-left"></i>
                         </a>
                     </li>
@@ -237,7 +180,7 @@
                     <li class="page-item active"><span class="page-link">{{ p }}</span></li>
                     {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
                     <li class="page-item">
-                        <a class="page-link" href="{{ url_for('admin.sessions_dashboard', page=p, days=days, sort_by=sort_by, sort_order=sort_order, ip=ip_filter, country=country_filter) }}">{{ p }}</a>
+                        <a class="page-link" href="{{ url_for('admin.sessions_dashboard', page=p, days=days, sort_by=sort_by, sort_order=sort_order) }}">{{ p }}</a>
                     </li>
                     {% elif p == page - 3 or p == page + 3 %}
                     <li class="page-item disabled"><span class="page-link">...</span></li>
@@ -246,7 +189,7 @@
                     
                     {% if page < total_pages %}
                     <li class="page-item">
-                        <a class="page-link" href="{{ url_for('admin.sessions_dashboard', page=page+1, days=days, sort_by=sort_by, sort_order=sort_order, ip=ip_filter, country=country_filter) }}">
+                        <a class="page-link" href="{{ url_for('admin.sessions_dashboard', page=page+1, days=days, sort_by=sort_by, sort_order=sort_order) }}">
                             <i class="bi bi-chevron-right"></i>
                         </a>
                     </li>
@@ -256,93 +199,9 @@
         </div>
         {% endif %}
     </div>
-
-    <!-- 통계 상세 -->
-    <div class="row mt-4">
-        <!-- 국가별 -->
-        {% if stats.by_country %}
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h6 class="mb-0"><i class="bi bi-globe me-2"></i>국가별 방문</h6>
-                </div>
-                <div class="card-body p-0">
-                    <ul class="list-group list-group-flush">
-                        {% for country, count in stats.by_country.items() %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            {{ country }}
-                            <span class="badge bg-primary rounded-pill">{{ count }}</span>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- 브라우저별 -->
-        {% if stats.by_browser %}
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h6 class="mb-0"><i class="bi bi-browser-chrome me-2"></i>브라우저별</h6>
-                </div>
-                <div class="card-body p-0">
-                    <ul class="list-group list-group-flush">
-                        {% for browser, count in stats.by_browser.items() %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            {{ browser }}
-                            <span class="badge bg-info rounded-pill">{{ count }}</span>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- 페이지별 -->
-        {% if stats.by_page %}
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h6 class="mb-0"><i class="bi bi-file-earmark me-2"></i>서비스 페이지별</h6>
-                </div>
-                <div class="card-body p-0">
-                    <ul class="list-group list-group-flush">
-                        {% for page_name, count in stats.by_page.items() %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            {{ page_name }}
-                            <span class="badge bg-success rounded-pill">{{ count }}</span>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-    </div>
 </div>
 
 <style>
-.stat-card {
-    background: rgba(18, 0, 36, 0.6);
-    border: 1px solid rgba(200, 170, 255, 0.3);
-    border-radius: 12px;
-}
-
-.stat-number {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #E8D4FF;
-    margin-bottom: 0;
-}
-
-.stat-label {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.9rem;
-}
-
 .card {
     background: rgba(18, 0, 36, 0.6);
     border: 1px solid rgba(200, 170, 255, 0.3);
@@ -379,12 +238,6 @@
     background-color: rgba(200, 170, 255, 0.08);
 }
 
-.list-group-item {
-    background: transparent;
-    border-color: rgba(200, 170, 255, 0.15);
-    color: rgba(255, 255, 255, 0.85);
-}
-
 code {
     color: #0dcaf0;
     background: rgba(13, 202, 240, 0.1);
@@ -404,10 +257,6 @@ code {
     border-color: rgba(200, 170, 255, 0.6);
     color: #fff;
     box-shadow: 0 0 0 0.25rem rgba(200, 170, 255, 0.15);
-}
-
-.form-control::placeholder {
-    color: rgba(255, 255, 255, 0.4);
 }
 
 .form-label {
@@ -451,19 +300,6 @@ code {
 }
 
 /* Light Mode */
-body.light-mode .stat-card {
-    background: rgba(255, 255, 255, 0.9);
-    border-color: rgba(139, 92, 246, 0.2);
-}
-
-body.light-mode .stat-number {
-    color: #5B3A8C;
-}
-
-body.light-mode .stat-label {
-    color: #666;
-}
-
 body.light-mode .card {
     background: rgba(255, 255, 255, 0.95);
     border-color: rgba(139, 92, 246, 0.2);
@@ -490,11 +326,6 @@ body.light-mode .table td {
 
 body.light-mode .table-hover tbody tr:hover {
     background-color: rgba(139, 92, 246, 0.05);
-}
-
-body.light-mode .list-group-item {
-    color: #333;
-    border-color: rgba(0, 0, 0, 0.1);
 }
 
 body.light-mode code {

@@ -517,3 +517,4 @@ def export_visitor_data(days: int = 30) -> List[Dict]:
     except Exception as e:
         print(f"데이터 내보내기 오류: {str(e)}")
         return []
+
