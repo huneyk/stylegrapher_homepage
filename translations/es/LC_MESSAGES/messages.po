@@ -821,3 +821,10 @@ msgstr "Horario: Mar-Sáb 9:00-18:00 | Cerrado Dom/Lun"
 msgid "시간외 업차지가 추가됩니다"
 msgstr "Se añadirá un recargo por horario fuera de oficina"
 
+
+# International Customer Notice
+msgid "해외 고객 안내: 편하신 언어로 문의해 주세요."
+msgstr "Clientes Internacionales: Contáctenos en su idioma."
+
+msgid "문의하기"
+msgstr "Contáctenos"

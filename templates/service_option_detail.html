@@ -108,6 +108,22 @@
                 <div class="mb-4">
                     <div class="stg_card_format service-info-card">
                         <h2 class="section-title"><i class="bi bi-calendar-check me-2"></i>{{ _('예약 방법') }}</h2>
+                        
+                        {% if current_lang != 'ko' %}
+                        <!-- International Customer Notice -->
+                        <div class="international-notice">
+                            <div class="international-notice-icon">
+                                <i class="bi bi-globe2"></i>
+                            </div>
+                            <div class="international-notice-content">
+                                <p class="international-notice-text">{{ _('해외 고객 안내: 편하신 언어로 문의해 주세요.') }}</p>
+                                <a href="https://www.stylegrapher.com/booking-choice" class="international-contact-btn">
+                                    <i class="bi bi-envelope-fill me-2"></i>{{ _('문의하기') }}
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
                         <div class="booking-content">
                             {% set booking_lines = booking_method_text.split('\n') %}
                             {% set ns = namespace(in_example=false, in_account=false, has_normal=false) %}
@@ -594,6 +610,99 @@ body.light-mode .refund-subtitle {
     color: #44237A !important;
 }
 
+/* International Customer Notice */
+.international-notice {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(181, 126, 220, 0.2) 100%);
+    border: 2px solid rgba(139, 92, 246, 0.4);
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.15), 
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    animation: noticeGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes noticeGlow {
+    0% {
+        box-shadow: 0 4px 20px rgba(139, 92, 246, 0.15), 
+                    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+    100% {
+        box-shadow: 0 4px 30px rgba(139, 92, 246, 0.25), 
+                    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+}
+
+.international-notice-icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+}
+
+.international-notice-icon i {
+    font-size: 1.5rem;
+    color: #ffffff;
+}
+
+.international-notice-content {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+}
+
+.international-notice-text {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+    flex: 1;
+    min-width: 200px;
+}
+
+.international-contact-btn {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%);
+    color: #ffffff;
+    padding: 0.6rem 1.25rem;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+    white-space: nowrap;
+}
+
+.international-contact-btn:hover {
+    background: linear-gradient(135deg, #7C3AED 0%, #9333EA 100%);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+}
+
+/* Light Mode - International Notice */
+body.light-mode .international-notice {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(168, 85, 247, 0.15) 100%);
+    border-color: rgba(139, 92, 246, 0.35);
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.1);
+}
+
+body.light-mode .international-notice-text {
+    color: #44237A;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .service-header {
@@ -610,6 +719,24 @@ body.light-mode .refund-subtitle {
     
     .section-title {
         font-size: 1.4rem;
+    }
+    
+    /* International Notice Mobile */
+    .international-notice {
+        flex-direction: column;
+        text-align: center;
+        padding: 1.25rem;
+        gap: 0.75rem;
+    }
+    
+    .international-notice-content {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .international-notice-text {
+        text-align: center;
+        min-width: auto;
     }
 }
 </style>

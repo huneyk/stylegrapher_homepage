@@ -823,3 +823,10 @@ msgstr "我们的AI代理正在整理并转发您的预约申请。请稍候。"
 msgid "시간외 업차지가 추가됩니다"
 msgstr "将收取非营业时间附加费"
 
+
+# International Customer Notice
+msgid "해외 고객 안내: 편하신 언어로 문의해 주세요."
+msgstr "国际客户：请用您的语言联系我们。"
+
+msgid "문의하기"
+msgstr "联系我们"

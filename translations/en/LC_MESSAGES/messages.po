@@ -884,3 +884,10 @@ msgstr "Our AI agent is processing and forwarding your booking request. Please w
 msgid "시간외 업차지가 추가됩니다"
 msgstr "Off-hours surcharge will be added"
 
+
+# International Customer Notice
+msgid "해외 고객 안내: 편하신 언어로 문의해 주세요."
+msgstr "International Customers: Please contact us here in your own language."
+
+msgid "문의하기"
+msgstr "Contact Us"
