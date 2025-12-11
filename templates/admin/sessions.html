@@ -84,11 +84,13 @@
                 <div class="card-body">
                     {% if stats.by_country %}
                         <div class="stats-list">
-                            {% for country, count in stats.by_country.items()|sort(attribute='1', reverse=true)|list[:5] %}
+                            {% for country, count in stats.by_country.items()|sort(attribute='1', reverse=true) %}
+                            {% if loop.index <= 20 %}
                             <div class="stats-item">
                                 <span class="stats-label">{{ country or 'Unknown' }}</span>
                                 <span class="stats-value badge bg-primary">{{ count }}</span>
                             </div>
+                            {% endif %}
                             {% endfor %}
                         </div>
                     {% else %}
@@ -106,7 +108,8 @@
                 <div class="card-body">
                     {% if stats.by_browser %}
                         <div class="stats-list">
-                            {% for browser, count in stats.by_browser.items()|sort(attribute='1', reverse=true)|list[:5] %}
+                            {% for browser, count in stats.by_browser.items()|sort(attribute='1', reverse=true) %}
+                            {% if loop.index <= 20 %}
                             <div class="stats-item">
                                 <span class="stats-label">
                                     <i class="bi bi-{{ 'browser-chrome' if browser == 'Chrome' else 'browser-safari' if browser == 'Safari' else 'browser-firefox' if browser == 'Firefox' else 'browser-edge' if browser == 'Edge' else 'globe' }} me-1"></i>
@@ -114,6 +117,7 @@
                                 </span>
                                 <span class="stats-value badge bg-info">{{ count }}</span>
                             </div>
+                            {% endif %}
                             {% endfor %}
                         </div>
                     {% else %}
@@ -131,7 +135,8 @@
                 <div class="card-body">
                     {% if stats.by_language %}
                         <div class="stats-list">
-                            {% for lang, count in stats.by_language.items()|sort(attribute='1', reverse=true)|list[:5] %}
+                            {% for lang, count in stats.by_language.items()|sort(attribute='1', reverse=true) %}
+                            {% if loop.index <= 20 %}
                             <div class="stats-item">
                                 <span class="stats-label">
                                     {% if lang == 'ko' %}🇰🇷 한국어
@@ -144,6 +149,7 @@
                                 </span>
                                 <span class="stats-value badge bg-secondary">{{ count }}</span>
                             </div>
+                            {% endif %}
                             {% endfor %}
                         </div>
                     {% else %}
@@ -161,11 +167,13 @@
                 <div class="card-body">
                     {% if stats.by_page %}
                         <div class="stats-list">
-                            {% for page_name, count in stats.by_page.items()|sort(attribute='1', reverse=true)|list[:5] %}
+                            {% for page_name, count in stats.by_page.items()|sort(attribute='1', reverse=true) %}
+                            {% if loop.index <= 20 %}
                             <div class="stats-item">
                                 <span class="stats-label">{{ page_name or 'Unknown' }}</span>
                                 <span class="stats-value badge bg-success">{{ count }}</span>
                             </div>
+                            {% endif %}
                             {% endfor %}
                         </div>
                     {% else %}
@@ -183,7 +191,8 @@
                 <div class="card-body">
                     {% if stats.by_device %}
                         <div class="stats-list">
-                            {% for device, count in stats.by_device.items()|sort(attribute='1', reverse=true)|list[:5] %}
+                            {% for device, count in stats.by_device.items()|sort(attribute='1', reverse=true) %}
+                            {% if loop.index <= 20 %}
                             <div class="stats-item">
                                 <span class="stats-label">
                                     <i class="bi bi-{{ 'phone' if device == 'Mobile' else 'tablet' if device == 'Tablet' else 'laptop' }} me-1"></i>
@@ -191,6 +200,7 @@
                                 </span>
                                 <span class="stats-value badge bg-warning">{{ count }}</span>
                             </div>
+                            {% endif %}
                             {% endfor %}
                         </div>
                     {% else %}
