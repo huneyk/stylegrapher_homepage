@@ -3,7 +3,7 @@ services:
     name: stylegrapher
     env: python
     buildCommand: python clear_cache.py && pip install -r requirements.txt
-    startCommand: gunicorn wsgi:app
+    startCommand: gunicorn wsgi:app --workers=2 --threads=4 --worker-class=gthread --timeout=120
     envVars:
       - key: PYTHON_VERSION
         value: 3.9.0

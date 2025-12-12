@@ -193,7 +193,7 @@ def log_visitor(
     service_page: Optional[str] = None
 ) -> Optional[str]:
     """
-    방문자 정보 기록
+    방문자 정보 기록 (성능 최적화: 외부 API 호출 제거)
     
     Args:
         ip_address: IP 주소
@@ -214,10 +214,17 @@ def log_visitor(
         return None
     
     try:
-        # 위치 정보 조회
-        location = get_ip_location(ip_address)
+        # 성능 최적화: 외부 API 호출 제거 (ip-api.com 호출이 3초까지 지연될 수 있음)
+        # 위치 정보는 나중에 배치 작업으로 조회하거나 생략
+        location = {
+            'country': 'Pending',
+            'country_code': '',
+            'city': '',
+            'region': '',
+            'isp': ''
+        }
         
-        # User-Agent 파싱
+        # User-Agent 파싱 (로컬 처리, 빠름)
         ua_info = parse_user_agent(user_agent)
         
         # 서비스 페이지 추출
