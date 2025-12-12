@@ -207,14 +207,26 @@
             color: rgb(var(--main-color-rgb)) !important;
         }
         
-        body.light-mode .card:not(.bg-info):not(.bg-warning):not(.bg-danger):not(.bg-success),
+        body.light-mode .card:not(.bg-info):not(.bg-warning):not(.bg-danger):not(.bg-success):not(.gallery-item),
         body.light-mode .glass-card,
         body.light-mode .service-simple-card,
         body.light-mode .additional-card,
-        body.light-mode .stg_card_sub_format,
-        body.light-mode .gallery-item,
-        body.light-mode .gallery-preview-card {
+        body.light-mode .stg_card_sub_format {
             border-color: rgba(var(--main-color-rgb), 0.2) !important;
+        }
+        
+        /* Gallery items: transparent border by default, visible on hover */
+        body.light-mode .gallery-item,
+        body.light-mode .gallery-preview-card,
+        body.light-mode .card.gallery-item {
+            border: 1px solid transparent !important;
+        }
+        
+        body.light-mode .gallery-item:hover,
+        body.light-mode .gallery-preview-card:hover,
+        body.light-mode .card.gallery-item:hover {
+            border: 1px solid rgba(var(--main-color-rgb), 0.4) !important;
+            box-shadow: 0 8px 30px rgba(var(--main-color-rgb), 0.2) !important;
         }
         
         body.light-mode .card:hover,
@@ -333,6 +345,26 @@
         
         body.light-mode .bg-particles::after {
             background: radial-gradient(circle, rgba(var(--sub-color-rgb), 0.08) 0%, transparent 70%) !important;
+        }
+        
+        /* Admin Table Header Styles - Sub Color */
+        .table thead th,
+        .table-striped thead th,
+        .table-bordered thead th,
+        .table-hover thead th,
+        .table thead.table-light th {
+            background-color: rgb(147, 121, 188) !important;
+            color: #FFFFFF !important;
+            font-weight: 600;
+            border-color: rgba(147, 121, 188, 0.3) !important;
+        }
+        
+        .packages-table th,
+        .packages-table thead.table-light th {
+            background-color: rgb(147, 121, 188) !important;
+            color: #FFFFFF !important;
+            font-weight: 600;
+            border-color: rgba(147, 121, 188, 0.3) !important;
         }
     </style>
     

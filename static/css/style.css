@@ -68,6 +68,17 @@
     overflow-wrap: break-word;
 }
 
+/* 이미지 outline 제거 */
+img {
+    outline: none !important;
+    border: none;
+}
+
+img:focus,
+img:focus-visible {
+    outline: none !important;
+}
+
 html {
     scroll-behavior: smooth;
     overflow-x: hidden;
@@ -236,8 +247,8 @@ p, li,
     font-family: var(--stg-card-title-font-family) !important;
     font-size: var(--stg-card-title-font-size) !important;
     font-weight: var(--stg-card-title-font-weight) !important;
-    color: var(--stg-card-title-color-light) !important;
-    background: var(--stg-card-title-bg-light);
+    color: #ffffff !important;
+    background: #9379bc;
     padding: var(--stg-card-title-padding);
     border-radius: var(--stg-card-title-border-radius);
     border: 1px solid var(--stg-card-title-border-light);
@@ -852,6 +863,7 @@ body.light-mode .stg_card_format .stg_card_description--short {
 .navbar-brand img {
     height: 140px;
     width: auto;
+    margin: 4rem 0;
     transition: var(--transition-smooth);
     filter: invert(1) brightness(1.1);
     mix-blend-mode: screen;
@@ -1385,15 +1397,15 @@ body.light-mode .stg_page_title {
 .table thead th,
 .table-light,
 .packages-table thead th {
-    background: rgba(100, 60, 150, 0.9) !important;
-    border-color: rgba(200, 170, 255, 0.3) !important;
+    background: rgb(147, 121, 188) !important;
+    border-color: rgba(147, 121, 188, 0.3) !important;
     color: #FFFFFF !important;
     font-weight: 600;
 }
 
 .table thead,
 .packages-table thead {
-    background: rgba(100, 60, 150, 0.9) !important;
+    background: rgb(147, 121, 188) !important;
 }
 
 .table td, .table th,
@@ -1677,7 +1689,7 @@ body.light-mode .gallery-main-title {
 .gallery-item,
 .gallery-preview-card {
     background: rgba(18, 0, 36, 0.6);
-    border: 1px solid var(--glass-border);
+    border: 1px solid transparent;
     border-radius: 16px;
     overflow: hidden;
     transition: var(--transition-smooth);
@@ -2095,7 +2107,7 @@ body.light-mode .booking-list li::before {
 
 .refund-table th,
 .overtime-charge-table th {
-    background: rgba(100, 60, 150, 0.9) !important;
+    background: rgb(147, 121, 188) !important;
     color: #FFFFFF !important;
     padding: 1rem;
     font-weight: 600;
@@ -2132,13 +2144,13 @@ body.light-mode .booking-list li::before {
     --stg-table-font-size: 15px;
     --stg-table-line-height: 1.7;
     --stg-table-font-weight: 400;
-    /* Light Purple Header (더 옅은 보라색) */
-    --stg-table-header-bg-dark: #44237AE6;
-    --stg-table-header-bg-light: rgba(139, 92, 246, 0.55);
+    /* Sub Color Header */
+    --stg-table-header-bg-dark: rgb(147, 121, 188);
+    --stg-table-header-bg-light: rgb(147, 121, 188);
     --stg-table-header-color: #FFFFFF;
     /* Cell Border - Header와 같은 색상 */
-    --stg-table-border-color-dark: rgba(139, 92, 246, 0.6);
-    --stg-table-border-color-light: rgba(139, 92, 246, 0.55);
+    --stg-table-border-color-dark: rgba(147, 121, 188, 0.6);
+    --stg-table-border-color-light: rgba(147, 121, 188, 0.55);
     --stg-table-cell-bg-dark: rgba(18, 0, 36, 0.6);
     --stg-table-cell-bg-light: rgba(255, 255, 255, 0.8);
     --stg-table-text-color-dark: rgba(255, 255, 255, 0.85);
@@ -3123,9 +3135,9 @@ body.light-mode .card .card-body .text-muted {
 }
 
 body.light-mode .card .table thead th {
-    background: rgba(139, 92, 246, 0.15) !important;
-    color: #333333 !important;
-    border-color: rgba(139, 92, 246, 0.2) !important;
+    background: rgb(147, 121, 188) !important;
+    color: #FFFFFF !important;
+    border-color: rgba(147, 121, 188, 0.3) !important;
 }
 
 body.light-mode .card .table td,

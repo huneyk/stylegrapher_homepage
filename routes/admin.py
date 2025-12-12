@@ -1778,10 +1778,12 @@ def sessions_dashboard():
                              country_filter=country_filter)
                              
     except Exception as e:
-        print(f"Error in sessions dashboard: {str(e)}")
+        print(f"❌ Error in sessions dashboard: {str(e)}")
         import traceback
         traceback.print_exc()
-        flash('세션 정보를 불러오는 중 오류가 발생했습니다.', 'error')
+        # 오류 메시지는 관리자 페이지이므로 한국어로 유지하되, 로그에 상세 정보 출력
+        # flash 메시지 대신 로그에만 기록하여 홈페이지에 오류가 표시되지 않도록 함
+        print(f"⚠️ 세션 대시보드 오류 - 사용자에게는 빈 데이터 표시")
         return render_template('admin/sessions.html',
                              sessions=[],
                              stats={'total_sessions': 0, 'unique_visitors': 0, 'total_tokens': 0, 'total_cost': 0, 'by_country': {}, 'by_browser': {}, 'by_device': {}, 'by_page': {}, 'by_language': {}},
