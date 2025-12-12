@@ -251,6 +251,42 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Lazy load carousel images helper
+    function loadLazyImage(img) {
+        if (img && img.dataset.src && !img.src) {
+            img.src = img.dataset.src;
+            img.removeAttribute('data-src');
+        }
+    }
+    
+    // Initialize carousel lazy loading
+    function initCarouselLazyLoad() {
+        document.querySelectorAll('.carousel').forEach(carousel => {
+            // Skip if already initialized
+            if (carousel.dataset.lazyInit) return;
+            carousel.dataset.lazyInit = 'true';
+            
+            carousel.addEventListener('slide.bs.carousel', function(event) {
+                const nextItem = event.relatedTarget;
+                const img = nextItem.querySelector('img.lazy-carousel');
+                loadLazyImage(img);
+                
+                // Also preload the next one
+                const allItems = this.querySelectorAll('.carousel-item');
+                const nextIdx = (event.to + 1) % allItems.length;
+                const nextNextImg = allItems[nextIdx].querySelector('img.lazy-carousel');
+                loadLazyImage(nextNextImg);
+            });
+            
+            // Preload first 2 images
+            const items = carousel.querySelectorAll('.carousel-item');
+            for (let i = 0; i < Math.min(2, items.length); i++) {
+                const img = items[i].querySelector('img.lazy-carousel');
+                loadLazyImage(img);
+            }
+        });
+    }
+    
     // Fade in animation for gallery items
     const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry, index) => {
@@ -271,6 +307,9 @@ document.addEventListener('DOMContentLoaded', function() {
         observer.observe(item);
     });
     
+    // Initialize lazy loading
+    initCarouselLazyLoad();
+    
     // Re-observe new items loaded via HTMX
     document.body.addEventListener('htmx:afterSwap', function() {
         document.querySelectorAll('.gallery-item').forEach(item => {
@@ -281,6 +320,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 observer.observe(item);
             }
         });
+        
+        // Re-initialize lazy loading for new carousels
+        initCarouselLazyLoad();
     });
 });
 </script>

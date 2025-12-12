@@ -398,20 +398,31 @@ def service_option_detail(id):
 
 @main.route('/image/<path:image_path>')
 def serve_image(image_path):
-    """GridFS 및 레거시 저장소에서 이미지를 효율적으로 서빙하는 라우트"""
+    """GridFS 및 레거시 저장소에서 이미지를 효율적으로 서빙하는 라우트 (캐싱 최적화)"""
     try:
-        # 강화된 캐싱 헤더 설정 (7일 캐싱 + ETag)
+        # 강화된 캐싱 헤더 설정 (30일 캐싱 + ETag)
         cache_headers = {
-            'Cache-Control': 'public, max-age=604800, immutable',
+            'Cache-Control': 'public, max-age=2592000, immutable',
             'Vary': 'Accept-Encoding'
         }
         
-        # 1. GridFS에서 이미지 조회 시도
+        # 1. GridFS에서 이미지 조회 시도 (메모리 캐시 + ETag 지원)
         try:
-            binary_data, content_type = get_image_from_gridfs(image_path)
+            binary_data, content_type, etag = get_image_from_gridfs(image_path)
             if binary_data:
+                # ETag 기반 조건부 요청 처리 (304 Not Modified)
+                if etag:
+                    client_etag = request.headers.get('If-None-Match')
+                    if client_etag and client_etag.strip('"') == etag:
+                        response = make_response('', 304)
+                        response.headers['ETag'] = f'"{etag}"'
+                        response.headers['Cache-Control'] = cache_headers['Cache-Control']
+                        return response
+                
                 response = make_response(binary_data)
                 response.headers['Content-Type'] = content_type
+                if etag:
+                    response.headers['ETag'] = f'"{etag}"'
                 for key, value in cache_headers.items():
                     response.headers[key] = value
                 return response

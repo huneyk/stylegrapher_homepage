@@ -4,7 +4,10 @@ GridFS 헬퍼 모듈 - MongoDB GridFS를 사용한 이미지 저장 및 조회
 import os
 import io
 import uuid
+import hashlib
+import threading
 from datetime import datetime
+from functools import lru_cache
 from PIL import Image
 from gridfs import GridFS
 from pymongo import MongoClient
@@ -14,76 +17,93 @@ from werkzeug.utils import secure_filename
 # .env 파일 로드
 load_dotenv()
 
-# 전역 변수 (fork-safe)
+# 전역 변수 (fork-safe, thread-safe)
 _gridfs_instance = None
 _mongo_db = None
 _images_collection = None  # 기존 호환성을 위한 컬렉션
 _connection_pid = None  # 연결이 생성된 프로세스 ID 추적
+_connection_lock = threading.Lock()  # Thread-safe 연결 관리
+
+# 이미지 메모리 캐시 (LRU 방식)
+_image_cache = {}
+_cache_timestamps = {}
+_cache_lock = threading.Lock()
+IMAGE_CACHE_MAX_SIZE = 100  # 최대 캐시 항목 수
+IMAGE_CACHE_TIMEOUT = 600  # 캐시 유효시간 (10분)
 
 
 def get_mongo_connection():
-    """MongoDB 연결 및 GridFS 인스턴스 반환 (fork-safe)"""
+    """MongoDB 연결 및 GridFS 인스턴스 반환 (fork-safe, thread-safe)"""
     global _gridfs_instance, _mongo_db, _images_collection, _connection_pid
     
     current_pid = os.getpid()
     
-    # fork 이후 새 프로세스에서 호출된 경우 연결 재생성
-    if _connection_pid is not None and _connection_pid != current_pid:
-        print(f"GridFS: Fork 감지 (기존 PID: {_connection_pid}, 현재 PID: {current_pid}), 연결 재생성")
-        _gridfs_instance = None
-        _mongo_db = None
-        _images_collection = None
-    
-    if _gridfs_instance is not None:
+    # 빠른 경로: 이미 연결이 있으면 바로 반환 (락 없이)
+    if _gridfs_instance is not None and _connection_pid == current_pid:
         return _gridfs_instance, _mongo_db, _images_collection
     
-    mongo_uri = os.environ.get('MONGO_URI')
-    if not mongo_uri:
-        print("GridFS: MONGO_URI 환경 변수가 설정되지 않았습니다!")
-        return None, None, None
-    
-    try:
-        print(f"GridFS: MongoDB에 연결 시도... (PID: {current_pid})")
-        mongo_client = MongoClient(
-            mongo_uri,
-            serverSelectionTimeoutMS=30000,
-            connectTimeoutMS=20000,
-            socketTimeoutMS=20000,
-            retryWrites=True,
-            retryReads=True,
-            w='majority',
-            readPreference='primaryPreferred'
-        )
+    # 연결이 필요한 경우에만 락 획득
+    with _connection_lock:
+        # Double-check locking: 락 획득 후 다시 확인
+        if _gridfs_instance is not None and _connection_pid == current_pid:
+            return _gridfs_instance, _mongo_db, _images_collection
         
-        # 연결 테스트
-        mongo_client.server_info()
-        print("GridFS: MongoDB 연결 성공!")
+        # fork 이후 새 프로세스에서 호출된 경우 연결 재생성
+        if _connection_pid is not None and _connection_pid != current_pid:
+            print(f"GridFS: Fork 감지 (기존 PID: {_connection_pid}, 현재 PID: {current_pid}), 연결 재생성")
+            _gridfs_instance = None
+            _mongo_db = None
+            _images_collection = None
         
-        # 데이터베이스 선택
-        db_name = 'STG-DB' if 'mongodb.net' in mongo_uri else 'stylegrapher_db'
-        _mongo_db = mongo_client[db_name]
+        mongo_uri = os.environ.get('MONGO_URI')
+        if not mongo_uri:
+            print("GridFS: MONGO_URI 환경 변수가 설정되지 않았습니다!")
+            return None, None, None
         
-        # GridFS 인스턴스 생성 (gallery 컬렉션 사용)
-        _gridfs_instance = GridFS(_mongo_db, collection='gallery_images')
-        
-        # 기존 호환성을 위한 컬렉션 (마이그레이션용)
-        _images_collection = _mongo_db['gallery']
-        
-        # 연결 생성 시 PID 저장
-        _connection_pid = current_pid
-        
-        print(f"GridFS: 데이터베이스 '{db_name}'에서 GridFS 'gallery_images' 사용 준비 완료 (PID: {current_pid})")
-        return _gridfs_instance, _mongo_db, _images_collection
-        
-    except Exception as e:
-        print(f"GridFS: MongoDB 연결 오류: {str(e)}")
-        return None, None, None
+        try:
+            print(f"GridFS: MongoDB에 연결 시도... (PID: {current_pid})")
+            mongo_client = MongoClient(
+                mongo_uri,
+                serverSelectionTimeoutMS=30000,
+                connectTimeoutMS=20000,
+                socketTimeoutMS=20000,
+                retryWrites=True,
+                retryReads=True,
+                w='majority',
+                readPreference='primaryPreferred',
+                maxPoolSize=50,  # 연결 풀 크기
+                minPoolSize=5
+            )
+            
+            # 연결 테스트
+            mongo_client.server_info()
+            print("GridFS: MongoDB 연결 성공!")
+            
+            # 데이터베이스 선택
+            db_name = 'STG-DB' if 'mongodb.net' in mongo_uri else 'stylegrapher_db'
+            _mongo_db = mongo_client[db_name]
+            
+            # GridFS 인스턴스 생성 (gallery 컬렉션 사용)
+            _gridfs_instance = GridFS(_mongo_db, collection='gallery_images')
+            
+            # 기존 호환성을 위한 컬렉션 (마이그레이션용)
+            _images_collection = _mongo_db['gallery']
+            
+            # 연결 생성 시 PID 저장
+            _connection_pid = current_pid
+            
+            print(f"GridFS: 데이터베이스 '{db_name}'에서 GridFS 'gallery_images' 사용 준비 완료 (PID: {current_pid})")
+            return _gridfs_instance, _mongo_db, _images_collection
+            
+        except Exception as e:
+            print(f"GridFS: MongoDB 연결 오류: {str(e)}")
+            return None, None, None
 
 
 # 웹 최적화 설정
 WEB_IMAGE_CONFIG = {
-    'max_width': 800,           # 최대 너비 (px) - 웹 갤러리에 충분
-    'max_height': 1200,         # 최대 높이 (px) - 세로 이미지 제한
+    'max_width': 600,           # 최대 너비 (px) - 웹 갤러리에 충분
+    'max_height': 700,          # 최대 높이 (px) - 세로 이미지 제한
     'jpeg_quality': 82,         # JPEG 품질 (80-85가 웹에 최적)
     'png_compression': 6,       # PNG 압축 레벨 (0-9)
     'progressive_jpeg': True,   # Progressive JPEG 사용 (빠른 로딩)
@@ -242,9 +262,109 @@ def save_image_to_gridfs(file, group_id=None, order=0, custom_id=None):
     return image_id
 
 
-def get_image_from_gridfs(image_id):
+def _cleanup_cache():
+    """오래된 캐시 항목 정리 (LRU 방식)"""
+    global _image_cache, _cache_timestamps
+    
+    if len(_image_cache) <= IMAGE_CACHE_MAX_SIZE:
+        return
+    
+    now = datetime.now()
+    
+    # 만료된 항목 먼저 제거
+    expired_keys = [
+        k for k, v in _cache_timestamps.items()
+        if (now - v).total_seconds() > IMAGE_CACHE_TIMEOUT
+    ]
+    for k in expired_keys:
+        _image_cache.pop(k, None)
+        _cache_timestamps.pop(k, None)
+    
+    # 여전히 초과하면 가장 오래된 항목 제거
+    while len(_image_cache) > IMAGE_CACHE_MAX_SIZE:
+        oldest_key = min(_cache_timestamps, key=_cache_timestamps.get)
+        _image_cache.pop(oldest_key, None)
+        _cache_timestamps.pop(oldest_key, None)
+
+
+def generate_etag(image_id, binary_data=None):
+    """이미지 ID 기반 ETag 생성"""
+    if binary_data:
+        return hashlib.md5(binary_data[:1024] + image_id.encode()).hexdigest()
+    return hashlib.md5(image_id.encode()).hexdigest()
+
+
+def get_image_from_gridfs(image_id, use_cache=True):
     """
-    GridFS에서 이미지 조회
+    GridFS에서 이미지 조회 (메모리 캐싱 적용)
+    
+    Args:
+        image_id: 이미지 ID
+        use_cache: 캐시 사용 여부 (기본값: True)
+    
+    Returns:
+        (binary_data, content_type, etag) 튜플 또는 (None, None, None)
+    """
+    # 1. 캐시에서 먼저 확인
+    if use_cache:
+        with _cache_lock:
+            if image_id in _image_cache:
+                cached = _image_cache[image_id]
+                cache_time = _cache_timestamps.get(image_id)
+                
+                # 캐시가 유효한지 확인
+                if cache_time and (datetime.now() - cache_time).total_seconds() < IMAGE_CACHE_TIMEOUT:
+                    return cached['data'], cached['content_type'], cached['etag']
+    
+    gridfs, db, legacy_collection = get_mongo_connection()
+    
+    if gridfs is None:
+        return None, None, None
+    
+    try:
+        binary_data = None
+        content_type = 'image/jpeg'
+        
+        # 2. GridFS에서 조회 시도
+        if gridfs.exists(image_id):
+            grid_out = gridfs.get(image_id)
+            binary_data = grid_out.read()
+            content_type = grid_out.content_type or 'image/jpeg'
+        
+        # 3. GridFS에 없으면 기존 컬렉션에서 조회 (마이그레이션 전 데이터)
+        elif legacy_collection is not None:
+            legacy_doc = legacy_collection.find_one({'_id': image_id})
+            if legacy_doc and 'binary_data' in legacy_doc:
+                binary_data = legacy_doc['binary_data']
+                content_type = legacy_doc.get('content_type', 'image/jpeg')
+        
+        if binary_data is None:
+            return None, None, None
+        
+        # ETag 생성
+        etag = generate_etag(image_id, binary_data)
+        
+        # 4. 캐시에 저장
+        if use_cache:
+            with _cache_lock:
+                _image_cache[image_id] = {
+                    'data': binary_data,
+                    'content_type': content_type,
+                    'etag': etag
+                }
+                _cache_timestamps[image_id] = datetime.now()
+                _cleanup_cache()
+        
+        return binary_data, content_type, etag
+        
+    except Exception as e:
+        print(f"GridFS: 이미지 조회 오류 - ID: {image_id}, 에러: {str(e)}")
+        return None, None, None
+
+
+def get_image_from_gridfs_legacy(image_id):
+    """
+    GridFS에서 이미지 조회 (기존 호환성용 - 2개 반환값)
     
     Args:
         image_id: 이미지 ID
@@ -252,33 +372,8 @@ def get_image_from_gridfs(image_id):
     Returns:
         (binary_data, content_type) 튜플 또는 (None, None)
     """
-    gridfs, db, legacy_collection = get_mongo_connection()
-    
-    if gridfs is None:
-        return None, None
-    
-    try:
-        # 1. 먼저 GridFS에서 조회 시도
-        if gridfs.exists(image_id):
-            grid_out = gridfs.get(image_id)
-            binary_data = grid_out.read()
-            content_type = grid_out.content_type or 'image/jpeg'
-            print(f"GridFS: 이미지 조회 성공 - ID: {image_id}, 크기: {len(binary_data)} bytes")
-            return binary_data, content_type
-        
-        # 2. GridFS에 없으면 기존 컬렉션에서 조회 (마이그레이션 전 데이터)
-        if legacy_collection is not None:
-            legacy_doc = legacy_collection.find_one({'_id': image_id})
-            if legacy_doc and 'binary_data' in legacy_doc:
-                print(f"GridFS: 레거시 컬렉션에서 이미지 발견 - ID: {image_id}")
-                return legacy_doc['binary_data'], legacy_doc.get('content_type', 'image/jpeg')
-        
-        print(f"GridFS: 이미지를 찾을 수 없음 - ID: {image_id}")
-        return None, None
-        
-    except Exception as e:
-        print(f"GridFS: 이미지 조회 오류 - ID: {image_id}, 에러: {str(e)}")
-        return None, None
+    result = get_image_from_gridfs(image_id)
+    return result[0], result[1]
 
 
 def delete_image_from_gridfs(image_id):

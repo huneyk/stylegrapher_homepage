@@ -42,9 +42,9 @@
                     <div class="prism-image-stack">
                         {% for image in group.images %}
                         <div class="prism-image {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}">
-                            <img src="{{ url_for('main.serve_image', image_path=image.image_path) }}" 
+                            <img {% if loop.first %}src{% else %}data-src{% endif %}="{{ url_for('main.serve_image', image_path=image.image_path) }}" 
                                  alt="{{ translated_group.title }}"
-                                 loading="lazy">
+                                 {% if not loop.first %}loading="lazy" class="lazy-carousel"{% endif %}>
                         </div>
                         {% endfor %}
                     </div>
@@ -803,7 +803,25 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Prismatic Gallery - Image Crossfade
+    // Lazy load carousel images helper
+    function loadLazyImage(img) {
+        if (img && img.dataset.src && !img.src) {
+            img.src = img.dataset.src;
+            img.removeAttribute('data-src');
+        }
+    }
+    
+    // Preload next images in a carousel
+    function preloadNextImages(container, currentIndex) {
+        const images = container.querySelectorAll('img.lazy-carousel');
+        // Load current + next 2 images
+        for (let i = 0; i <= 2; i++) {
+            const idx = (currentIndex + i) % images.length;
+            if (images[idx]) loadLazyImage(images[idx]);
+        }
+    }
+    
+    // Prismatic Gallery - Image Crossfade with lazy loading
     const prismCards = document.querySelectorAll('.prism-card');
     
     prismCards.forEach((card, cardIndex) => {
@@ -813,11 +831,39 @@ document.addEventListener('DOMContentLoaded', function() {
         let currentIndex = 0;
         const interval = 4000 + (cardIndex * 800); // Staggered intervals
         
+        // Preload first few images
+        preloadNextImages(card, 0);
+        
         setInterval(() => {
             images[currentIndex].classList.remove('active');
             currentIndex = (currentIndex + 1) % images.length;
             images[currentIndex].classList.add('active');
+            
+            // Lazy load upcoming images
+            preloadNextImages(card, currentIndex);
         }, interval);
+    });
+    
+    // Bootstrap carousel lazy loading for preview galleries
+    document.querySelectorAll('.carousel').forEach(carousel => {
+        carousel.addEventListener('slide.bs.carousel', function(event) {
+            const nextItem = event.relatedTarget;
+            const img = nextItem.querySelector('img.lazy-carousel');
+            loadLazyImage(img);
+            
+            // Also preload the next one
+            const allItems = this.querySelectorAll('.carousel-item');
+            const nextIdx = (event.to + 1) % allItems.length;
+            const nextNextImg = allItems[nextIdx].querySelector('img.lazy-carousel');
+            loadLazyImage(nextNextImg);
+        });
+        
+        // Preload first 2 images on page load
+        const items = carousel.querySelectorAll('.carousel-item');
+        for (let i = 0; i < Math.min(2, items.length); i++) {
+            const img = items[i].querySelector('img.lazy-carousel');
+            loadLazyImage(img);
+        }
     });
     
     // Parallax Effect on Mouse Move
@@ -887,10 +933,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div class="carousel-inner">
                                     {% for image in group.images %}
                                     <div class="carousel-item {% if loop.first %}active{% endif %}">
-                                        <img src="{{ url_for('main.serve_image', image_path=image.image_path) }}" 
-                                             class="d-block w-100" 
+                                        <img {% if loop.first %}src{% else %}data-src{% endif %}="{{ url_for('main.serve_image', image_path=image.image_path) }}" 
+                                             class="d-block w-100{% if not loop.first %} lazy-carousel{% endif %}" 
                                              alt="{{ translated_preview_group.title }}"
-                                             loading="lazy">
+                                             {% if not loop.first %}loading="lazy"{% endif %}>
                                     </div>
                                     {% endfor %}
                                 </div>

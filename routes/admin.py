@@ -247,8 +247,8 @@ def allowed_file(filename):
 
 # 웹 최적화 설정
 WEB_IMAGE_CONFIG = {
-    'max_width': 800,
-    'max_height': 1200,
+    'max_width': 600,
+    'max_height': 700,
     'jpeg_quality': 82,
     'progressive_jpeg': True,
 }
