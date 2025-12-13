@@ -61,10 +61,10 @@ msgstr "Producción Editorial Premium de Fotos"
 
 # 프리미엄 화보 제작 서브메뉴
 msgid "패키지 화보"
-msgstr "Editorial Personal"
+msgstr "Retrato de Marca Personal"
 
 msgid "커스터마이징 화보"
-msgstr "Retrato de Marca Personal"
+msgstr "Editorial Personal"
 
 #: templates/about.html:3 templates/base.html:233 templates/index.html:525
 msgid "스타일그래퍼 소개"

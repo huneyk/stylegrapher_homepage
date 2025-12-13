@@ -321,10 +321,10 @@ msgstr ""
 
 # 프리미엄 화보 제작 서브메뉴
 msgid "패키지 화보"
-msgstr ""
+msgstr "패키지 화보"
 
 msgid "커스터마이징 화보"
-msgstr ""
+msgstr "커스터마이징 화보"
 
 # Legacy menu items (keep for backward compatibility)
 #: templates/base.html:139
