@@ -326,10 +326,10 @@ msgstr "时尚造型"
 
 # 프리미엄 화보 제작 서브메뉴
 msgid "패키지 화보"
-msgstr "套餐画报"
+msgstr "定制画报"
 
 msgid "커스터마이징 화보"
-msgstr "定制画报"
+msgstr "套餐画报"
 
 # Legacy menu items (keep for backward compatibility)
 #: templates/base.html:139
@@ -827,6 +827,3 @@ msgstr "将收取非营业时间附加费"
 # International Customer Notice
 msgid "해외 고객 안내: 편하신 언어로 문의해 주세요."
 msgstr "国际客户：请用您的语言联系我们。"
-
-msgid "문의하기"
-msgstr "联系我们"

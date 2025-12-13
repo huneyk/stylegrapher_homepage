@@ -327,10 +327,10 @@ msgstr "ファッションスタイリング"
 
 # 프리미엄 화보 제작 서브메뉴
 msgid "패키지 화보"
-msgstr "パッケージ画報"
+msgstr "カスタマイズ画報"
 
 msgid "커스터마이징 화보"
-msgstr "カスタマイズ画報"
+msgstr "パッケージ画報"
 
 # Legacy menu items (keep for backward compatibility)
 #: templates/base.html:139
@@ -824,6 +824,3 @@ msgstr "時間外料金が追加されます"
 # International Customer Notice
 msgid "해외 고객 안내: 편하신 언어로 문의해 주세요."
 msgstr "海外のお客様へ：お気軽にお問い合わせください。"
-
-msgid "문의하기"
-msgstr "お問い合わせ"

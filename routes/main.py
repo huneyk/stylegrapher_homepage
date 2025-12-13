@@ -1004,3 +1004,4 @@ def terms_of_service():
 def privacy_policy():
     policy = PrivacyPolicy.get_current_content()
     return render_template('privacy_policy.html', policy=policy)
+

@@ -61,10 +61,10 @@ msgstr "Producción Editorial Premium de Fotos"
 
 # 프리미엄 화보 제작 서브메뉴
 msgid "패키지 화보"
-msgstr "Retrato de Marca Personal"
+msgstr "editorial personalizado"
 
 msgid "커스터마이징 화보"
-msgstr "Editorial Personal"
+msgstr "retrato para marca personal"
 
 #: templates/about.html:3 templates/base.html:233 templates/index.html:525
 msgid "스타일그래퍼 소개"
@@ -825,6 +825,3 @@ msgstr "Se añadirá un recargo por horario fuera de oficina"
 # International Customer Notice
 msgid "해외 고객 안내: 편하신 언어로 문의해 주세요."
 msgstr "Clientes Internacionales: Contáctenos en su idioma."
-
-msgid "문의하기"
-msgstr "Contáctenos"
