@@ -44,7 +44,8 @@
                                     {% if table.title %}
                                     <h3 class="package-table-title">{{ table.title }}</h3>
                                     {% endif %}
-                                    <div class="package-table-container">
+                                    {# Desktop: 테이블 형식 #}
+                                    <div class="package-table-container package-desktop-view">
                                         <table class="stg_table">
                                             <thead>
                                                 <tr>
@@ -68,12 +69,29 @@
                                             </tbody>
                                         </table>
                                     </div>
+                                    {# Mobile: 카드 형식 #}
+                                    <div class="package-mobile-view">
+                                        {% for package in table.packages %}
+                                        <div class="package-mobile-card">
+                                            <h4 class="package-mobile-card-title">{{ package.name }}</h4>
+                                            <ul class="package-mobile-card-list">
+                                                <li>{{ package.description }}</li>
+                                                <li>{{ package.duration }} {{ _('소요') }}</li>
+                                                <li>{% if current_lang == 'ko' %}{{ package.price|replace(' KRW', '원')|replace('KRW', '원') }}{% else %}{{ package.price }}{% endif %}</li>
+                                                {% if package.notes and package.notes.strip() %}
+                                                <li>{{ package.notes }}</li>
+                                                {% endif %}
+                                            </ul>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
                                 </div>
                                 {% endif %}
                             {% endfor %}
                         {% else %}
                             {# 기존 단일 배열 형식 (하위 호환성) #}
-                            <div class="package-table-container">
+                            {# Desktop: 테이블 형식 #}
+                            <div class="package-table-container package-desktop-view">
                                 <table class="stg_table">
                                     <thead>
                                         <tr>
@@ -97,6 +115,22 @@
                                     </tbody>
                                 </table>
                             </div>
+                            {# Mobile: 카드 형식 #}
+                            <div class="package-mobile-view">
+                                {% for package in packages %}
+                                <div class="package-mobile-card">
+                                    <h4 class="package-mobile-card-title">{{ package.name }}</h4>
+                                    <ul class="package-mobile-card-list">
+                                        <li>{{ package.description }}</li>
+                                        <li>{{ package.duration }} {{ _('소요') }}</li>
+                                        <li>{% if current_lang == 'ko' %}{{ package.price|replace(' KRW', '원')|replace('KRW', '원') }}{% else %}{{ package.price }}{% endif %}</li>
+                                        {% if package.notes and package.notes.strip() %}
+                                        <li>{{ package.notes }}</li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                                {% endfor %}
+                            </div>
                         {% endif %}
                     </div>
                 </div>
@@ -108,21 +142,6 @@
                 <div class="mb-4">
                     <div class="stg_card_format service-info-card">
                         <h2 class="section-title"><i class="bi bi-calendar-check me-2"></i>{{ _('예약 방법') }}</h2>
-                        
-                        {% if current_lang != 'ko' %}
-                        <!-- International Customer Notice -->
-                        <div class="international-notice">
-                            <div class="international-notice-icon">
-                                <i class="bi bi-globe2"></i>
-                            </div>
-                            <div class="international-notice-content">
-                                <p class="international-notice-text">{{ _('해외 고객 안내: 편하신 언어로 문의해 주세요.') }}</p>
-                                <a href="https://www.stylegrapher.com/booking-choice" class="international-contact-btn">
-                                    <i class="bi bi-envelope-fill me-2"></i>{{ _('문의하기') }}
-                                </a>
-                            </div>
-                        </div>
-                        {% endif %}
                         
                         <div class="booking-content">
                             {% set booking_lines = booking_method_text.split('\n') %}
@@ -703,6 +722,86 @@ body.light-mode .international-notice-text {
     color: #44237A;
 }
 
+/* Package Mobile/Desktop View Toggle */
+.package-mobile-view {
+    display: none;
+}
+
+.package-desktop-view {
+    display: block;
+}
+
+/* Package Mobile Card Styles */
+.package-mobile-card {
+    background: rgba(181, 126, 220, 0.08);
+    border: 1px solid rgba(181, 126, 220, 0.2);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+}
+
+.package-mobile-card:last-child {
+    margin-bottom: 0;
+}
+
+.package-mobile-card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: calc(var(--stg-body-font-size) * 0.85);
+    font-weight: 600;
+    color: #44237A;
+    margin: 0 0 0.5rem 0;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px dashed rgba(181, 126, 220, 0.3);
+}
+
+.package-mobile-card-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.package-mobile-card-list li {
+    position: relative;
+    padding-left: 1rem;
+    margin-bottom: 0.25rem;
+    font-family: var(--stg-body-font-family);
+    font-size: calc(var(--stg-body-font-size) * 0.7);
+    line-height: 1.5;
+    color: var(--stg-body-color-light);
+}
+
+.package-mobile-card-list li:last-child {
+    margin-bottom: 0;
+}
+
+.package-mobile-card-list li::before {
+    content: "•";
+    color: #8B5CF6;
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+/* Dark Mode - Package Mobile Card */
+body:not(.light-mode) .package-mobile-card {
+    background: rgba(181, 126, 220, 0.1);
+    border-color: rgba(181, 126, 220, 0.25);
+}
+
+body:not(.light-mode) .package-mobile-card-title {
+    color: var(--neon-lavender);
+}
+
+body:not(.light-mode) .package-mobile-card-list li {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+body:not(.light-mode) .package-mobile-card-list li::before {
+    color: #C8AAFF;
+    text-shadow: 0 0 10px rgba(181, 126, 220, 0.5);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .service-header {
@@ -719,6 +818,15 @@ body.light-mode .international-notice-text {
     
     .section-title {
         font-size: 1.4rem;
+    }
+    
+    /* Package Mobile View Toggle */
+    .package-mobile-view {
+        display: block;
+    }
+    
+    .package-desktop-view {
+        display: none;
     }
     
     /* International Notice Mobile */

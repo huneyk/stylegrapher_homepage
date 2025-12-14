@@ -625,6 +625,10 @@ msgstr ""
 msgid "비고"
 msgstr ""
 
+#: templates/service_option_detail.html:56 templates/service_option_detail.html:89
+msgid "소요"
+msgstr ""
+
 #: templates/service_option_detail.html:81
 msgid "예약 방법"
 msgstr ""
