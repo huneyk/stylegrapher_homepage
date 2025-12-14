@@ -207,7 +207,7 @@
                 {% set payment_info_text = translated.payment_info if translated and translated.payment_info else service_option.payment_info %}
                 <div class="mb-4">
                     <div class="stg_card_format service-info-card">
-                        <h2 class="section-title"><i class="bi bi-credit-card me-2"></i>{{ _('제작비 결제 방식') }}</h2>
+                        <h2 class="section-title"><i class="bi bi-credit-card me-2"></i>{{ _('결제 방식') }}</h2>
                         <div class="booking-content">
                             <ul class="booking-list">
                                 {% for line in payment_info_text.split('\n') %}

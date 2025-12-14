@@ -600,7 +600,7 @@ msgid "카카오톡채널로 문의/예약신청 하기"
 msgstr ""
 
 #: templates/service_option_detail.html:105
-msgid "제작비 결제 방식"
+msgid "결제 방식"
 msgstr ""
 
 #: templates/service_option_detail.html:115

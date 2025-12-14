@@ -650,8 +650,8 @@ msgid "카카오톡채널로 문의/예약신청 하기"
 msgstr "通过KakaoTalk频道咨询/预约"
 
 #: templates/service_option_detail.html:105
-msgid "제작비 결제 방식"
-msgstr "制作费支付方式"
+msgid "결제 방식"
+msgstr "支付方式"
 
 #: templates/service_option_detail.html:115
 msgid "입금 계좌"
