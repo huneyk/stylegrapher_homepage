@@ -738,6 +738,15 @@ body.light-mode .international-notice-text {
     border-radius: 12px;
     padding: 1rem 1.25rem;
     margin-bottom: 0.75rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.package-mobile-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(181, 126, 220, 0.2);
+    border-color: rgba(181, 126, 220, 0.4);
+    background: rgba(181, 126, 220, 0.12);
 }
 
 .package-mobile-card:last-child {
@@ -787,6 +796,13 @@ body.light-mode .international-notice-text {
 body:not(.light-mode) .package-mobile-card {
     background: rgba(181, 126, 220, 0.1);
     border-color: rgba(181, 126, 220, 0.25);
+}
+
+body:not(.light-mode) .package-mobile-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(181, 126, 220, 0.3);
+    border-color: rgba(181, 126, 220, 0.5);
+    background: rgba(181, 126, 220, 0.18);
 }
 
 body:not(.light-mode) .package-mobile-card-title {
