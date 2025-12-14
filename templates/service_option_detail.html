@@ -150,9 +150,9 @@
                             {% for line in booking_lines %}
                                 {% if line.strip() %}
                                     {% set trimmed = line.strip()|replace('\u200b', '')|replace('\u200c', '')|replace('\u200d', '')|replace('\ufeff', '') %}
-                                    {% set is_example = trimmed.startswith('예)') or trimmed.startswith('예 )') %}
-                                    {% set is_account = trimmed.startswith('입금 계좌') or trimmed.startswith('입금계좌') %}
-                                    {% set is_card_note = '*카드 결제' in trimmed or '*카드결제' in trimmed %}
+                                    {% set is_example = trimmed.startswith('예)') or trimmed.startswith('예 )') or trimmed.startswith('Example)') or trimmed.startswith('Example )') or trimmed.startswith('Ex)') or trimmed.startswith('例）') or trimmed.startswith('例)') or trimmed.startswith('例：') or trimmed.startswith('例如）') or trimmed.startswith('例如)') %}
+                                    {% set is_account = trimmed.startswith('입금 계좌') or trimmed.startswith('입금계좌') or trimmed.startswith('Deposit Account') or trimmed.startswith('Bank Account') or trimmed.startswith('振込口座') or trimmed.startswith('入金口座') or trimmed.startswith('汇款账户') or trimmed.startswith('存款账户') %}
+                                    {% set is_card_note = '*카드 결제' in trimmed or '*카드결제' in trimmed or '*Card payment' in trimmed or '*card payment' in trimmed or '*カード決済' in trimmed or '*クレジットカード' in trimmed or '*刷卡' in trimmed or '*信用卡' in trimmed %}
                                     
                                     {# 예시 라인 처리 #}
                                     {% if is_example %}
