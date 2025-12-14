@@ -17,7 +17,7 @@
     <meta property="og:site_name" content="Stylegrapher">
     <meta property="og:title" content="{% block og_title %}Stylegrapher - {{ _('당신의 스타일을 완성하는 프리미엄 스타일링 스튜디오') }}{% endblock %}">
     <meta property="og:description" content="{% block og_description %}{{ _('AI 얼굴분석, 퍼스널컬러 진단, 스타일링 컨설팅, 프리미엄 화보 촬영까지. 스타일그래퍼와 함께 새로운 나를 만나보세요.') }}{% endblock %}">
-    <meta property="og:image" content="{% block og_image %}{{ url_for('static', filename='images/logo_new.png', _external=True) }}{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ url_for('static', filename='images/purple_logo.jpeg', _external=True) }}{% endblock %}">
     <meta property="og:url" content="{{ request.url }}">
     <meta property="og:locale" content="{{ current_lang }}_{% if current_lang == 'ko' %}KR{% elif current_lang == 'en' %}US{% elif current_lang == 'ja' %}JP{% elif current_lang == 'zh' %}CN{% elif current_lang == 'es' %}ES{% endif %}">
     
@@ -25,7 +25,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{% block twitter_title %}Stylegrapher - {{ _('프리미엄 스타일링 스튜디오') }}{% endblock %}">
     <meta name="twitter:description" content="{% block twitter_description %}{{ _('AI 얼굴분석, 퍼스널컬러 진단, 스타일링 컨설팅, 프리미엄 화보 촬영 서비스') }}{% endblock %}">
-    <meta name="twitter:image" content="{% block twitter_image %}{{ url_for('static', filename='images/logo_new.png', _external=True) }}{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{{ url_for('static', filename='images/purple_logo.jpeg', _external=True) }}{% endblock %}">
     
     <!-- 구조화된 데이터 (JSON-LD) -->
     <script type="application/ld+json">
@@ -35,8 +35,8 @@
         "name": "Stylegrapher 스타일그래퍼",
         "description": "{{ _('AI 얼굴분석, 퍼스널컬러 진단, 스타일링 컨설팅, 화보 및 프로필 촬영 서비스를 제공하는 전문 스타일링 스튜디오') }}",
         "url": "https://www.stylegrapher.com",
-        "logo": "{{ url_for('static', filename='images/logo_new.png', _external=True) }}",
-        "image": "{{ url_for('static', filename='images/logo_new.png', _external=True) }}",
+        "logo": "{{ url_for('static', filename='images/purple_logo.jpeg', _external=True) }}",
+        "image": "{{ url_for('static', filename='images/purple_logo.jpeg', _external=True) }}",
         "telephone": "02-545-5028",
         "email": "stylegrapher.ysg@gmail.com",
         "address": {
@@ -98,9 +98,9 @@
     {% block structured_data %}{% endblock %}
     
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
-    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo_new.png') }}">
+    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='images/purple_logo.jpeg') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/purple_logo.jpeg') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/purple_logo.jpeg') }}">
     
     <!-- DNS Prefetch & Preconnect (성능 최적화) -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
