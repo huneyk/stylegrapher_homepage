@@ -607,17 +607,17 @@ def add_option_standalone():
         option = ServiceOption(
             service_id=service_id,
             name=request.form['name'],
-            description='',  # 카테고리 설명은 Service 모델에서 관리
+            description=request.form.get('description', ''),
             detailed_description=request.form.get('detailed_description', '')
         )
-        
+
         details_text = request.form.get('details', '')
         if details_text.strip():
             details_list = [line.strip() for line in details_text.split('\n') if line.strip()]
             option.details = json.dumps(details_list, ensure_ascii=False)
         else:
             option.details = None
-        
+
         packages_text = request.form.get('packages', '')
         if packages_text.strip():
             packages_list = []
@@ -678,17 +678,17 @@ def add_option(service_id):
         option = ServiceOption(
             service_id=service_id,
             name=request.form['name'],
-            description='',  # 카테고리 설명은 Service 모델에서 관리
+            description=request.form.get('description', ''),
             detailed_description=request.form.get('detailed_description', '')
         )
-        
+
         details_text = request.form.get('details', '')
         if details_text.strip():
             details_list = [line.strip() for line in details_text.split('\n') if line.strip()]
             option.details = json.dumps(details_list, ensure_ascii=False)
         else:
             option.details = None
-        
+
         packages_text = request.form.get('packages', '')
         if packages_text.strip():
             packages_list = []
@@ -749,6 +749,7 @@ def edit_option(option_id):
         print(f"🔧 서비스 옵션 편집 시작 - ID: {option_id}")
         
         option.name = request.form['name']
+        option.description = request.form.get('description', '')
         option.detailed_description = request.form.get('detailed_description', '')
         
         # 예약 조건 필드 업데이트

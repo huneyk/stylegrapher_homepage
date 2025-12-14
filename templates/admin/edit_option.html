@@ -27,6 +27,13 @@
                         </div>
                         
                         <div class="mb-3">
+                            <label for="description" class="form-label">기본 설명</label>
+                            <textarea class="form-control" id="description" name="description" rows="2"
+                                      placeholder="서비스 목록 페이지 카드에 표시될 간단한 설명을 입력하세요">{{ option.description or '' }}</textarea>
+                            <div class="form-text">서비스 목록 페이지(/services)의 카드에 표시됩니다.</div>
+                        </div>
+                        
+                        <div class="mb-3">
                             <label for="detailed_description" class="form-label">상세 설명</label>
                             <textarea class="form-control" id="detailed_description" name="detailed_description" rows="3"
                                       placeholder="서비스 상세 페이지에 표시될 자세한 설명을 입력하세요">{{ option.detailed_description or '' }}</textarea>
