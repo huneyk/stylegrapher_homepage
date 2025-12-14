@@ -31,6 +31,7 @@ from utils.translation_helper import (
 from utils.gridfs_helper import get_image_from_gridfs, get_mongo_connection
 from extensions import mail, cache
 from utils.visitor_tracker import log_visitor
+from utils.email_utils import send_email_with_retry, send_customer_email, send_admin_notification
 
 # MongoDB 설정 불러오기 (fork-safe: 연결은 lazy하게 생성됨)
 load_dotenv()
@@ -633,55 +634,54 @@ def contact():
                 print(f"⚠️ 관련 없는 예약 요청: {name} ({email}) - 사유: {ai_result.irrelevant_reason}")
                 # 고객에게 간략한 회신만 전송
                 if ai_result.ai_response:
-                    try:
-                        customer_subject = _get_customer_subject(ai_result.detected_language, selected_service_name, is_booking=True)
-                        
-                        customer_msg = Message(
-                            subject=customer_subject,
-                            sender=current_app.config['MAIL_DEFAULT_SENDER'],
-                            recipients=[email],
-                            body=ai_result.ai_response
-                        )
-                        
-                        mail.send(customer_msg)
+                    customer_subject = _get_customer_subject(ai_result.detected_language, selected_service_name, is_booking=True)
+                    
+                    success, error = send_email_with_retry(
+                        subject=customer_subject,
+                        sender=current_app.config['MAIL_DEFAULT_SENDER'],
+                        recipients=[email],
+                        body=ai_result.ai_response,
+                        record_type='booking',
+                        record_id=str(booking.id) if hasattr(booking, 'id') else None
+                    )
+                    
+                    if success:
                         response_sent = True
                         booking.response_sent = True
                         booking.response_sent_at = datetime.utcnow()
                         booking.response_email_subject = customer_subject
                         print(f"✅ 관련 없는 예약 요청에 간략한 회신 발송 완료: {email}")
-                        
-                    except Exception as e:
-                        print(f"❌ 관련 없는 예약 요청 회신 발송 오류: {str(e)}")
+                    else:
+                        print(f"❌ 관련 없는 예약 요청 회신 발송 오류: {error}")
                 # 관리자 알림 없음
             # 정상적인 예약인 경우: 고객 응답 + 관리자 알림
             elif not ai_result.is_spam:
                 # 1. 고객에게 AI 응답 전송
                 if ai_result.ai_response:
-                    try:
-                        customer_subject = _get_customer_subject(ai_result.detected_language, selected_service_name, is_booking=True)
-                        
-                        customer_msg = Message(
-                            subject=customer_subject,
-                            sender=current_app.config['MAIL_DEFAULT_SENDER'],
-                            recipients=[email],
-                            body=ai_result.ai_response
-                        )
-                        
-                        mail.send(customer_msg)
+                    customer_subject = _get_customer_subject(ai_result.detected_language, selected_service_name, is_booking=True)
+                    
+                    success, error = send_email_with_retry(
+                        subject=customer_subject,
+                        sender=current_app.config['MAIL_DEFAULT_SENDER'],
+                        recipients=[email],
+                        body=ai_result.ai_response,
+                        record_type='booking',
+                        record_id=str(booking.id) if hasattr(booking, 'id') else None
+                    )
+                    
+                    if success:
                         response_sent = True
                         booking.response_sent = True
                         booking.response_sent_at = datetime.utcnow()
                         booking.response_email_subject = customer_subject
                         print(f"✅ 예약 고객 응답 이메일 발송 완료: {email}")
-                        
-                    except Exception as e:
-                        print(f"❌ 예약 고객 응답 이메일 발송 오류: {str(e)}")
+                    else:
+                        print(f"❌ 예약 고객 응답 이메일 발송 오류: {error}")
                 
                 # 2. 관리자에게 알림 전송
-                try:
-                    admin_subject = f"[스타일그래퍼 예약] {selected_service_name} - {name}님 ({ai_result.detected_language.upper()})"
-                    
-                    admin_body = f"""
+                admin_subject = f"[스타일그래퍼 예약] {selected_service_name} - {name}님 ({ai_result.detected_language.upper()})"
+                
+                admin_body = f"""
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📅 스타일그래퍼 새 예약 신청
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -723,31 +723,32 @@ def contact():
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 이 메일은 스타일그래퍼 홈페이지에서 자동으로 발송되었습니다.
 """
-                    
+                
+                booking_recipients = AdminNotificationEmail.get_active_emails('bookings')
+                if not booking_recipients:
+                    AdminNotificationEmail.initialize_default()
                     booking_recipients = AdminNotificationEmail.get_active_emails('bookings')
-                    if not booking_recipients:
-                        AdminNotificationEmail.initialize_default()
-                        booking_recipients = AdminNotificationEmail.get_active_emails('bookings')
+                
+                if booking_recipients:
+                    success, error = send_email_with_retry(
+                        subject=admin_subject,
+                        sender=current_app.config['MAIL_DEFAULT_SENDER'],
+                        recipients=booking_recipients,
+                        body=admin_body,
+                        reply_to=email,
+                        record_type='booking',
+                        record_id=str(booking.id) if hasattr(booking, 'id') else None
+                    )
                     
-                    if booking_recipients:
-                        admin_msg = Message(
-                            subject=admin_subject,
-                            sender=current_app.config['MAIL_DEFAULT_SENDER'],
-                            recipients=booking_recipients,
-                            body=admin_body,
-                            reply_to=email
-                        )
-                        
-                        mail.send(admin_msg)
+                    if success:
                         email_sent = True
                         admin_notified = True
                         booking.admin_notified = True
                         print(f"✅ 예약 관리자 알림 이메일 발송 완료: {', '.join(booking_recipients)}")
                     else:
-                        print("⚠️ 예약 알림을 받을 이메일이 없습니다.")
-                    
-                except Exception as e:
-                    print(f"❌ 예약 관리자 알림 이메일 발송 오류: {str(e)}")
+                        print(f"❌ 예약 관리자 알림 이메일 발송 오류: {error}")
+                else:
+                    print("⚠️ 예약 알림을 받을 이메일이 없습니다.")
             
             booking.save()
             
@@ -784,55 +785,54 @@ def contact():
                 print(f"⚠️ 관련 없는 문의: {name} ({email}) - 사유: {ai_result.irrelevant_reason}")
                 # 고객에게 간략한 회신만 전송
                 if ai_result.ai_response:
-                    try:
-                        customer_subject = _get_customer_subject(ai_result.detected_language, selected_service_name, is_booking=False)
-                        
-                        customer_msg = Message(
-                            subject=customer_subject,
-                            sender=current_app.config['MAIL_DEFAULT_SENDER'],
-                            recipients=[email],
-                            body=ai_result.ai_response
-                        )
-                        
-                        mail.send(customer_msg)
+                    customer_subject = _get_customer_subject(ai_result.detected_language, selected_service_name, is_booking=False)
+                    
+                    success, error = send_email_with_retry(
+                        subject=customer_subject,
+                        sender=current_app.config['MAIL_DEFAULT_SENDER'],
+                        recipients=[email],
+                        body=ai_result.ai_response,
+                        record_type='inquiry',
+                        record_id=str(inquiry.id) if hasattr(inquiry, 'id') else None
+                    )
+                    
+                    if success:
                         response_sent = True
                         inquiry.response_sent = True
                         inquiry.response_sent_at = datetime.utcnow()
                         inquiry.response_email_subject = customer_subject
                         print(f"✅ 관련 없는 문의에 간략한 회신 발송 완료: {email}")
-                        
-                    except Exception as e:
-                        print(f"❌ 관련 없는 문의 회신 발송 오류: {str(e)}")
+                    else:
+                        print(f"❌ 관련 없는 문의 회신 발송 오류: {error}")
                 # 관리자 알림 없음
             # 정상적인 문의인 경우: 고객 응답 + 관리자 알림
             elif not ai_result.is_spam:
                 # 1. 고객에게 AI 응답 전송
                 if ai_result.ai_response:
-                    try:
-                        customer_subject = _get_customer_subject(ai_result.detected_language, selected_service_name, is_booking=False)
-                        
-                        customer_msg = Message(
-                            subject=customer_subject,
-                            sender=current_app.config['MAIL_DEFAULT_SENDER'],
-                            recipients=[email],
-                            body=ai_result.ai_response
-                        )
-                        
-                        mail.send(customer_msg)
+                    customer_subject = _get_customer_subject(ai_result.detected_language, selected_service_name, is_booking=False)
+                    
+                    success, error = send_email_with_retry(
+                        subject=customer_subject,
+                        sender=current_app.config['MAIL_DEFAULT_SENDER'],
+                        recipients=[email],
+                        body=ai_result.ai_response,
+                        record_type='inquiry',
+                        record_id=str(inquiry.id) if hasattr(inquiry, 'id') else None
+                    )
+                    
+                    if success:
                         response_sent = True
                         inquiry.response_sent = True
                         inquiry.response_sent_at = datetime.utcnow()
                         inquiry.response_email_subject = customer_subject
                         print(f"✅ 문의 고객 응답 이메일 발송 완료: {email}")
-                        
-                    except Exception as e:
-                        print(f"❌ 문의 고객 응답 이메일 발송 오류: {str(e)}")
+                    else:
+                        print(f"❌ 문의 고객 응답 이메일 발송 오류: {error}")
                 
                 # 2. 관리자에게 전체 내용 전송
-                try:
-                    admin_subject = f"[스타일그래퍼 문의] {selected_service_name} - {name}님 ({ai_result.detected_language.upper()})"
-                    
-                    admin_body = f"""
+                admin_subject = f"[스타일그래퍼 문의] {selected_service_name} - {name}님 ({ai_result.detected_language.upper()})"
+                
+                admin_body = f"""
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📧 스타일그래퍼 새 문의 알림
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -872,31 +872,32 @@ def contact():
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 이 메일은 스타일그래퍼 홈페이지에서 자동으로 발송되었습니다.
 """
-                    
+                
+                inquiry_recipients = AdminNotificationEmail.get_active_emails('inquiries')
+                if not inquiry_recipients:
+                    AdminNotificationEmail.initialize_default()
                     inquiry_recipients = AdminNotificationEmail.get_active_emails('inquiries')
-                    if not inquiry_recipients:
-                        AdminNotificationEmail.initialize_default()
-                        inquiry_recipients = AdminNotificationEmail.get_active_emails('inquiries')
+                
+                if inquiry_recipients:
+                    success, error = send_email_with_retry(
+                        subject=admin_subject,
+                        sender=current_app.config['MAIL_DEFAULT_SENDER'],
+                        recipients=inquiry_recipients,
+                        body=admin_body,
+                        reply_to=email,
+                        record_type='inquiry',
+                        record_id=str(inquiry.id) if hasattr(inquiry, 'id') else None
+                    )
                     
-                    if inquiry_recipients:
-                        admin_msg = Message(
-                            subject=admin_subject,
-                            sender=current_app.config['MAIL_DEFAULT_SENDER'],
-                            recipients=inquiry_recipients,
-                            body=admin_body,
-                            reply_to=email
-                        )
-                        
-                        mail.send(admin_msg)
+                    if success:
                         email_sent = True
                         admin_notified = True
                         inquiry.admin_notified = True
                         print(f"✅ 문의 관리자 알림 이메일 발송 완료: {', '.join(inquiry_recipients)}")
                     else:
-                        print("⚠️ 문의 알림을 받을 이메일이 없습니다.")
-                    
-                except Exception as e:
-                    print(f"❌ 문의 관리자 알림 이메일 발송 오류: {str(e)}")
+                        print(f"❌ 문의 관리자 알림 이메일 발송 오류: {error}")
+                else:
+                    print("⚠️ 문의 알림을 받을 이메일이 없습니다.")
             
             inquiry.save()
         
