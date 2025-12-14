@@ -557,45 +557,20 @@ def list_services():
 @admin.route('/service/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_service(id):
+    """카테고리 설명 수정 - 카테고리명과 설명만 수정"""
     service = Service.get_or_404(id)
     
     if request.method == 'POST':
         service.name = request.form['name']
         service.description = request.form['description']
-        service.category = request.form['category']
-        
-        details = request.form.getlist('details[]')
-        service.details = json.dumps(details)
-        
-        packages = []
-        names = request.form.getlist('package_names[]')
-        descriptions = request.form.getlist('package_descriptions[]')
-        prices = request.form.getlist('package_prices[]')
-        
-        for i in range(len(names)):
-            if names[i].strip():
-                package = {
-                    'name': names[i],
-                    'description': descriptions[i],
-                    'price': prices[i]
-                }
-                packages.append(package)
-        
-        service.packages = json.dumps(packages)
         service.save()
         
         trigger_translation('service', service)
         
-        flash('서비스가 수정되었습니다.')
+        flash('카테고리 설명이 수정되었습니다.')
         return redirect(url_for('admin.list_services'))
-    
-    details = json.loads(service.details) if service.details else []
-    packages = json.loads(service.packages) if service.packages else []
         
-    return render_template('admin/edit_service.html', 
-                         service=service,
-                         details=details,
-                         packages=packages)
+    return render_template('admin/edit_service.html', service=service)
 
 
 @admin.route('/services/delete/<int:id>')
@@ -632,7 +607,7 @@ def add_option_standalone():
         option = ServiceOption(
             service_id=service_id,
             name=request.form['name'],
-            description=request.form['description'],
+            description='',  # 카테고리 설명은 Service 모델에서 관리
             detailed_description=request.form.get('detailed_description', '')
         )
         
@@ -703,7 +678,7 @@ def add_option(service_id):
         option = ServiceOption(
             service_id=service_id,
             name=request.form['name'],
-            description=request.form['description'],
+            description='',  # 카테고리 설명은 Service 모델에서 관리
             detailed_description=request.form.get('detailed_description', '')
         )
         
@@ -774,7 +749,6 @@ def edit_option(option_id):
         print(f"🔧 서비스 옵션 편집 시작 - ID: {option_id}")
         
         option.name = request.form['name']
-        option.description = request.form['description']
         option.detailed_description = request.form.get('detailed_description', '')
         
         # 예약 조건 필드 업데이트
