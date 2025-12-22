@@ -998,7 +998,32 @@ def about():
 @main.route('/terms-of-service')
 def terms_of_service():
     terms = TermsOfService.get_current_content()
-    return render_template('terms_of_service.html', terms=terms)
+    
+    # 서비스별 환불 조건 표시를 위한 데이터
+    lang = get_current_language()
+    services = Service.query_all()
+    service_options = ServiceOption.query_all()
+    
+    # 서비스 옵션의 번역된 데이터 준비
+    refund_policies = []
+    for option in service_options:
+        # 환불 정책이 있는 옵션만 포함
+        if (option.refund_policy_text and option.refund_policy_text.strip()) or \
+           (option.refund_policy_table and option.refund_policy_table.strip()):
+            translated = get_translated_service_option(option, lang)
+            service = option.service
+            service_translated = get_translated_service(service, lang) if service else None
+            
+            refund_policies.append({
+                'option': option,
+                'translated': translated,
+                'service_name': service_translated.get('name', service.name) if service_translated else (service.name if service else ''),
+                'option_name': translated.get('name', option.name),
+                'refund_policy_text': translated.get('refund_policy_text', option.refund_policy_text),
+                'refund_policy_table': translated.get('refund_policy_table', option.refund_policy_table)
+            })
+    
+    return render_template('terms_of_service.html', terms=terms, refund_policies=refund_policies)
 
 
 @main.route('/privacy-policy')

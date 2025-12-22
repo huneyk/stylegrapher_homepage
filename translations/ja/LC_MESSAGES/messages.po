@@ -828,3 +828,27 @@ msgstr "時間外料金が追加されます"
 # International Customer Notice
 msgid "해외 고객 안내: 편하신 언어로 문의해 주세요."
 msgstr "海外のお客様へ：お気軽にお問い合わせください。"
+
+
+# Terms of Service - Refund Policies Section
+msgid "서비스별 환불 조건"
+msgstr "サービス別払い戻し条件"
+
+msgid "제6조 서비스별 환불 조건"
+msgstr "第6条 サービス別払い戻し条件"
+
+msgid "각 서비스에 따라 환불 조건이 다르게 적용됩니다. 서비스 예약 전 아래 내용을 반드시 확인해 주세요."
+msgstr "サービスによって払い戻し条件が異なります。ご予約前に下記の内容を必ずご確認ください。"
+
+msgid "환불 기준표"
+msgstr "払い戻し基準表"
+
+msgid "기준일"
+msgstr "基準日"
+
+msgid "환불비율"
+msgstr "払い戻し率"
+
+msgid "비고"
+msgstr "備考"
+

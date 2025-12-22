@@ -892,3 +892,27 @@ msgstr "Off-hours surcharge will be added"
 # International Customer Notice
 msgid "해외 고객 안내: 편하신 언어로 문의해 주세요."
 msgstr "International Customers: Please contact us here in your own language."
+
+
+# Terms of Service - Refund Policies Section
+msgid "서비스별 환불 조건"
+msgstr "Refund Conditions by Service"
+
+msgid "제6조 서비스별 환불 조건"
+msgstr "Article 6. Refund Conditions by Service"
+
+msgid "각 서비스에 따라 환불 조건이 다르게 적용됩니다. 서비스 예약 전 아래 내용을 반드시 확인해 주세요."
+msgstr "Refund conditions vary by service. Please review the information below before making a reservation."
+
+msgid "환불 기준표"
+msgstr "Refund Schedule"
+
+msgid "기준일"
+msgstr "Criteria"
+
+msgid "환불비율"
+msgstr "Refund Rate"
+
+msgid "비고"
+msgstr "Notes"
+

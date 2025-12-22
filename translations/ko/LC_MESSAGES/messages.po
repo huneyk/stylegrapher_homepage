@@ -792,3 +792,27 @@ msgstr ""
 msgid "시간외 업차지가 추가됩니다"
 msgstr "시간외 업차지가 추가됩니다"
 
+
+
+# Terms of Service - Refund Policies Section
+msgid "서비스별 환불 조건"
+msgstr "서비스별 환불 조건"
+
+msgid "제6조 서비스별 환불 조건"
+msgstr "제6조 서비스별 환불 조건"
+
+msgid "각 서비스에 따라 환불 조건이 다르게 적용됩니다. 서비스 예약 전 아래 내용을 반드시 확인해 주세요."
+msgstr "각 서비스에 따라 환불 조건이 다르게 적용됩니다. 서비스 예약 전 아래 내용을 반드시 확인해 주세요."
+
+msgid "환불 기준표"
+msgstr "환불 기준표"
+
+msgid "기준일"
+msgstr "기준일"
+
+msgid "환불비율"
+msgstr "환불비율"
+
+msgid "비고"
+msgstr "비고"
+

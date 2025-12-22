@@ -1,0 +1,1113 @@
+/* ============================================
+   Stylegrapher Design System
+   재사용 가능한 STG 클래스 및 컬러 시스템
+   Version: 1.0.0
+   
+   다른 프로젝트에서 사용 시:
+   @import url('path/to/stg_design_system.css');
+   ============================================ */
+
+/* ============================================
+   COLOR SYSTEM - Main, Sub, Background Colors
+   ============================================ */
+:root {
+    /* Dynamic Site Colors */
+    --main-color-rgb: 139, 92, 246;
+    --sub-color-rgb: 167, 139, 250;
+    --background-color-rgb: 255, 255, 255;
+    --main-color: rgb(var(--main-color-rgb));
+    --sub-color: rgb(var(--sub-color-rgb));
+    --background-color: rgb(var(--background-color-rgb));
+    --main-color-alpha: rgba(var(--main-color-rgb), 0.9);
+    --sub-color-alpha: rgba(var(--sub-color-rgb), 0.8);
+    
+    /* Primary Colors - Violet Theme */
+    --neon-lavender: #8B5CF6;
+    --electric-violet: #A78BFA;
+    --soft-violet: #F0E8FF;
+    --primary-purple: #663399;
+    --light-purple: #9966cc;
+    --dark-purple: #4B0082;
+    
+    /* Glass Effect */
+    --glass-bg: rgba(255, 255, 255, 0.9);
+    --glass-border: rgba(139, 92, 246, 0.25);
+    --glass-blur: 20px;
+    
+    /* Shadows */
+    --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --hover-glow: 0 0 30px rgba(139, 92, 246, 0.3), 0 0 60px rgba(167, 139, 250, 0.2);
+    
+    /* Transitions */
+    --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.2s ease;
+}
+
+/* ============================================
+   STG Body Text Variables
+   ============================================ */
+:root {
+    --stg-body-font-family: 'Nanum Gothic', -apple-system, BlinkMacSystemFont, sans-serif;
+    --stg-body-font-size: 16px;
+    --stg-body-line-height: 1.8;
+    --stg-body-font-weight: 400;
+    --stg-body-color-dark: rgba(255, 255, 255, 0.9);
+    --stg-body-color-light: #6C757D;
+    --stg-body-margin: 0px 0px 24px;
+    --stg-body-padding: 0px 8px;
+}
+
+/* ============================================
+   STG Card Title Variables
+   ============================================ */
+:root {
+    --stg-card-title-font-family: 'Nanum Gothic', sans-serif;
+    --stg-card-title-font-size: 22.4px;
+    --stg-card-title-font-size-mobile: 18px;
+    --stg-card-title-font-weight: 600;
+    --stg-card-title-color-light: #44237A;
+    --stg-card-title-color-dark: rgb(var(--main-color-rgb));
+    --stg-card-title-bg-light: #9379BC1A;
+    --stg-card-title-bg-dark: rgba(200, 170, 255, 0.12);
+    --stg-card-title-border-light: rgba(139, 92, 246, 0.2);
+    --stg-card-title-border-dark: rgba(200, 170, 255, 0.2);
+    --stg-card-title-padding: 12px 24px;
+    --stg-card-title-padding-mobile: 10px 18px;
+    --stg-card-title-border-radius: 12px;
+    --stg-card-title-text-shadow-dark: 0 0 20px rgba(200, 170, 255, 0.5);
+}
+
+/* ============================================
+   STG Button Variables
+   ============================================ */
+:root {
+    --stg-button-font-family: 'Nanum Gothic', sans-serif;
+    --stg-button-font-size: 0.9rem;
+    --stg-button-font-weight: 400;
+    --stg-button-padding: 9.6px 12.8px;
+    --stg-button-border-radius: 12px;
+    --stg-button-transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --stg-button-bg: #44237A1A;
+    --stg-button-color: #44237ACC;
+    --stg-button-border: transparent;
+    --stg-button-hover-bg: #44237A33;
+    --stg-button-hover-color: #44237AFF;
+    --stg-button-hover-shadow: none;
+}
+
+/* ============================================
+   STG Page Title Variables
+   ============================================ */
+:root {
+    --stg-page-title-font-family: 'Nanum Gothic', sans-serif;
+    --stg-page-title-font-size: 40px;
+    --stg-page-title-font-weight: 400;
+    --stg-page-title-letter-spacing: 0.1em;
+    --stg-page-title-color-dark: #44237A;
+    --stg-page-title-color-light: #44237A;
+    --stg-page-title-text-shadow-dark: 0 0 50px rgba(181, 126, 220, 0.5);
+}
+
+/* ============================================
+   STG Table Variables
+   ============================================ */
+:root {
+    --stg-table-font-family: var(--stg-body-font-family);
+    --stg-table-font-size: 15px;
+    --stg-table-line-height: 1.7;
+    --stg-table-font-weight: 400;
+    --stg-table-header-bg-dark: rgb(147, 121, 188);
+    --stg-table-header-bg-light: rgb(147, 121, 188);
+    --stg-table-header-color: #FFFFFF;
+    --stg-table-border-color-dark: rgba(147, 121, 188, 0.6);
+    --stg-table-border-color-light: rgba(147, 121, 188, 0.55);
+    --stg-table-cell-bg-dark: rgba(18, 0, 36, 0.6);
+    --stg-table-cell-bg-light: rgba(255, 255, 255, 0.8);
+    --stg-table-text-color-dark: rgba(255, 255, 255, 0.85);
+    --stg-table-text-color-light: #333333;
+}
+
+/* ============================================
+   STG Floating Menu Variables
+   ============================================ */
+:root {
+    --stg-floating-menu-bg: rgba(68, 35, 122, 0.5);
+    --stg-floating-menu-color: #FFFFFF;
+    --stg-floating-menu-font-family: 'Nanum Gothic', -apple-system, sans-serif;
+    --stg-floating-menu-font-size: 16px;
+    --stg-floating-menu-padding: 8px 15px 8px 8px;
+    --stg-floating-menu-margin: 0px 0px 10px;
+    --stg-floating-menu-border-radius: 28px;
+}
+
+/* ============================================
+   STG Card Sub Format Variables
+   ============================================ */
+:root {
+    --stg-card-sub-border-color-light: rgba(139, 92, 246, 0.35);
+    --stg-card-sub-border-color-dark: rgba(181, 126, 220, 0.4);
+    --stg-card-sub-shadow-light: 0 4px 20px rgba(139, 92, 246, 0.12), 0 8px 40px rgba(139, 92, 246, 0.08);
+    --stg-card-sub-shadow-dark: 0 4px 25px rgba(181, 126, 220, 0.15), 0 10px 50px rgba(138, 43, 226, 0.1);
+    --stg-card-sub-border-width: 1.5px;
+    --stg-card-sub-border-radius: 24px;
+}
+
+/* ============================================
+   STG BODY TEXT CLASSES
+   본문 텍스트 스타일
+   ============================================ */
+
+/* STG Body Text (hyphen 버전) */
+.stg-body-text {
+    font-family: var(--stg-body-font-family) !important;
+    font-size: var(--stg-body-font-size) !important;
+    line-height: var(--stg-body-line-height) !important;
+    font-weight: var(--stg-body-font-weight) !important;
+    margin: var(--stg-body-margin) !important;
+    padding: var(--stg-body-padding) !important;
+}
+
+/* STG Body Text (underscore 버전) */
+.stg_body_text {
+    font-family: var(--stg-body-font-family) !important;
+    font-size: var(--stg-body-font-size) !important;
+    line-height: var(--stg-body-line-height) !important;
+    font-weight: var(--stg-body-font-weight) !important;
+    margin: var(--stg-body-margin) !important;
+    padding: var(--stg-body-padding) !important;
+}
+
+/* Light Mode - STG Body Text Color */
+body.light-mode .stg_body_text,
+body.light-mode .stg-body-text {
+    color: var(--stg-body-color-light) !important;
+}
+
+/* ============================================
+   STG CARD TEXT CLASSES
+   카드 내 본문 텍스트
+   ============================================ */
+
+.stg_card_text,
+.stg-card-text {
+    font-family: var(--stg-body-font-family) !important;
+    font-size: var(--stg-body-font-size) !important;
+    line-height: var(--stg-body-line-height) !important;
+    font-weight: var(--stg-body-font-weight) !important;
+    margin: var(--stg-body-margin) !important;
+    padding: var(--stg-body-padding) !important;
+}
+
+body.light-mode .stg_card_text,
+body.light-mode .stg-card-text {
+    color: var(--stg-body-color-light) !important;
+}
+
+/* ============================================
+   STG CARD TITLE CLASSES
+   카드 제목 스타일
+   ============================================ */
+
+.stg_card_title,
+.stg-card-title {
+    font-family: var(--stg-card-title-font-family) !important;
+    font-size: var(--stg-card-title-font-size) !important;
+    font-weight: var(--stg-card-title-font-weight) !important;
+    color: #ffffff !important;
+    background: #9379bc;
+    padding: var(--stg-card-title-padding);
+    border-radius: var(--stg-card-title-border-radius);
+    border: 1px solid var(--stg-card-title-border-light);
+    display: inline-block;
+    margin-bottom: 1rem;
+}
+
+/* STG Card Title 반응형 */
+@media (max-width: 768px) {
+    .stg_card_title,
+    .stg-card-title {
+        font-size: var(--stg-card-title-font-size-mobile) !important;
+        padding: var(--stg-card-title-padding-mobile);
+    }
+}
+
+/* ============================================
+   STG CARD FORMAT CLASSES
+   카드 컨테이너 스타일
+   ============================================ */
+
+.stg_card_format {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 카드 상단 그라데이션 라인 */
+.stg_card_format::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--neon-lavender), var(--electric-violet), var(--neon-lavender));
+    box-shadow: 0 0 20px rgba(200, 170, 255, 0.6);
+}
+
+/* 호버 효과 */
+.stg_card_format:hover {
+    transform: translateY(-8px);
+    border-color: rgba(200, 170, 255, 0.5);
+    box-shadow: var(--hover-glow);
+}
+
+/* Light Mode 카드 컨테이너 스타일 */
+body.light-mode .stg_card_format {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(200, 170, 255, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+body.light-mode .stg_card_format::before {
+    background: linear-gradient(90deg, transparent, #8B5CF6, #A78BFA, transparent);
+    opacity: 0.7;
+}
+
+body.light-mode .stg_card_format:hover {
+    border-color: rgba(139, 92, 246, 0.4);
+    box-shadow: 0 15px 40px rgba(139, 92, 246, 0.15);
+}
+
+/* 패딩 변형 */
+.stg_card_format.stg_card_format--padded {
+    padding: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .stg_card_format.stg_card_format--padded {
+        padding: 2.5rem;
+    }
+}
+
+/* Card Content */
+.stg_card_format .stg_card_content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 260px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Service Icon */
+.stg_card_format .stg_card_icon {
+    margin-bottom: 1rem;
+    font-size: 3rem;
+    transition: all 0.4s ease;
+}
+
+body.light-mode .stg_card_format .stg_card_icon i {
+    color: rgba(139, 95, 191, 0.8) !important;
+    filter: none !important;
+}
+
+/* Card Description */
+.stg_card_format .stg_card_description {
+    font-family: var(--stg-body-font-family) !important;
+    font-size: var(--stg-body-font-size) !important;
+    line-height: var(--stg-body-line-height) !important;
+    font-weight: var(--stg-body-font-weight) !important;
+    margin: var(--stg-body-margin) !important;
+    padding: var(--stg-body-padding) !important;
+    white-space: normal;
+}
+
+body.light-mode .stg_card_format .stg_card_description {
+    color: var(--stg-body-color-light) !important;
+}
+
+/* Options Buttons Grid */
+.stg_card_format .stg_card_options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    padding: 0.5rem;
+}
+
+.stg_card_format .stg_card_option_wrapper {
+    display: flex;
+}
+
+.stg_card_format .stg_card_option_btn {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border-radius: 10px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1rem;
+    font-weight: 400;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    position: relative;
+    overflow: hidden;
+    line-height: 1;
+}
+
+body.light-mode .stg_card_format .stg_card_option_btn {
+    width: 100% !important;
+    min-height: 42.8px !important;
+    background: #44237A1A !important;
+    color: #44237ACC !important;
+    border: 1px solid rgba(68, 35, 122, 0.3) !important;
+    border-radius: 6px !important;
+    font-family: 'Nanum Gothic', sans-serif !important;
+    font-size: 14.4px !important;
+    padding: 0.6rem 1rem !important;
+}
+
+body.light-mode .stg_card_format .stg_card_option_btn:hover {
+    background: #5B3A8C;
+    border-color: #5B3A8C;
+    color: #ffffff !important;
+    box-shadow: 0 4px 15px rgba(91, 58, 140, 0.25);
+    transform: translateY(-2px);
+}
+
+.stg_card_format .stg_card_option_text {
+    transition: transform 0.3s ease;
+}
+
+body.light-mode .stg_card_format .stg_card_option_text {
+    color: #44237ACC !important;
+    font-size: 14.4px !important;
+}
+
+body.light-mode .stg_card_format .stg_card_option_btn:hover .stg_card_option_text {
+    color: #ffffff !important;
+}
+
+.stg_card_format .stg_card_option_arrow {
+    font-size: 1.1rem;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s ease;
+}
+
+.stg_card_format .stg_card_option_btn:hover .stg_card_option_arrow {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+body.light-mode .stg_card_format .stg_card_option_arrow {
+    display: none !important;
+}
+
+.stg_card_format .stg_card_option_btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.15), transparent);
+    transition: left 0.4s ease;
+}
+
+.stg_card_format .stg_card_option_btn:hover::before {
+    left: 100%;
+}
+
+/* Description Short 변형 */
+.stg_card_format .stg_card_description--short {
+    font-family: var(--stg-body-font-family) !important;
+    font-size: var(--stg-body-font-size) !important;
+    line-height: var(--stg-body-line-height) !important;
+    font-weight: var(--stg-body-font-weight) !important;
+    margin: 0px 0px 0px 0px !important;
+    padding: var(--stg-body-padding) !important;
+}
+
+body.light-mode .stg_card_format .stg_card_description--short {
+    color: var(--stg-body-color-light) !important;
+}
+
+/* STG Card Format - Additional Card 변형 */
+.stg_card_format.stg_card_format--additional {
+    justify-content: center;
+    min-height: 300px;
+    padding-top: 0.75rem;
+}
+
+.stg_card_format--additional:hover {
+    transform: translateY(-15px);
+}
+
+.stg_card_format--additional .stg_card_icon {
+    margin-bottom: 1.5rem;
+    font-size: 3.5rem;
+}
+
+.stg_card_format--additional:hover .stg_card_icon {
+    transform: scale(1.15) rotate(5deg);
+}
+
+.stg_card_format--additional::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(181, 126, 220, 0.1), transparent);
+    transition: left 0.6s ease;
+    z-index: 0;
+}
+
+.stg_card_format--additional:hover::after {
+    left: 100%;
+}
+
+/* STG Card Format 반응형 */
+@media (max-width: 992px) {
+    .stg_card_format .stg_card_content {
+        min-height: 240px;
+    }
+    
+    .stg_card_format .stg_card_options {
+        gap: 0.6rem;
+    }
+    
+    .stg_card_format .stg_card_option_btn {
+        font-size: 0.82rem;
+        padding: 0.65rem 0.7rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .stg_card_format {
+        padding: 1.25rem;
+    }
+    
+    .stg_card_format .stg_card_description {
+        font-size: var(--stg-body-font-size) !important;
+        line-height: var(--stg-body-line-height) !important;
+        margin: var(--stg-body-margin) !important;
+        padding: var(--stg-body-padding) !important;
+    }
+    
+    .stg_card_format .stg_card_options {
+        padding: 0;
+        gap: 0.5rem;
+    }
+    
+    .stg_card_format .stg_card_option_btn {
+        font-size: 0.78rem;
+        padding: 0.6rem 0.5rem;
+    }
+    
+    .stg_card_format .stg_card_content {
+        min-height: 220px;
+    }
+    
+    .stg_card_format .stg_card_icon {
+        font-size: 2.5rem;
+    }
+    
+    .stg_card_format.stg_card_format--additional {
+        min-height: 250px;
+        border-radius: 20px;
+        padding-top: 0.625rem;
+    }
+    
+    .stg_card_format--additional .stg_card_icon {
+        font-size: 2.8rem;
+    }
+    
+    .stg_card_format--additional:hover {
+        transform: translateY(-10px);
+    }
+}
+
+@media (max-width: 576px) {
+    .stg_card_format {
+        padding: 1.5rem 1.2rem;
+    }
+    
+    .stg_card_format .stg_card_options {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .stg_card_format .stg_card_content {
+        min-height: auto;
+    }
+    
+    .stg_card_format .stg_card_option_btn {
+        font-size: 0.85rem;
+        padding: 0.7rem 1rem;
+    }
+}
+
+/* ============================================
+   STG BUTTON CLASSES
+   버튼 스타일
+   ============================================ */
+
+.stg_button {
+    font-family: var(--stg-button-font-family) !important;
+    font-size: var(--stg-button-font-size) !important;
+    font-weight: var(--stg-button-font-weight) !important;
+    padding: var(--stg-button-padding);
+    border-radius: var(--stg-button-border-radius);
+    transition: var(--stg-button-transition);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 202px;
+    height: 42px;
+    gap: 0.3rem;
+    text-align: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    line-height: 1.2;
+    background: var(--stg-button-bg);
+    color: var(--stg-button-color) !important;
+    border: none;
+    text-shadow: none;
+    box-shadow: none;
+}
+
+.stg_button:hover {
+    background: var(--stg-button-hover-bg);
+    border: none;
+    color: var(--stg-button-hover-color) !important;
+    box-shadow: var(--stg-button-hover-shadow);
+    transform: translateY(-1px);
+}
+
+.stg_button .stg_button_text {
+    transition: transform 0.3s ease;
+    color: var(--stg-button-color) !important;
+}
+
+.stg_button:hover .stg_button_text {
+    color: var(--stg-button-hover-color) !important;
+    transform: none;
+}
+
+.stg_button .stg_button_arrow {
+    display: none;
+}
+
+.stg_button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.15), transparent);
+    transition: left 0.4s ease;
+}
+
+.stg_button:hover::before {
+    left: 100%;
+}
+
+/* STG Button 반응형 */
+@media (max-width: 992px) {
+    .stg_button {
+        font-size: 0.85rem !important;
+        padding: 0.65rem 0.9rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .stg_button {
+        font-size: 0.8rem !important;
+        padding: 0.6rem 0.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .stg_button {
+        font-size: 0.85rem !important;
+        padding: 0.7rem 1rem;
+    }
+}
+
+/* STG Button Sizes */
+.stg_button--sm {
+    font-size: 0.8rem !important;
+    padding: 0.5rem 0.8rem;
+}
+
+.stg_button--lg {
+    font-size: 1rem !important;
+    padding: 0.9rem 1.5rem;
+}
+
+.stg_button--block {
+    display: flex;
+    width: 100%;
+}
+
+/* ============================================
+   STG PAGE TITLE CLASSES
+   페이지 타이틀 스타일
+   ============================================ */
+
+.stg_page_title {
+    font-family: var(--stg-page-title-font-family) !important;
+    font-size: var(--stg-page-title-font-size) !important;
+    font-weight: var(--stg-page-title-font-weight) !important;
+    letter-spacing: var(--stg-page-title-letter-spacing);
+    color: var(--stg-page-title-color-dark) !important;
+    text-shadow: var(--stg-page-title-text-shadow-dark);
+    margin-bottom: 0.5rem;
+}
+
+body.light-mode .stg_page_title {
+    color: var(--stg-page-title-color-light) !important;
+    text-shadow: none !important;
+}
+
+/* STG Page Title 반응형 */
+@media (max-width: 992px) {
+    .stg_page_title {
+        font-size: 2.5rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .stg_page_title {
+        font-size: 2.2rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .stg_page_title {
+        font-size: 2rem !important;
+    }
+}
+
+/* ============================================
+   STG TABLE CLASSES
+   테이블 스타일
+   ============================================ */
+
+/* STG Table Wrapper */
+.stg_table_wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1rem;
+}
+
+.stg_table {
+    width: 100%;
+    min-width: 480px;
+    border-collapse: collapse;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 0;
+    border: 2px solid var(--stg-table-border-color-dark);
+}
+
+/* STG Table Header */
+.stg_table thead th {
+    background: var(--stg-table-header-bg-dark) !important;
+    color: var(--stg-table-header-color) !important;
+    font-family: var(--stg-table-font-family);
+    font-size: var(--stg-table-font-size);
+    font-weight: var(--stg-table-font-weight);
+    line-height: 1.4;
+    padding: 0.6rem 0.8rem;
+    text-align: center;
+    border: 1px solid var(--stg-table-border-color-dark);
+}
+
+/* STG Table Body Cells */
+.stg_table tbody td {
+    background: var(--stg-table-cell-bg-dark) !important;
+    color: var(--stg-table-text-color-dark) !important;
+    font-family: var(--stg-table-font-family);
+    font-size: var(--stg-table-font-size);
+    font-weight: var(--stg-table-font-weight);
+    line-height: 1.4;
+    padding: 0.5rem 0.8rem;
+    vertical-align: middle;
+    border: 1px solid var(--stg-table-border-color-dark);
+}
+
+/* STG Table Row Hover */
+.stg_table tbody tr:hover td {
+    background: rgba(139, 92, 246, 0.12) !important;
+}
+
+/* STG Table - Column Styles */
+.stg_table .stg_table_name {
+    text-align: left;
+}
+
+.stg_table .stg_table_desc {
+    text-align: left;
+}
+
+.stg_table .stg_table_duration {
+    text-align: center;
+    white-space: nowrap;
+}
+
+.stg_table .stg_table_price {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.stg_table .stg_table_notes {
+    text-align: center;
+}
+
+/* STG Table 반응형 */
+@media (max-width: 768px) {
+    .stg_table_wrapper {
+        margin-left: -0.5rem;
+        margin-right: -0.5rem;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    .stg_table {
+        min-width: 480px;
+    }
+    
+    .stg_table thead th {
+        font-size: 13px;
+        padding: 0.5rem 0.6rem;
+        white-space: nowrap;
+    }
+    .stg_table tbody td {
+        font-size: 12px;
+        padding: 0.5rem 0.6rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .stg_table {
+        min-width: 450px;
+    }
+    
+    .stg_table thead th {
+        font-size: 12px;
+        padding: 0.45rem 0.5rem;
+        white-space: nowrap;
+    }
+    .stg_table tbody td {
+        font-size: 11px;
+        padding: 0.45rem 0.5rem;
+    }
+}
+
+/* Light Mode STG Table */
+body.light-mode .stg_table {
+    border: 2px solid var(--stg-table-border-color-light);
+}
+
+body.light-mode .stg_table thead th {
+    background: var(--stg-table-header-bg-light) !important;
+    color: var(--stg-table-header-color) !important;
+    border: 1px solid var(--stg-table-border-color-light);
+}
+
+body.light-mode .stg_table tbody td {
+    background: var(--stg-table-cell-bg-light) !important;
+    color: var(--stg-table-text-color-light) !important;
+    border: 1px solid var(--stg-table-border-color-light);
+}
+
+body.light-mode .stg_table tbody tr:hover td {
+    background: rgba(139, 92, 246, 0.08) !important;
+}
+
+/* ============================================
+   STG FLOATING MENU CLASSES
+   플로팅 메뉴 스타일
+   ============================================ */
+
+.stg_floating_menu {
+    background: var(--stg-floating-menu-bg) !important;
+    color: var(--stg-floating-menu-color) !important;
+    font-family: var(--stg-floating-menu-font-family) !important;
+    font-size: var(--stg-floating-menu-font-size) !important;
+    padding: var(--stg-floating-menu-padding) !important;
+    margin: var(--stg-floating-menu-margin) !important;
+    border-radius: var(--stg-floating-menu-border-radius) !important;
+    border: none !important;
+    text-decoration: none !important;
+    display: flex !important;
+    align-items: center !important;
+    min-width: 130px !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 15px rgba(68, 35, 122, 0.3) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+}
+
+.stg_floating_menu:hover {
+    background: rgba(68, 35, 122, 0.9) !important;
+    color: var(--stg-floating-menu-color) !important;
+    transform: translateX(-10px) !important;
+    box-shadow: 0 6px 25px rgba(68, 35, 122, 0.5) !important;
+}
+
+.stg_floating_menu .floating-icon {
+    width: 40px !important;
+    height: 40px !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.1)) !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.1rem !important;
+    margin-right: 10px !important;
+    flex-shrink: 0 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.stg_floating_menu .floating-icon i {
+    color: #FFFFFF !important;
+}
+
+.stg_floating_menu .floating-text {
+    font-family: var(--stg-floating-menu-font-family) !important;
+    font-size: var(--stg-floating-menu-font-size) !important;
+    font-weight: 500 !important;
+    color: var(--stg-floating-menu-color) !important;
+    white-space: nowrap !important;
+}
+
+/* Light Mode STG Floating Menu */
+body.light-mode .stg_floating_menu {
+    background: var(--stg-floating-menu-bg) !important;
+    color: var(--stg-floating-menu-color) !important;
+    box-shadow: 0 4px 15px rgba(68, 35, 122, 0.25) !important;
+}
+
+body.light-mode .stg_floating_menu:hover {
+    background: rgba(68, 35, 122, 0.9) !important;
+    color: var(--stg-floating-menu-color) !important;
+    box-shadow: 0 6px 25px rgba(68, 35, 122, 0.4) !important;
+}
+
+body.light-mode .stg_floating_menu .floating-icon {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.15)) !important;
+}
+
+body.light-mode .stg_floating_menu .floating-icon i {
+    color: #FFFFFF !important;
+}
+
+body.light-mode .stg_floating_menu .floating-text {
+    color: var(--stg-floating-menu-color) !important;
+}
+
+/* STG Floating Menu 반응형 */
+@media (max-width: 768px) {
+    .stg_floating_menu {
+        min-width: 70px !important;
+        padding: 8px !important;
+        flex-direction: column !important;
+        text-align: center !important;
+        border-radius: 14px !important;
+        margin: 0 !important;
+    }
+    
+    .stg_floating_menu .floating-icon {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 0.85rem !important;
+        margin-right: 0 !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .stg_floating_menu .floating-text {
+        font-size: 0.7rem !important;
+    }
+    
+    .stg_floating_menu:hover {
+        transform: translateY(-3px) !important;
+    }
+}
+
+/* ============================================
+   STG CARD SUB FORMAT CLASSES
+   서브 카드 스타일 (얇은 보라색 테두리)
+   ============================================ */
+
+.stg_card_sub_format,
+.card.stg_card_sub_format,
+div.stg_card_sub_format {
+    border: none !important;
+    border-radius: var(--stg-card-sub-border-radius) !important;
+    outline: 1.5px solid rgba(181, 126, 220, 0.55) !important;
+    outline-offset: 0px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+    transition: outline-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.stg_card_sub_format:hover,
+.card.stg_card_sub_format:hover,
+div.stg_card_sub_format:hover {
+    outline-color: rgba(181, 126, 220, 0.7) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12) !important;
+    transform: translateY(-6px);
+}
+
+/* Light Mode STG Card Sub Format */
+body.light-mode .stg_card_sub_format,
+body.light-mode .card.stg_card_sub_format,
+body.light-mode div.stg_card_sub_format {
+    border: none !important;
+    outline: 1.5px solid rgba(139, 92, 246, 0.35) !important;
+    outline-offset: 0px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06) !important;
+}
+
+body.light-mode .stg_card_sub_format:hover,
+body.light-mode .card.stg_card_sub_format:hover,
+body.light-mode div.stg_card_sub_format:hover {
+    outline-color: rgba(139, 92, 246, 0.5) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+    transform: translateY(-6px);
+}
+
+/* STG Card Format + Sub Format 결합 */
+.stg_card_format.stg_card_format--additional.stg_card_sub_format {
+    border: none !important;
+    border-radius: var(--stg-card-sub-border-radius) !important;
+    outline: 1.5px solid rgba(181, 126, 220, 0.55) !important;
+    outline-offset: 0px !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+}
+
+.stg_card_format.stg_card_format--additional.stg_card_sub_format::before {
+    display: none !important;
+}
+
+.stg_card_format.stg_card_format--additional.stg_card_sub_format:hover {
+    outline-color: rgba(181, 126, 220, 0.7) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12) !important;
+    transform: translateY(-6px) !important;
+}
+
+body.light-mode .stg_card_format.stg_card_format--additional.stg_card_sub_format {
+    border: none !important;
+    outline: 1.5px solid rgba(139, 92, 246, 0.35) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06) !important;
+}
+
+body.light-mode .stg_card_format.stg_card_format--additional.stg_card_sub_format::before {
+    display: none !important;
+}
+
+body.light-mode .stg_card_format.stg_card_format--additional.stg_card_sub_format:hover {
+    outline-color: rgba(139, 92, 246, 0.5) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+    transform: translateY(-6px) !important;
+}
+
+/* STG Card Sub Format 반응형 */
+@media (max-width: 768px) {
+    .stg_card_sub_format,
+    .card.stg_card_sub_format,
+    div.stg_card_sub_format {
+        border-radius: 20px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .stg_card_sub_format,
+    .card.stg_card_sub_format,
+    div.stg_card_sub_format {
+        border-radius: 16px !important;
+    }
+}
+
+/* ============================================
+   STG KAKAO FORMAT CLASSES
+   카카오톡 예약/문의 카드 스타일
+   ============================================ */
+
+.stg_kakao_format {
+    position: relative;
+    padding: 2rem 0;
+    text-align: center;
+}
+
+.stg_kakao_format::before {
+    display: none;
+}
+
+.stg_kakao_format .stg_kakao_content {
+    position: relative;
+    z-index: 1;
+}
+
+.stg_kakao_format .stg_kakao_text {
+    font-family: var(--stg-body-font-family) !important;
+    font-size: var(--stg-body-font-size) !important;
+    line-height: var(--stg-body-line-height) !important;
+    font-weight: var(--stg-body-font-weight) !important;
+    margin: var(--stg-body-margin) !important;
+    padding: var(--stg-body-padding) !important;
+    letter-spacing: 0.02em;
+}
+
+body.light-mode .stg_kakao_format .stg_kakao_text {
+    color: var(--stg-body-color-light);
+}
+
+.stg_kakao_format .stg_kakao_glow {
+    display: none;
+}
+
+/* STG Kakao Format 반응형 */
+@media (max-width: 768px) {
+    .stg_kakao_format {
+        padding: 1.5rem 0;
+    }
+    
+    .stg_kakao_format .stg_kakao_text {
+        font-family: var(--stg-body-font-family) !important;
+        font-size: var(--stg-body-font-size) !important;
+        line-height: var(--stg-body-line-height) !important;
+        margin: var(--stg-body-margin) !important;
+        padding: var(--stg-body-padding) !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .stg_kakao_format {
+        padding: 1rem 0;
+    }
+}
+
+
+
+

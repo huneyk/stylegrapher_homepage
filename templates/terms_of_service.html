@@ -11,6 +11,66 @@
             <div class="terms-content stg_body_text">
                 {{ terms.content | safe }}
                 
+                <!-- 서비스별 환불 조건 섹션 (제6조) -->
+                {% if refund_policies and refund_policies|length > 0 %}
+                <div class="refund-policies-section mt-5 pt-4 border-top" id="refund-article-6">
+                    <h2 class="section-title article-title">{{ _('제6조 서비스별 환불 조건') }}</h2>
+                    <p class="refund-intro stg_body_text">{{ _('각 서비스에 따라 환불 조건이 다르게 적용됩니다. 서비스 예약 전 아래 내용을 반드시 확인해 주세요.') }}</p>
+                    
+                    {% for policy in refund_policies %}
+                    <div class="refund-policy-card">
+                        <h3 class="refund-service-title">
+                            <span class="service-category">{{ policy.service_name }}</span>
+                            <span class="service-divider">·</span>
+                            <span class="service-option-name">{{ policy.option_name }}</span>
+                        </h3>
+                        
+                        {% if policy.refund_policy_text and policy.refund_policy_text.strip() %}
+                        <div class="refund-text-content">
+                            <ul class="refund-list">
+                                {% for line in policy.refund_policy_text.split('\n') %}
+                                {% if line.strip() %}
+                                <li class="stg_body_text">{{ line.strip() }}</li>
+                                {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                        
+                        {% if policy.refund_policy_table and policy.refund_policy_table.strip() %}
+                        {% set refund_rules = policy.refund_policy_table.split('\n') %}
+                        {% if refund_rules %}
+                        <h4 class="refund-table-subtitle">{{ _('환불 기준표') }}</h4>
+                        <div class="refund-table-container">
+                            <table class="stg_table">
+                                <thead>
+                                    <tr>
+                                        <th>{{ _('기준일') }}</th>
+                                        <th>{{ _('환불비율') }}</th>
+                                        <th>{{ _('비고') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for rule in refund_rules %}
+                                    {% if rule.strip() and '|' in rule %}
+                                    {% set parts = rule.split('|') %}
+                                    <tr>
+                                        <td class="stg_table_name">{{ parts[0].strip() }}</td>
+                                        <td>{{ parts[1].strip() }}</td>
+                                        <td class="stg_table_notes">{{ parts[2].strip() if parts|length > 2 else '' }}</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
                 <div class="terms-footer mt-5 pt-4 border-top">
                     <p class="text-center text-muted">
                         <small>
@@ -55,6 +115,173 @@
     word-break: keep-all;
     overflow-wrap: break-word;
     line-break: strict;
+}
+
+/* 환불 조건 섹션 스타일 */
+.refund-policies-section {
+    margin-top: 3rem !important;
+}
+
+.refund-intro {
+    margin-bottom: 2rem;
+    color: #6c757d;
+    line-height: 1.7;
+}
+
+.refund-policy-card {
+    background: rgba(181, 126, 220, 0.05);
+    border: 1px solid rgba(181, 126, 220, 0.15);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.refund-policy-card:hover {
+    border-color: rgba(181, 126, 220, 0.3);
+    box-shadow: 0 4px 15px rgba(181, 126, 220, 0.1);
+}
+
+.refund-service-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    color: #44237A;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px dashed rgba(181, 126, 220, 0.3);
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.service-category {
+    color: var(--main-color);
+    font-weight: 600;
+}
+
+.service-divider {
+    color: rgba(181, 126, 220, 0.5);
+}
+
+.service-option-name {
+    color: #44237A;
+}
+
+.refund-text-content {
+    margin-bottom: 1.5rem;
+}
+
+.refund-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.refund-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.7;
+    color: #4a4a4a;
+}
+
+.refund-list li::before {
+    content: "•";
+    color: #8B5CF6;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.refund-table-subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    color: #44237A;
+    font-weight: 400;
+    margin: 1rem 0 0.75rem 0;
+}
+
+.refund-table-container {
+    overflow-x: auto;
+    margin-top: 0.5rem;
+}
+
+.refund-table-container .stg_table {
+    width: 100%;
+    min-width: 400px;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.refund-table-container .stg_table thead,
+.refund-table-container .stg_table tbody {
+    display: table-row-group !important;
+}
+
+.refund-table-container .stg_table tr {
+    display: table-row !important;
+}
+
+.refund-table-container .stg_table th,
+.refund-table-container .stg_table td {
+    display: table-cell !important;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.refund-table-container .stg_table thead th {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.8), rgba(168, 85, 247, 0.8));
+    color: #fff;
+    font-weight: 500;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.refund-table-container .stg_table thead th:first-child {
+    width: 45%;
+    text-align: left;
+}
+
+.refund-table-container .stg_table thead th:nth-child(2) {
+    width: 25%;
+}
+
+.refund-table-container .stg_table thead th:nth-child(3) {
+    width: 30%;
+}
+
+.refund-table-container .stg_table tbody td {
+    border: 1px solid rgba(139, 92, 246, 0.15);
+    background: #fff;
+}
+
+.refund-table-container .stg_table tbody td:first-child {
+    text-align: left;
+}
+
+.refund-table-container .stg_table tbody tr:nth-child(even) td {
+    background: rgba(139, 92, 246, 0.03);
+}
+
+/* Light Mode 조정 */
+body.light-mode .refund-policy-card {
+    background: rgba(139, 92, 246, 0.03);
+    border-color: rgba(139, 92, 246, 0.12);
+}
+
+body.light-mode .refund-policy-card:hover {
+    border-color: rgba(139, 92, 246, 0.25);
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.08);
+}
+
+body.light-mode .refund-list li {
+    color: #4a4a4a;
+}
+
+body.light-mode .refund-list li::before {
+    color: #8B5CF6;
 }
 
 /* 이용약관 페이지용 stg_card_format 조정 - 본문 왼쪽 정렬 */
@@ -104,6 +331,45 @@ body.light-mode .container .stg_card_format .terms-content *,
     }
     
     /* terms-content 반응형은 stg_body_text로 통합됨 - style.css 참조 */
+    
+    /* 환불 조건 섹션 반응형 */
+    .refund-policy-card {
+        padding: 1rem 1.25rem;
+    }
+    
+    .refund-service-title {
+        font-size: 1.1rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+    
+    .service-divider {
+        display: none;
+    }
+    
+    .refund-table-container {
+        margin-left: -0.5rem;
+        margin-right: -0.5rem;
+    }
+    
+    .refund-table-container .stg_table th,
+    .refund-table-container .stg_table td {
+        padding: 0.5rem 0.5rem;
+        font-size: 0.85rem;
+    }
+    
+    .refund-table-container .stg_table thead th:first-child {
+        width: 40%;
+    }
+    
+    .refund-table-container .stg_table thead th:nth-child(2) {
+        width: 25%;
+    }
+    
+    .refund-table-container .stg_table thead th:nth-child(3) {
+        width: 35%;
+    }
 }
 </style>
 
@@ -131,6 +397,89 @@ document.addEventListener('DOMContentLoaded', function() {
     const cardContent = document.querySelector('.stg_card_content');
     if (cardFormat) cardFormat.style.setProperty('text-align', 'left', 'important');
     if (cardContent) cardContent.style.setProperty('text-align', 'left', 'important');
+    
+    // 제6조 환불 조건 섹션 배치 및 기존 조항 번호 조정
+    const refundSection = document.getElementById('refund-article-6');
+    if (refundSection && termsContent) {
+        // 기존 이용약관 내용에서 "제N조" 패턴을 찾아 번호 조정 (제6조 이상을 +1 증가)
+        const articlePattern = /제(\d+)조/g;
+        
+        // 모든 텍스트 노드와 요소를 순회하며 조항 번호 업데이트
+        function updateArticleNumbers(element) {
+            if (element.nodeType === Node.TEXT_NODE) {
+                const text = element.textContent;
+                const newText = text.replace(articlePattern, function(match, num) {
+                    const articleNum = parseInt(num);
+                    if (articleNum >= 6) {
+                        return '제' + (articleNum + 1) + '조';
+                    }
+                    return match;
+                });
+                if (text !== newText) {
+                    element.textContent = newText;
+                }
+            } else if (element.nodeType === Node.ELEMENT_NODE) {
+                // refund-policies-section은 건너뜀 (이미 제6조로 설정됨)
+                if (!element.classList.contains('refund-policies-section') && 
+                    !element.classList.contains('terms-footer')) {
+                    for (let child of element.childNodes) {
+                        updateArticleNumbers(child);
+                    }
+                }
+            }
+        }
+        
+        // terms.content 영역에서만 조항 번호 업데이트
+        // refund-policies-section과 terms-footer를 제외한 첫 번째 자식들만 처리
+        const childNodes = Array.from(termsContent.childNodes);
+        childNodes.forEach(function(child) {
+            if (child.nodeType === Node.ELEMENT_NODE) {
+                if (!child.classList.contains('refund-policies-section') && 
+                    !child.classList.contains('terms-footer')) {
+                    updateArticleNumbers(child);
+                }
+            } else if (child.nodeType === Node.TEXT_NODE) {
+                updateArticleNumbers(child);
+            }
+        });
+        
+        // 제5조 다음에 환불 조건 섹션 배치
+        // 모든 요소에서 "제5조" 또는 "제6조"(업데이트 후 제7조가 됨)를 포함하는 섹션 찾기
+        let article5Element = null;
+        let article5Section = null;
+        
+        // h2, h3, strong, b 등 제목 요소에서 제5조 찾기
+        const headingElements = termsContent.querySelectorAll('h1, h2, h3, h4, h5, h6, strong, b, p');
+        for (let el of headingElements) {
+            if (el.textContent.includes('제5조') || el.textContent.includes('第5条')) {
+                article5Element = el;
+                // 상위 섹션 요소 찾기 (div, section 등)
+                let parent = el.parentElement;
+                while (parent && parent !== termsContent) {
+                    if (parent.tagName === 'DIV' || parent.tagName === 'SECTION' || 
+                        parent.tagName === 'ARTICLE') {
+                        article5Section = parent;
+                    }
+                    parent = parent.parentElement;
+                }
+                break;
+            }
+        }
+        
+        // 제5조 섹션을 찾았으면 그 다음에 환불 섹션 배치
+        if (article5Section) {
+            article5Section.after(refundSection);
+        } else if (article5Element) {
+            // 섹션을 찾지 못했으면 제5조 요소 다음 형제 요소들 이후에 배치
+            let nextSibling = article5Element.nextElementSibling;
+            while (nextSibling && !nextSibling.textContent.includes('제7조')) {
+                nextSibling = nextSibling.nextElementSibling;
+            }
+            if (nextSibling) {
+                nextSibling.before(refundSection);
+            }
+        }
+    }
 });
 </script>
 {% endblock %} 
