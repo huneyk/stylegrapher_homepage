@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>패키지 화보 수정</h2>
+        <h2 style="color: #44237A;">패키지 화보 수정</h2>
         <a href="{{ url_for('admin.list_package_photos', service_option_id=package_photo.service_option_id) }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> 목록으로
         </a>
@@ -90,22 +90,6 @@
                     <a href="{{ url_for('admin.list_package_photos', service_option_id=package_photo.service_option_id) }}" 
                        class="btn btn-outline-secondary">취소</a>
                 </div>
-            </form>
-        </div>
-    </div>
-    
-    <!-- 삭제 영역 -->
-    <div class="card border-danger">
-        <div class="card-header bg-danger text-white">
-            <i class="bi bi-exclamation-triangle me-2"></i>위험 영역
-        </div>
-        <div class="card-body">
-            <p class="text-muted mb-3">패키지 화보를 삭제하면 모든 이미지도 함께 삭제됩니다. 이 작업은 되돌릴 수 없습니다.</p>
-            <form method="POST" action="{{ url_for('admin.delete_package_photo', id=package_photo.id) }}"
-                  onsubmit="return confirm('정말 이 패키지 화보를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')">
-                <button type="submit" class="btn btn-danger">
-                    <i class="bi bi-trash me-2"></i>패키지 화보 삭제
-                </button>
             </form>
         </div>
     </div>

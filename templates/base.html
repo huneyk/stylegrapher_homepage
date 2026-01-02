@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{% endblock %}Stylegrapher {{ _('스타일그래퍼') }}</title>
+    {% set page_title %}{% block title %}{% endblock %}{% endset %}
+    <title>{% if page_title|trim %}{{ page_title }} | {% endif %}{{ _('스타일그래퍼') }} Stylegrapher</title>
     <meta name="description" content="{% block meta_description %}{{ _('스타일그래퍼는 AI 얼굴분석, 퍼스널컬러 진단, 스타일링 컨설팅, 화보 및 프로필 촬영 서비스를 제공하는 전문 스타일링 스튜디오입니다.') }}{% endblock %}">
     
     <!-- SEO 메타 태그 -->
