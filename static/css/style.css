@@ -1989,7 +1989,7 @@ body.light-mode .kakao-btn-dark:hover {
 
 .team-photo {
     width: 100%;
-    max-width: 900px;
+    max-width: 700px;
     height: auto;
     border-radius: 16px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
