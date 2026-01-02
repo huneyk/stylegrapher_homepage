@@ -6,7 +6,10 @@ from flask_login import login_required, login_user, logout_user
 from extensions import login_manager
 from werkzeug.utils import secure_filename
 import os
-from PIL import Image
+from PIL import Image, ImageFile
+
+# 손상된 이미지도 처리할 수 있도록 설정
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 import json
 from datetime import datetime
 import pytz
@@ -31,7 +34,8 @@ from utils.mongo_models import (
     get_mongo_db, init_collections,
     User, Service, ServiceOption, GalleryGroup, Gallery,
     Booking, Inquiry, CollageText, SiteSettings,
-    TermsOfService, PrivacyPolicy, AdminNotificationEmail, CompanyInfo, AboutContent
+    TermsOfService, PrivacyPolicy, AdminNotificationEmail, CompanyInfo, AboutContent,
+    PackagePhoto, PackagePhotoCategory
 )
 
 # .env 파일 로드 (fork-safe: MongoDB 연결은 lazy하게 생성됨)
@@ -1089,11 +1093,13 @@ def get_image(image_id):
     try:
         # 1. GridFS에서 이미지 검색 시도
         try:
-            binary_data, content_type = get_image_from_gridfs(image_id)
+            binary_data, content_type, etag = get_image_from_gridfs(image_id)
             if binary_data:
                 response = make_response(binary_data)
                 response.headers.set('Content-Type', content_type)
                 response.headers.set('Cache-Control', 'public, max-age=86400')
+                if etag:
+                    response.headers.set('ETag', etag)
                 return response
         except Exception as gridfs_error:
             print(f"GridFS 조회 중 오류: {str(gridfs_error)}")
@@ -1811,5 +1817,393 @@ def export_sessions():
         print(f"Error exporting sessions: {str(e)}")
         flash('세션 데이터 내보내기 중 오류가 발생했습니다.', 'error')
         return redirect(url_for('admin.sessions_dashboard'))
+
+
+# ========== 패키지 화보 관리 ==========
+
+def save_package_photo_to_gridfs(file, package_photo_id=None):
+    """패키지 화보 이미지를 가로 400px로 리사이즈 후 GridFS에 저장 (OpenCV 사용)"""
+    import cv2
+    import numpy as np
+    
+    try:
+        file.seek(0)
+        filename = secure_filename(file.filename)
+        
+        # 원본 이미지 데이터 읽기
+        img_data = file.read()
+        original_size = len(img_data)
+        
+        # OpenCV로 이미지 디코딩 (PIL의 libjpeg 문제 우회)
+        nparr = np.frombuffer(img_data, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        
+        if img is None:
+            raise Exception("이미지 디코딩 실패")
+        
+        original_height, original_width = img.shape[:2]
+        
+        # 가로 800px 기준으로 리사이즈 (aspect ratio 유지)
+        target_width = 800
+        if original_width > target_width:
+            ratio = target_width / original_width
+            new_width = target_width
+            new_height = int(original_height * ratio)
+            resized_img = cv2.resize(img, (new_width, new_height), interpolation=cv2.INTER_LANCZOS4)
+        else:
+            resized_img = img
+            new_width, new_height = original_width, original_height
+        
+        # JPEG로 인코딩 (품질 85%)
+        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 85]
+        _, img_encoded = cv2.imencode('.jpg', resized_img, encode_param)
+        img_binary = img_encoded.tobytes()
+        compressed_size = len(img_binary)
+        content_type = 'image/jpeg'
+        
+        compression_ratio = (1 - compressed_size / original_size) * 100 if original_size > 0 else 0
+        print(f"PackagePhoto: 이미지 최적화 - {original_width}x{original_height} ({original_size/1024:.1f}KB) → "
+              f"{new_width}x{new_height} ({compressed_size/1024:.1f}KB) [{compression_ratio:.1f}% 절약]")
+        
+        
+        # GridFS에 저장
+        image_id = str(uuid.uuid4())
+        
+        gridfs, db, _ = get_mongo_connection()
+        if gridfs is None:
+            raise Exception("GridFS 연결 실패")
+        
+        metadata = {
+            'original_filename': filename,
+            'content_type': content_type,
+            'created_at': datetime.now(),
+            'width': new_width,
+            'height': new_height,
+            'storage_type': 'gridfs',
+            'usage': 'package_photo'
+        }
+        
+        if package_photo_id is not None:
+            metadata['package_photo_id'] = package_photo_id
+        
+        gridfs.put(
+            img_binary,
+            _id=image_id,
+            filename=filename,
+            content_type=content_type,
+            metadata=metadata
+        )
+        
+        print(f"PackagePhoto: 이미지 저장 완료 - ID: {image_id}")
+        return image_id
+        
+    except Exception as e:
+        print(f"PackagePhoto: 이미지 저장 오류 - {str(e)}")
+        raise
+
+
+@admin.route('/package-photos')
+@login_required
+def list_package_photos():
+    """패키지 화보 목록"""
+    try:
+        # 서비스 옵션 ID 필터 (기본값: 11 - 패키지 화보)
+        service_option_id = request.args.get('service_option_id', 11, type=int)
+        
+        package_photos = PackagePhoto.query_by_service_option(service_option_id, active_only=False)
+        service_options = ServiceOption.query_all()
+        
+        # 카테고리 동기화 및 순서 정보 가져오기
+        PackagePhotoCategory.sync_categories(service_option_id)
+        category_order_map = PackagePhotoCategory.get_category_order_map(service_option_id)
+        categories = PackagePhotoCategory.query_by_service_option(service_option_id)
+        
+        # 카테고리별로 그룹화
+        photos_by_category = {}
+        for photo in package_photos:
+            category = photo.category or '미분류'
+            if category not in photos_by_category:
+                photos_by_category[category] = []
+            photos_by_category[category].append(photo)
+        
+        # 카테고리 순서대로 정렬된 딕셔너리 생성
+        sorted_photos_by_category = {}
+        for cat in categories:
+            if cat.name in photos_by_category:
+                sorted_photos_by_category[cat.name] = photos_by_category[cat.name]
+        # 순서가 없는 카테고리도 추가 (미분류 등)
+        for cat_name in photos_by_category:
+            if cat_name not in sorted_photos_by_category:
+                sorted_photos_by_category[cat_name] = photos_by_category[cat_name]
+        
+        return render_template('admin/package_photos.html',
+                             package_photos=package_photos,
+                             photos_by_category=sorted_photos_by_category,
+                             categories=categories,
+                             service_options=service_options,
+                             current_service_option_id=service_option_id)
+    except Exception as e:
+        print(f"Error listing package photos: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        flash('패키지 화보 목록을 불러오는 중 오류가 발생했습니다.', 'error')
+        return render_template('admin/package_photos.html',
+                             package_photos=[],
+                             photos_by_category={},
+                             categories=[],
+                             service_options=[],
+                             current_service_option_id=11)
+
+
+@admin.route('/package-photos/category-order/<int:category_id>', methods=['POST'])
+@login_required
+def update_package_photo_category_order(category_id):
+    """패키지 화보 카테고리 순서 업데이트"""
+    try:
+        category = PackagePhotoCategory.get_or_404(category_id)
+        new_order = request.form.get('display_order', 0, type=int)
+        
+        if new_order < 0 or new_order > 999:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '표출 순서는 0~999 사이의 값이어야 합니다.'}), 400
+            flash('표출 순서는 0~999 사이의 값이어야 합니다.', 'error')
+            return redirect(url_for('admin.list_package_photos', service_option_id=category.service_option_id))
+        
+        category.display_order = new_order
+        category.updated_at = datetime.utcnow()
+        category.save()
+        
+        # 서비스 옵션 캐시 클리어 (프론트엔드 반영을 위해)
+        try:
+            from routes.main import clear_service_option_cache
+            clear_service_option_cache(category.service_option_id)
+        except Exception as cache_error:
+            print(f"⚠️ 캐시 클리어 실패 (무시 가능): {str(cache_error)}")
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({
+                'success': True,
+                'message': f'분류 "{category.name}"의 표출 순서가 {new_order}(으)로 업데이트되었습니다.',
+                'display_order': new_order
+            })
+        
+        flash(f'분류 "{category.name}"의 표출 순서가 {new_order}(으)로 업데이트되었습니다.')
+        return redirect(url_for('admin.list_package_photos', service_option_id=category.service_option_id))
+        
+    except Exception as e:
+        print(f"Error updating category order: {str(e)}")
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'message': str(e)}), 500
+        flash('카테고리 순서 업데이트 중 오류가 발생했습니다.', 'error')
+        return redirect(url_for('admin.list_package_photos'))
+
+
+@admin.route('/package-photos/add', methods=['GET', 'POST'])
+@login_required
+def add_package_photo():
+    """패키지 화보 추가"""
+    if request.method == 'POST':
+        try:
+            service_option_id = request.form.get('service_option_id', 11, type=int)
+            category = request.form.get('category', '').strip()
+            concept = request.form.get('concept', '').strip()
+            display_order = request.form.get('display_order', 0, type=int)
+            
+            if not category or not concept:
+                flash('분류와 컨셉명을 입력해주세요.', 'error')
+                return redirect(request.url)
+            
+            if 'images[]' not in request.files:
+                flash('이미지를 선택해주세요.', 'error')
+                return redirect(request.url)
+            
+            files = request.files.getlist('images[]')
+            if len(files) == 0 or (len(files) == 1 and files[0].filename == ''):
+                flash('이미지를 선택해주세요.', 'error')
+                return redirect(request.url)
+            
+            if len(files) > 20:
+                flash('최대 20개의 이미지만 업로드할 수 있습니다.', 'error')
+                return redirect(request.url)
+            
+            # 이미지를 먼저 업로드하고 성공한 경우에만 패키지 화보 생성
+            image_ids = []
+            try:
+                for file in files:
+                    if file and allowed_file(file.filename):
+                        image_id = save_package_photo_to_gridfs(file, None)  # 임시로 None 전달
+                        image_ids.append(image_id)
+                
+                if len(image_ids) == 0:
+                    flash('이미지 업로드에 실패했습니다. 이미지 파일을 확인해주세요.', 'error')
+                    return redirect(request.url)
+                    
+            except Exception as upload_error:
+                print(f"이미지 업로드 오류: {str(upload_error)}")
+                import traceback
+                traceback.print_exc()
+                # 업로드 실패 시 이미 업로드된 이미지 정리
+                for img_id in image_ids:
+                    try:
+                        delete_image_from_gridfs(img_id)
+                    except:
+                        pass
+                flash('이미지 업로드 중 오류가 발생했습니다. 다시 시도해주세요.', 'error')
+                return redirect(request.url)
+            
+            # 이미지 업로드 성공 후 패키지 화보 생성
+            package_photo = PackagePhoto(
+                service_option_id=service_option_id,
+                category=category,
+                concept=concept,
+                images=image_ids,
+                display_order=display_order,
+                is_active=True
+            )
+            package_photo.save()
+            
+            # 서비스 옵션 캐시 클리어 (프론트엔드 반영을 위해)
+            try:
+                from routes.main import clear_service_option_cache
+                clear_service_option_cache(service_option_id)
+            except Exception as cache_error:
+                print(f"⚠️ 캐시 클리어 실패 (무시 가능): {str(cache_error)}")
+            
+            flash(f'패키지 화보 "{concept}"이(가) 추가되었습니다. ({len(image_ids)}개 이미지)')
+            return redirect(url_for('admin.list_package_photos', service_option_id=service_option_id))
+            
+        except Exception as e:
+            print(f"Error adding package photo: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            flash('패키지 화보 추가 중 오류가 발생했습니다.', 'error')
+            return redirect(request.url)
+    
+    # GET 요청
+    service_options = ServiceOption.query_all()
+    service_option_id = request.args.get('service_option_id', 11, type=int)
+    
+    # 기존 카테고리 목록 가져오기
+    existing_categories = PackagePhoto.get_categories(service_option_id)
+    
+    return render_template('admin/add_package_photo.html',
+                         service_options=service_options,
+                         current_service_option_id=service_option_id,
+                         existing_categories=existing_categories)
+
+
+@admin.route('/package-photos/<int:id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_package_photo(id):
+    """패키지 화보 수정"""
+    try:
+        package_photo = PackagePhoto.get_or_404(id)
+        
+        if request.method == 'POST':
+            package_photo.category = request.form.get('category', '').strip()
+            package_photo.concept = request.form.get('concept', '').strip()
+            package_photo.display_order = request.form.get('display_order', 0, type=int)
+            package_photo.is_active = request.form.get('is_active') == 'on'
+            
+            # 새 이미지 추가
+            if 'images[]' in request.files:
+                files = request.files.getlist('images[]')
+                new_image_ids = []
+                for file in files:
+                    if file and file.filename and allowed_file(file.filename):
+                        image_id = save_package_photo_to_gridfs(file, package_photo.id)
+                        new_image_ids.append(image_id)
+                
+                if new_image_ids:
+                    package_photo.images = package_photo.images + new_image_ids
+            
+            package_photo.updated_at = datetime.utcnow()
+            package_photo.save()
+            
+            # 서비스 옵션 캐시 클리어 (프론트엔드 반영을 위해)
+            try:
+                from routes.main import clear_service_option_cache
+                clear_service_option_cache(package_photo.service_option_id)
+            except Exception as cache_error:
+                print(f"⚠️ 캐시 클리어 실패 (무시 가능): {str(cache_error)}")
+            
+            flash(f'패키지 화보 "{package_photo.concept}"이(가) 수정되었습니다.')
+            return redirect(url_for('admin.list_package_photos', service_option_id=package_photo.service_option_id))
+        
+        # GET 요청
+        service_options = ServiceOption.query_all()
+        existing_categories = PackagePhoto.get_categories(package_photo.service_option_id)
+        
+        return render_template('admin/edit_package_photo.html',
+                             package_photo=package_photo,
+                             service_options=service_options,
+                             existing_categories=existing_categories)
+                             
+    except Exception as e:
+        print(f"Error editing package photo: {str(e)}")
+        flash('패키지 화보 수정 중 오류가 발생했습니다.', 'error')
+        return redirect(url_for('admin.list_package_photos'))
+
+
+@admin.route('/package-photos/<int:id>/delete', methods=['POST'])
+@login_required
+def delete_package_photo(id):
+    """패키지 화보 삭제"""
+    try:
+        package_photo = PackagePhoto.get_or_404(id)
+        service_option_id = package_photo.service_option_id
+        concept = package_photo.concept
+        
+        # 관련 이미지 삭제
+        for image_id in package_photo.images:
+            try:
+                delete_image_from_gridfs(image_id)
+            except Exception as e:
+                print(f"이미지 삭제 오류 (무시): {image_id} - {str(e)}")
+        
+        package_photo.delete()
+        
+        # 서비스 옵션 캐시 클리어 (프론트엔드 반영을 위해)
+        try:
+            from routes.main import clear_service_option_cache
+            clear_service_option_cache(service_option_id)
+        except Exception as cache_error:
+            print(f"⚠️ 캐시 클리어 실패 (무시 가능): {str(cache_error)}")
+        
+        flash(f'패키지 화보 "{concept}"이(가) 삭제되었습니다.')
+        return redirect(url_for('admin.list_package_photos', service_option_id=service_option_id))
+        
+    except Exception as e:
+        print(f"Error deleting package photo: {str(e)}")
+        flash('패키지 화보 삭제 중 오류가 발생했습니다.', 'error')
+        return redirect(url_for('admin.list_package_photos'))
+
+
+@admin.route('/package-photos/<int:id>/delete-image/<image_id>', methods=['POST'])
+@login_required
+def delete_package_photo_image(id, image_id):
+    """패키지 화보에서 개별 이미지 삭제"""
+    try:
+        package_photo = PackagePhoto.get_or_404(id)
+        
+        if image_id in package_photo.images:
+            # GridFS에서 이미지 삭제
+            delete_image_from_gridfs(image_id)
+            
+            # 이미지 목록에서 제거
+            package_photo.images = [img for img in package_photo.images if img != image_id]
+            package_photo.updated_at = datetime.utcnow()
+            package_photo.save()
+            
+            flash('이미지가 삭제되었습니다.')
+        else:
+            flash('이미지를 찾을 수 없습니다.', 'error')
+            
+        return redirect(url_for('admin.edit_package_photo', id=id))
+        
+    except Exception as e:
+        print(f"Error deleting package photo image: {str(e)}")
+        flash('이미지 삭제 중 오류가 발생했습니다.', 'error')
+        return redirect(url_for('admin.edit_package_photo', id=id))
 
 

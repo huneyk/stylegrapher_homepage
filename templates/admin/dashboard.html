@@ -14,7 +14,7 @@
     </div>
 
     <div class="row g-4">
-        <!-- 그룹 1: 콘텐츠 관리 (서비스 관리 - 갤러리 관리) -->
+        <!-- 그룹 1: 콘텐츠 관리 (서비스 관리 - 갤러리 관리 - 패키지 화보 관리) -->
         <div class="col-12">
             <div class="card shadow-sm group-card">
                 <div class="card-header group-card-header">
@@ -23,7 +23,7 @@
                 <div class="card-body">
                     <div class="row g-3">
                         <!-- 서비스 관리 카드 -->
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="card h-100 shadow-sm inner-card">
                                 <div class="card-body">
                                     <h5 class="card-title">
@@ -39,7 +39,7 @@
                             </div>
                         </div>
                         <!-- 갤러리 관리 카드 -->
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="card h-100 shadow-sm inner-card">
                                 <div class="card-body">
                                     <h5 class="card-title">
@@ -52,6 +52,25 @@
                                         </a>
                                         <a href="{{ url_for('admin.list_gallery') }}" class="btn btn-outline-primary">
                                             <i class="bi bi-gear me-2"></i>갤러리 관리
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 패키지 화보 관리 카드 -->
+                        <div class="col-md-4">
+                            <div class="card h-100 shadow-sm inner-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="bi bi-camera-fill me-2"></i>패키지 화보 관리
+                                    </h5>
+                                    <p class="card-text text-muted">패키지 화보 컨셉별 이미지를 관리합니다.</p>
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('admin.add_package_photo') }}" class="btn btn-outline-primary">
+                                            <i class="bi bi-plus-lg me-2"></i>화보 추가
+                                        </a>
+                                        <a href="{{ url_for('admin.list_package_photos') }}" class="btn btn-outline-primary">
+                                            <i class="bi bi-collection me-2"></i>화보 관리
                                         </a>
                                     </div>
                                 </div>

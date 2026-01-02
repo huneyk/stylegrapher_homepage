@@ -13,6 +13,66 @@
                     <p class="service-subtitle">{{ translated.detailed_description or translated.description if translated else (service_option.detailed_description or service_option.description) }}</p>
                 </div>
                 
+                <!-- 패키지 화보 갤러리 (Carousel) -->
+                {% if photos_by_category %}
+                <div class="package-photo-gallery mb-5">
+                    {% for category, photos in photos_by_category.items() %}
+                    <div class="package-photo-category mb-4">
+                        <h3 class="category-title stg_card_title">
+                            <i class="bi bi-camera me-2"></i>{{ category }}
+                        </h3>
+                        <div class="row g-4">
+                            {% for photo in photos %}
+                            <div class="col-md-6 col-lg-4">
+                                <div class="package-photo-card">
+                                    <h4 class="concept-title">{{ photo.concept }}</h4>
+                                    {% if photo.images %}
+                                    <div id="packagePhotoCarousel{{ photo.id }}" class="carousel slide package-carousel" data-bs-ride="carousel">
+                                        <div class="carousel-inner">
+                                            {% for image_id in photo.images %}
+                                            <div class="carousel-item {% if loop.first %}active{% endif %}">
+                                                <img src="{{ url_for('main.serve_package_photo_image', image_id=image_id) }}" 
+                                                     class="d-block w-100 package-carousel-img" 
+                                                     alt="{{ photo.concept }} - {{ loop.index }}"
+                                                     loading="lazy">
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        {% if photo.images|length > 1 %}
+                                        <button class="carousel-control-prev" type="button" 
+                                                data-bs-target="#packagePhotoCarousel{{ photo.id }}" data-bs-slide="prev">
+                                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                            <span class="visually-hidden">Previous</span>
+                                        </button>
+                                        <button class="carousel-control-next" type="button" 
+                                                data-bs-target="#packagePhotoCarousel{{ photo.id }}" data-bs-slide="next">
+                                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                            <span class="visually-hidden">Next</span>
+                                        </button>
+                                        <div class="carousel-indicators package-carousel-indicators">
+                                            {% for image_id in photo.images %}
+                                            <button type="button" 
+                                                    data-bs-target="#packagePhotoCarousel{{ photo.id }}" 
+                                                    data-bs-slide-to="{{ loop.index0 }}" 
+                                                    {% if loop.first %}class="active" aria-current="true"{% endif %}
+                                                    aria-label="Slide {{ loop.index }}"></button>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="photo-count">
+                                        <i class="bi bi-images me-1"></i>{{ photo.images|length }}{{ _('장') }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
                 <!-- 상세 내용 - 원본이 비어있으면 표시하지 않음 -->
                 {% if service_option.details and service_option.details.strip() and details %}
                 <div class="mb-5">
@@ -374,6 +434,181 @@
 <style>
 .service-detail-page {
     min-height: 100vh;
+}
+
+/* 패키지 화보 갤러리 */
+.package-photo-gallery {
+    margin-top: 2rem;
+}
+
+.package-photo-category {
+    margin-bottom: 2rem;
+}
+
+.category-title.stg_card_title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem !important;
+    color: rgb(139, 92, 246) !important;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    padding: 0.75rem 1rem !important;
+    background: #ffffff !important;
+    border-radius: 8px;
+    border: 1px solid rgba(139, 92, 246, 0.2) !important;
+    display: flex;
+    align-items: center;
+}
+
+.category-title.stg_card_title i {
+    color: rgb(139, 92, 246) !important;
+}
+
+.package-photo-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(139, 95, 191, 0.1);
+    border: 1px solid rgba(181, 126, 220, 0.2);
+    transition: all 0.3s ease;
+}
+
+.package-photo-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(139, 95, 191, 0.2);
+    border-color: rgba(181, 126, 220, 0.4);
+}
+
+.concept-title {
+    font-family: 'Nanum Gothic', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #44237A;
+    padding: 1rem 1rem 0.5rem 1rem;
+    margin: 0;
+    text-align: center;
+}
+
+.package-carousel {
+    position: relative;
+}
+
+.package-carousel-img {
+    height: 300px;
+    object-fit: cover;
+    border-radius: 0;
+}
+
+.package-carousel .carousel-control-prev,
+.package-carousel .carousel-control-next {
+    width: 40px;
+    height: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    background: rgba(139, 95, 191, 0.7);
+    border-radius: 50%;
+}
+
+.package-carousel:hover .carousel-control-prev,
+.package-carousel:hover .carousel-control-next {
+    opacity: 1;
+}
+
+.package-carousel .carousel-control-prev {
+    left: 10px;
+}
+
+.package-carousel .carousel-control-next {
+    right: 10px;
+}
+
+.package-carousel .carousel-control-prev-icon,
+.package-carousel .carousel-control-next-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+.package-carousel-indicators {
+    position: relative;
+    bottom: auto;
+    margin: 0.75rem 0;
+    justify-content: center;
+}
+
+.package-carousel-indicators button {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: rgba(181, 126, 220, 0.4);
+    margin: 0 4px;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.package-carousel-indicators button.active {
+    background-color: #8B5CF6;
+    transform: scale(1.2);
+}
+
+.photo-count {
+    font-size: 0.85rem;
+    color: #6c757d;
+    text-align: center;
+    padding: 0.5rem;
+    border-top: 1px solid rgba(181, 126, 220, 0.1);
+}
+
+/* Dark Mode - Package Photo Gallery */
+body:not(.light-mode) .category-title.stg_card_title {
+    color: rgb(139, 92, 246) !important;
+    background: #ffffff !important;
+    border-color: rgba(139, 92, 246, 0.3) !important;
+}
+
+body:not(.light-mode) .category-title.stg_card_title i {
+    color: rgb(139, 92, 246) !important;
+}
+
+body:not(.light-mode) .package-photo-card {
+    background: rgba(30, 20, 40, 0.9);
+    border-color: rgba(181, 126, 220, 0.3);
+}
+
+body:not(.light-mode) .package-photo-card:hover {
+    border-color: rgba(181, 126, 220, 0.6);
+    box-shadow: 0 8px 30px rgba(181, 126, 220, 0.3);
+}
+
+body:not(.light-mode) .concept-title {
+    color: #C8AAFF;
+}
+
+body:not(.light-mode) .photo-count {
+    color: rgba(255, 255, 255, 0.6);
+    border-top-color: rgba(181, 126, 220, 0.2);
+}
+
+/* Responsive - Package Photo Gallery */
+@media (max-width: 768px) {
+    .package-carousel-img {
+        height: 250px;
+    }
+    
+    .category-title.stg_card_title {
+        font-size: 1.3rem !important;
+    }
+    
+    .concept-title {
+        font-size: 1rem;
+    }
+    
+    .package-carousel .carousel-control-prev,
+    .package-carousel .carousel-control-next {
+        opacity: 0.8;
+        width: 35px;
+        height: 35px;
+    }
 }
 
 /* Service Header */

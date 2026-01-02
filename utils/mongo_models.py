@@ -128,6 +128,13 @@ def init_collections():
     db.admin_notification_emails.create_index('email', unique=True)
     db.admin_notification_emails.create_index('is_active')
     
+    # package_photos 컬렉션
+    if 'package_photos' not in db.list_collection_names():
+        db.create_collection('package_photos')
+    db.package_photos.create_index('service_option_id')
+    db.package_photos.create_index([('service_option_id', ASCENDING), ('category', ASCENDING)])
+    db.package_photos.create_index([('service_option_id', ASCENDING), ('display_order', ASCENDING)])
+    
     print("MongoDB 컬렉션 및 인덱스 초기화 완료")
 
 
@@ -862,6 +869,130 @@ class AboutContent(MongoModel):
         parts.append(f"\n## 스타일그래퍼의 경험\n{self.experience}")
         parts.append(f"\n## 스타일그래퍼의 사명\n{self.mission}")
         return "\n\n".join(parts)
+
+
+class PackagePhoto(MongoModel):
+    """패키지 화보 모델 - 서비스 옵션별 화보 갤러리"""
+    collection_name = 'package_photos'
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.service_option_id = kwargs.get('service_option_id')  # 연결된 서비스 옵션 ID
+        self.category = kwargs.get('category', '')  # 분류 (예: 환생 화보, 린's Pick 화보)
+        self.concept = kwargs.get('concept', '')  # 컨셉명
+        self.images = kwargs.get('images', [])  # GridFS 이미지 ID 목록
+        self.display_order = kwargs.get('display_order', 0)  # 표시 순서
+        self.is_active = kwargs.get('is_active', True)  # 활성화 상태
+        self.created_at = kwargs.get('created_at', datetime.utcnow())
+        self.updated_at = kwargs.get('updated_at', datetime.utcnow())
+        self._service_option = None
+    
+    @property
+    def service_option(self):
+        """연결된 서비스 옵션 조회"""
+        if self._service_option is None and self.service_option_id:
+            self._service_option = ServiceOption.get_by_id(self.service_option_id)
+        return self._service_option
+    
+    @classmethod
+    def query_by_service_option(cls, service_option_id, active_only=True):
+        """서비스 옵션별 패키지 화보 조회 (순서 정렬)"""
+        collection = cls.get_collection()
+        filter_query = {'service_option_id': service_option_id}
+        if active_only:
+            filter_query['is_active'] = True
+        docs = collection.find(filter_query).sort([('display_order', ASCENDING), ('created_at', DESCENDING)])
+        return [cls.from_doc(doc) for doc in docs]
+    
+    @classmethod
+    def query_by_category(cls, service_option_id, category, active_only=True):
+        """특정 분류의 패키지 화보 조회"""
+        collection = cls.get_collection()
+        filter_query = {'service_option_id': service_option_id, 'category': category}
+        if active_only:
+            filter_query['is_active'] = True
+        docs = collection.find(filter_query).sort([('display_order', ASCENDING), ('created_at', DESCENDING)])
+        return [cls.from_doc(doc) for doc in docs]
+    
+    @classmethod
+    def get_categories(cls, service_option_id):
+        """서비스 옵션에 등록된 분류 목록 조회"""
+        collection = cls.get_collection()
+        pipeline = [
+            {'$match': {'service_option_id': service_option_id, 'is_active': True}},
+            {'$group': {'_id': '$category'}},
+            {'$sort': {'_id': 1}}
+        ]
+        result = list(collection.aggregate(pipeline))
+        return [doc['_id'] for doc in result if doc['_id']]
+    
+    @classmethod
+    def query_all_ordered(cls):
+        """모든 패키지 화보 조회 (관리자용)"""
+        collection = cls.get_collection()
+        docs = collection.find().sort([('service_option_id', ASCENDING), ('category', ASCENDING), ('display_order', ASCENDING)])
+        return [cls.from_doc(doc) for doc in docs]
+
+
+class PackagePhotoCategory(MongoModel):
+    """패키지 화보 카테고리 모델 - 분류별 표출 순서 관리"""
+    collection_name = 'package_photo_categories'
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.service_option_id = kwargs.get('service_option_id')  # 연결된 서비스 옵션 ID
+        self.name = kwargs.get('name', '')  # 카테고리명 (예: 린님 화보, 환생 화보)
+        self.display_order = kwargs.get('display_order', 0)  # 표시 순서
+        self.created_at = kwargs.get('created_at', datetime.utcnow())
+        self.updated_at = kwargs.get('updated_at', datetime.utcnow())
+    
+    @classmethod
+    def query_by_service_option(cls, service_option_id):
+        """서비스 옵션별 카테고리 조회 (순서 정렬)"""
+        collection = cls.get_collection()
+        docs = collection.find({'service_option_id': service_option_id}).sort('display_order', ASCENDING)
+        return [cls.from_doc(doc) for doc in docs]
+    
+    @classmethod
+    def get_by_name(cls, service_option_id, name):
+        """서비스 옵션과 이름으로 카테고리 조회"""
+        collection = cls.get_collection()
+        doc = collection.find_one({'service_option_id': service_option_id, 'name': name})
+        return cls.from_doc(doc) if doc else None
+    
+    @classmethod
+    def get_or_create(cls, service_option_id, name):
+        """카테고리 조회 또는 생성"""
+        existing = cls.get_by_name(service_option_id, name)
+        if existing:
+            return existing
+        
+        # 새 카테고리 생성 - 가장 큰 순서 + 1
+        categories = cls.query_by_service_option(service_option_id)
+        max_order = max([c.display_order for c in categories]) if categories else -1
+        
+        new_category = cls(
+            service_option_id=service_option_id,
+            name=name,
+            display_order=max_order + 1
+        )
+        new_category.save()
+        return new_category
+    
+    @classmethod
+    def get_category_order_map(cls, service_option_id):
+        """카테고리별 표출 순서 맵 반환 {카테고리명: 순서}"""
+        categories = cls.query_by_service_option(service_option_id)
+        return {cat.name: cat.display_order for cat in categories}
+    
+    @classmethod
+    def sync_categories(cls, service_option_id):
+        """PackagePhoto의 카테고리와 동기화 - 없는 카테고리 자동 생성"""
+        # 현재 사용 중인 카테고리 목록
+        photo_categories = PackagePhoto.get_categories(service_option_id)
+        
+        for cat_name in photo_categories:
+            cls.get_or_create(service_option_id, cat_name)
 
 
 class AdminNotificationEmail(MongoModel):

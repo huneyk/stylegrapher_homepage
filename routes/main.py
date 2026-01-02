@@ -19,7 +19,7 @@ from utils.mongo_models import (
     Service, ServiceOption, GalleryGroup, Gallery,
     Booking, Inquiry, CollageText,
     TermsOfService, PrivacyPolicy, get_next_id,
-    AdminNotificationEmail, AboutContent
+    AdminNotificationEmail, AboutContent, PackagePhoto, PackagePhotoCategory
 )
 from utils.translation_helper import (
     get_current_language, 
@@ -390,11 +390,37 @@ def service_option_detail(id):
     details = translated.get('details', [])
     packages = translated.get('packages', [])
     
+    # 패키지 화보 조회 (활성화된 것만)
+    package_photos = PackagePhoto.query_by_service_option(id, active_only=True)
+    
+    # 카테고리 순서 정보 가져오기
+    categories = PackagePhotoCategory.query_by_service_option(id)
+    
+    # 카테고리별로 그룹화
+    photos_by_category = {}
+    for photo in package_photos:
+        category = photo.category or '기타'
+        if category not in photos_by_category:
+            photos_by_category[category] = []
+        photos_by_category[category].append(photo)
+    
+    # 카테고리 순서대로 정렬된 딕셔너리 생성
+    sorted_photos_by_category = {}
+    for cat in categories:
+        if cat.name in photos_by_category:
+            sorted_photos_by_category[cat.name] = photos_by_category[cat.name]
+    # 순서가 없는 카테고리도 추가
+    for cat_name in photos_by_category:
+        if cat_name not in sorted_photos_by_category:
+            sorted_photos_by_category[cat_name] = photos_by_category[cat_name]
+    
     return render_template('service_option_detail.html', 
                          service_option=service_option,
                          translated=translated,
                          details=details,
-                         packages=packages)
+                         packages=packages,
+                         package_photos=package_photos,
+                         photos_by_category=sorted_photos_by_category)
 
 
 @main.route('/image/<path:image_path>')
@@ -456,6 +482,41 @@ def serve_image(image_path):
         
     except Exception as e:
         print(f"이미지 서빙 오류: {str(e)}")
+        return "Image serving error", 500
+
+
+@main.route('/package-photo-image/<image_id>')
+def serve_package_photo_image(image_id):
+    """패키지 화보 이미지 서빙 (GridFS)"""
+    try:
+        cache_headers = {
+            'Cache-Control': 'public, max-age=2592000, immutable',
+            'Vary': 'Accept-Encoding'
+        }
+        
+        binary_data, content_type, etag = get_image_from_gridfs(image_id)
+        if binary_data:
+            # ETag 기반 조건부 요청 처리
+            if etag:
+                client_etag = request.headers.get('If-None-Match')
+                if client_etag and client_etag.strip('"') == etag:
+                    response = make_response('', 304)
+                    response.headers['ETag'] = f'"{etag}"'
+                    response.headers['Cache-Control'] = cache_headers['Cache-Control']
+                    return response
+            
+            response = make_response(binary_data)
+            response.headers['Content-Type'] = content_type
+            if etag:
+                response.headers['ETag'] = f'"{etag}"'
+            for key, value in cache_headers.items():
+                response.headers[key] = value
+            return response
+        
+        return "Image not found", 404
+        
+    except Exception as e:
+        print(f"패키지 화보 이미지 서빙 오류: {str(e)}")
         return "Image serving error", 500
 
 

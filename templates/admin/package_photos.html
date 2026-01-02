@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block title %}패키지 화보 관리{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>패키지 화보 관리</h2>
+        <div>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-primary me-2">
+                <i class="bi bi-house-door"></i> 관리자 대시보드
+            </a>
+            <a href="{{ url_for('admin.add_package_photo', service_option_id=current_service_option_id) }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> 새 화보 추가
+            </a>
+        </div>
+    </div>
+
+    <!-- 서비스 옵션 선택 -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('admin.list_package_photos') }}" class="row g-3 align-items-end">
+                <div class="col-md-6">
+                    <label class="form-label">서비스 옵션 선택</label>
+                    <select name="service_option_id" class="form-select" onchange="this.form.submit()">
+                        {% for option in service_options %}
+                        <option value="{{ option.id }}" {% if option.id == current_service_option_id %}selected{% endif %}>
+                            {{ option.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 안내 메시지 -->
+    <div class="alert alert-info mb-4">
+        <i class="bi bi-info-circle me-2"></i>
+        <strong>패키지 화보 관리 안내:</strong><br>
+        • <strong>분류:</strong> 화보의 카테고리입니다. (예: 환생 화보, 린's Pick 화보)<br>
+        • <strong>컨셉:</strong> 각 화보의 고유 컨셉명입니다.<br>
+        • <strong>이미지:</strong> 업로드 시 자동으로 가로 400px로 리사이즈됩니다.<br>
+        • <strong>Carousel:</strong> 서비스 상세 페이지에서 Carousel 형태로 표시됩니다.
+    </div>
+
+    <!-- 분류별 표출 순서 관리 -->
+    {% if categories %}
+    <div class="card mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-sort-numeric-up me-2"></i>분류별 표출 순서 관리
+            </h5>
+        </div>
+        <div class="card-body">
+            <p class="text-muted mb-3">
+                <i class="bi bi-info-circle me-1"></i>숫자가 작을수록 먼저 표시됩니다. 순서를 변경한 후 저장 버튼을 클릭하세요.
+            </p>
+            <div class="row g-3">
+                {% for cat in categories %}
+                <div class="col-md-4 col-lg-3">
+                    <div class="card h-100">
+                        <div class="card-body py-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="number" 
+                                       class="form-control form-control-sm category-order-input" 
+                                       style="width: 70px;" 
+                                       value="{{ cat.display_order }}" 
+                                       min="0" max="999"
+                                       data-category-id="{{ cat.id }}"
+                                       data-original-value="{{ cat.display_order }}">
+                                <span class="flex-grow-1 text-truncate" title="{{ cat.name }}">{{ cat.name }}</span>
+                                <button type="button" 
+                                        class="btn btn-outline-primary btn-sm save-category-order-btn" 
+                                        data-category-id="{{ cat.id }}"
+                                        style="display: none;">
+                                    <i class="bi bi-check"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 카테고리별 화보 목록 -->
+    {% if photos_by_category %}
+        {% for category, photos in photos_by_category.items() %}
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-collection me-2"></i>{{ category }}
+                    <span class="badge bg-light text-dark ms-2">{{ photos|length }}개 컨셉</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    {% for photo in photos %}
+                    <div class="col-md-4">
+                        <div class="card h-100 {% if not photo.is_active %}border-secondary{% endif %}">
+                            {% if not photo.is_active %}
+                            <div class="card-header bg-secondary text-white py-1">
+                                <small><i class="bi bi-eye-slash me-1"></i>비활성화</small>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- 이미지 Carousel -->
+                            {% if photo.images %}
+                            <div id="packageCarousel{{ photo.id }}" class="carousel slide">
+                                <div class="carousel-inner">
+                                    {% for image_id in photo.images %}
+                                    <div class="carousel-item {% if loop.first %}active{% endif %}">
+                                        <img src="/admin/image/{{ image_id }}" 
+                                             class="d-block w-100 package-photo-img" 
+                                             alt="{{ photo.concept }}">
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% if photo.images|length > 1 %}
+                                <button class="carousel-control-prev" type="button" 
+                                        data-bs-target="#packageCarousel{{ photo.id }}" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon"></span>
+                                </button>
+                                <button class="carousel-control-next" type="button" 
+                                        data-bs-target="#packageCarousel{{ photo.id }}" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon"></span>
+                                </button>
+                                <div class="carousel-indicators">
+                                    {% for image_id in photo.images %}
+                                    <button type="button" data-bs-target="#packageCarousel{{ photo.id }}" 
+                                            data-bs-slide-to="{{ loop.index0 }}" 
+                                            {% if loop.first %}class="active"{% endif %}></button>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="card-body">
+                                <h5 class="card-title">{{ photo.concept }}</h5>
+                                <p class="card-text">
+                                    <small class="text-muted">
+                                        <i class="bi bi-images me-1"></i>{{ photo.images|length }}장
+                                        <span class="ms-2"><i class="bi bi-sort-numeric-up me-1"></i>순서: {{ photo.display_order }}</span>
+                                    </small>
+                                </p>
+                                <div class="d-flex gap-2">
+                                    <a href="{{ url_for('admin.edit_package_photo', id=photo.id) }}" 
+                                       class="btn btn-outline-primary btn-sm flex-grow-1">
+                                        <i class="bi bi-pencil"></i> 수정
+                                    </a>
+                                    <form method="POST" action="{{ url_for('admin.delete_package_photo', id=photo.id) }}" 
+                                          class="d-inline" onsubmit="return confirm('정말 삭제하시겠습니까?')">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-images text-muted" style="font-size: 3rem;"></i>
+        <h4 class="text-muted mt-3">등록된 패키지 화보가 없습니다</h4>
+        <p class="text-muted">새 패키지 화보를 추가해보세요.</p>
+        <a href="{{ url_for('admin.add_package_photo', service_option_id=current_service_option_id) }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-2"></i>패키지 화보 추가
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.package-photo-img {
+    height: 200px;
+    object-fit: cover;
+}
+
+.card.border-secondary {
+    opacity: 0.7;
+}
+
+.carousel-indicators {
+    position: relative;
+    bottom: auto;
+    margin: 0.5rem 0;
+}
+
+.carousel-indicators button {
+    background-color: #8b5fbf;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin: 0 4px;
+}
+
+.carousel-indicators button.active {
+    background-color: #5a3d7a;
+}
+
+.category-order-input:focus {
+    border-color: #8b5fbf;
+    box-shadow: 0 0 0 0.2rem rgba(139, 95, 191, 0.25);
+}
+
+.category-order-input.changed {
+    border-color: #ffc107;
+    background-color: #fffbeb;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 분류 순서 변경 감지
+    document.querySelectorAll('.category-order-input').forEach(function(input) {
+        input.addEventListener('input', function() {
+            const categoryId = this.getAttribute('data-category-id');
+            const originalValue = this.getAttribute('data-original-value');
+            const saveBtn = document.querySelector('.save-category-order-btn[data-category-id="' + categoryId + '"]');
+            
+            if (this.value !== originalValue) {
+                this.classList.add('changed');
+                saveBtn.style.display = 'inline-block';
+            } else {
+                this.classList.remove('changed');
+                saveBtn.style.display = 'none';
+            }
+        });
+    });
+    
+    // 분류 순서 저장
+    document.querySelectorAll('.save-category-order-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const categoryId = this.getAttribute('data-category-id');
+            const input = document.querySelector('.category-order-input[data-category-id="' + categoryId + '"]');
+            const newOrder = input.value;
+            
+            // AJAX로 저장
+            const formData = new FormData();
+            formData.append('display_order', newOrder);
+            
+            fetch('/admin/package-photos/category-order/' + categoryId, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    input.setAttribute('data-original-value', newOrder);
+                    input.classList.remove('changed');
+                    btn.style.display = 'none';
+                    
+                    // 성공 피드백
+                    input.style.borderColor = '#28a745';
+                    setTimeout(function() {
+                        input.style.borderColor = '';
+                        // 페이지 새로고침하여 정렬 반영
+                        location.reload();
+                    }, 500);
+                } else {
+                    alert('오류: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('저장 중 오류가 발생했습니다.');
+            });
+        });
+    });
+});
+</script>
+{% endblock %}
+

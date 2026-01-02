@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}패키지 화보 수정{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>패키지 화보 수정</h2>
+        <a href="{{ url_for('admin.list_package_photos', service_option_id=package_photo.service_option_id) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> 목록으로
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                <!-- 분류 -->
+                <div class="mb-3">
+                    <label class="form-label">분류 <span class="text-danger">*</span></label>
+                    <input type="text" name="category" class="form-control" 
+                           list="categoryList" value="{{ package_photo.category }}" required>
+                    <datalist id="categoryList">
+                        {% for cat in existing_categories %}
+                        <option value="{{ cat }}">
+                        {% endfor %}
+                    </datalist>
+                </div>
+                
+                <!-- 컨셉명 -->
+                <div class="mb-3">
+                    <label class="form-label">컨셉명 <span class="text-danger">*</span></label>
+                    <input type="text" name="concept" class="form-control" 
+                           value="{{ package_photo.concept }}" required>
+                </div>
+                
+                <!-- 표출 순서 -->
+                <div class="mb-3">
+                    <label class="form-label">표출 순서</label>
+                    <input type="number" name="display_order" class="form-control" 
+                           value="{{ package_photo.display_order }}" min="0" max="999">
+                </div>
+                
+                <!-- 활성화 상태 -->
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input type="checkbox" name="is_active" class="form-check-input" 
+                               id="isActive" {% if package_photo.is_active %}checked{% endif %}>
+                        <label class="form-check-label" for="isActive">활성화 (체크 해제 시 페이지에 표시되지 않음)</label>
+                    </div>
+                </div>
+                
+                <!-- 기존 이미지 -->
+                <div class="mb-4">
+                    <label class="form-label">현재 이미지 ({{ package_photo.images|length }}장)</label>
+                    <div class="row g-2">
+                        {% for image_id in package_photo.images %}
+                        <div class="col-4 col-md-2">
+                            <div class="position-relative">
+                                <img src="/admin/image/{{ image_id }}" 
+                                     class="img-thumbnail" 
+                                     style="height: 100px; width: 100%; object-fit: cover;">
+                                <button type="button" class="btn btn-danger btn-sm p-1 position-absolute top-0 end-0 delete-image-btn"
+                                        data-delete-url="{{ url_for('admin.delete_package_photo_image', id=package_photo.id, image_id=image_id) }}">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                                <span class="position-absolute bottom-0 start-0 badge bg-primary">{{ loop.index }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- 새 이미지 추가 -->
+                <div class="mb-4">
+                    <label class="form-label">새 이미지 추가</label>
+                    <input type="file" name="images[]" class="form-control" 
+                           accept="image/*" multiple id="imageInput">
+                    <small class="text-muted">
+                        새로 추가할 이미지를 선택하세요. 기존 이미지 뒤에 추가됩니다.
+                    </small>
+                    
+                    <!-- 미리보기 -->
+                    <div id="imagePreview" class="row g-2 mt-2"></div>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1">
+                        <i class="bi bi-check-lg me-2"></i>저장
+                    </button>
+                    <a href="{{ url_for('admin.list_package_photos', service_option_id=package_photo.service_option_id) }}" 
+                       class="btn btn-outline-secondary">취소</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 삭제 영역 -->
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+            <i class="bi bi-exclamation-triangle me-2"></i>위험 영역
+        </div>
+        <div class="card-body">
+            <p class="text-muted mb-3">패키지 화보를 삭제하면 모든 이미지도 함께 삭제됩니다. 이 작업은 되돌릴 수 없습니다.</p>
+            <form method="POST" action="{{ url_for('admin.delete_package_photo', id=package_photo.id) }}"
+                  onsubmit="return confirm('정말 이 패키지 화보를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')">
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash me-2"></i>패키지 화보 삭제
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('imageInput').addEventListener('change', function(e) {
+    const preview = document.getElementById('imagePreview');
+    preview.innerHTML = '';
+    
+    const files = e.target.files;
+    
+    Array.from(files).forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const col = document.createElement('div');
+            col.className = 'col-3 col-md-2';
+            col.innerHTML = `
+                <div class="position-relative">
+                    <img src="${e.target.result}" class="img-thumbnail" style="height: 80px; width: 100%; object-fit: cover;">
+                    <span class="position-absolute top-0 start-0 badge bg-success">+${index + 1}</span>
+                </div>
+            `;
+            preview.appendChild(col);
+        };
+        reader.readAsDataURL(file);
+    });
+});
+
+// 이미지 삭제 버튼 처리 (폼 중첩 방지를 위해 JavaScript로 처리)
+document.querySelectorAll('.delete-image-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        if (confirm('이 이미지를 삭제하시겠습니까?')) {
+            const deleteUrl = this.getAttribute('data-delete-url');
+            // 동적으로 폼을 생성하여 제출
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = deleteUrl;
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+});
+</script>
+{% endblock %}
+

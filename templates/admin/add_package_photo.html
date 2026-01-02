@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}패키지 화보 추가{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>패키지 화보 추가</h2>
+        <a href="{{ url_for('admin.list_package_photos', service_option_id=current_service_option_id) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> 목록으로
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                <!-- 서비스 옵션 -->
+                <div class="mb-3">
+                    <label class="form-label">서비스 옵션 <span class="text-danger">*</span></label>
+                    <select name="service_option_id" class="form-select" required>
+                        {% for option in service_options %}
+                        <option value="{{ option.id }}" {% if option.id == current_service_option_id %}selected{% endif %}>
+                            {{ option.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- 분류 -->
+                <div class="mb-3">
+                    <label class="form-label">분류 <span class="text-danger">*</span></label>
+                    <input type="text" name="category" class="form-control" 
+                           list="categoryList" placeholder="예: 환생 화보, 린's Pick 화보" required>
+                    <datalist id="categoryList">
+                        {% for cat in existing_categories %}
+                        <option value="{{ cat }}">
+                        {% endfor %}
+                    </datalist>
+                    <small class="text-muted">기존 분류를 선택하거나 새로 입력할 수 있습니다.</small>
+                </div>
+                
+                <!-- 컨셉명 -->
+                <div class="mb-3">
+                    <label class="form-label">컨셉명 <span class="text-danger">*</span></label>
+                    <input type="text" name="concept" class="form-control" 
+                           placeholder="예: 봄 꽃 컨셉, 모던 시크 컨셉" required>
+                </div>
+                
+                <!-- 표출 순서 -->
+                <div class="mb-3">
+                    <label class="form-label">표출 순서</label>
+                    <input type="number" name="display_order" class="form-control" 
+                           value="0" min="0" max="999">
+                    <small class="text-muted">숫자가 작을수록 먼저 표시됩니다.</small>
+                </div>
+                
+                <!-- 이미지 업로드 -->
+                <div class="mb-4">
+                    <label class="form-label">이미지 <span class="text-danger">*</span></label>
+                    <input type="file" name="images[]" class="form-control" 
+                           accept="image/*" multiple required id="imageInput">
+                    <small class="text-muted">
+                        최대 20개의 이미지를 업로드할 수 있습니다. 
+                        업로드 시 자동으로 가로 400px로 리사이즈됩니다.
+                    </small>
+                    
+                    <!-- 미리보기 -->
+                    <div id="imagePreview" class="row g-2 mt-2"></div>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-2"></i>패키지 화보 추가
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('imageInput').addEventListener('change', function(e) {
+    const preview = document.getElementById('imagePreview');
+    preview.innerHTML = '';
+    
+    const files = e.target.files;
+    if (files.length > 20) {
+        alert('최대 20개의 이미지만 업로드할 수 있습니다.');
+        e.target.value = '';
+        return;
+    }
+    
+    Array.from(files).forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const col = document.createElement('div');
+            col.className = 'col-3 col-md-2';
+            col.innerHTML = `
+                <div class="position-relative">
+                    <img src="${e.target.result}" class="img-thumbnail" style="height: 80px; width: 100%; object-fit: cover;">
+                    <span class="position-absolute top-0 start-0 badge bg-primary">${index + 1}</span>
+                </div>
+            `;
+            preview.appendChild(col);
+        };
+        reader.readAsDataURL(file);
+    });
+});
+</script>
+{% endblock %}
+
