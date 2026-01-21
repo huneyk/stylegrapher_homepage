@@ -106,7 +106,7 @@ def get_contact_info_context() -> str:
 영업시간: 화요일~토요일 09:00-18:00
 휴무일: 일요일, 월요일
 
-대표자: 이사금 (Lee Sa Geum / 李事昑)
+대표자: 이지은 (Lee Jieun / 李智恩)
 사업자 등록번호: 412-26-00896
 
 웹사이트: https://www.stylegrapher.com

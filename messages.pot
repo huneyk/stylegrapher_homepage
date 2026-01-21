@@ -402,7 +402,7 @@ msgid "카카오톡 : 스타일그래퍼"
 msgstr ""
 
 #: templates/base.html:327
-msgid "대표자 : 이사금"
+msgid "대표자 : 이지은"
 msgstr ""
 
 #: templates/base.html:327
