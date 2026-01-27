@@ -109,6 +109,15 @@ WEB_IMAGE_CONFIG = {
     'progressive_jpeg': True,   # Progressive JPEG 사용 (빠른 로딩)
 }
 
+# 패키지 화보용 고해상도 설정
+PACKAGE_PHOTO_CONFIG = {
+    'max_width': 2048,          # 최대 너비 (px) - 패키지 화보용 고해상도
+    'max_height': 2048,         # 최대 높이 (px) - 패키지 화보용 고해상도
+    'jpeg_quality': 85,         # JPEG 품질 (고품질)
+    'png_compression': 6,       # PNG 압축 레벨 (0-9)
+    'progressive_jpeg': True,   # Progressive JPEG 사용 (빠른 로딩)
+}
+
 
 def resize_image_for_storage(img, max_width=None, max_height=None):
     """
@@ -259,6 +268,130 @@ def save_image_to_gridfs(file, group_id=None, order=0, custom_id=None):
     )
     
     print(f"GridFS: 이미지 저장 완료 - ID: {image_id}, 크기: {len(img_binary)} bytes")
+    return image_id
+
+
+def save_package_photo_to_gridfs(file, group_id=None, order=0, custom_id=None):
+    """
+    패키지 화보 이미지를 GridFS에 저장 (1024x1024 고해상도)
+    
+    Args:
+        file: 업로드된 파일 객체
+        group_id: 갤러리 그룹 ID
+        order: 그룹 내 순서
+        custom_id: 커스텀 ID (지정하지 않으면 자동 생성)
+    
+    Returns:
+        저장된 이미지의 ID (문자열)
+    
+    웹 최적화 설정:
+        - 최대 크기: 1024x1024px (패키지 화보용 고해상도)
+        - JPEG 품질: 85%
+        - Progressive JPEG 사용
+    """
+    
+    gridfs, db, _ = get_mongo_connection()
+    
+    if gridfs is None:
+        raise Exception("GridFS 연결이 설정되지 않았습니다.")
+    
+    filename = secure_filename(file.filename)
+    
+    # 이미지 데이터 읽기
+    img_data = file.read()
+    original_size = len(img_data)
+    
+    # 이미지 리사이즈 (패키지 화보용 고해상도)
+    img = Image.open(io.BytesIO(img_data))
+    original_format = img.format or 'JPEG'
+    original_dimensions = img.size
+    resized_img = resize_image_for_storage(
+        img, 
+        max_width=PACKAGE_PHOTO_CONFIG['max_width'], 
+        max_height=PACKAGE_PHOTO_CONFIG['max_height']
+    )
+    
+    # 이미지를 바이트로 변환 (최적화 압축 적용)
+    buffer = io.BytesIO()
+    
+    # PNG인 경우 투명도 유지하되 압축 최적화
+    if original_format.upper() == 'PNG':
+        # PNG는 투명도가 필요한 경우만 유지, 아니면 JPEG로 변환
+        if resized_img.mode == 'RGBA' and resized_img.split()[3].getextrema()[0] < 255:
+            # 실제 투명도가 있는 경우 PNG 유지
+            resized_img.save(
+                buffer, 
+                format='PNG', 
+                optimize=True,
+                compress_level=PACKAGE_PHOTO_CONFIG['png_compression']
+            )
+            content_type = 'image/png'
+        else:
+            # 투명도가 없으면 JPEG로 변환 (용량 절약)
+            if resized_img.mode in ('RGBA', 'P'):
+                resized_img = resized_img.convert('RGB')
+            resized_img.save(
+                buffer, 
+                format='JPEG', 
+                quality=PACKAGE_PHOTO_CONFIG['jpeg_quality'],
+                optimize=True,
+                progressive=PACKAGE_PHOTO_CONFIG['progressive_jpeg']
+            )
+            content_type = 'image/jpeg'
+    elif original_format.upper() == 'GIF':
+        resized_img.save(buffer, format='GIF', optimize=True)
+        content_type = 'image/gif'
+    else:
+        # JPEG 최적화 저장
+        if resized_img.mode in ('RGBA', 'P'):
+            resized_img = resized_img.convert('RGB')
+        resized_img.save(
+            buffer, 
+            format='JPEG', 
+            quality=PACKAGE_PHOTO_CONFIG['jpeg_quality'],
+            optimize=True,
+            progressive=PACKAGE_PHOTO_CONFIG['progressive_jpeg']
+        )
+        content_type = 'image/jpeg'
+    
+    buffer.seek(0)
+    img_binary = buffer.getvalue()
+    compressed_size = len(img_binary)
+    
+    # 압축 결과 로깅
+    compression_ratio = (1 - compressed_size / original_size) * 100 if original_size > 0 else 0
+    print(f"GridFS: 패키지 화보 최적화 - 원본: {original_dimensions[0]}x{original_dimensions[1]} ({original_size/1024:.1f}KB) → "
+          f"최적화: {resized_img.size[0]}x{resized_img.size[1]} ({compressed_size/1024:.1f}KB) "
+          f"[{compression_ratio:.1f}% 절약]")
+    
+    # 고유 ID 생성
+    image_id = custom_id or str(uuid.uuid4())
+    
+    # 메타데이터 설정
+    metadata = {
+        'original_filename': filename,
+        'content_type': content_type,
+        'created_at': datetime.now(),
+        'width': resized_img.size[0],
+        'height': resized_img.size[1],
+        'storage_type': 'gridfs',
+        'image_type': 'package_photo'  # 패키지 화보 타입 표시
+    }
+    
+    if group_id is not None:
+        metadata['group_id'] = group_id
+        metadata['order'] = order
+    
+    # GridFS에 저장
+    gridfs.put(
+        img_binary,
+        _id=image_id,
+        filename=filename,
+        content_type=content_type,
+        metadata=metadata
+    )
+    
+    print(f"GridFS: 패키지 화보 이미지 저장 완료 - ID: {image_id}, 크기: {len(img_binary)} bytes")
     return image_id
 
 

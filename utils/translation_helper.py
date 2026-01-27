@@ -443,6 +443,92 @@ def get_translated_gallery_group(gallery_group, lang: str = None) -> Dict[str, A
     return result
 
 
+# 패키지 화보 카테고리/컨셉 번역 딕셔너리
+_package_photo_translations = {
+    'categories': {
+        '환생 화보': {'ko': '환생 화보', 'en': 'Reincarnation Photo', 'ja': '転生画報', 'zh': '轮回画报', 'es': 'Foto de Reencarnación'},
+        '린님 화보': {'ko': '린님 화보', 'en': "Rin's Pick Photo", 'ja': 'リンさんの画報', 'zh': '林的精选画报', 'es': 'Foto Selección de Rin'}
+    },
+    'concepts': {
+        '검객': {'ko': '검객', 'en': 'Swordsman', 'ja': '剣客', 'zh': '剑客', 'es': 'Espadachín'},
+        '구미호': {'ko': '구미호', 'en': 'Nine-Tailed Fox', 'ja': '九尾の狐', 'zh': '九尾狐', 'es': 'Zorro de Nueve Colas'},
+        '선녀': {'ko': '선녀', 'en': 'Fairy', 'ja': '仙女', 'zh': '仙女', 'es': 'Hada'},
+        '신선': {'ko': '신선', 'en': 'Immortal', 'ja': '仙人', 'zh': '神仙', 'es': 'Inmortal'},
+        '이무기': {'ko': '이무기', 'en': 'Imoogi', 'ja': 'イムギ', 'zh': '蛟龙', 'es': 'Imoogi'},
+        '황녀': {'ko': '황녀', 'en': 'Princess', 'ja': '皇女', 'zh': '公主', 'es': 'Princesa'},
+        '컨셉 A': {'ko': '컨셉 A', 'en': 'Concept A', 'ja': 'コンセプト A', 'zh': '概念 A', 'es': 'Concepto A'},
+        '컨셉 B': {'ko': '컨셉 B', 'en': 'Concept B', 'ja': 'コンセプト B', 'zh': '概念 B', 'es': 'Concepto B'}
+    }
+}
+
+
+def translate_package_photo_category(category_name: str, lang: str = None) -> str:
+    """
+    패키지 화보 카테고리 이름 번역
+    
+    Args:
+        category_name: 원본 카테고리 이름 (한국어)
+        lang: 언어 코드 (None이면 현재 언어 사용)
+    
+    Returns:
+        번역된 카테고리 이름
+    """
+    if lang is None:
+        lang = get_current_language()
+    
+    if lang == 'ko':
+        return category_name
+    
+    translations = _package_photo_translations['categories'].get(category_name, {})
+    return translations.get(lang, category_name)
+
+
+def translate_package_photo_concept(concept_name: str, lang: str = None) -> str:
+    """
+    패키지 화보 컨셉 이름 번역
+    
+    Args:
+        concept_name: 원본 컨셉 이름 (한국어)
+        lang: 언어 코드 (None이면 현재 언어 사용)
+    
+    Returns:
+        번역된 컨셉 이름
+    """
+    if lang is None:
+        lang = get_current_language()
+    
+    if lang == 'ko':
+        return concept_name
+    
+    translations = _package_photo_translations['concepts'].get(concept_name, {})
+    return translations.get(lang, concept_name)
+
+
+def get_translated_photos_by_category(photos_by_category: Dict, lang: str = None) -> Dict:
+    """
+    패키지 화보 데이터에서 카테고리 이름과 컨셉을 번역
+    
+    Args:
+        photos_by_category: 원본 카테고리별 사진 딕셔너리
+        lang: 언어 코드
+    
+    Returns:
+        번역된 카테고리별 사진 딕셔너리
+    """
+    if lang is None:
+        lang = get_current_language()
+    
+    if lang == 'ko':
+        return photos_by_category
+    
+    translated = {}
+    for category, photos in photos_by_category.items():
+        translated_category = translate_package_photo_category(category, lang)
+        translated[translated_category] = photos
+    
+    return translated
+
+
 class TranslatedModel:
     """
     모델 객체를 감싸서 번역된 속성에 접근할 수 있게 해주는 래퍼 클래스

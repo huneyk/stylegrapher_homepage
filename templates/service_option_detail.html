@@ -13,63 +13,138 @@
                     <p class="service-subtitle">{{ translated.detailed_description or translated.description if translated else (service_option.detailed_description or service_option.description) }}</p>
                 </div>
                 
-                <!-- 패키지 화보 갤러리 (Carousel) -->
+                <!-- 패키지 화보 갤러리 (대표 이미지 + 모달 갤러리) -->
                 {% if photos_by_category %}
                 <div class="package-photo-gallery mb-5">
                     {% for category, photos in photos_by_category.items() %}
                     <div class="package-photo-category mb-4">
                         <h3 class="category-title stg_card_title">
-                            <i class="bi bi-camera me-2"></i>{{ category }}
+                            <i class="bi bi-camera me-2"></i>{{ translate_category(category, current_lang) if translate_category else category }}
                         </h3>
+                        
+                        {# 해당 카테고리의 패키지 정보 찾기 (이름 매칭 유연하게 처리) #}
+                        {% set ns = namespace(category_packages=[]) %}
+                        {% if packages and packages.tables is defined %}
+                            {% for table in packages.tables %}
+                                {# 정확한 매칭 #}
+                                {% if table.title == category %}
+                                    {% set ns.category_packages = table.packages %}
+                                {# 환생 키워드 매칭 #}
+                                {% elif '환생' in category and '환생' in table.title %}
+                                    {% set ns.category_packages = table.packages %}
+                                {# 린 키워드 매칭 (린님 화보 <-> 린's Pick 화보) #}
+                                {% elif '린' in category and '린' in table.title %}
+                                    {% set ns.category_packages = table.packages %}
+                                {# 부분 문자열 매칭 #}
+                                {% elif category in table.title or table.title in category %}
+                                    {% set ns.category_packages = table.packages %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                        
                         <div class="row g-4">
                             {% for photo in photos %}
                             <div class="col-md-6 col-lg-4">
-                                <div class="package-photo-card">
-                                    <h4 class="concept-title">{{ photo.concept }}</h4>
+                                <div class="package-photo-card" 
+                                     data-photo-id="{{ photo.id }}"
+                                     data-concept="{{ translate_concept(photo.concept, current_lang) if translate_concept else photo.concept }}"
+                                     data-category="{{ translate_category(category, current_lang) if translate_category else category }}"
+                                     data-images='{{ photo.images | tojson }}'>
+                                    <h4 class="concept-title">{{ translate_concept(photo.concept, current_lang) if translate_concept else photo.concept }}</h4>
                                     {% if photo.images %}
-                                    <div id="packagePhotoCarousel{{ photo.id }}" class="carousel slide package-carousel" data-bs-ride="carousel">
-                                        <div class="carousel-inner">
-                                            {% for image_id in photo.images %}
-                                            <div class="carousel-item {% if loop.first %}active{% endif %}">
-                                                <img src="{{ url_for('main.serve_package_photo_image', image_id=image_id) }}" 
-                                                     class="d-block w-100 package-carousel-img" 
-                                                     alt="{{ photo.concept }} - {{ loop.index }}"
-                                                     loading="lazy">
+                                    {# 대표 이미지 1장만 표시 #}
+                                    <div class="package-photo-thumbnail" 
+                                         data-bs-toggle="modal" 
+                                         data-bs-target="#packagePhotoModal"
+                                         data-photo-id="{{ photo.id }}">
+                                        <img src="{{ url_for('main.serve_package_photo_image', image_id=photo.images[0]) }}" 
+                                             class="d-block w-100 package-thumbnail-img" 
+                                             alt="{{ translate_concept(photo.concept, current_lang) if translate_concept else photo.concept }}"
+                                             loading="lazy">
+                                        <div class="package-photo-overlay">
+                                            <div class="overlay-content">
+                                                <i class="bi bi-eye-fill"></i>
+                                                <p>{{ _('모든 사진 보기') }}</p>
                                             </div>
-                                            {% endfor %}
                                         </div>
-                                        {% if photo.images|length > 1 %}
-                                        <button class="carousel-control-prev" type="button" 
-                                                data-bs-target="#packagePhotoCarousel{{ photo.id }}" data-bs-slide="prev">
-                                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                            <span class="visually-hidden">Previous</span>
-                                        </button>
-                                        <button class="carousel-control-next" type="button" 
-                                                data-bs-target="#packagePhotoCarousel{{ photo.id }}" data-bs-slide="next">
-                                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                            <span class="visually-hidden">Next</span>
-                                        </button>
-                                        <div class="carousel-indicators package-carousel-indicators">
-                                            {% for image_id in photo.images %}
-                                            <button type="button" 
-                                                    data-bs-target="#packagePhotoCarousel{{ photo.id }}" 
-                                                    data-bs-slide-to="{{ loop.index0 }}" 
-                                                    {% if loop.first %}class="active" aria-current="true"{% endif %}
-                                                    aria-label="Slide {{ loop.index }}"></button>
-                                            {% endfor %}
+                                        <div class="photo-count-badge">
+                                            <i class="bi bi-images me-1"></i>{{ photo.images|length }}{{ _('장') }}
                                         </div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="photo-count">
-                                        <i class="bi bi-images me-1"></i>{{ photo.images|length }}{{ _('장') }}
                                     </div>
                                     {% endif %}
+                                    
+                                    {# 패키지 정보 표시 #}
+                                    <div class="package-info-section">
+                                        {% if ns.category_packages and ns.category_packages|length > 0 %}
+                                            {# 모든 패키지 정보 표시 #}
+                                            {% for pkg in ns.category_packages %}
+                                            <div class="package-info-block{% if not loop.first %} package-info-divider{% endif %}">
+                                                <div class="package-info-item">
+                                                    <span class="info-label">{{ _('패키지') }}</span>
+                                                    <span class="info-value">{{ pkg.name }}</span>
+                                                </div>
+                                                <div class="package-info-item">
+                                                    <span class="info-value">{{ pkg.description }}</span>
+                                                </div>
+                                                <div class="package-info-item">
+                                                    <span class="info-value">{{ pkg.duration }} {{ _('소요') }}</span>
+                                                </div>
+                                                <div class="package-info-item package-price">
+                                                    <span class="info-value">{% if current_lang == 'ko' %}{{ pkg.price|replace(' KRW', '원')|replace('KRW', '원') }}{% else %}{{ pkg.price }}{% endif %}</span>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
                             {% endfor %}
                         </div>
                     </div>
                     {% endfor %}
+                </div>
+                
+                <!-- 패키지 화보 모달 -->
+                <div class="modal fade" id="packagePhotoModal" tabindex="-1" aria-labelledby="packagePhotoModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-xl modal-dialog-centered">
+                        <div class="modal-content package-modal-content">
+                            <div class="modal-header package-modal-header">
+                                <h5 class="modal-title" id="packagePhotoModalLabel"></h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body p-0">
+                                <div class="package-gallery-grid" id="packageGalleryGrid">
+                                    <!-- 이미지들이 JavaScript로 동적 로드됨 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 이미지 상세 보기 모달 (Carousel) -->
+                <div class="modal fade" id="packageImageDetailModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-xl modal-dialog-centered">
+                        <div class="modal-content package-detail-modal-content">
+                            <div class="modal-header package-modal-header">
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body p-0 text-center">
+                                <img id="packageDetailImage" src="" class="img-fluid package-detail-img" alt="">
+                                <div class="package-modal-navigation">
+                                    <button type="button" id="packagePrevImage" class="btn package-modal-nav-btn">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </button>
+                                    <button type="button" id="packageNextImage" class="btn package-modal-nav-btn">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </button>
+                                </div>
+                                <div class="package-modal-caption mt-3">
+                                    <p id="packageModalCaption" class="mb-1"></p>
+                                    <small id="packageModalCounter"></small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 {% endif %}
                 
@@ -488,75 +563,260 @@
     text-align: center;
 }
 
-.package-carousel {
+/* 대표 이미지 썸네일 */
+.package-photo-thumbnail {
     position: relative;
+    cursor: pointer;
+    overflow: hidden;
 }
 
-.package-carousel-img {
+.package-thumbnail-img {
     height: 300px;
     object-fit: cover;
-    border-radius: 0;
+    transition: transform 0.4s ease;
 }
 
-.package-carousel .carousel-control-prev,
-.package-carousel .carousel-control-next {
-    width: 40px;
-    height: 40px;
-    top: 50%;
-    transform: translateY(-50%);
+.package-photo-thumbnail:hover .package-thumbnail-img {
+    transform: scale(1.05);
+}
+
+.package-photo-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(181, 126, 220, 0.85), rgba(138, 43, 226, 0.85));
+    display: flex;
+    align-items: center;
+    justify-content: center;
     opacity: 0;
     transition: opacity 0.3s ease;
-    background: rgba(139, 95, 191, 0.7);
-    border-radius: 50%;
 }
 
-.package-carousel:hover .carousel-control-prev,
-.package-carousel:hover .carousel-control-next {
+.package-photo-thumbnail:hover .package-photo-overlay {
     opacity: 1;
 }
 
-.package-carousel .carousel-control-prev {
-    left: 10px;
-}
-
-.package-carousel .carousel-control-next {
-    right: 10px;
-}
-
-.package-carousel .carousel-control-prev-icon,
-.package-carousel .carousel-control-next-icon {
-    width: 1rem;
-    height: 1rem;
-}
-
-.package-carousel-indicators {
-    position: relative;
-    bottom: auto;
-    margin: 0.75rem 0;
-    justify-content: center;
-}
-
-.package-carousel-indicators button {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: rgba(181, 126, 220, 0.4);
-    margin: 0 4px;
-    border: none;
-    transition: all 0.3s ease;
-}
-
-.package-carousel-indicators button.active {
-    background-color: #8B5CF6;
-    transform: scale(1.2);
-}
-
-.photo-count {
-    font-size: 0.85rem;
-    color: #6c757d;
+.overlay-content {
     text-align: center;
-    padding: 0.5rem;
-    border-top: 1px solid rgba(181, 126, 220, 0.1);
+    color: white;
+}
+
+.overlay-content i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+}
+
+.overlay-content p {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.photo-count-badge {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 0.3rem 0.6rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    backdrop-filter: blur(5px);
+}
+
+/* 패키지 정보 섹션 */
+.package-info-section {
+    padding: 1rem;
+    border-top: 1px solid rgba(181, 126, 220, 0.15);
+    background: rgba(139, 92, 246, 0.03);
+}
+
+.package-info-block {
+    padding: 0;
+}
+
+.package-info-divider {
+    margin-top: 0.8rem;
+    padding-top: 0.8rem;
+    border-top: 1px dashed rgba(139, 92, 246, 0.3);
+}
+
+.package-info-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.4rem;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.package-info-item:last-child {
+    margin-bottom: 0;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #8B5CF6;
+    margin-right: 0.5rem;
+    min-width: 50px;
+}
+
+.info-value {
+    color: #444;
+}
+
+.package-price .info-value {
+    font-weight: 700;
+    color: #44237A;
+    font-size: 1rem;
+}
+
+/* 패키지 화보 모달 스타일 */
+.package-modal-content {
+    background: rgba(18, 0, 36, 0.95);
+    backdrop-filter: blur(30px);
+    border: 1px solid rgba(181, 126, 220, 0.3);
+    border-radius: 24px;
+    box-shadow: 0 0 60px rgba(181, 126, 220, 0.3);
+}
+
+.package-modal-header {
+    border: none;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.package-modal-header .modal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    color: #F0E4FF;
+    font-weight: 500;
+}
+
+.package-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    padding: 1.5rem;
+}
+
+.package-gallery-item {
+    position: relative;
+    cursor: pointer;
+    border-radius: 12px;
+    overflow: hidden;
+    aspect-ratio: 1;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(181, 126, 220, 0.2);
+}
+
+.package-gallery-item:hover {
+    transform: translateY(-5px) scale(1.02);
+    border-color: var(--neon-lavender);
+    box-shadow: 0 0 30px rgba(181, 126, 220, 0.3);
+}
+
+.package-gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.package-gallery-item:hover img {
+    transform: scale(1.1);
+}
+
+.package-gallery-item-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(181, 126, 220, 0.85), rgba(138, 43, 226, 0.85));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.package-gallery-item:hover .package-gallery-item-overlay {
+    opacity: 1;
+}
+
+.package-gallery-item-overlay i {
+    color: white;
+    font-size: 1.5rem;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+}
+
+/* 이미지 상세 모달 */
+.package-detail-modal-content {
+    background: rgba(18, 0, 36, 0.95);
+    backdrop-filter: blur(30px);
+    border: 1px solid rgba(181, 126, 220, 0.3);
+    border-radius: 24px;
+}
+
+.package-detail-img {
+    max-height: 75vh;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.package-modal-navigation {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.package-modal-nav-btn {
+    pointer-events: all !important;
+    background: linear-gradient(135deg, var(--neon-lavender), var(--electric-violet));
+    border: none;
+    color: white;
+    border-radius: 50%;
+    width: 55px;
+    height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    opacity: 0.9;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 20px rgba(181, 126, 220, 0.4);
+    cursor: pointer;
+}
+
+.package-modal-nav-btn:hover {
+    opacity: 1;
+    transform: scale(1.1);
+    box-shadow: 0 0 30px rgba(181, 126, 220, 0.6);
+    color: white;
+}
+
+.package-modal-caption p {
+    color: #FFFFFF;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 500;
+}
+
+.package-modal-caption small {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 1rem;
 }
 
 /* Dark Mode - Package Photo Gallery */
@@ -584,14 +844,30 @@ body:not(.light-mode) .concept-title {
     color: #C8AAFF;
 }
 
-body:not(.light-mode) .photo-count {
-    color: rgba(255, 255, 255, 0.6);
-    border-top-color: rgba(181, 126, 220, 0.2);
+body:not(.light-mode) .package-info-section {
+    background: rgba(139, 92, 246, 0.08);
+    border-top-color: rgba(181, 126, 220, 0.25);
+}
+
+body:not(.light-mode) .package-info-item {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+body:not(.light-mode) .info-label {
+    color: #C8AAFF;
+}
+
+body:not(.light-mode) .info-value {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+body:not(.light-mode) .package-price .info-value {
+    color: #E0D0FF;
 }
 
 /* Responsive - Package Photo Gallery */
 @media (max-width: 768px) {
-    .package-carousel-img {
+    .package-thumbnail-img {
         height: 250px;
     }
     
@@ -603,11 +879,20 @@ body:not(.light-mode) .photo-count {
         font-size: 1rem;
     }
     
-    .package-carousel .carousel-control-prev,
-    .package-carousel .carousel-control-next {
-        opacity: 0.8;
-        width: 35px;
-        height: 35px;
+    .package-gallery-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        padding: 1rem;
+    }
+    
+    .package-modal-nav-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 1.1rem;
+    }
+    
+    .package-modal-navigation {
+        padding: 0 10px;
     }
 }
 
@@ -1099,4 +1384,166 @@ body:not(.light-mode) .package-mobile-card-list li::before {
     }
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 패키지 화보 모달 관련 변수
+    const packagePhotoModal = document.getElementById('packagePhotoModal');
+    const packageDetailModal = document.getElementById('packageImageDetailModal');
+    const packageGalleryGrid = document.getElementById('packageGalleryGrid');
+    const packageDetailImage = document.getElementById('packageDetailImage');
+    const packageModalCaption = document.getElementById('packageModalCaption');
+    const packageModalCounter = document.getElementById('packageModalCounter');
+    const packagePrevBtn = document.getElementById('packagePrevImage');
+    const packageNextBtn = document.getElementById('packageNextImage');
+    
+    let currentPackageImages = [];
+    let currentPackageImageIndex = 0;
+    let currentPackageConcept = '';
+    
+    // 패키지 화보 카드 클릭 시 모달 열기
+    if (packagePhotoModal) {
+        packagePhotoModal.addEventListener('show.bs.modal', function(event) {
+            const trigger = event.relatedTarget;
+            const photoCard = trigger.closest('.package-photo-card');
+            
+            if (!photoCard) return;
+            
+            const photoId = photoCard.getAttribute('data-photo-id');
+            const concept = photoCard.getAttribute('data-concept');
+            const category = photoCard.getAttribute('data-category');
+            const imagesJson = photoCard.getAttribute('data-images');
+            
+            currentPackageConcept = concept;
+            
+            try {
+                currentPackageImages = JSON.parse(imagesJson);
+            } catch (e) {
+                console.error('Failed to parse images:', e);
+                currentPackageImages = [];
+            }
+            
+            // 모달 타이틀 설정
+            document.getElementById('packagePhotoModalLabel').textContent = concept;
+            
+            // 갤러리 그리드에 이미지 로드 (lazy loading)
+            loadPackageGalleryImages(currentPackageImages, concept);
+        });
+    }
+    
+    // 갤러리 이미지 로드 함수
+    function loadPackageGalleryImages(imageIds, concept) {
+        packageGalleryGrid.innerHTML = '';
+        
+        imageIds.forEach((imageId, index) => {
+            const item = document.createElement('div');
+            item.className = 'package-gallery-item';
+            item.setAttribute('data-index', index);
+            item.innerHTML = `
+                <img src="/package-photo-image/${imageId}" 
+                     alt="${concept} - ${index + 1}"
+                     loading="lazy">
+                <div class="package-gallery-item-overlay">
+                    <i class="bi bi-zoom-in"></i>
+                </div>
+            `;
+            
+            // 개별 이미지 클릭 시 상세 모달 열기
+            item.addEventListener('click', function() {
+                currentPackageImageIndex = index;
+                openPackageDetailModal(index);
+            });
+            
+            packageGalleryGrid.appendChild(item);
+        });
+    }
+    
+    // 상세 모달 열기
+    function openPackageDetailModal(index) {
+        if (currentPackageImages.length === 0) return;
+        
+        currentPackageImageIndex = index;
+        const imageId = currentPackageImages[index];
+        
+        packageDetailImage.src = `/package-photo-image/${imageId}`;
+        packageModalCaption.textContent = currentPackageConcept;
+        packageModalCounter.textContent = `${index + 1} / ${currentPackageImages.length}`;
+        
+        // 네비게이션 버튼 표시/숨김
+        packagePrevBtn.style.visibility = index > 0 ? 'visible' : 'hidden';
+        packageNextBtn.style.visibility = index < currentPackageImages.length - 1 ? 'visible' : 'hidden';
+        
+        // 갤러리 모달 닫고 상세 모달 열기
+        const galleryModalInstance = bootstrap.Modal.getInstance(packagePhotoModal);
+        if (galleryModalInstance) {
+            galleryModalInstance.hide();
+        }
+        
+        setTimeout(() => {
+            const detailModal = new bootstrap.Modal(packageDetailModal);
+            detailModal.show();
+        }, 300);
+    }
+    
+    // 이전/다음 네비게이션
+    if (packagePrevBtn) {
+        packagePrevBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (currentPackageImageIndex > 0) {
+                currentPackageImageIndex--;
+                updatePackageDetailImage();
+            }
+        });
+    }
+    
+    if (packageNextBtn) {
+        packageNextBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (currentPackageImageIndex < currentPackageImages.length - 1) {
+                currentPackageImageIndex++;
+                updatePackageDetailImage();
+            }
+        });
+    }
+    
+    function updatePackageDetailImage() {
+        const imageId = currentPackageImages[currentPackageImageIndex];
+        packageDetailImage.src = `/package-photo-image/${imageId}`;
+        packageModalCounter.textContent = `${currentPackageImageIndex + 1} / ${currentPackageImages.length}`;
+        
+        packagePrevBtn.style.visibility = currentPackageImageIndex > 0 ? 'visible' : 'hidden';
+        packageNextBtn.style.visibility = currentPackageImageIndex < currentPackageImages.length - 1 ? 'visible' : 'hidden';
+    }
+    
+    // 키보드 네비게이션
+    document.addEventListener('keydown', function(e) {
+        if (packageDetailModal && packageDetailModal.classList.contains('show')) {
+            if (e.key === 'ArrowLeft' && currentPackageImageIndex > 0) {
+                currentPackageImageIndex--;
+                updatePackageDetailImage();
+            } else if (e.key === 'ArrowRight' && currentPackageImageIndex < currentPackageImages.length - 1) {
+                currentPackageImageIndex++;
+                updatePackageDetailImage();
+            } else if (e.key === 'Escape') {
+                const detailModalInstance = bootstrap.Modal.getInstance(packageDetailModal);
+                if (detailModalInstance) {
+                    detailModalInstance.hide();
+                }
+            }
+        }
+    });
+    
+    // 상세 모달 닫힐 때 갤러리 모달 다시 열기
+    if (packageDetailModal) {
+        packageDetailModal.addEventListener('hidden.bs.modal', function() {
+            setTimeout(() => {
+                const galleryModal = new bootstrap.Modal(packagePhotoModal);
+                galleryModal.show();
+            }, 100);
+        });
+    }
+});
+</script>
 {% endblock %}

@@ -26,7 +26,9 @@ from utils.translation_helper import (
     get_translated_service, 
     get_translated_service_option,
     get_translated_collage_text,
-    get_translated_gallery_group
+    get_translated_gallery_group,
+    translate_package_photo_category,
+    translate_package_photo_concept
 )
 from utils.gridfs_helper import get_image_from_gridfs, get_mongo_connection
 from extensions import mail, cache
@@ -420,7 +422,10 @@ def service_option_detail(id):
                          details=details,
                          packages=packages,
                          package_photos=package_photos,
-                         photos_by_category=sorted_photos_by_category)
+                         photos_by_category=sorted_photos_by_category,
+                         current_lang=lang,
+                         translate_category=translate_package_photo_category,
+                         translate_concept=translate_package_photo_concept)
 
 
 @main.route('/image/<path:image_path>')

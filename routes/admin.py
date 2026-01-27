@@ -1822,7 +1822,7 @@ def export_sessions():
 # ========== 패키지 화보 관리 ==========
 
 def save_package_photo_to_gridfs(file, package_photo_id=None):
-    """패키지 화보 이미지를 가로 400px로 리사이즈 후 GridFS에 저장 (OpenCV 사용)"""
+    """패키지 화보 이미지를 1024x1024 이내로 리사이즈 후 GridFS에 저장 (OpenCV 사용)"""
     import cv2
     import numpy as np
     
@@ -1843,11 +1843,14 @@ def save_package_photo_to_gridfs(file, package_photo_id=None):
         
         original_height, original_width = img.shape[:2]
         
-        # 가로 800px 기준으로 리사이즈 (aspect ratio 유지)
-        target_width = 800
-        if original_width > target_width:
-            ratio = target_width / original_width
-            new_width = target_width
+        # 1024x1024 기준으로 리사이즈 (aspect ratio 유지, 가로/세로 중 큰 값 기준)
+        max_size = 2048
+        if original_width > max_size or original_height > max_size:
+            # 가로/세로 중 더 큰 비율로 리사이즈
+            width_ratio = max_size / original_width
+            height_ratio = max_size / original_height
+            ratio = min(width_ratio, height_ratio)
+            new_width = int(original_width * ratio)
             new_height = int(original_height * ratio)
             resized_img = cv2.resize(img, (new_width, new_height), interpolation=cv2.INTER_LANCZOS4)
         else:
