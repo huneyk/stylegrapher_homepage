@@ -392,6 +392,14 @@ def service_option_detail(id):
     details = translated.get('details', [])
     packages = translated.get('packages', [])
     
+    # 원본 한국어 패키지 데이터 (카테고리 매칭용)
+    original_packages = []
+    if service_option.packages:
+        try:
+            original_packages = json.loads(service_option.packages)
+        except json.JSONDecodeError:
+            pass
+    
     # 패키지 화보 조회 (활성화된 것만)
     package_photos = PackagePhoto.query_by_service_option(id, active_only=True)
     
@@ -421,6 +429,7 @@ def service_option_detail(id):
                          translated=translated,
                          details=details,
                          packages=packages,
+                         original_packages=original_packages,
                          package_photos=package_photos,
                          photos_by_category=sorted_photos_by_category,
                          current_lang=lang,

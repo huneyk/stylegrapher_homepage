@@ -22,24 +22,29 @@
                             <i class="bi bi-camera me-2"></i>{{ translate_category(category, current_lang) if translate_category else category }}
                         </h3>
                         
-                        {# 해당 카테고리의 패키지 정보 찾기 (이름 매칭 유연하게 처리) #}
-                        {% set ns = namespace(category_packages=[]) %}
-                        {% if packages and packages.tables is defined %}
-                            {% for table in packages.tables %}
+                        {# 해당 카테고리의 패키지 정보 찾기 (원본 한국어 데이터로 매칭 후 번역본 사용) #}
+                        {% set ns = namespace(category_packages=[], matched_index=-1) %}
+                        {# 원본 한국어 packages에서 매칭되는 인덱스 찾기 #}
+                        {% if original_packages and original_packages.tables is defined %}
+                            {% for table in original_packages.tables %}
                                 {# 정확한 매칭 #}
                                 {% if table.title == category %}
-                                    {% set ns.category_packages = table.packages %}
+                                    {% set ns.matched_index = loop.index0 %}
                                 {# 환생 키워드 매칭 #}
                                 {% elif '환생' in category and '환생' in table.title %}
-                                    {% set ns.category_packages = table.packages %}
+                                    {% set ns.matched_index = loop.index0 %}
                                 {# 린 키워드 매칭 (린님 화보 <-> 린's Pick 화보) #}
                                 {% elif '린' in category and '린' in table.title %}
-                                    {% set ns.category_packages = table.packages %}
+                                    {% set ns.matched_index = loop.index0 %}
                                 {# 부분 문자열 매칭 #}
                                 {% elif category in table.title or table.title in category %}
-                                    {% set ns.category_packages = table.packages %}
+                                    {% set ns.matched_index = loop.index0 %}
                                 {% endif %}
                             {% endfor %}
+                        {% endif %}
+                        {# 매칭된 인덱스로 번역된 packages에서 패키지 정보 가져오기 #}
+                        {% if ns.matched_index >= 0 and packages and packages.tables is defined and ns.matched_index < packages.tables|length %}
+                            {% set ns.category_packages = packages.tables[ns.matched_index].packages %}
                         {% endif %}
                         
                         <div class="row g-4">

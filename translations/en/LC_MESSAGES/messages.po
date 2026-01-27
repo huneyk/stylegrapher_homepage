@@ -375,10 +375,10 @@ msgstr "Fashion Styling"
 
 # 프리미엄 화보 제작 서브메뉴
 msgid "패키지 화보"
-msgstr "Personal Branding Headshot"
+msgstr "Package Pictorial"
 
 msgid "커스터마이징 화보"
-msgstr "Personal Editorial"
+msgstr "Customizing Pictorial"
 
 # Legacy menu items (keep for backward compatibility)
 #: templates/base.html:139
