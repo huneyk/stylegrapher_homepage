@@ -20,27 +20,31 @@ msgstr ""
 
 #: templates/_gallery.html:11
 msgid "자세히 보기"
-msgstr ""
+msgstr "Ver Detalles"
 
 #: templates/_gallery_items.html:30
 msgid "이전"
-msgstr ""
+msgstr "Anterior"
 
 #: templates/_gallery_items.html:36
 msgid "다음"
-msgstr ""
+msgstr "Siguiente"
 
 #: templates/_gallery_items.html:43
 msgid "모든 사진 보기"
-msgstr ""
+msgstr "Ver Todas las Fotos"
 
 #: templates/_gallery_items.html:50
 msgid "사진"
-msgstr ""
+msgstr "Fotos"
 
 #: templates/_gallery_items.html:50
 msgid "장"
 msgstr ""
+
+# Package Photo Page
+msgid "패키지"
+msgstr "Paquete"
 
 # Main Menu Categories
 #: templates/_services.html:3 templates/base.html:109

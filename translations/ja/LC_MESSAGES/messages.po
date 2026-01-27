@@ -42,6 +42,10 @@ msgstr "写真"
 msgid "장"
 msgstr "枚"
 
+# Package Photo Page
+msgid "패키지"
+msgstr "パッケージ"
+
 # Main Menu Categories
 #: templates/_services.html:3 templates/base.html:109
 msgid "AI 분석"

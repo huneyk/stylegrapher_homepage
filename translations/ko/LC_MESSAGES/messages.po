@@ -40,7 +40,11 @@ msgstr ""
 
 #: templates/_gallery_items.html:50
 msgid "장"
-msgstr ""
+msgstr "장"
+
+# Package Photo Page
+msgid "패키지"
+msgstr "패키지"
 
 #: templates/_services.html:3 templates/base.html:109
 msgid "AI 분석"
