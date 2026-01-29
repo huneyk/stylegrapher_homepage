@@ -34,6 +34,9 @@ msgstr "下一张"
 msgid "모든 사진 보기"
 msgstr "查看所有照片"
 
+msgid "모든 컨셉 보기"
+msgstr "查看所有概念"
+
 #: templates/_gallery_items.html:50
 msgid "사진"
 msgstr "照片"

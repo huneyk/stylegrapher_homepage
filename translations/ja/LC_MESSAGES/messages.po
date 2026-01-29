@@ -34,6 +34,9 @@ msgstr "次へ"
 msgid "모든 사진 보기"
 msgstr "すべての写真を見る"
 
+msgid "모든 컨셉 보기"
+msgstr "すべてのコンセプトを見る"
+
 #: templates/_gallery_items.html:50
 msgid "사진"
 msgstr "写真"

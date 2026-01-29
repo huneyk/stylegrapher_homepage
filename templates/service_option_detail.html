@@ -13,100 +13,114 @@
                     <p class="service-subtitle">{{ translated.detailed_description or translated.description if translated else (service_option.detailed_description or service_option.description) }}</p>
                 </div>
                 
-                <!-- 패키지 화보 갤러리 (대표 이미지 + 모달 갤러리) -->
+                <!-- 패키지 화보 갤러리 (탭 형식) -->
                 {% if photos_by_category %}
                 <div class="package-photo-gallery mb-5">
-                    {% for category, photos in photos_by_category.items() %}
-                    <div class="package-photo-category mb-4">
-                        <h3 class="category-title stg_card_title">
-                            <i class="bi bi-camera me-2"></i>{{ translate_category(category, current_lang) if translate_category else category }}
-                        </h3>
-                        
-                        {# 해당 카테고리의 패키지 정보 찾기 (원본 한국어 데이터로 매칭 후 번역본 사용) #}
+                    {# 패키지 타입 탭 네비게이션 #}
+                    <div class="package-tabs-container">
+                        <ul class="package-tabs-nav" id="packageTabs" role="tablist">
+                            {% for category, photos in photos_by_category.items() %}
+                            <li class="package-tab-item" role="presentation">
+                                <button class="package-tab-btn{% if loop.first %} active{% endif %}" 
+                                        id="tab-{{ loop.index }}" 
+                                        data-bs-toggle="tab" 
+                                        data-bs-target="#tabContent-{{ loop.index }}" 
+                                        type="button" 
+                                        role="tab" 
+                                        aria-controls="tabContent-{{ loop.index }}" 
+                                        aria-selected="{{ 'true' if loop.first else 'false' }}">
+                                    <i class="bi bi-camera me-2"></i>{{ translate_category(category, current_lang) if translate_category else category }}
+                                </button>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    
+                    {# 탭 콘텐츠 #}
+                    <div class="tab-content package-tabs-content" id="packageTabsContent">
+                        {% for category, photos in photos_by_category.items() %}
+                        {# 해당 카테고리의 패키지 정보 찾기 #}
                         {% set ns = namespace(category_packages=[], matched_index=-1) %}
-                        {# 원본 한국어 packages에서 매칭되는 인덱스 찾기 #}
                         {% if original_packages and original_packages.tables is defined %}
                             {% for table in original_packages.tables %}
-                                {# 정확한 매칭 #}
                                 {% if table.title == category %}
                                     {% set ns.matched_index = loop.index0 %}
-                                {# 환생 키워드 매칭 #}
                                 {% elif '환생' in category and '환생' in table.title %}
                                     {% set ns.matched_index = loop.index0 %}
-                                {# 린 키워드 매칭 (린님 화보 <-> 린's Pick 화보) #}
                                 {% elif '린' in category and '린' in table.title %}
                                     {% set ns.matched_index = loop.index0 %}
-                                {# 부분 문자열 매칭 #}
                                 {% elif category in table.title or table.title in category %}
                                     {% set ns.matched_index = loop.index0 %}
                                 {% endif %}
                             {% endfor %}
                         {% endif %}
-                        {# 매칭된 인덱스로 번역된 packages에서 패키지 정보 가져오기 #}
                         {% if ns.matched_index >= 0 and packages and packages.tables is defined and ns.matched_index < packages.tables|length %}
                             {% set ns.category_packages = packages.tables[ns.matched_index].packages %}
                         {% endif %}
                         
-                        <div class="row g-4">
-                            {% for photo in photos %}
-                            <div class="col-md-6 col-lg-4">
-                                <div class="package-photo-card" 
-                                     data-photo-id="{{ photo.id }}"
-                                     data-concept="{{ translate_concept(photo.concept, current_lang) if translate_concept else photo.concept }}"
-                                     data-category="{{ translate_category(category, current_lang) if translate_category else category }}"
-                                     data-images='{{ photo.images | tojson }}'>
-                                    <h4 class="concept-title">{{ translate_concept(photo.concept, current_lang) if translate_concept else photo.concept }}</h4>
-                                    {% if photo.images %}
-                                    {# 대표 이미지 1장만 표시 #}
-                                    <div class="package-photo-thumbnail" 
-                                         data-bs-toggle="modal" 
-                                         data-bs-target="#packagePhotoModal"
-                                         data-photo-id="{{ photo.id }}">
-                                        <img src="{{ url_for('main.serve_package_photo_image', image_id=photo.images[0]) }}" 
-                                             class="d-block w-100 package-thumbnail-img" 
-                                             alt="{{ translate_concept(photo.concept, current_lang) if translate_concept else photo.concept }}"
-                                             loading="lazy">
-                                        <div class="package-photo-overlay">
-                                            <div class="overlay-content">
-                                                <i class="bi bi-eye-fill"></i>
-                                                <p>{{ _('모든 사진 보기') }}</p>
-                                            </div>
-                                        </div>
-                                        <div class="photo-count-badge">
-                                            <i class="bi bi-images me-1"></i>{{ photo.images|length }}{{ _('장') }}
+                        <div class="tab-pane fade{% if loop.first %} show active{% endif %}" 
+                             id="tabContent-{{ loop.index }}" 
+                             role="tabpanel" 
+                             aria-labelledby="tab-{{ loop.index }}"
+                             data-category="{{ category }}">
+                            
+                            {# 패키지 정보 요약 카드 #}
+                            {% if ns.category_packages and ns.category_packages|length > 0 %}
+                            <div class="package-summary-card">
+                                <div class="package-summary-grid">
+                                    {% for pkg in ns.category_packages %}
+                                    <div class="package-summary-item">
+                                        <div class="package-summary-name">{{ pkg.name }}</div>
+                                        <div class="package-summary-desc">{{ pkg.description }}</div>
+                                        <div class="package-summary-details">
+                                            <span class="package-summary-duration"><i class="bi bi-clock me-1"></i>{{ pkg.duration }}</span>
+                                            <span class="package-summary-price">{% if current_lang == 'ko' %}{{ pkg.price|replace(' KRW', '원')|replace('KRW', '원') }}{% else %}{{ pkg.price }}{% endif %}</span>
                                         </div>
                                     </div>
-                                    {% endif %}
-                                    
-                                    {# 패키지 정보 표시 #}
-                                    <div class="package-info-section">
-                                        {% if ns.category_packages and ns.category_packages|length > 0 %}
-                                            {# 모든 패키지 정보 표시 #}
-                                            {% for pkg in ns.category_packages %}
-                                            <div class="package-info-block{% if not loop.first %} package-info-divider{% endif %}">
-                                                <div class="package-info-item">
-                                                    <span class="info-label">{{ _('패키지') }}</span>
-                                                    <span class="info-value">{{ pkg.name }}</span>
-                                                </div>
-                                                <div class="package-info-item">
-                                                    <span class="info-value">{{ pkg.description }}</span>
-                                                </div>
-                                                <div class="package-info-item">
-                                                    <span class="info-value">{{ pkg.duration }} {{ _('소요') }}</span>
-                                                </div>
-                                                <div class="package-info-item package-price">
-                                                    <span class="info-value">{% if current_lang == 'ko' %}{{ pkg.price|replace(' KRW', '원')|replace('KRW', '원') }}{% else %}{{ pkg.price }}{% endif %}</span>
-                                                </div>
-                                            </div>
-                                            {% endfor %}
-                                        {% endif %}
-                                    </div>
+                                    {% endfor %}
                                 </div>
                             </div>
-                            {% endfor %}
+                            {% endif %}
+                            
+                            {# 컨셉별 사진 그리드 #}
+                            <div class="concepts-grid">
+                                <div class="row g-4">
+                                    {% for photo in photos %}
+                                    <div class="col-md-6 col-lg-4">
+                                        <div class="package-photo-card concept-card" 
+                                             data-photo-id="{{ photo.id }}"
+                                             data-concept="{{ translate_concept(photo.concept, current_lang) if translate_concept else photo.concept }}"
+                                             data-category="{{ translate_category(category, current_lang) if translate_category else category }}"
+                                             data-images='{{ photo.images | tojson }}'>
+                                            <h4 class="concept-title">{{ translate_concept(photo.concept, current_lang) if translate_concept else photo.concept }}</h4>
+                                            {% if photo.images %}
+                                            <div class="package-photo-thumbnail" 
+                                                 data-bs-toggle="modal" 
+                                                 data-bs-target="#packagePhotoModal"
+                                                 data-photo-id="{{ photo.id }}">
+                                                <img src="{{ url_for('main.serve_package_photo_image', image_id=photo.images[0]) }}" 
+                                                     class="d-block w-100 package-thumbnail-img" 
+                                                     alt="{{ translate_concept(photo.concept, current_lang) if translate_concept else photo.concept }}"
+                                                     loading="lazy">
+                                                <div class="package-photo-overlay">
+                                                    <div class="overlay-content">
+                                                        <i class="bi bi-eye-fill"></i>
+                                                        <p>{{ _('모든 사진 보기') }}</p>
+                                                    </div>
+                                                </div>
+                                                <div class="photo-count-badge">
+                                                    <i class="bi bi-images me-1"></i>{{ photo.images|length }}{{ _('장') }}
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
                         </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
                 </div>
                 
                 <!-- 패키지 화보 모달 -->
@@ -521,26 +535,201 @@
     margin-top: 2rem;
 }
 
-.package-photo-category {
+/* 패키지 탭 스타일 */
+.package-tabs-container {
     margin-bottom: 2rem;
 }
 
-.category-title.stg_card_title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.5rem !important;
-    color: rgb(139, 92, 246) !important;
-    font-weight: 500;
-    margin-bottom: 1.5rem;
-    padding: 0.75rem 1rem !important;
-    background: #ffffff !important;
-    border-radius: 8px;
-    border: 1px solid rgba(139, 92, 246, 0.2) !important;
+.package-tabs-nav {
     display: flex;
-    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    justify-content: center;
 }
 
-.category-title.stg_card_title i {
-    color: rgb(139, 92, 246) !important;
+.package-tab-item {
+    flex-shrink: 0;
+}
+
+.package-tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.75rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #6B4D8A;
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid rgba(181, 126, 220, 0.3);
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.package-tab-btn:hover {
+    background: rgba(181, 126, 220, 0.1);
+    border-color: rgba(181, 126, 220, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(181, 126, 220, 0.2);
+}
+
+.package-tab-btn.active {
+    background: linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%);
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+}
+
+.package-tab-btn.active:hover {
+    background: linear-gradient(135deg, #7C3AED 0%, #9333EA 100%);
+    transform: translateY(-2px);
+}
+
+.package-tab-btn i {
+    font-size: 1rem;
+}
+
+/* Dark Mode - 탭 스타일 */
+body:not(.light-mode) .package-tab-btn {
+    background: rgba(30, 20, 40, 0.9);
+    color: #C8AAFF;
+    border-color: rgba(181, 126, 220, 0.4);
+}
+
+body:not(.light-mode) .package-tab-btn:hover {
+    background: rgba(181, 126, 220, 0.15);
+    border-color: rgba(181, 126, 220, 0.6);
+    box-shadow: 0 4px 15px rgba(181, 126, 220, 0.3);
+}
+
+body:not(.light-mode) .package-tab-btn.active {
+    background: linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%);
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 4px 20px rgba(181, 126, 220, 0.5);
+}
+
+/* 탭 콘텐츠 */
+.package-tabs-content {
+    animation: fadeIn 0.3s ease;
+}
+
+.package-tabs-content .tab-pane {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 패키지 요약 카드 */
+.package-summary-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(181, 126, 220, 0.2);
+    box-shadow: 0 4px 20px rgba(139, 95, 191, 0.1);
+}
+
+.package-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.package-summary-item {
+    padding: 1rem;
+    background: rgba(139, 92, 246, 0.05);
+    border-radius: 12px;
+    border-left: 4px solid #8B5CF6;
+    transition: all 0.3s ease;
+}
+
+.package-summary-item:hover {
+    background: rgba(139, 92, 246, 0.1);
+    transform: translateX(5px);
+}
+
+.package-summary-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #44237A;
+    margin-bottom: 0.5rem;
+}
+
+.package-summary-desc {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+}
+
+.package-summary-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.package-summary-duration {
+    font-size: 0.9rem;
+    color: #6B4D8A;
+}
+
+.package-summary-price {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #44237A;
+}
+
+/* Dark Mode - 패키지 요약 카드 */
+body:not(.light-mode) .package-summary-card {
+    background: rgba(30, 20, 40, 0.9);
+    border-color: rgba(181, 126, 220, 0.3);
+}
+
+body:not(.light-mode) .package-summary-item {
+    background: rgba(181, 126, 220, 0.1);
+    border-left-color: var(--neon-lavender);
+}
+
+body:not(.light-mode) .package-summary-item:hover {
+    background: rgba(181, 126, 220, 0.18);
+}
+
+body:not(.light-mode) .package-summary-name {
+    color: var(--neon-lavender);
+}
+
+body:not(.light-mode) .package-summary-desc {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+body:not(.light-mode) .package-summary-duration {
+    color: #C8AAFF;
+}
+
+body:not(.light-mode) .package-summary-price {
+    color: #E0D0FF;
+}
+
+/* 컨셉 그리드 */
+.concepts-grid {
+    margin-top: 1rem;
+}
+
+/* 컨셉 카드 (탭 뷰에서 서비스 정보 없음) */
+.concept-card .package-info-section {
+    display: none;
 }
 
 .package-photo-card {
@@ -771,6 +960,10 @@
     border-radius: 24px;
 }
 
+.package-detail-modal-content .modal-body {
+    position: relative;
+}
+
 .package-detail-img {
     max-height: 75vh;
     max-width: 100%;
@@ -887,10 +1080,6 @@ body:not(.light-mode) .package-thumbnail-img {
         height: 250px;
     }
     
-    .category-title.stg_card_title {
-        font-size: 1.3rem !important;
-    }
-    
     .concept-title {
         font-size: 1rem;
     }
@@ -909,6 +1098,45 @@ body:not(.light-mode) .package-thumbnail-img {
     
     .package-modal-navigation {
         padding: 0 10px;
+    }
+    
+    /* 탭 반응형 */
+    .package-tabs-nav {
+        gap: 0.5rem;
+    }
+    
+    .package-tab-btn {
+        padding: 0.75rem 1.25rem;
+        font-size: 1rem;
+    }
+    
+    .package-summary-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .package-summary-item {
+        padding: 0.85rem;
+    }
+    
+    .package-summary-name {
+        font-size: 1.1rem;
+    }
+    
+    .package-summary-desc {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .package-tabs-nav {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .package-tab-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 0.85rem 1rem;
     }
 }
 

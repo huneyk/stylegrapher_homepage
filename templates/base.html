@@ -744,6 +744,30 @@
                 }
             });
             
+            // Hide floating menu when Bootstrap modal is shown
+            document.addEventListener('show.bs.modal', function() {
+                const fm = document.getElementById('floatingMenu');
+                if (fm) {
+                    fm.style.setProperty('display', 'none', 'important');
+                    fm.style.setProperty('visibility', 'hidden', 'important');
+                }
+            });
+            
+            // Show floating menu when Bootstrap modal is hidden (only if no other modal is open)
+            document.addEventListener('hidden.bs.modal', function() {
+                // Check if any other modal is still visible or about to be shown
+                setTimeout(function() {
+                    const visibleModals = document.querySelectorAll('.modal.show, .modal.fade.showing');
+                    if (visibleModals.length === 0) {
+                        const fm = document.getElementById('floatingMenu');
+                        if (fm) {
+                            fm.style.removeProperty('display');
+                            fm.style.removeProperty('visibility');
+                        }
+                    }
+                }, 500); // Increased delay to handle modal transitions
+            });
+            
             // Fade In Animation on Scroll
             const observerOptions = {
                 threshold: 0.1,
