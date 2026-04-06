@@ -336,12 +336,14 @@ def get_notice_content(notice_id):
             return jsonify({'error': 'Not found'}), 404
         lang = get_current_language()
         translated = get_translated_notice(notice, lang)
-        return jsonify({
+        response = jsonify({
             'id': translated['id'],
             'title': translated['title'],
             'content': translated['content'],
             'created_at': notice.created_at.strftime('%Y-%m-%d') if notice.created_at else ''
         })
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        return response
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

@@ -1131,7 +1131,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
 function openNoticeModal(noticeId) {
-    fetch('/api/notice/' + noticeId)
+    fetch('/api/notice/' + noticeId, { cache: 'no-store' })
         .then(function(r) { return r.json(); })
         .then(function(data) {
             if (data.error) return;

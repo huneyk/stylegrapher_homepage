@@ -41,7 +41,14 @@ def get_openai_client():
     if _openai_client is None:
         api_key = os.environ.get('OPENAI_API_KEY')
         if api_key:
-            _openai_client = OpenAI(api_key=api_key)
+            try:
+                _openai_client = OpenAI(api_key=api_key)
+            except TypeError:
+                import httpx
+                _openai_client = OpenAI(
+                    api_key=api_key,
+                    http_client=httpx.Client()
+                )
     return _openai_client
 
 # 지원하는 언어 목록
