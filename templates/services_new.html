@@ -76,7 +76,11 @@
                     {% for service in category.services %}
                         {% for option in service.options %}
                         {% set trans_option = translated_options.get(option.id, {}) %}
+                        {% if option.name == 'StyleGrapher.AI' %}
+                        <a href="https://www.stylegrapher.ai/" target="_blank" rel="noopener noreferrer" class="prism-service-card-link">
+                        {% else %}
                         <a href="{{ url_for('main.service_option_detail', id=option.id) }}" class="prism-service-card-link">
+                        {% endif %}
                             <div class="prism-service-card">
                                 <div class="prism-glass-edge"></div>
                                 <div class="prism-service-inner stg_card_format">
