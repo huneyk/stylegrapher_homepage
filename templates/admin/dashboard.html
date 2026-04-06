@@ -81,6 +81,34 @@
             </div>
         </div>
 
+        <!-- 그룹 1.5: 공지사항 관리 -->
+        <div class="col-12">
+            <div class="card shadow-sm group-card">
+                <div class="card-header group-card-header">
+                    <h6 class="mb-0"><i class="bi bi-megaphone-fill me-2"></i>공지사항 관리</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm inner-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="bi bi-megaphone me-2"></i>공지사항 관리
+                                    </h5>
+                                    <p class="card-text text-muted">인덱스 페이지에 표시되는 공지사항을 관리합니다. (최대 3개 활성화)</p>
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('admin.list_notices') }}" class="btn btn-primary">
+                                            공지사항 관리
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- 그룹 2: 고객 관리 (예약 관리 - 문의 관리) -->
         <div class="col-12">
             <div class="card shadow-sm group-card">

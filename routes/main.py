@@ -19,7 +19,8 @@ from utils.mongo_models import (
     Service, ServiceOption, GalleryGroup, Gallery,
     Booking, Inquiry, CollageText,
     TermsOfService, PrivacyPolicy, get_next_id,
-    AdminNotificationEmail, AboutContent, PackagePhoto, PackagePhotoCategory
+    AdminNotificationEmail, AboutContent, PackagePhoto, PackagePhotoCategory,
+    Notice
 )
 from utils.translation_helper import (
     get_current_language, 
@@ -27,6 +28,7 @@ from utils.translation_helper import (
     get_translated_service_option,
     get_translated_collage_text,
     get_translated_gallery_group,
+    get_translated_notice,
     translate_package_photo_category,
     translate_package_photo_concept
 )
@@ -178,6 +180,14 @@ def clear_gallery_cache():
     print(f"🧹 갤러리 캐시 클리어 완료: {len(keys_to_remove)}개 항목 제거")
 
 
+def clear_index_page_cache():
+    """인덱스 페이지의 Flask-Caching 캐시를 모든 언어에 대해 클리어"""
+    languages = ['ko', 'en', 'ja', 'zh', 'es']
+    for lang in languages:
+        cache.delete(f"/:{lang}")
+    print("🧹 인덱스 페이지 캐시 클리어 완료")
+
+
 def clear_service_option_cache(option_id=None):
     """서비스 옵션 관련 캐시를 클리어하는 함수
     
@@ -302,13 +312,38 @@ def index():
     translated_recent = [get_translated_gallery_group(g, lang) for g in recent_galleries]
     translated_preview = [get_translated_gallery_group(g, lang) for g in preview_galleries]
     
+    # 활성화된 공지사항 가져오기 (최대 3개) + 번역
+    active_notices = Notice.query_active(limit=3)
+    translated_notices = [get_translated_notice(n, lang) for n in active_notices]
+    
     return render_template('index.html', 
                          recent_galleries=recent_galleries,
                          preview_galleries=preview_galleries,
                          translated_recent=translated_recent,
                          translated_preview=translated_preview,
                          services=services,
-                         fade_texts=fade_texts)
+                         fade_texts=fade_texts,
+                         notices=translated_notices)
+
+
+@main.route('/api/notice/<int:notice_id>')
+def get_notice_content(notice_id):
+    """공지사항 본문 JSON 반환 (모달용) - i18n 적용"""
+    from flask import jsonify
+    try:
+        notice = Notice.get_by_id(notice_id)
+        if not notice or not notice.is_active:
+            return jsonify({'error': 'Not found'}), 404
+        lang = get_current_language()
+        translated = get_translated_notice(notice, lang)
+        return jsonify({
+            'id': translated['id'],
+            'title': translated['title'],
+            'content': translated['content'],
+            'created_at': notice.created_at.strftime('%Y-%m-%d') if notice.created_at else ''
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @main.route('/services')

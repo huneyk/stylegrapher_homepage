@@ -832,6 +832,10 @@ msgid "시간외 업차지가 추가됩니다"
 msgstr "時間外料金が追加されます"
 
 
+# Notice Section Label
+msgid "알려드려요"
+msgstr "お知らせ"
+
 # International Customer Notice
 msgid "해외 고객 안내: 편하신 언어로 문의해 주세요."
 msgstr "海外のお客様へ：お気軽にお問い合わせください。"

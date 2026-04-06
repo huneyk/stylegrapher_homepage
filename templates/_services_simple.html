@@ -30,7 +30,11 @@
                     <div class="stg_card_options">
                         {% for option in service.options %}
                         <div class="stg_card_option_wrapper">
+                            {% if option.name == 'StyleGrapher.AI' %}
+                            <a href="https://www.stylegrapher.ai/" target="_blank" rel="noopener noreferrer" class="stg_card_option_btn">
+                            {% else %}
                             <a href="{{ url_for('main.service_option_detail', id=option.id) }}" class="stg_card_option_btn">
+                            {% endif %}
                                 <span class="stg_card_option_text">{{ t('service_option', option.id, 'name', option.name) }}</span>
                                 <i class="bi bi-arrow-right-short stg_card_option_arrow"></i>
                             </a>

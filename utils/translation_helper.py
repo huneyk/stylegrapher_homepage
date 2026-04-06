@@ -23,6 +23,7 @@ from utils.translation import (
     translate_gallery_group,
     translate_terms_of_service,
     translate_privacy_policy,
+    translate_notice,
     SUPPORTED_LANGUAGES,
     # JSON 캐시 관련 함수들
     get_translation_from_cache,
@@ -443,6 +444,47 @@ def get_translated_gallery_group(gallery_group, lang: str = None) -> Dict[str, A
     return result
 
 
+def get_translated_notice(notice, lang: str = None) -> Dict[str, Any]:
+    """
+    Notice 객체의 번역된 버전 반환
+    
+    Args:
+        notice: Notice 모델 객체
+        lang: 언어 코드 (None이면 현재 언어 사용)
+    
+    Returns:
+        번역된 필드를 포함한 딕셔너리
+    """
+    if lang is None:
+        lang = get_current_language()
+    
+    result = {
+        'id': notice.id,
+        'title': notice.title,
+        'content': notice.content,
+        'is_active': notice.is_active,
+        'display_order': notice.display_order,
+        'created_at': notice.created_at,
+        'updated_at': notice.updated_at,
+    }
+    
+    if lang == 'ko':
+        return result
+    
+    for field in ['title', 'content']:
+        original_value = getattr(notice, field, None)
+        if not original_value or not str(original_value).strip():
+            continue
+        
+        translated = get_translation_from_cache('notice', notice.id, field, lang)
+        if not translated:
+            translated = get_translation('notice', notice.id, field, lang)
+        if translated:
+            result[field] = translated
+    
+    return result
+
+
 # 패키지 화보 카테고리/컨셉 번역 딕셔너리
 _package_photo_translations = {
     'categories': {
@@ -634,6 +676,8 @@ def trigger_translation(model_type: str, model_instance):
                 translate_terms_of_service(model_instance)
             elif model_type == 'privacy_policy':
                 translate_privacy_policy(model_instance)
+            elif model_type == 'notice':
+                translate_notice(model_instance)
             print(f"✅ 비동기 번역 완료: {model_type}_{model_instance.id}")
         except Exception as e:
             print(f"❌ 비동기 번역 오류: {str(e)}")
@@ -661,6 +705,7 @@ def register_template_helpers(app):
             'get_translated_service_option': get_translated_service_option,
             'get_translated_collage_text': get_translated_collage_text,
             'get_translated_gallery_group': get_translated_gallery_group,
+            'get_translated_notice': get_translated_notice,
             'TranslatedModel': TranslatedModel,
             'SUPPORTED_LANGUAGES': SUPPORTED_LANGUAGES
         }

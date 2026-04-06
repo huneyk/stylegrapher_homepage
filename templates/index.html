@@ -913,6 +913,239 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+<!-- Notice Section -->
+{% if notices and notices|length > 0 %}
+<section class="notice-section">
+    <div class="notice-container">
+        <div class="notice-label">
+            <i class="bi bi-megaphone-fill"></i>
+            <span>{{ _('알려드려요') }}</span>
+        </div>
+        <div class="notice-track-wrapper">
+            <div class="notice-track{% if notices|length >= 2 %} notice-track--scrolling{% endif %}">
+                {% for notice in notices %}
+                <a href="javascript:void(0)" class="notice-item" data-notice-id="{{ notice.id }}" onclick="openNoticeModal({{ notice.id }})">
+                    <span class="notice-dot"></span>
+                    <span class="notice-title-text">{{ notice.title }}</span>
+                </a>
+                {% endfor %}
+                {% if notices|length >= 2 %}
+                {% for notice in notices %}
+                <a href="javascript:void(0)" class="notice-item" data-notice-id="{{ notice.id }}" onclick="openNoticeModal({{ notice.id }})" aria-hidden="true">
+                    <span class="notice-dot"></span>
+                    <span class="notice-title-text">{{ notice.title }}</span>
+                </a>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Notice Modal -->
+<div class="modal fade" id="noticeModal" tabindex="-1" aria-labelledby="noticeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content notice-modal-content">
+            <div class="modal-header notice-modal-header">
+                <h5 class="modal-title" id="noticeModalLabel"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body notice-modal-body">
+                <div id="noticeModalDate" class="notice-modal-date"></div>
+                <div id="noticeModalContent" class="notice-modal-text"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.notice-section {
+    padding: 0.6rem 0;
+    overflow: hidden;
+}
+
+.notice-container {
+    max-width: 600px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    background: rgba(68, 35, 122, 0.04);
+    border: 1px solid rgba(68, 35, 122, 0.1);
+    border-radius: 40px;
+    padding: 0.5rem 1.2rem;
+    gap: 0.8rem;
+}
+
+.notice-label {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: #44237A;
+    font-family: 'Nanum Gothic', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+    opacity: 0.85;
+}
+
+.notice-label i {
+    font-size: 0.75rem;
+}
+
+.notice-track-wrapper {
+    overflow: hidden;
+    flex: 1;
+    mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+}
+
+.notice-track {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2.5rem;
+    white-space: nowrap;
+}
+
+.notice-track--scrolling {
+    animation: noticeScroll 18s linear infinite;
+    width: max-content;
+}
+
+.notice-track--scrolling:hover {
+    animation-play-state: paused;
+}
+
+@keyframes noticeScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+.notice-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #44237A;
+    text-decoration: none;
+    font-family: 'Nanum Gothic', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: color 0.25s ease, opacity 0.25s ease;
+    opacity: 0.75;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.notice-item:hover {
+    color: #6f42c1;
+    opacity: 1;
+}
+
+.notice-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #B57EDC;
+    flex-shrink: 0;
+    animation: noticeDotPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes noticeDotPulse {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.3); }
+}
+
+.notice-title-text {
+    max-width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+}
+
+/* Notice Modal */
+.notice-modal-content {
+    border: 1px solid rgba(68, 35, 122, 0.15);
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(68, 35, 122, 0.12);
+    overflow: hidden;
+}
+
+.notice-modal-header {
+    background: linear-gradient(135deg, rgba(68, 35, 122, 0.06), rgba(181, 126, 220, 0.08));
+    border-bottom: 1px solid rgba(68, 35, 122, 0.08);
+    padding: 1.2rem 1.5rem;
+}
+
+.notice-modal-header .modal-title {
+    font-family: 'Nanum Gothic', sans-serif;
+    font-weight: 700;
+    color: #44237A;
+    font-size: 1.1rem;
+}
+
+.notice-modal-header .btn-close {
+    opacity: 0.5;
+}
+
+.notice-modal-body {
+    padding: 1.5rem;
+}
+
+.notice-modal-date {
+    font-family: 'Nanum Gothic', sans-serif;
+    font-size: 0.78rem;
+    color: #999;
+    margin-bottom: 1rem;
+}
+
+.notice-modal-text {
+    font-family: 'Nanum Gothic', sans-serif;
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: #333;
+    white-space: pre-wrap;
+    word-break: keep-all;
+}
+
+@media (max-width: 768px) {
+    .notice-container {
+        margin: 0 1rem;
+        padding: 0.4rem 1rem;
+        border-radius: 30px;
+    }
+
+    .notice-label {
+        font-size: 0.75rem;
+    }
+
+    .notice-item {
+        font-size: 0.8rem;
+    }
+
+    .notice-title-text {
+        max-width: 200px;
+    }
+}
+</style>
+
+<script>
+function openNoticeModal(noticeId) {
+    fetch('/api/notice/' + noticeId)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.error) return;
+            document.getElementById('noticeModalLabel').textContent = data.title;
+            document.getElementById('noticeModalDate').textContent = data.created_at;
+            document.getElementById('noticeModalContent').textContent = data.content || '';
+            var modal = new bootstrap.Modal(document.getElementById('noticeModal'));
+            modal.show();
+        })
+        .catch(function(err) { console.error('Notice fetch error:', err); });
+}
+</script>
+{% endif %}
+
 <!-- Services Preview Section -->
 <section class="container py-5">
     {% include '_services_simple.html' %}

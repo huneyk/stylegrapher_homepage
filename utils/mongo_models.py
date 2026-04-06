@@ -122,6 +122,11 @@ def init_collections():
     if 'about_content' not in db.list_collection_names():
         db.create_collection('about_content')
     
+    # notices 컬렉션
+    if 'notices' not in db.list_collection_names():
+        db.create_collection('notices')
+    db.notices.create_index([('is_active', DESCENDING), ('display_order', ASCENDING)])
+    
     # admin_notification_emails 컬렉션
     if 'admin_notification_emails' not in db.list_collection_names():
         db.create_collection('admin_notification_emails')
@@ -993,6 +998,34 @@ class PackagePhotoCategory(MongoModel):
         
         for cat_name in photo_categories:
             cls.get_or_create(service_option_id, cat_name)
+
+
+class Notice(MongoModel):
+    """공지사항 모델"""
+    collection_name = 'notices'
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.title = kwargs.get('title', '')
+        self.content = kwargs.get('content', '')
+        self.is_active = kwargs.get('is_active', True)
+        self.display_order = kwargs.get('display_order', 0)
+        self.created_at = kwargs.get('created_at', datetime.utcnow())
+        self.updated_at = kwargs.get('updated_at', datetime.utcnow())
+    
+    @classmethod
+    def query_active(cls, limit=3):
+        """활성화된 공지사항 조회 (최대 3개, 순서 정렬)"""
+        collection = cls.get_collection()
+        docs = collection.find({'is_active': True}).sort('display_order', ASCENDING).limit(limit)
+        return [cls.from_doc(doc) for doc in docs]
+    
+    @classmethod
+    def query_all_ordered(cls):
+        """모든 공지사항 조회 (순서 정렬)"""
+        collection = cls.get_collection()
+        docs = collection.find().sort([('display_order', ASCENDING), ('created_at', DESCENDING)])
+        return [cls.from_doc(doc) for doc in docs]
 
 
 class AdminNotificationEmail(MongoModel):

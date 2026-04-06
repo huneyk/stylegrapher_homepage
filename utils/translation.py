@@ -1182,6 +1182,24 @@ def translate_privacy_policy(policy) -> bool:
     return True
 
 
+def translate_notice(notice) -> bool:
+    """
+    Notice 모델의 title, content 필드 번역 및 저장
+    
+    Args:
+        notice: Notice 모델 객체
+    
+    Returns:
+        성공 여부
+    """
+    success = True
+    if notice.title and notice.title.strip():
+        success = save_translation('notice', notice.id, 'title', notice.title) and success
+    if notice.content and notice.content.strip():
+        success = save_translation('notice', notice.id, 'content', notice.content) and success
+    return success
+
+
 def migrate_all_translations():
     """
     SQLite의 모든 텍스트 데이터를 번역하여 MongoDB에 저장

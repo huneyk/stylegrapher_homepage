@@ -35,7 +35,7 @@ from utils.mongo_models import (
     User, Service, ServiceOption, GalleryGroup, Gallery,
     Booking, Inquiry, CollageText, SiteSettings,
     TermsOfService, PrivacyPolicy, AdminNotificationEmail, CompanyInfo, AboutContent,
-    PackagePhoto, PackagePhotoCategory
+    PackagePhoto, PackagePhotoCategory, Notice
 )
 
 # .env 파일 로드 (fork-safe: MongoDB 연결은 lazy하게 생성됨)
@@ -2210,3 +2210,161 @@ def delete_package_photo_image(id, image_id):
         return redirect(url_for('admin.edit_package_photo', id=id))
 
 
+# ========== 공지사항 관리 ==========
+
+@admin.route('/notices')
+@login_required
+def list_notices():
+    """공지사항 목록"""
+    try:
+        notices = Notice.query_all_ordered()
+        active_count = len([n for n in notices if n.is_active])
+        return render_template('admin/notices.html', notices=notices, active_count=active_count)
+    except Exception as e:
+        print(f"Error listing notices: {str(e)}")
+        flash('공지사항 목록을 불러오는 중 오류가 발생했습니다.', 'error')
+        return render_template('admin/notices.html', notices=[], active_count=0)
+
+
+@admin.route('/notices/add', methods=['GET', 'POST'])
+@login_required
+def add_notice():
+    """공지사항 추가"""
+    if request.method == 'POST':
+        try:
+            title = request.form.get('title', '').strip()
+            content = request.form.get('content', '').strip()
+            display_order = request.form.get('display_order', 0, type=int)
+            is_active = request.form.get('is_active') == 'on'
+            
+            if not title:
+                flash('제목을 입력해주세요.', 'error')
+                return render_template('admin/add_notice.html')
+            
+            if is_active:
+                active_count = len(Notice.query_active(limit=10))
+                if active_count >= 3:
+                    flash('활성화된 공지사항은 최대 3개까지만 가능합니다. 다른 공지사항을 비활성화한 후 시도해주세요.', 'warning')
+                    return render_template('admin/add_notice.html')
+            
+            notice = Notice(
+                title=title,
+                content=content,
+                display_order=display_order,
+                is_active=is_active
+            )
+            notice.save()
+            
+            trigger_translation('notice', notice)
+            
+            from routes.main import clear_index_page_cache
+            clear_index_page_cache()
+            
+            flash('공지사항이 추가되었습니다.')
+            return redirect(url_for('admin.list_notices'))
+        except Exception as e:
+            print(f"Error adding notice: {str(e)}")
+            flash('공지사항 추가 중 오류가 발생했습니다.', 'error')
+    
+    return render_template('admin/add_notice.html')
+
+
+@admin.route('/notices/<int:id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_notice(id):
+    """공지사항 수정"""
+    try:
+        notice = Notice.get_or_404(id)
+        
+        if request.method == 'POST':
+            title = request.form.get('title', '').strip()
+            content = request.form.get('content', '').strip()
+            display_order = request.form.get('display_order', 0, type=int)
+            is_active = request.form.get('is_active') == 'on'
+            
+            if not title:
+                flash('제목을 입력해주세요.', 'error')
+                return render_template('admin/edit_notice.html', notice=notice)
+            
+            if is_active and not notice.is_active:
+                active_count = len(Notice.query_active(limit=10))
+                if active_count >= 3:
+                    flash('활성화된 공지사항은 최대 3개까지만 가능합니다.', 'warning')
+                    return render_template('admin/edit_notice.html', notice=notice)
+            
+            notice.title = title
+            notice.content = content
+            notice.display_order = display_order
+            notice.is_active = is_active
+            notice.updated_at = datetime.utcnow()
+            notice.save()
+            
+            trigger_translation('notice', notice)
+            
+            from routes.main import clear_index_page_cache
+            clear_index_page_cache()
+            
+            flash('공지사항이 수정되었습니다.')
+            return redirect(url_for('admin.list_notices'))
+        
+        return render_template('admin/edit_notice.html', notice=notice)
+    except Exception as e:
+        print(f"Error editing notice: {str(e)}")
+        flash('공지사항 수정 중 오류가 발생했습니다.', 'error')
+        return redirect(url_for('admin.list_notices'))
+
+
+@admin.route('/notices/<int:id>/toggle-active', methods=['POST'])
+@login_required
+def toggle_notice_active(id):
+    """공지사항 활성화/비활성화 토글"""
+    try:
+        notice = Notice.get_by_id(id)
+        if not notice:
+            flash('공지사항을 찾을 수 없습니다.', 'error')
+            return redirect(url_for('admin.list_notices'))
+        
+        if not notice.is_active:
+            active_count = len(Notice.query_active(limit=10))
+            if active_count >= 3:
+                flash('활성화된 공지사항은 최대 3개까지만 가능합니다. 다른 공지사항을 비활성화한 후 시도해주세요.', 'warning')
+                return redirect(url_for('admin.list_notices'))
+        
+        notice.is_active = not notice.is_active
+        notice.updated_at = datetime.utcnow()
+        notice.save()
+        
+        from routes.main import clear_index_page_cache
+        clear_index_page_cache()
+        
+        status = '활성화' if notice.is_active else '비활성화'
+        flash(f'공지사항 "{notice.title}"이(가) {status}되었습니다.')
+    except Exception as e:
+        print(f"Error toggling notice: {str(e)}")
+        flash('공지사항 상태 변경 중 오류가 발생했습니다.', 'error')
+    
+    return redirect(url_for('admin.list_notices'))
+
+
+@admin.route('/notices/<int:id>/delete', methods=['POST'])
+@login_required
+def delete_notice(id):
+    """공지사항 삭제"""
+    try:
+        notice = Notice.get_by_id(id)
+        if not notice:
+            flash('공지사항을 찾을 수 없습니다.', 'error')
+            return redirect(url_for('admin.list_notices'))
+        
+        title = notice.title
+        notice.delete()
+        
+        from routes.main import clear_index_page_cache
+        clear_index_page_cache()
+        
+        flash(f'공지사항 "{title}"이(가) 삭제되었습니다.')
+    except Exception as e:
+        print(f"Error deleting notice: {str(e)}")
+        flash('공지사항 삭제 중 오류가 발생했습니다.', 'error')
+    
+    return redirect(url_for('admin.list_notices'))

@@ -801,6 +801,10 @@ msgstr "시간외 업차지가 추가됩니다"
 
 
 
+# Notice Section Label
+msgid "알려드려요"
+msgstr "알려드려요"
+
 # Terms of Service - Refund Policies Section
 msgid "서비스별 환불 조건"
 msgstr "서비스별 환불 조건"

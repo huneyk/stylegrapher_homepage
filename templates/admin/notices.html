@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}공지사항 관리{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <h1 class="mb-0">공지사항 관리</h1>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-tachometer-alt"></i> 관리자 대시보드 바로가기
+        </a>
+    </div>
+    <a href="{{ url_for('admin.add_notice') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> 새 공지사항 추가
+    </a>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ 'danger' if category == 'error' else ('warning' if category == 'warning' else 'success') }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="alert alert-info mb-4">
+    <i class="fas fa-info-circle me-2"></i>
+    현재 활성화된 공지사항: <strong>{{ active_count }}/3</strong>개
+    (최대 3개까지 활성화 가능)
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">공지사항 목록</h5>
+    </div>
+    <div class="card-body">
+        {% if notices %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>순서</th>
+                            <th>제목</th>
+                            <th>상태</th>
+                            <th>생성일</th>
+                            <th>수정일</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for notice in notices %}
+                        <tr>
+                            <td>{{ notice.display_order }}</td>
+                            <td>{{ notice.title }}</td>
+                            <td>
+                                {% if notice.is_active %}
+                                    <span class="badge bg-success">활성</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">비활성</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ notice.created_at.strftime('%Y-%m-%d %H:%M') if notice.created_at else '-' }}</td>
+                            <td>{{ notice.updated_at.strftime('%Y-%m-%d %H:%M') if notice.updated_at else '-' }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('admin.edit_notice', id=notice.id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i> 수정
+                                    </a>
+                                    <form action="{{ url_for('admin.toggle_notice_active', id=notice.id) }}" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-outline-{{ 'warning' if notice.is_active else 'success' }}">
+                                            <i class="fas fa-{{ 'eye-slash' if notice.is_active else 'eye' }}"></i>
+                                            {{ '비활성화' if notice.is_active else '활성화' }}
+                                        </button>
+                                    </form>
+                                    <form action="{{ url_for('admin.delete_notice', id=notice.id) }}" method="POST" style="display:inline;"
+                                          onsubmit="return confirm('정말 삭제하시겠습니까?')">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i> 삭제
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-bullhorn fa-3x text-muted mb-3"></i>
+                <p class="text-muted">등록된 공지사항이 없습니다.</p>
+                <a href="{{ url_for('admin.add_notice') }}" class="btn btn-primary">
+                    첫 번째 공지사항 추가하기
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="mt-4">
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        <strong>사용 방법:</strong>
+        <ul class="mb-0 mt-2">
+            <li>공지사항은 최대 <strong>3개</strong>까지 활성화할 수 있습니다.</li>
+            <li>활성화된 공지사항이 2개 이상이면 인덱스 페이지에서 한 줄로 흐르는 애니메이션으로 표시됩니다.</li>
+            <li>공지사항 제목을 클릭하면 모달 창에서 본문이 표시됩니다.</li>
+            <li>순서 번호가 낮을수록 먼저 표시됩니다.</li>
+        </ul>
+    </div>
+</div>
+</div>
+{% endblock %}

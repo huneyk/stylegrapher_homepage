@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}공지사항 수정{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <h1 class="mb-0">공지사항 수정</h1>
+        <a href="{{ url_for('admin.list_notices') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 목록으로
+        </a>
+    </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ 'danger' if category == 'error' else ('warning' if category == 'warning' else 'success') }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST">
+            <div class="mb-3">
+                <label for="title" class="form-label">제목 <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="title" name="title" 
+                       value="{{ notice.title }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="content" class="form-label">본문</label>
+                <textarea class="form-control" id="content" name="content" rows="8">{{ notice.content }}</textarea>
+            </div>
+            <div class="mb-3">
+                <label for="display_order" class="form-label">표출 순서</label>
+                <input type="number" class="form-control" id="display_order" name="display_order" 
+                       value="{{ notice.display_order }}" min="0">
+                <div class="form-text">숫자가 낮을수록 먼저 표시됩니다.</div>
+            </div>
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="is_active" name="is_active"
+                       {{ 'checked' if notice.is_active }}>
+                <label class="form-check-label" for="is_active">활성화 (최대 3개)</label>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> 저장
+                </button>
+                <a href="{{ url_for('admin.list_notices') }}" class="btn btn-secondary">취소</a>
+            </div>
+        </form>
+    </div>
+</div>
+</div>
+{% endblock %}

@@ -833,6 +833,10 @@ msgid "시간외 업차지가 추가됩니다"
 msgstr "Se añadirá un recargo por horario fuera de oficina"
 
 
+# Notice Section Label
+msgid "알려드려요"
+msgstr "Aviso"
+
 # International Customer Notice
 msgid "해외 고객 안내: 편하신 언어로 문의해 주세요."
 msgstr "Clientes Internacionales: Contáctenos en su idioma."
