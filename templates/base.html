@@ -444,7 +444,11 @@
                         {% for service in category.services %}
                         {% for option in service.options %}
                         <li class="sub-menu-item">
+                            {% if option.name == 'StyleGrapher.AI' %}
+                            <a href="https://www.stylegrapher.ai/" target="_blank" rel="noopener noreferrer" class="sub-menu-link">
+                            {% else %}
                             <a href="{{ url_for('main.service_option_detail', id=option.id) }}" class="sub-menu-link">
+                            {% endif %}
                                 {{ _(option.name) }}
                             </a>
                         </li>
