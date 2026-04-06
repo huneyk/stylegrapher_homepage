@@ -35,7 +35,7 @@
                             {% else %}
                             <a href="{{ url_for('main.service_option_detail', id=option.id) }}" class="stg_card_option_btn">
                             {% endif %}
-                                <span class="stg_card_option_text">{{ t('service_option', option.id, 'name', option.name) }}</span>
+                                <span class="stg_card_option_text">{% if option.name == 'StyleGrapher.AI' %}StyleGrapher.AI{% else %}{{ t('service_option', option.id, 'name', option.name) }}{% endif %}</span>
                                 <i class="bi bi-arrow-right-short stg_card_option_arrow"></i>
                             </a>
                         </div>
