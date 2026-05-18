@@ -650,42 +650,94 @@ def auto_translate_on_save(model_type: str):
     return decorator
 
 
-def trigger_translation(model_type: str, model_instance):
+def _invalidate_page_cache_after_translation(model_type: str, model_instance) -> None:
+    """
+    번역 완료 후 관련 페이지 캐시 무효화
+    
+    FileSystemCache를 사용하므로 모든 gunicorn 워커가 즉시 새 번역을 반영함
+    """
+    try:
+        if model_type == 'service_option':
+            from routes.main import clear_service_option_cache
+            clear_service_option_cache(getattr(model_instance, 'id', None))
+        elif model_type == 'service':
+            from routes.main import clear_service_option_cache
+            clear_service_option_cache()
+        elif model_type == 'gallery_group':
+            from routes.main import clear_gallery_cache, clear_index_page_cache
+            clear_gallery_cache()
+            clear_index_page_cache()
+        elif model_type == 'collage_text':
+            from routes.main import clear_index_page_cache
+            clear_index_page_cache()
+        elif model_type == 'notice':
+            from routes.main import clear_index_page_cache
+            clear_index_page_cache()
+        elif model_type in ('terms_of_service', 'privacy_policy'):
+            from extensions import cache
+            cache.clear()
+    except Exception as cache_err:
+        print(f"⚠️ 번역 후 캐시 클리어 실패 (무시 가능): {cache_err}")
+
+
+def _run_translation(model_type: str, model_instance) -> bool:
+    """모델 타입에 따라 적절한 번역 함수 호출"""
+    model_id = getattr(model_instance, 'id', '?')
+    print(f"🌐 번역 시작: {model_type}_{model_id}")
+    try:
+        if model_type == 'service':
+            translate_service(model_instance)
+        elif model_type == 'service_option':
+            translate_service_option(model_instance)
+        elif model_type == 'collage_text':
+            translate_collage_text(model_instance)
+        elif model_type == 'gallery_group':
+            translate_gallery_group(model_instance)
+        elif model_type == 'terms_of_service':
+            translate_terms_of_service(model_instance)
+        elif model_type == 'privacy_policy':
+            translate_privacy_policy(model_instance)
+        elif model_type == 'notice':
+            translate_notice(model_instance)
+        else:
+            print(f"⚠️ 알 수 없는 model_type: {model_type}")
+            return False
+        
+        print(f"✅ 번역 완료: {model_type}_{model_id}")
+        _invalidate_page_cache_after_translation(model_type, model_instance)
+        return True
+    except Exception as e:
+        print(f"❌ 번역 오류 ({model_type}_{model_id}): {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+
+def trigger_translation(model_type: str, model_instance, wait: bool = False):
     """
     모델 인스턴스에 대한 번역 트리거
     
-    데이터 추가/수정 후 이 함수를 호출하여 번역 수행
+    데이터 추가/수정 후 이 함수를 호출하여 번역 수행.
+    번역 완료 후 자동으로 페이지 캐시도 무효화함 (gunicorn 멀티 워커 환경에서
+    다국어 페이지가 stale 캐시를 보여주는 문제 방지).
     
     Args:
-        model_type: 모델 타입 (service, service_option, collage_text, gallery_group, terms_of_service, privacy_policy 등)
+        model_type: 모델 타입 (service, service_option, collage_text, gallery_group, terms_of_service, privacy_policy, notice)
         model_instance: 모델 인스턴스
+        wait: True이면 동기 실행 (번역 완료까지 대기), False이면 백그라운드 실행 (기본값)
     """
+    if wait:
+        return _run_translation(model_type, model_instance)
+    
     import threading
-    
-    def translate_async():
-        try:
-            if model_type == 'service':
-                translate_service(model_instance)
-            elif model_type == 'service_option':
-                translate_service_option(model_instance)
-            elif model_type == 'collage_text':
-                translate_collage_text(model_instance)
-            elif model_type == 'gallery_group':
-                translate_gallery_group(model_instance)
-            elif model_type == 'terms_of_service':
-                translate_terms_of_service(model_instance)
-            elif model_type == 'privacy_policy':
-                translate_privacy_policy(model_instance)
-            elif model_type == 'notice':
-                translate_notice(model_instance)
-            print(f"✅ 비동기 번역 완료: {model_type}_{model_instance.id}")
-        except Exception as e:
-            print(f"❌ 비동기 번역 오류: {str(e)}")
-    
-    # 백그라운드에서 번역 수행
-    thread = threading.Thread(target=translate_async)
+    thread = threading.Thread(
+        target=_run_translation,
+        args=(model_type, model_instance),
+        name=f"translate-{model_type}-{getattr(model_instance, 'id', '?')}"
+    )
     thread.daemon = True
     thread.start()
+    return None
 
 
 def register_template_helpers(app):

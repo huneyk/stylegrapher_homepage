@@ -46,6 +46,9 @@ Thumbs.db
 instance/
 .webassets-cache
 
+# Flask-Caching FileSystemCache 캐시 디렉토리 (런타임 자동 생성)
+static/cache/
+
 # 업로드된 파일들 (실제 배포 시에는 이 부분을 주석 처리하거나 제거해야 함)
 static/uploads/*
 !static/uploads/.gitkeep

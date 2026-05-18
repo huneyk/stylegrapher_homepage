@@ -13,6 +13,7 @@ OpenAI GPT API를 사용하여 자동 번역 지원
 import os
 import json
 import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from typing import Optional, Dict, List, Any
 from pymongo import MongoClient
@@ -29,7 +30,9 @@ TRANSLATIONS_CACHE_FILE = TRANSLATIONS_CACHE_DIR / 'translations.json'
 
 # 메모리 캐시 (JSON 파일 읽기 최소화)
 _translations_memory_cache = None
-_cache_lock = threading.Lock()
+# RLock - update_cache_entry가 락을 잡은 채로 load/save를 호출할 수 있도록 재진입 허용
+# (read-modify-write 사이 race condition으로 한 번역이 다른 번역을 덮어쓰는 문제 방지)
+_cache_lock = threading.RLock()
 _cache_last_modified = None
 
 # OpenAI 클라이언트 초기화
@@ -40,15 +43,24 @@ def get_openai_client():
     global _openai_client
     if _openai_client is None:
         api_key = os.environ.get('OPENAI_API_KEY')
-        if api_key:
+        if not api_key:
+            print("❌ OPENAI_API_KEY 환경 변수가 설정되지 않았습니다! 번역이 동작하지 않습니다.")
+            return None
+        try:
+            _openai_client = OpenAI(api_key=api_key)
+        except TypeError:
             try:
-                _openai_client = OpenAI(api_key=api_key)
-            except TypeError:
                 import httpx
                 _openai_client = OpenAI(
                     api_key=api_key,
                     http_client=httpx.Client()
                 )
+            except Exception as e:
+                print(f"❌ OpenAI 클라이언트 초기화 실패 (httpx fallback): {str(e)}")
+                return None
+        except Exception as e:
+            print(f"❌ OpenAI 클라이언트 초기화 실패: {str(e)}")
+            return None
     return _openai_client
 
 # 지원하는 언어 목록
@@ -258,7 +270,8 @@ def update_cache_entry(source_type: str, source_id: int, field_name: str,
     """
     JSON 캐시의 특정 항목 업데이트
     
-    MongoDB 저장 후 호출하여 캐시 동기화
+    MongoDB 저장 후 호출하여 캐시 동기화.
+    load-modify-save 전 과정을 락으로 보호하여 동시 번역 간 덮어쓰기 방지.
     
     Args:
         source_type: 데이터 타입
@@ -270,29 +283,28 @@ def update_cache_entry(source_type: str, source_id: int, field_name: str,
     Returns:
         성공 여부
     """
-    cache = load_translations_cache()
-    
-    doc_key = f"{source_type}_{source_id}"
-    
-    # 기존 문서가 없으면 새로 생성
-    if doc_key not in cache:
-        cache[doc_key] = {
-            "source_type": source_type,
-            "source_id": source_id,
-            "fields": {},
-            "created_at": datetime.utcnow().isoformat(),
+    with _cache_lock:
+        cache = load_translations_cache()
+        
+        doc_key = f"{source_type}_{source_id}"
+        
+        if doc_key not in cache:
+            cache[doc_key] = {
+                "source_type": source_type,
+                "source_id": source_id,
+                "fields": {},
+                "created_at": datetime.utcnow().isoformat(),
+                "updated_at": datetime.utcnow().isoformat()
+            }
+        
+        cache[doc_key]["fields"][field_name] = {
+            "original": original_text,
+            "translations": translations,
             "updated_at": datetime.utcnow().isoformat()
         }
-    
-    # 필드 업데이트
-    cache[doc_key]["fields"][field_name] = {
-        "original": original_text,
-        "translations": translations,
-        "updated_at": datetime.utcnow().isoformat()
-    }
-    cache[doc_key]["updated_at"] = datetime.utcnow().isoformat()
-    
-    return save_translations_cache(cache)
+        cache[doc_key]["updated_at"] = datetime.utcnow().isoformat()
+        
+        return save_translations_cache(cache)
 
 
 def delete_cache_entry(source_type: str, source_id: int) -> bool:
@@ -306,15 +318,16 @@ def delete_cache_entry(source_type: str, source_id: int) -> bool:
     Returns:
         성공 여부
     """
-    cache = load_translations_cache()
-    
-    doc_key = f"{source_type}_{source_id}"
-    
-    if doc_key in cache:
-        del cache[doc_key]
-        return save_translations_cache(cache)
-    
-    return True
+    with _cache_lock:
+        cache = load_translations_cache()
+        
+        doc_key = f"{source_type}_{source_id}"
+        
+        if doc_key in cache:
+            del cache[doc_key]
+            return save_translations_cache(cache)
+        
+        return True
 
 
 def _convert_datetime_to_string(obj: Any) -> Any:
@@ -527,7 +540,10 @@ Maintain a professional yet friendly tone suitable for a premium styling service
 
 def translate_to_all_languages(text: str, source_lang: str = 'ko') -> Dict[str, str]:
     """
-    텍스트를 모든 지원 언어로 번역
+    텍스트를 모든 지원 언어로 병렬 번역
+    
+    ThreadPoolExecutor를 사용하여 4개 언어를 동시에 번역
+    → 순차 호출 대비 약 4배 빠르고 GPT timeout으로 인한 부분 실패도 줄어듦
     
     Args:
         text: 번역할 텍스트
@@ -537,18 +553,35 @@ def translate_to_all_languages(text: str, source_lang: str = 'ko') -> Dict[str, 
         언어 코드별 번역된 텍스트 딕셔너리
     """
     translations = {source_lang: text}
+    other_langs = [l for l in SUPPORTED_LANGUAGES.keys() if l != source_lang]
     
-    for lang_code in SUPPORTED_LANGUAGES.keys():
-        if lang_code != source_lang:
-            translated = translate_text_gpt(text, lang_code, source_lang)
-            translations[lang_code] = translated if translated else text
+    if not other_langs or not text or not text.strip():
+        for lang in other_langs:
+            translations[lang] = text
+        return translations
+    
+    with ThreadPoolExecutor(max_workers=len(other_langs)) as executor:
+        future_to_lang = {
+            executor.submit(translate_text_gpt, text, lang, source_lang): lang
+            for lang in other_langs
+        }
+        for future in as_completed(future_to_lang):
+            lang = future_to_lang[future]
+            try:
+                translated = future.result(timeout=90)
+                translations[lang] = translated if translated else text
+            except Exception as e:
+                print(f"❌ {lang} 번역 실패 (원본 fallback): {str(e)}")
+                translations[lang] = text
     
     return translations
 
 
 def translate_to_all_languages_batch(texts: List[str], source_lang: str = 'ko') -> Dict[str, List[str]]:
     """
-    여러 텍스트를 모든 지원 언어로 번역 (배치 처리)
+    여러 텍스트를 모든 지원 언어로 병렬 배치 번역
+    
+    ThreadPoolExecutor를 사용하여 4개 언어 배치 번역을 동시에 실행
     
     Args:
         texts: 번역할 텍스트 리스트
@@ -558,10 +591,26 @@ def translate_to_all_languages_batch(texts: List[str], source_lang: str = 'ko') 
         언어 코드별 번역된 텍스트 리스트 딕셔너리
     """
     translations = {source_lang: texts}
+    other_langs = [l for l in SUPPORTED_LANGUAGES.keys() if l != source_lang]
     
-    for lang_code in SUPPORTED_LANGUAGES.keys():
-        if lang_code != source_lang:
-            translations[lang_code] = translate_batch_gpt(texts, lang_code, source_lang)
+    if not other_langs or not texts:
+        for lang in other_langs:
+            translations[lang] = list(texts)
+        return translations
+    
+    with ThreadPoolExecutor(max_workers=len(other_langs)) as executor:
+        future_to_lang = {
+            executor.submit(translate_batch_gpt, texts, lang, source_lang): lang
+            for lang in other_langs
+        }
+        for future in as_completed(future_to_lang):
+            lang = future_to_lang[future]
+            try:
+                translated = future.result(timeout=120)
+                translations[lang] = translated if translated else list(texts)
+            except Exception as e:
+                print(f"❌ {lang} 배치 번역 실패 (원본 fallback): {str(e)}")
+                translations[lang] = list(texts)
     
     return translations
 
@@ -772,20 +821,26 @@ def translate_service(service) -> bool:
     """
     Service 모델의 모든 텍스트 필드 번역 및 저장
     
+    각 필드의 번역 실패는 다른 필드 번역을 막지 않음 (best-effort).
+    
     Args:
         service: Service 모델 객체
     
     Returns:
-        성공 여부
+        모든 필드 번역 성공 여부
     """
     fields_to_translate = ['name', 'description', 'category']
     success = True
     
     for field in fields_to_translate:
-        value = getattr(service, field, None)
-        if value and isinstance(value, str) and value.strip():
-            if not save_translation('service', service.id, field, value):
-                success = False
+        try:
+            value = getattr(service, field, None)
+            if value and isinstance(value, str) and value.strip():
+                if not save_translation('service', service.id, field, value):
+                    success = False
+        except Exception as e:
+            print(f"⚠️ service.{field} 번역 실패: {str(e)}")
+            success = False
     
     # details (JSON 배열)
     if service.details:
@@ -793,10 +848,14 @@ def translate_service(service) -> bool:
             details_list = json.loads(service.details)
             if isinstance(details_list, list) and details_list:
                 all_translations = translate_to_all_languages_batch(details_list)
-                save_translation('service', service.id, 'details', 
-                               service.details, all_translations)
+                if not save_translation('service', service.id, 'details',
+                                        service.details, all_translations):
+                    success = False
         except json.JSONDecodeError:
-            pass
+            print(f"⚠️ service.details JSON 파싱 실패 (id={service.id})")
+        except Exception as e:
+            print(f"⚠️ service.details 번역 실패: {str(e)}")
+            success = False
     
     # packages (JSON 배열)
     if service.packages:
@@ -804,17 +863,21 @@ def translate_service(service) -> bool:
             packages_list = json.loads(service.packages)
             if isinstance(packages_list, list) and packages_list:
                 translated_packages = translate_packages(packages_list)
-                save_translation('service', service.id, 'packages', 
-                               service.packages, translated_packages)
+                if not save_translation('service', service.id, 'packages',
+                                        service.packages, translated_packages):
+                    success = False
         except json.JSONDecodeError:
-            pass
+            print(f"⚠️ service.packages JSON 파싱 실패 (id={service.id})")
+        except Exception as e:
+            print(f"⚠️ service.packages 번역 실패: {str(e)}")
+            success = False
     
     return success
 
 
 def translate_packages(packages_list: List[Dict]) -> Dict[str, List[Dict]]:
     """
-    패키지 리스트 번역 (모든 문자열 필드)
+    패키지 리스트를 모든 언어로 병렬 번역 (모든 문자열 필드)
     
     Args:
         packages_list: 패키지 정보 리스트
@@ -835,20 +898,20 @@ def translate_packages(packages_list: List[Dict]) -> Dict[str, List[Dict]]:
                 string_map.append((pkg_idx, key))
     
     if not all_strings:
+        for lang_code in SUPPORTED_LANGUAGES.keys():
+            if lang_code != 'ko':
+                result[lang_code] = [dict(p) for p in packages_list]
         return result
     
-    # 각 언어로 번역
-    for lang_code in SUPPORTED_LANGUAGES.keys():
+    # 모든 언어 배치 번역을 병렬로 실행
+    translations_by_lang = translate_to_all_languages_batch(all_strings, source_lang='ko')
+    
+    for lang_code, translated_strings in translations_by_lang.items():
         if lang_code == 'ko':
             continue
         
-        translated_strings = translate_batch_gpt(all_strings, lang_code)
-        
         # 번역된 문자열을 패키지 구조에 다시 매핑
-        translated_packages = []
-        for pkg in packages_list:
-            translated_pkg = pkg.copy()
-            translated_packages.append(translated_pkg)
+        translated_packages = [dict(pkg) for pkg in packages_list]
         
         for idx, (pkg_idx, key) in enumerate(string_map):
             if idx < len(translated_strings):
@@ -861,7 +924,7 @@ def translate_packages(packages_list: List[Dict]) -> Dict[str, List[Dict]]:
 
 def translate_multi_table_packages(packages_data: Dict) -> Dict[str, Dict]:
     """
-    다중 테이블 형식의 패키지 데이터 번역 {'tables': [...]} 형식
+    다중 테이블 형식의 패키지 데이터를 모든 언어로 병렬 번역 {'tables': [...]} 형식
     
     Args:
         packages_data: {'tables': [{'title': ..., 'packages': [...]}]} 형식의 데이터
@@ -869,10 +932,14 @@ def translate_multi_table_packages(packages_data: Dict) -> Dict[str, Dict]:
     Returns:
         언어별 번역된 다중 테이블 패키지 데이터
     """
+    import copy
     result = {'ko': packages_data}
     
     tables = packages_data.get('tables', [])
     if not tables:
+        for lang_code in SUPPORTED_LANGUAGES.keys():
+            if lang_code != 'ko':
+                result[lang_code] = copy.deepcopy(packages_data)
         return result
     
     # 모든 문자열 값 추출
@@ -880,12 +947,10 @@ def translate_multi_table_packages(packages_data: Dict) -> Dict[str, Dict]:
     string_map = []  # (table_idx, 'title' or ('packages', pkg_idx, key)) 매핑
     
     for table_idx, table in enumerate(tables):
-        # 테이블 제목
         if table.get('title') and table['title'].strip():
             all_strings.append(table['title'])
             string_map.append((table_idx, 'title'))
         
-        # 패키지 내용
         for pkg_idx, pkg in enumerate(table.get('packages', [])):
             for key, value in pkg.items():
                 if isinstance(value, str) and value.strip():
@@ -893,17 +958,18 @@ def translate_multi_table_packages(packages_data: Dict) -> Dict[str, Dict]:
                     string_map.append((table_idx, ('packages', pkg_idx, key)))
     
     if not all_strings:
+        for lang_code in SUPPORTED_LANGUAGES.keys():
+            if lang_code != 'ko':
+                result[lang_code] = copy.deepcopy(packages_data)
         return result
     
-    # 각 언어로 번역
-    for lang_code in SUPPORTED_LANGUAGES.keys():
+    # 모든 언어 배치 번역을 병렬로 실행
+    translations_by_lang = translate_to_all_languages_batch(all_strings, source_lang='ko')
+    
+    for lang_code, translated_strings in translations_by_lang.items():
         if lang_code == 'ko':
             continue
         
-        translated_strings = translate_batch_gpt(all_strings, lang_code)
-        
-        # 번역된 문자열을 다중 테이블 구조에 다시 매핑
-        import copy
         translated_data = copy.deepcopy(packages_data)
         
         for idx, mapping in enumerate(string_map):
@@ -912,7 +978,6 @@ def translate_multi_table_packages(packages_data: Dict) -> Dict[str, Dict]:
                 if key_info == 'title':
                     translated_data['tables'][table_idx]['title'] = translated_strings[idx]
                 else:
-                    # ('packages', pkg_idx, key) 형식
                     _, pkg_idx, key = key_info
                     translated_data['tables'][table_idx]['packages'][pkg_idx][key] = translated_strings[idx]
         
@@ -925,11 +990,13 @@ def translate_service_option(option) -> bool:
     """
     ServiceOption 모델의 모든 텍스트 필드 번역 및 저장
     
+    각 필드의 번역 실패는 다른 필드 번역을 막지 않음 (best-effort).
+    
     Args:
         option: ServiceOption 모델 객체
     
     Returns:
-        성공 여부
+        모든 필드 번역 성공 여부
     """
     fields_to_translate = [
         'name', 'description', 'detailed_description',
@@ -939,10 +1006,14 @@ def translate_service_option(option) -> bool:
     success = True
     
     for field in fields_to_translate:
-        value = getattr(option, field, None)
-        if value and isinstance(value, str) and value.strip():
-            if not save_translation('service_option', option.id, field, value):
-                success = False
+        try:
+            value = getattr(option, field, None)
+            if value and isinstance(value, str) and value.strip():
+                if not save_translation('service_option', option.id, field, value):
+                    success = False
+        except Exception as e:
+            print(f"⚠️ service_option.{field} 번역 실패 (id={option.id}): {str(e)}")
+            success = False
     
     # details (JSON 배열)
     if option.details:
@@ -950,10 +1021,14 @@ def translate_service_option(option) -> bool:
             details_list = json.loads(option.details)
             if isinstance(details_list, list) and details_list:
                 all_translations = translate_to_all_languages_batch(details_list)
-                save_translation('service_option', option.id, 'details', 
-                               option.details, all_translations)
+                if not save_translation('service_option', option.id, 'details',
+                                        option.details, all_translations):
+                    success = False
         except json.JSONDecodeError:
-            pass
+            print(f"⚠️ service_option.details JSON 파싱 실패 (id={option.id})")
+        except Exception as e:
+            print(f"⚠️ service_option.details 번역 실패: {str(e)}")
+            success = False
     
     # packages (JSON 배열 또는 다중 테이블 형식)
     if option.packages:
@@ -963,34 +1038,49 @@ def translate_service_option(option) -> bool:
             # 새로운 다중 테이블 형식: {'tables': [...]}
             if isinstance(packages_data, dict) and 'tables' in packages_data:
                 translated_packages = translate_multi_table_packages(packages_data)
-                save_translation('service_option', option.id, 'packages', 
-                               option.packages, translated_packages)
+                if not save_translation('service_option', option.id, 'packages',
+                                        option.packages, translated_packages):
+                    success = False
             # 기존 단순 배열 형식
             elif isinstance(packages_data, list) and packages_data:
                 translated_packages = translate_packages(packages_data)
-                save_translation('service_option', option.id, 'packages', 
-                               option.packages, translated_packages)
+                if not save_translation('service_option', option.id, 'packages',
+                                        option.packages, translated_packages):
+                    success = False
         except json.JSONDecodeError:
-            pass
+            print(f"⚠️ service_option.packages JSON 파싱 실패 (id={option.id})")
+        except Exception as e:
+            print(f"⚠️ service_option.packages 번역 실패: {str(e)}")
+            success = False
     
     # refund_policy_table (파이프 구분 텍스트)
     if option.refund_policy_table and option.refund_policy_table.strip():
-        translated_table = translate_pipe_separated_table(option.refund_policy_table)
-        save_translation('service_option', option.id, 'refund_policy_table', 
-                       option.refund_policy_table, translated_table)
+        try:
+            translated_table = translate_pipe_separated_table(option.refund_policy_table)
+            if not save_translation('service_option', option.id, 'refund_policy_table',
+                                    option.refund_policy_table, translated_table):
+                success = False
+        except Exception as e:
+            print(f"⚠️ service_option.refund_policy_table 번역 실패: {str(e)}")
+            success = False
     
     # overtime_charge_table (파이프 구분 텍스트)
     if option.overtime_charge_table and option.overtime_charge_table.strip():
-        translated_table = translate_pipe_separated_table(option.overtime_charge_table)
-        save_translation('service_option', option.id, 'overtime_charge_table', 
-                       option.overtime_charge_table, translated_table)
+        try:
+            translated_table = translate_pipe_separated_table(option.overtime_charge_table)
+            if not save_translation('service_option', option.id, 'overtime_charge_table',
+                                    option.overtime_charge_table, translated_table):
+                success = False
+        except Exception as e:
+            print(f"⚠️ service_option.overtime_charge_table 번역 실패: {str(e)}")
+            success = False
     
     return success
 
 
 def translate_pipe_separated_table(table_text: str) -> Dict[str, str]:
     """
-    파이프(|)로 구분된 테이블 텍스트를 모든 지원 언어로 번역
+    파이프(|)로 구분된 테이블 텍스트를 모든 지원 언어로 병렬 번역
     
     Args:
         table_text: 파이프로 구분된 테이블 텍스트 (예: "촬영일 30일 전|100%|전액환불")
@@ -1020,12 +1110,12 @@ def translate_pipe_separated_table(table_text: str) -> Dict[str, str]:
     if not all_cells:
         return result
     
-    # 각 언어로 번역
-    for lang_code in SUPPORTED_LANGUAGES.keys():
+    # 모든 언어 배치 번역을 병렬로 실행
+    translations_by_lang = translate_to_all_languages_batch(all_cells, source_lang='ko')
+    
+    for lang_code, translated_cells in translations_by_lang.items():
         if lang_code == 'ko':
             continue
-        
-        translated_cells = translate_batch_gpt(all_cells, lang_code)
         
         # 번역된 셀을 다시 테이블 구조로 조립
         translated_lines = lines.copy()
@@ -1033,7 +1123,6 @@ def translate_pipe_separated_table(table_text: str) -> Dict[str, str]:
         
         for orig_line_idx, orig_cell_idx, num_parts in cell_map:
             if cell_idx < len(translated_cells):
-                # 해당 라인을 파싱하여 셀 교체
                 orig_parts = translated_lines[orig_line_idx].split('|')
                 if orig_cell_idx < len(orig_parts):
                     orig_parts[orig_cell_idx] = translated_cells[cell_idx]
@@ -1047,7 +1136,7 @@ def translate_pipe_separated_table(table_text: str) -> Dict[str, str]:
 
 def translate_json_to_all_languages(data: Any) -> Dict[str, Any]:
     """
-    JSON 데이터를 모든 지원 언어로 번역
+    JSON 데이터를 모든 지원 언어로 병렬 번역
     
     Args:
         data: JSON 데이터
@@ -1055,6 +1144,7 @@ def translate_json_to_all_languages(data: Any) -> Dict[str, Any]:
     Returns:
         언어별 번역된 JSON 데이터
     """
+    import copy
     result = {'ko': data}
     
     # 모든 문자열 추출
@@ -1075,17 +1165,18 @@ def translate_json_to_all_languages(data: Any) -> Dict[str, Any]:
     extract_strings(data)
     
     if not all_strings:
+        for lang_code in SUPPORTED_LANGUAGES.keys():
+            if lang_code != 'ko':
+                result[lang_code] = copy.deepcopy(data)
         return result
     
-    # 각 언어로 번역
-    for lang_code in SUPPORTED_LANGUAGES.keys():
+    # 모든 언어 배치 번역을 병렬로 실행
+    translations_by_lang = translate_to_all_languages_batch(all_strings, source_lang='ko')
+    
+    for lang_code, translated_strings in translations_by_lang.items():
         if lang_code == 'ko':
             continue
         
-        translated_strings = translate_batch_gpt(all_strings, lang_code)
-        
-        # 번역된 문자열을 JSON 구조에 다시 매핑
-        import copy
         translated_data = copy.deepcopy(data)
         
         def set_value_at_path(obj, path, value):

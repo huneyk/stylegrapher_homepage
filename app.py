@@ -59,9 +59,14 @@ def create_app():
     app.config['COMPRESS_MIN_SIZE'] = 500
     compress.init_app(app)
     
-    # 캐싱 설정 (SimpleCache - 메모리 기반)
-    app.config['CACHE_TYPE'] = 'SimpleCache'
+    # 캐싱 설정 (FileSystemCache - 파일 기반, gunicorn 멀티 워커 간 캐시 공유)
+    # SimpleCache는 프로세스별 메모리에 저장되어 워커 간 캐시 무효화가 안 되므로
+    # admin에서 데이터 수정 후 다국어 페이지에 즉시 반영되지 않는 문제가 발생함
+    app.config['CACHE_TYPE'] = 'FileSystemCache'
+    app.config['CACHE_DIR'] = os.path.join(app.root_path, 'static', 'cache', 'flask_cache')
     app.config['CACHE_DEFAULT_TIMEOUT'] = 300  # 5분
+    app.config['CACHE_THRESHOLD'] = 1000  # 최대 캐시 항목 수
+    os.makedirs(app.config['CACHE_DIR'], exist_ok=True)
     cache.init_app(app)
     
     # SQLAlchemy 초기화 (마이그레이션 스크립트용으로 유지)
