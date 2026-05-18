@@ -464,9 +464,12 @@ Only return the translated text without any explanations or notes."""
         return None
 
 
-def translate_batch_gpt(texts: List[str], target_lang: str, source_lang: str = 'ko') -> List[str]:
+def translate_batch_gpt(texts: List[str], target_lang: str, source_lang: str = 'ko') -> Optional[List[str]]:
     """
     여러 텍스트를 한 번에 번역 (API 호출 최적화)
+    
+    실패 시 None 반환 (한국어 원문을 외국어 번역값으로 반환하지 않음).
+    호출자는 None을 받으면 기존 번역을 그대로 유지해야 함.
     
     Args:
         texts: 번역할 텍스트 리스트
@@ -474,7 +477,7 @@ def translate_batch_gpt(texts: List[str], target_lang: str, source_lang: str = '
         source_lang: 원본 언어 코드
     
     Returns:
-        번역된 텍스트 리스트
+        번역된 텍스트 리스트 (성공 시) 또는 None (실패 시)
     """
     if not texts:
         return texts
@@ -485,7 +488,7 @@ def translate_batch_gpt(texts: List[str], target_lang: str, source_lang: str = '
     client = get_openai_client()
     if not client:
         print("⚠️ OPENAI_API_KEY 환경 변수가 설정되지 않았습니다!")
-        return texts
+        return None
     
     try:
         source_name = LANGUAGE_NAMES.get(source_lang, 'Korean')
@@ -530,12 +533,17 @@ Maintain a professional yet friendly tone suitable for a premium styling service
         except json.JSONDecodeError:
             pass
         
-        # JSON 파싱 실패 시 개별 번역
-        return [translate_text_gpt(t, target_lang, source_lang) or t for t in texts]
+        # JSON 파싱 실패 시 개별 번역으로 폴백.
+        # 단, 한 항목이라도 실패하면 전체를 실패로 처리하여
+        # 한국어 원문이 외국어 번역값으로 섞이는 것을 막는다.
+        individual = [translate_text_gpt(t, target_lang, source_lang) for t in texts]
+        if any(item is None for item in individual):
+            return None
+        return individual
         
     except Exception as e:
         print(f"❌ GPT 배치 번역 오류: {str(e)}")
-        return texts
+        return None
 
 
 def translate_to_all_languages(text: str, source_lang: str = 'ko') -> Dict[str, str]:
@@ -545,19 +553,21 @@ def translate_to_all_languages(text: str, source_lang: str = 'ko') -> Dict[str, 
     ThreadPoolExecutor를 사용하여 4개 언어를 동시에 번역
     → 순차 호출 대비 약 4배 빠르고 GPT timeout으로 인한 부분 실패도 줄어듦
     
+    실패/타임아웃/빈 결과 언어는 반환 dict에 포함하지 않음.
+    호출자(save_translation)는 누락된 언어의 기존 번역을 그대로 보존해야 함.
+    → 한국어 원문이 외국어 번역값을 덮어쓰는 현상 방지.
+    
     Args:
         text: 번역할 텍스트
         source_lang: 원본 언어 코드
     
     Returns:
-        언어 코드별 번역된 텍스트 딕셔너리
+        언어 코드별 번역된 텍스트 딕셔너리 (성공한 언어만 포함, 원본 언어는 항상 포함)
     """
     translations = {source_lang: text}
     other_langs = [l for l in SUPPORTED_LANGUAGES.keys() if l != source_lang]
     
     if not other_langs or not text or not text.strip():
-        for lang in other_langs:
-            translations[lang] = text
         return translations
     
     with ThreadPoolExecutor(max_workers=len(other_langs)) as executor:
@@ -569,10 +579,12 @@ def translate_to_all_languages(text: str, source_lang: str = 'ko') -> Dict[str, 
             lang = future_to_lang[future]
             try:
                 translated = future.result(timeout=90)
-                translations[lang] = translated if translated else text
+                if translated:
+                    translations[lang] = translated
+                else:
+                    print(f"⚠️ {lang} 번역 결과 없음 - 기존 번역 유지")
             except Exception as e:
-                print(f"❌ {lang} 번역 실패 (원본 fallback): {str(e)}")
-                translations[lang] = text
+                print(f"❌ {lang} 번역 실패 - 기존 번역 유지: {str(e)}")
     
     return translations
 
@@ -583,19 +595,21 @@ def translate_to_all_languages_batch(texts: List[str], source_lang: str = 'ko') 
     
     ThreadPoolExecutor를 사용하여 4개 언어 배치 번역을 동시에 실행
     
+    실패/타임아웃/None 결과 언어는 반환 dict에 포함하지 않음.
+    호출자는 누락된 언어를 처리해 기존 번역을 보존해야 함.
+    → 한국어 원문이 외국어 번역값을 덮어쓰는 현상 방지.
+    
     Args:
         texts: 번역할 텍스트 리스트
         source_lang: 원본 언어 코드
     
     Returns:
-        언어 코드별 번역된 텍스트 리스트 딕셔너리
+        언어 코드별 번역된 텍스트 리스트 딕셔너리 (성공한 언어만 포함, 원본 언어는 항상 포함)
     """
     translations = {source_lang: texts}
     other_langs = [l for l in SUPPORTED_LANGUAGES.keys() if l != source_lang]
     
     if not other_langs or not texts:
-        for lang in other_langs:
-            translations[lang] = list(texts)
         return translations
     
     with ThreadPoolExecutor(max_workers=len(other_langs)) as executor:
@@ -607,10 +621,12 @@ def translate_to_all_languages_batch(texts: List[str], source_lang: str = 'ko') 
             lang = future_to_lang[future]
             try:
                 translated = future.result(timeout=120)
-                translations[lang] = translated if translated else list(texts)
+                if translated:
+                    translations[lang] = translated
+                else:
+                    print(f"⚠️ {lang} 배치 번역 결과 없음 - 기존 번역 유지")
             except Exception as e:
-                print(f"❌ {lang} 배치 번역 실패 (원본 fallback): {str(e)}")
-                translations[lang] = list(texts)
+                print(f"❌ {lang} 배치 번역 실패 - 기존 번역 유지: {str(e)}")
     
     return translations
 
@@ -620,12 +636,15 @@ def save_translation(source_type: str, source_id: int, field_name: str,
     """
     번역된 텍스트를 MongoDB에 저장하고 JSON 캐시도 업데이트
     
+    `translations` dict에 누락된 언어(번역 실패 등)는 기존 MongoDB 값을 그대로 유지함.
+    → 한국어 원문이 외국어 번역값을 덮어쓰는 현상 방지.
+    
     Args:
         source_type: 데이터 타입 (service, service_option, collage_text 등)
         source_id: 원본 데이터의 ID
         field_name: 필드명 (name, description 등)
         original_text: 원본 텍스트 (한국어)
-        translations: 번역된 텍스트 딕셔너리 (없으면 자동 번역)
+        translations: 번역된 텍스트 딕셔너리 (없으면 자동 번역). 누락된 언어 키는 기존 값 보존.
     
     Returns:
         성공 여부
@@ -642,15 +661,30 @@ def save_translation(source_type: str, source_id: int, field_name: str,
         # 문서 키 생성
         doc_key = f"{source_type}_{source_id}"
         
-        # 기존 문서 조회
+        # 기존 문서 조회 (실패한 언어의 기존 번역 보존을 위해)
         existing = translations_collection.find_one({"_id": doc_key})
+        
+        existing_translations: Dict[str, Any] = {}
+        if existing and isinstance(existing.get('fields'), dict):
+            existing_field = existing['fields'].get(field_name)
+            if isinstance(existing_field, dict):
+                stored = existing_field.get('translations')
+                if isinstance(stored, dict):
+                    existing_translations = stored
+        
+        # 머지: 새로 전달된 언어만 갱신, 누락/None 언어는 기존 값 유지
+        merged_translations: Dict[str, Any] = dict(existing_translations)
+        for lang, value in translations.items():
+            # 원본 언어는 항상 최신 원문으로 갱신; 외국어는 값이 있을 때만 갱신
+            if lang == 'ko' or value is not None:
+                merged_translations[lang] = value
         
         if existing:
             # 기존 문서 업데이트
             update_data = {
                 f"fields.{field_name}": {
                     "original": original_text,
-                    "translations": translations,
+                    "translations": merged_translations,
                     "updated_at": datetime.utcnow()
                 },
                 "updated_at": datetime.utcnow()
@@ -668,7 +702,7 @@ def save_translation(source_type: str, source_id: int, field_name: str,
                 "fields": {
                     field_name: {
                         "original": original_text,
-                        "translations": translations,
+                        "translations": merged_translations,
                         "updated_at": datetime.utcnow()
                     }
                 },
@@ -677,10 +711,15 @@ def save_translation(source_type: str, source_id: int, field_name: str,
             }
             translations_collection.insert_one(new_doc)
         
-        # JSON 캐시도 업데이트
-        update_cache_entry(source_type, source_id, field_name, original_text, translations)
+        # JSON 캐시도 머지된 결과로 업데이트
+        update_cache_entry(source_type, source_id, field_name, original_text, merged_translations)
         
-        print(f"✅ 번역 저장 완료: {source_type}_{source_id}.{field_name}")
+        updated_langs = sorted(l for l in translations.keys() if l != 'ko')
+        kept_langs = sorted(l for l in existing_translations.keys() if l not in translations)
+        print(
+            f"✅ 번역 저장 완료: {source_type}_{source_id}.{field_name} "
+            f"(갱신: {updated_langs or '-'}, 보존: {kept_langs or '-'})"
+        )
         return True
         
     except Exception as e:
