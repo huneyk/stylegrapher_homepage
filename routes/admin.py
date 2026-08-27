@@ -511,6 +511,58 @@ def update_gallery_order(group_id):
     return redirect(url_for('admin.list_gallery'))
 
 
+@admin.route('/gallery/update-image-order/<int:group_id>', methods=['POST'])
+@login_required
+def update_gallery_image_order(group_id):
+    try:
+        group = GalleryGroup.get_by_id(group_id)
+        if not group:
+            return jsonify({
+                'success': False,
+                'message': '갤러리를 찾을 수 없습니다.'
+            }), 404
+
+        data = request.get_json(silent=True) or {}
+        image_ids = data.get('image_ids')
+        if not isinstance(image_ids, list) or not image_ids:
+            return jsonify({
+                'success': False,
+                'message': '이미지 순서 정보가 올바르지 않습니다.'
+            }), 400
+
+        images = Gallery.query_by_group(group_id)
+        image_map = {str(img.id): img for img in images}
+
+        if len(image_ids) != len(images) or any(str(image_id) not in image_map for image_id in image_ids):
+            return jsonify({
+                'success': False,
+                'message': '이미지 목록이 일치하지 않습니다.'
+            }), 400
+
+        for index, image_id in enumerate(image_ids):
+            image = image_map[str(image_id)]
+            if image.order != index:
+                image.order = index
+                image.save()
+
+        try:
+            from routes.main import clear_gallery_cache
+            clear_gallery_cache()
+        except Exception as cache_error:
+            print(f"⚠️ 캐시 클리어 실패 (무시 가능): {str(cache_error)}")
+
+        return jsonify({
+            'success': True,
+            'message': f'갤러리 "{group.title}"의 이미지 순서가 저장되었습니다.'
+        })
+    except Exception as e:
+        print(f"Error updating gallery image order: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': '이미지 순서 업데이트 중 오류가 발생했습니다.'
+        }), 500
+
+
 @admin.route('/gallery/toggle-pin/<int:group_id>', methods=['POST'])
 @login_required
 def toggle_gallery_pin(group_id):

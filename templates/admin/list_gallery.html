@@ -24,7 +24,8 @@
         • <strong>새 갤러리:</strong> 기존 갤러리 순서에 영향을 주지 않도록 가장 낮은 순서로 자동 배치됩니다.<br>
         • <strong>상단 고정:</strong> 최대 3개까지 홈페이지 상단에 고정 표시됩니다.<br>
         • <strong>상단고정 내 순서:</strong> 상단고정된 갤러리끼리도 표출 순서로 정렬됩니다.<br>
-        • <strong>저장 방법:</strong> 순서 변경 후 <kbd>Enter</kbd> 키 또는 저장 버튼을 클릭하세요.
+        • <strong>이미지 순서:</strong> 카드 안 썸네일을 드래그하여 표출 순서를 바꿀 수 있으며, 놓으면 자동 저장됩니다.<br>
+        • <strong>저장 방법:</strong> 갤러리 표출 순서 변경 후 <kbd>Enter</kbd> 키 또는 저장 버튼을 클릭하세요.
     </div>
 
     <div class="row g-4">
@@ -38,32 +39,29 @@
                 </div>
                 {% endif %}
                 
-                <div id="adminCarousel{{ group.id }}" class="carousel slide">
-                    <div class="carousel-inner">
-                        {% for image in group.images %}
-                        <div class="carousel-item {% if loop.first %}active{% endif %}">
-                            <img src="/admin/image/{{ image.image_path }}" 
-                                 class="d-block w-100" 
-                                 alt="{{ group.title }}">
-                        </div>
-                        {% endfor %}
+                <div class="gallery-thumb-grid{% if group.images|length > 1 %} is-sortable{% endif %}"
+                     data-group-id="{{ group.id }}"
+                     data-save-url="{{ url_for('admin.update_gallery_image_order', group_id=group.id) }}">
+                    {% for image in group.images %}
+                    <div class="gallery-thumb" data-image-id="{{ image.id }}">
+                        <img src="/admin/image/{{ image.image_path }}" alt="{{ group.title }}">
+                        <span class="thumb-order">{{ loop.index }}</span>
+                        {% if group.images|length > 1 %}
+                        <span class="thumb-drag-hint"><i class="bi bi-arrows-move"></i></span>
+                        {% endif %}
                     </div>
-                    {% if group.images|length > 1 %}
-                    <button class="carousel-control-prev" type="button" 
-                            data-bs-target="#adminCarousel{{ group.id }}" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon"></span>
-                    </button>
-                    <button class="carousel-control-next" type="button" 
-                            data-bs-target="#adminCarousel{{ group.id }}" data-bs-slide="next">
-                        <span class="carousel-control-next-icon"></span>
-                    </button>
-                    {% endif %}
+                    {% endfor %}
                 </div>
                 
                 <div class="card-body">
                     <h5 class="card-title">{{ group.title }}</h5>
                     <p class="card-text">
                         <small class="text-muted">{{ group.images|length }}장의 사진</small>
+                        {% if group.images|length > 1 %}
+                        <small class="text-muted d-block mt-1">
+                            <i class="bi bi-arrows-move me-1"></i>썸네일을 드래그하여 표출 순서를 변경하세요
+                        </small>
+                        {% endif %}
                     </p>
                     
                     <!-- 표출 순서 설정 -->
@@ -141,9 +139,79 @@
 </div>
 
 <style>
-.card .carousel-item img {
-    height: 300px;
+.gallery-thumb-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+    gap: 8px;
+    padding: 12px;
+    background: #f8f6fb;
+    min-height: 88px;
+}
+
+.gallery-thumb {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    background: #eee;
+}
+
+.gallery-thumb-grid.is-sortable .gallery-thumb {
+    cursor: grab;
+}
+
+.gallery-thumb-grid.is-sortable .gallery-thumb:active {
+    cursor: grabbing;
+}
+
+.gallery-thumb img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
+    pointer-events: none;
+    display: block;
+}
+
+.thumb-order {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 10px;
+    background: rgba(139, 95, 191, 0.92);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.thumb-drag-hint {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.45);
+    color: #fff;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gallery-thumb.thumb-ghost {
+    opacity: 0.35;
+}
+
+.gallery-thumb.thumb-chosen {
+    border-color: #8b5fbf;
 }
 
 .card.border-warning {
@@ -180,10 +248,67 @@
 }
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     checkPinLimits();
+    initImageSort();
 });
+
+function updateThumbOrderNumbers(grid) {
+    grid.querySelectorAll('.gallery-thumb').forEach((thumb, index) => {
+        const badge = thumb.querySelector('.thumb-order');
+        if (badge) {
+            badge.textContent = index + 1;
+        }
+    });
+}
+
+function saveImageOrder(grid) {
+    const imageIds = Array.from(grid.querySelectorAll('.gallery-thumb'))
+        .map(thumb => thumb.dataset.imageId);
+
+    fetch(grid.dataset.saveUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ image_ids: imageIds })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(data => Promise.reject(data));
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showMessage(data.message, 'success');
+        } else {
+            showMessage(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        const message = error.message || '이미지 순서 업데이트 중 오류가 발생했습니다.';
+        showMessage(message, 'error');
+        console.error('Error:', error);
+    });
+}
+
+function initImageSort() {
+    document.querySelectorAll('.gallery-thumb-grid.is-sortable').forEach(grid => {
+        Sortable.create(grid, {
+            animation: 150,
+            ghostClass: 'thumb-ghost',
+            chosenClass: 'thumb-chosen',
+            onEnd: function() {
+                updateThumbOrderNumbers(grid);
+                saveImageOrder(grid);
+            }
+        });
+    });
+}
 
 function checkPinLimits() {
     const pinCheckboxes = document.querySelectorAll('.pin-checkbox');

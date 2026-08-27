@@ -408,9 +408,9 @@ class GalleryGroup(MongoModel):
     
     @property
     def images(self):
-        """해당 그룹의 이미지들 조회"""
+        """해당 그룹의 이미지들 조회 (표출 순서 정렬)"""
         if self._images is None:
-            self._images = Gallery.query_filter(group_id=self._id)
+            self._images = Gallery.query_by_group(self._id)
         return self._images
     
     @classmethod
