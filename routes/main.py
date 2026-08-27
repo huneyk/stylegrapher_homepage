@@ -461,9 +461,8 @@ def service_option_detail(id):
         if cat_name not in sorted_photos_by_category:
             sorted_photos_by_category[cat_name] = photos_by_category[cat_name]
     
-    # 공개 화면에서 샘플 갤러리·가격표 숨김 (DB 데이터는 유지)
+    # 공개 화면에서 샘플 갤러리만 숨김 (DB 데이터·가격표는 유지)
     if id == 11:
-        packages = []
         sorted_photos_by_category = {}
     
     return render_template('service_option_detail.html', 
