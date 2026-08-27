@@ -167,7 +167,7 @@ def clear_gallery_cache():
     global _cache, _cache_timestamps
     keys_to_remove = []
     
-    for key in _cache.keys():
+    for key in list(_cache.keys()):
         if key.startswith('gallery:') or key.startswith('index:'):
             keys_to_remove.append(key)
     
@@ -177,7 +177,20 @@ def clear_gallery_cache():
         if key in _cache_timestamps:
             del _cache_timestamps[key]
     
-    print(f"🧹 갤러리 캐시 클리어 완료: {len(keys_to_remove)}개 항목 제거")
+    languages = ['ko', 'en', 'ja', 'zh', 'es']
+    total_pages = 1
+    try:
+        total_groups = GalleryGroup.count()
+        total_pages = max(1, (total_groups + 8) // 9)
+    except Exception:
+        total_pages = 10
+
+    for lang in languages:
+        cache.delete(f"/:{lang}")
+        for page in range(1, total_pages + 1):
+            cache.delete(f"gallery:{lang}:{page}")
+
+    print(f"🧹 갤러리 캐시 클리어 완료: 메모리 {len(keys_to_remove)}개, Flask 홈/갤러리 페이지")
 
 
 def clear_index_page_cache():
