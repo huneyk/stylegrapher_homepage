@@ -25,7 +25,8 @@
         • <strong>상단 고정:</strong> 최대 3개까지 홈페이지 상단에 고정 표시됩니다.<br>
         • <strong>상단고정 내 순서:</strong> 상단고정된 갤러리끼리도 표출 순서로 정렬됩니다.<br>
         • <strong>이미지 순서:</strong> 카드 안 썸네일을 드래그하여 표출 순서를 바꿀 수 있으며, 놓으면 자동 저장됩니다.<br>
-        • <strong>저장 방법:</strong> 갤러리 표출 순서 변경 후 <kbd>Enter</kbd> 키 또는 저장 버튼을 클릭하세요.
+        • <strong>전환 간격:</strong> 홈/갤러리에서 사진이 바뀌는 시간(1~30초)을 갤러리마다 설정할 수 있습니다.<br>
+        • <strong>저장 방법:</strong> 갤러리 표출 순서 또는 전환 간격 변경 후 <kbd>Enter</kbd> 키 또는 저장 버튼을 클릭하세요.
     </div>
 
     <div class="row g-4">
@@ -89,6 +90,22 @@
                             <span class="text-warning">상단고정된 항목끼리의 순서를 조정할 수 있습니다.</span>
                             {% endif %}
                         </small>
+                    </div>
+                    
+                    <!-- 사진 전환 간격 -->
+                    <div class="mb-3">
+                        <form method="POST" action="{{ url_for('admin.update_gallery_slide_interval', group_id=group.id) }}" 
+                              class="d-flex align-items-center gap-2" onsubmit="return handleIntervalSubmit(this)">
+                            <label class="form-label mb-0">전환 간격:</label>
+                            <input type="number" name="slide_interval" value="{{ group.slide_interval or 4 }}" 
+                                   class="form-control form-control-sm interval-input" 
+                                   style="width: 90px;" min="1" max="30">
+                            <span class="text-muted">초</span>
+                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-check"></i> 저장
+                            </button>
+                        </form>
+                        <small class="text-muted">홈페이지와 갤러리에서 사진이 자동으로 바뀌는 간격입니다.</small>
                     </div>
                     
                     <!-- 상단 고정 토글 -->
@@ -227,7 +244,8 @@
     cursor: not-allowed;
 }
 
-.order-input:focus {
+.order-input:focus,
+.interval-input:focus {
     border-color: #8b5fbf;
     box-shadow: 0 0 0 0.2rem rgba(139, 95, 191, 0.25);
 }
@@ -340,6 +358,19 @@ function handlePinToggle(checkbox) {
     form.submit();
 }
 
+function handleIntervalSubmit(form) {
+    const input = form.querySelector('input[name="slide_interval"]');
+    const value = parseInt(input.value);
+    
+    if (isNaN(value) || value < 1 || value > 30) {
+        showMessage('전환 간격은 1~30초 사이여야 합니다.', 'error');
+        return false;
+    }
+    
+    submitOrderUpdate(form);
+    return false;
+}
+
 function handleOrderSubmit(form) {
     const input = form.querySelector('input[name="display_order"]');
     const value = parseInt(input.value);
@@ -387,8 +418,18 @@ function submitOrderUpdate(form) {
     .then(data => {
         if (data.success) {
             showMessage(data.message, 'success');
-            // 입력값이 서버에서 처리된 값으로 업데이트됨
-            form.querySelector('input[name="display_order"]').value = data.display_order;
+            if (data.display_order !== undefined) {
+                const orderInput = form.querySelector('input[name="display_order"]');
+                if (orderInput) {
+                    orderInput.value = data.display_order;
+                }
+            }
+            if (data.slide_interval !== undefined) {
+                const intervalInput = form.querySelector('input[name="slide_interval"]');
+                if (intervalInput) {
+                    intervalInput.value = data.slide_interval;
+                }
+            }
         } else {
             showMessage(data.message, 'error');
         }
@@ -444,22 +485,37 @@ function showMessage(message, type = 'info') {
     }, 3000);
 }
 
-// 엔터키로 표출순서 저장
+// 엔터키로 표출순서/전환간격 저장
 document.addEventListener('keypress', function(e) {
     if (e.target.classList.contains('order-input') && e.key === 'Enter') {
         e.preventDefault();
-        const form = e.target.closest('form');
-        handleOrderSubmit(form);
+        handleOrderSubmit(e.target.closest('form'));
+    }
+    if (e.target.classList.contains('interval-input') && e.key === 'Enter') {
+        e.preventDefault();
+        handleIntervalSubmit(e.target.closest('form'));
     }
 });
 
-// 표출순서 입력 시 실시간 검증
+// 표출순서/전환간격 입력 시 실시간 검증
 document.addEventListener('input', function(e) {
     if (e.target.classList.contains('order-input')) {
         const value = parseInt(e.target.value);
         const submitBtn = e.target.closest('form').querySelector('button[type="submit"]');
         
         if (isNaN(value) || value < 0 || value > 999) {
+            e.target.style.borderColor = '#dc3545';
+            submitBtn.disabled = true;
+        } else {
+            e.target.style.borderColor = '#8b5fbf';
+            submitBtn.disabled = false;
+        }
+    }
+    if (e.target.classList.contains('interval-input')) {
+        const value = parseInt(e.target.value);
+        const submitBtn = e.target.closest('form').querySelector('button[type="submit"]');
+        
+        if (isNaN(value) || value < 1 || value > 30) {
             e.target.style.borderColor = '#dc3545';
             submitBtn.disabled = true;
         } else {

@@ -615,6 +615,7 @@ def gallery(page=1):
                 'created_at': group.created_at,
                 'is_pinned': group.is_pinned,
                 'display_order': group.display_order,
+                'slide_interval_ms': group.slide_interval_ms,
                 'images': [{'id': img.id, 'image_path': img.image_path, 'order': img.order} for img in group.images]
             })
         

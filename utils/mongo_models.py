@@ -361,9 +361,23 @@ class GalleryGroup(MongoModel):
         display_order_val = kwargs.get('display_order')
         self.display_order = int(display_order_val) if display_order_val is not None else 0
         self.is_pinned = kwargs.get('is_pinned', False)
+        try:
+            interval_val = kwargs.get('slide_interval')
+            self.slide_interval = int(interval_val) if interval_val is not None else 4
+        except (TypeError, ValueError):
+            self.slide_interval = 4
         self.created_at = kwargs.get('created_at', datetime.utcnow())
         self.updated_at = kwargs.get('updated_at', datetime.utcnow())
         self._images = None
+    
+    @property
+    def slide_interval_ms(self):
+        """사진 전환 간격(밀리초). 미설정 시 4초."""
+        try:
+            seconds = int(self.slide_interval) if self.slide_interval is not None else 4
+        except (TypeError, ValueError):
+            seconds = 4
+        return max(1, min(30, seconds)) * 1000
     
     def to_doc(self):
         """MongoDB 문서로 변환 (display_order 필드 명시적 포함)"""
@@ -371,6 +385,7 @@ class GalleryGroup(MongoModel):
             'title': self.title,
             'display_order': int(self.display_order) if self.display_order is not None else 0,
             'is_pinned': bool(self.is_pinned) if self.is_pinned is not None else False,
+            'slide_interval': int(self.slide_interval) if getattr(self, 'slide_interval', None) is not None else 4,
             'created_at': self.created_at,
             'updated_at': self.updated_at
         }

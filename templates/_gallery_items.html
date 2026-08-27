@@ -3,7 +3,7 @@
 <div class="col-md-4">
     <div class="card gallery-item">
         <a href="{{ url_for('main.gallery_detail', group_id=group.id) }}" class="gallery-item-link">
-            <div id="carousel{{ group.id }}" class="carousel slide" data-bs-ride="carousel">
+            <div id="carousel{{ group.id }}" class="carousel slide" data-bs-ride="carousel" data-bs-interval="{{ group.slide_interval_ms|default(4000) }}">
                 <div class="carousel-indicators">
                     {% for image in group.images %}
                     <button type="button" data-bs-target="#carousel{{ group.id }}" 

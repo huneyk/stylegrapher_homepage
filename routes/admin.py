@@ -511,6 +511,69 @@ def update_gallery_order(group_id):
     return redirect(url_for('admin.list_gallery'))
 
 
+@admin.route('/gallery/update-slide-interval/<int:group_id>', methods=['POST'])
+@login_required
+def update_gallery_slide_interval(group_id):
+    try:
+        raw_value = request.form.get('slide_interval', '4')
+        slide_interval = int(raw_value)
+
+        if slide_interval < 1 or slide_interval > 30:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({
+                    'success': False,
+                    'message': '전환 간격은 1~30초 사이여야 합니다.'
+                }), 400
+            flash('전환 간격은 1~30초 사이여야 합니다.', 'error')
+            return redirect(url_for('admin.list_gallery'))
+
+        group = GalleryGroup.get_by_id(group_id)
+        if not group:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({
+                    'success': False,
+                    'message': '갤러리를 찾을 수 없습니다.'
+                }), 404
+            flash('갤러리를 찾을 수 없습니다.', 'error')
+            return redirect(url_for('admin.list_gallery'))
+
+        group.slide_interval = slide_interval
+        group.updated_at = datetime.utcnow()
+        group.save()
+
+        try:
+            from routes.main import clear_gallery_cache
+            clear_gallery_cache()
+        except Exception as cache_error:
+            print(f"⚠️ 캐시 클리어 실패 (무시 가능): {str(cache_error)}")
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({
+                'success': True,
+                'message': f'갤러리 "{group.title}"의 전환 간격이 {slide_interval}초로 저장되었습니다.',
+                'slide_interval': slide_interval
+            })
+
+        flash(f'사진 전환 간격이 {slide_interval}초로 저장되었습니다.')
+    except ValueError:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({
+                'success': False,
+                'message': '올바른 숫자를 입력해주세요.'
+            }), 400
+        flash('올바른 숫자를 입력해주세요.', 'error')
+    except Exception as e:
+        print(f"Error updating gallery slide interval: {str(e)}")
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({
+                'success': False,
+                'message': '전환 간격 업데이트 중 오류가 발생했습니다.'
+            }), 500
+        flash('전환 간격 업데이트 중 오류가 발생했습니다.', 'error')
+
+    return redirect(url_for('admin.list_gallery'))
+
+
 @admin.route('/gallery/update-image-order/<int:group_id>', methods=['POST'])
 @login_required
 def update_gallery_image_order(group_id):

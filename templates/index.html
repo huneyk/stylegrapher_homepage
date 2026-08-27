@@ -36,7 +36,7 @@
         <div class="prismatic-grid">
             {% for group in recent_galleries %}
             {% set translated_group = get_translated_gallery_group(group) %}
-            <div class="prism-card prism-card-{{ loop.index }}" data-depth="{{ loop.index }}">
+            <div class="prism-card prism-card-{{ loop.index }}" data-depth="{{ loop.index }}" data-interval="{{ group.slide_interval_ms }}">
                 <div class="prism-glass-edge"></div>
                 <div class="prism-inner">
                     <div class="prism-image-stack">
@@ -824,12 +824,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Prismatic Gallery - Image Crossfade with lazy loading
     const prismCards = document.querySelectorAll('.prism-card');
     
-    prismCards.forEach((card, cardIndex) => {
+    prismCards.forEach((card) => {
         const images = card.querySelectorAll('.prism-image');
         if (images.length <= 1) return;
         
         let currentIndex = 0;
-        const interval = 4000 + (cardIndex * 800); // Staggered intervals
+        const interval = parseInt(card.dataset.interval, 10) || 4000;
         
         // Preload first few images
         preloadNextImages(card, 0);
@@ -1162,7 +1162,7 @@ function openNoticeModal(noticeId) {
                 <div class="col-md-4">
                     <div class="gallery-preview-card h-100">
                         <div class="preview-carousel-container">
-                            <div id="previewCarousel{{ loop.index }}" class="carousel slide" data-bs-ride="carousel" data-bs-interval="{{ 4000 + (loop.index0 * 500) }}">
+                            <div id="previewCarousel{{ loop.index }}" class="carousel slide" data-bs-ride="carousel" data-bs-interval="{{ group.slide_interval_ms }}">
                                 <div class="carousel-inner">
                                     {% for image in group.images %}
                                     <div class="carousel-item {% if loop.first %}active{% endif %}">
